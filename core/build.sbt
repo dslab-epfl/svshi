@@ -11,7 +11,8 @@ lazy val root = (project in file("."))
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "com.lihaoyi" %% "upickle" % "1.4.2",
     libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.8",
-    libraryDependencies += "ru.tinkoff" %% "phobos-core" % "0.13.0"
+    libraryDependencies += "ru.tinkoff" %% "phobos-core" % "0.13.0",
+    libraryDependencies += "com.lihaoyi" %% "upickle" % "1.4.2"
   )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
