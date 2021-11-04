@@ -23,3 +23,10 @@
 hs_err_pid*
 
 .DS_Store
+
+# vscode
+/.vscode
+# metals
+.metals
+.bloop
+project/**/metals.sbt
