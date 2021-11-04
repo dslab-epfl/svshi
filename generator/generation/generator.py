@@ -49,6 +49,16 @@ def multiton(cls):
         output_file.write(file)
 
 
+def generate_init_files(app_name: str):
+    """
+    Generates the __init__.py file in each subdirectory of the generated app.
+    """
+    subdirectories = [x[0] for x in os.walk(app_name)]
+    for subdir in subdirectories:
+        with open(f"{subdir}/__init__.py", "w+") as fp:
+            pass
+
+
 def generate_device_class(device_type: DeviceType, app_name: str):
     channels_init = ""
     channels_imports = set()

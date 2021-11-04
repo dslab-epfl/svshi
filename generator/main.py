@@ -1,10 +1,11 @@
 import argparse
-import os
+import subprocess
 from generator.parsing.parser import read_device_instances, read_device_types
 from generator.generation.generator import (
     generate_device_instances,
     generate_device_class,
     generate_multiton_class,
+    generate_init_files,
 )
 
 
@@ -34,8 +35,7 @@ if __name__ == "__main__":
 
     generate_device_instances(device_instances, app_name)
 
-    # Generate the __init__.py file in each subdirectory
-    subdirectories = [x[0] for x in os.walk(app_name)]
-    for subdir in subdirectories:
-        with open(f"{subdir}/__init__.py", "w+") as fp:
-            pass
+    generate_init_files(app_name)
+
+    # Copy the skeleton to the newly generated app
+    subprocess.run(f"cp -r generator/skeleton/* {app_name}", shell=True)
