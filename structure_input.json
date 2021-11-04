@@ -1,0 +1,55 @@
+{
+    "device_types": 
+    [
+        {
+            "type" : "type_of_the_device",
+            "channels" : 
+            [
+                {
+                    "name" : "name_of_the_channel_used_in_the_code",
+                    "datatype" : "DPT_type",
+                    "type": "in"
+                },
+                {
+                    "name" : "channel1",
+                    "datatype" : "DPT-1.001",
+                    "type": "out"
+                }, 
+                {
+                    "name" : "channel2",
+                    "datatype" : "DPT-2.004",
+                    "type": "in/out"
+                }
+            ]
+
+        },
+        {
+            "type" : "light",
+            "channels" : 
+            [
+                {
+                    "name" : "switch",
+                    "datatype" : "DPT-1.001",
+                    "type": "in"
+                }
+                
+            ]
+
+        }
+    ],
+    "device_instances":
+    [
+        {
+            "type": "type_defined_above",
+            "name": "name_of_that_instance"
+        },
+        {
+            "type": "light",
+            "name": "light_livingroom_1"
+        },
+        {
+            "type": "light",
+            "name": "light_bathroom_2"
+        }
+    ]
+}
