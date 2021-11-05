@@ -97,7 +97,7 @@ class ReadWriteChannel(Channel):
             value_type=super().__convert_to_value_type(datatype),
         )
 
-    def write(self, val: Union[float, int]):
+    def writeTo(self, val: Union[float, int]):
         """
         Writes the given value to the channel.
         """
