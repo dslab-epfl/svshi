@@ -69,7 +69,7 @@ class ReadChannel(Channel):
             value_type=super().__convert_to_value_type(datatype),
         )
 
-    def read(self) -> Union[float, int, None]:
+    def readFrom(self) -> Union[float, int, None]:
         """
         Reads from the channel.
         """
