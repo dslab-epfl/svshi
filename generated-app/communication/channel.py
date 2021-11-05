@@ -103,7 +103,7 @@ class ReadWriteChannel(Channel):
         """
         self.async_loop.run_until_complete(self.__underlying_value.set(val))
 
-    def read(self) -> Union[float, int, None]:
+    def readFrom(self) -> Union[float, int, None]:
         """
         Reads from the channel.
         """
