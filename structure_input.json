@@ -48,6 +48,11 @@
                     "name" : "cool_on",
                     "datatype" : "DPT-1.001",
                     "type": "in"
+                },
+                {
+                    "name": "air_temperature",
+                    "datatype": "DPT-9.001",
+                    "type": "in/out"
                 }
                 
             ]
@@ -57,16 +62,16 @@
     "deviceInstances":
     [
         {
-            "type": "type_defined_above",
-            "name": "name_of_that_instance"
-        },
-        {
             "type": "light",
             "name": "light_livingroom_1"
         },
         {
             "type": "light",
             "name": "light_bathroom_2"
+        },
+        {
+            "type": "hvac",
+            "name": "home_hvac"
         }
     ]
 }

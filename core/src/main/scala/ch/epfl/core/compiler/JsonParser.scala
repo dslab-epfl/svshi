@@ -1,10 +1,8 @@
 package ch.epfl.core.compiler
 
 import ch.epfl.core.compiler.jsonModels._
-import ch.epfl.core.compiler.models.{DeviceChannel, DeviceInstance, DeviceType, IOType, KNXDatatype, PrototypicalStructure}
-import upickle.default.{macroRW, ReadWriter => RW}
+import ch.epfl.core.compiler.models._
 
-import java.nio.file.Path
 import scala.io.Source
 
 object JsonParser {
