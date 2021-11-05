@@ -30,33 +30,33 @@ class __If(Rule):
     An IF rule.
     """
 
-    def __init__(self, ifCondition: "Rule", thenRule: "Rule", elseRule: "Rule"):
-        self.ifCondition = ifCondition
-        self.thenRule = thenRule
-        self.elseRule = elseRule
+    def __init__(self, if_condition: "Rule", then_rule: "Rule", else_rule: "Rule"):
+        self.if_condition = if_condition
+        self.then_rule = then_rule
+        self.else_rule = else_rule
 
 
 class __Then:
-    def __init__(self, ifCondition: "Rule"):
-        self.ifCondition = ifCondition
+    def __init__(self, if_condition: "Rule"):
+        self.if_condition = if_condition
 
-    def THEN(self, thenRule: "Rule") -> "__IfThen":
+    def THEN(self, then_rule: "Rule") -> "__IfThen":
         """
         Returns an IfThen that can be used as a rule or completed with an ELSE condition.
         """
-        return __IfThen(self.ifCondition, thenRule)
+        return __IfThen(self.if_condition, then_rule)
 
 
 class __IfThen(Rule):
-    def __init__(self, ifCondition: "Rule", thenRule: "Rule"):
-        self.ifCondition = ifCondition
-        self.thenRule = thenRule
+    def __init__(self, if_condition: "Rule", then_rule: "Rule"):
+        self.if_condition = if_condition
+        self.then_rule = then_rule
 
-    def ELSE(self, elseRule: Rule) -> __If:
+    def ELSE(self, else_rule: Rule) -> __If:
         """
         Completes the IfThen with an ELSE condition, returning an IF rule.
         """
-        return __If(self.ifCondition, self.thenRule, elseRule)
+        return __If(self.if_condition, self.then_rule, else_rule)
 
 
 class __Expression(Rule):
@@ -97,11 +97,11 @@ class __And(Rule):
         self.rule2 = rule2
 
 
-def IF(ifCondition: "Rule") -> __Then:
+def IF(if_condition: "Rule") -> __Then:
     """
     Returns a Then that can be used to write an IF rule.
     """
-    return __Then(ifCondition)
+    return __Then(if_condition)
 
 
 def AND(rule1: "Rule", rule2: "Rule") -> __And:
