@@ -1,5 +1,6 @@
 import copy
-from communication.channel import Channel
+from communication.channel import ReadChannel, WriteChannel, ReadWriteChannel
+from typing import Union
 
 
 class Link:
@@ -7,16 +8,25 @@ class Link:
     A link between 2 or more channels.
     """
 
-    def __init__(self, channel1: Channel, channel2: Channel, *channels: Channel):
-        self.__channels = [channel1, channel2].extend(channels)
+    def __init__(
+        self,
+        producer_channel: ReadChannel,
+        consumer_channel: Union[WriteChannel, ReadWriteChannel],
+        *consumer_channels: Union[WriteChannel, ReadWriteChannel]
+    ):
+        self.__channels = [producer_channel, consumer_channel].extend(consumer_channels)
 
     @property
     def channels(self):
         return copy.deepcopy(self.__channels)
 
 
-def link(channel1: Channel, channel2: Channel, *channels: Channel):
+def link(
+    producer_channel: ReadChannel,
+    consumer_channel: Union[WriteChannel, ReadWriteChannel],
+    *consumer_channels: Union[WriteChannel, ReadWriteChannel]
+):
     """
     Links 2 or more channels.
     """
-    return Link(channel1, channel2, *channels)
+    return Link(producer_channel, consumer_channel, *consumer_channels)
