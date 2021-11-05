@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.jsonModels
+package ch.epfl.core.compiler.models.jsonModels
 
 import upickle.default.ReadWriter
 import upickle.default.macroRW

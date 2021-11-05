@@ -1,7 +1,8 @@
 package ch.epfl.core.compiler
 
-import ch.epfl.core.compiler.jsonModels._
+import ch.epfl.core.compiler.models.jsonModels._
 import ch.epfl.core.compiler.models._
+import ch.epfl.core.compiler.parser.{JsonParser, JsonParsingException, SystemStructureException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
