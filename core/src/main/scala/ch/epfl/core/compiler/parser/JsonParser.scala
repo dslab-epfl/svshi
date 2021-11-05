@@ -1,7 +1,7 @@
 package ch.epfl.core.compiler.parser
 
 import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.models.jsonModels._
+import ch.epfl.core.compiler.parser.jsonModels._
 import scala.util.Using
 
 import scala.io.Source
