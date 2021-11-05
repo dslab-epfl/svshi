@@ -25,5 +25,16 @@ hs_err_pid*
 # VSCode
 .vscode
 
+
+.DS_Store
+
+# vscode
+/.vscode
+# metals
+.metals
+.bloop
+project/**/metals.sbt
+.bsp
+
 # pycache
 **/__pycache__
