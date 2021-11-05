@@ -32,5 +32,6 @@ if __name__ == "__main__":
     generator.generate_device_classes(device_types)
     generator.generate_device_instances(device_instances)
     generator.generate_init_files()
+    generator.copy_skeleton_to_generated_app()
 
     print("Done!")
