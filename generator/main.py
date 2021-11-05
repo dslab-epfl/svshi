@@ -1,12 +1,6 @@
 import argparse
-import subprocess
-from generator.parsing.parser import read_device_instances, read_device_types
-from generator.generation.generator import (
-    generate_device_instances,
-    generate_device_class,
-    generate_multiton_class,
-    generate_init_files,
-)
+from generator.parsing.parser import Parser
+from generator.generation.generator import Generator
 
 
 def parse_args():
@@ -24,18 +18,19 @@ def parse_args():
 
 if __name__ == "__main__":
     devices_json, app_name = parse_args()
-    device_types = read_device_types(devices_json)
+    print("Welcome to the app generator!")
+
+    print(f"Parsing the JSON file '{devices_json}'...")
+    parser = Parser(devices_json)
+    device_types = parser.read_device_types()
     device_types_map = {dt.type: dt for dt in device_types}
-    device_instances = read_device_instances(devices_json, device_types_map)
+    device_instances = parser.read_device_instances(device_types_map)
 
-    generate_multiton_class(app_name)
+    print(f"Generating the app '{app_name}'...")
+    generator = Generator(app_name)
+    generator.generate_multiton_class()
+    generator.generate_device_classes(device_types)
+    generator.generate_device_instances(device_instances)
+    generator.generate_init_files()
 
-    for dt in device_types:
-        generate_device_class(dt, app_name)
-
-    generate_device_instances(device_instances, app_name)
-
-    generate_init_files(app_name)
-
-    # Copy the skeleton to the newly generated app
-    subprocess.run(f"cp -r generator/skeleton/* {app_name}", shell=True)
+    print("Done!")
