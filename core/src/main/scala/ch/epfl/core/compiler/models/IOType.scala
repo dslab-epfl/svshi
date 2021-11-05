@@ -7,9 +7,9 @@ sealed trait IOType
 object IOType {
   def IOTypeRegex: Regex = "in|out|in/out".r
   def fromString(s: String): Option[IOType] = if(!IOTypeRegex.matches(s)) None else s match {
-    case _ if s == "in" => Some(In)
-    case _ if s == "out" => Some(Out)
-    case _ if s == "in/out" => Some(InOut)
+    case "in" => Some(In)
+    case "out" => Some(Out)
+    case "in/out" => Some(InOut)
   }
 }
 

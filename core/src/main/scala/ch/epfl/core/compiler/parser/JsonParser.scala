@@ -2,15 +2,15 @@ package ch.epfl.core.compiler.parser
 
 import ch.epfl.core.compiler.models._
 import ch.epfl.core.compiler.models.jsonModels._
+import scala.util.Using
 
 import scala.io.Source
 
 object JsonParser {
   def parse(filePath: String): PrototypicalStructure = {
-    val fileBuff = Source.fromFile(filePath)
-    val fileContent = fileBuff.getLines().toList.mkString
-    fileBuff.close()
-    constructPrototypicalStructure(parseJson(fileContent))
+    Using(Source.fromFile(filePath)) { fileBuff =>
+      constructPrototypicalStructure(parseJson(fileBuff.getLines().toList.mkString))
+    }.get
   }
 
   def constructPrototypicalStructure(parsedStructureJsonParsed: ParsedStructureJsonParsed): PrototypicalStructure = {
