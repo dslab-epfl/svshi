@@ -1,7 +1,7 @@
 package ch.epfl.core.compiler.parsers
 
 import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.parsers.appInputJsonModels._
+import ch.epfl.core.compiler.parsers.json.{AppInputJsonParser, ChannelJsonParsed, DeviceInstanceJsonParsed, DeviceTypeJsonParsed, JsonParsingException, ParsedStructureJsonParsed, SystemStructureException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

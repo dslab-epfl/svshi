@@ -1,10 +1,9 @@
-package ch.epfl.core.compiler.parsers
+package ch.epfl.core.compiler.parsers.json
 
 import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.parsers.appInputJsonModels._
-import scala.util.Using
 
 import scala.io.Source
+import scala.util.Using
 
 object AppInputJsonParser {
   def parse(filePath: String): AppPrototypicalStructure = {
