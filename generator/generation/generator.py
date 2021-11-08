@@ -90,7 +90,7 @@ def multiton(cls):
                     channel_type = "ReadWriteChannel"
                 channels_imports.add(channel_type)
                 # The first channel initialization is already indented
-                channels_init += f"{'        ' if channels_init else ''}self.{channel_name} = {channel_type}('{channel_name}', '{channel.datatype}')\n"
+                channels_init += f"{'        ' if channels_init else ''}self.{channel_name} = {channel_type}('{device_type.type}.{channel_name}', '{channel.datatype}')\n"
 
             device_type_name = device_type.type
             file = f"""
