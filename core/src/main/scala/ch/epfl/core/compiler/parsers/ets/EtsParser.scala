@@ -5,6 +5,7 @@ import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
+import scala.util.matching.Regex
 import scala.xml.{Node, XML}
 
 object EtsParser {
@@ -30,8 +31,8 @@ object EtsParser {
   val DATAPOINTTYPE_PARAM = "DatapointType"
   val NAME_PARAM = "Name"
 
-  val etsDpstRegex = "DPST-[0-9]+".r
-  val etsDptRegex = "DPT-[0-9]+".r
+  val etsDpstRegex: Regex = "DPST-[0-9]+".r
+  val etsDptRegex: Regex = "DPT-[0-9]+".r
 
   private val tempFolderPath = Path.of("temp")
   private val defaultNodeName = "Default"
