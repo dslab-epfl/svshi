@@ -1,6 +1,6 @@
 package ch.epfl.core.compiler.parsers.ets
 
-import ch.epfl.core.compiler.models.{InOut, KNXDatatype, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, PhysicalStructure, Unknown}
+import ch.epfl.core.compiler.models.{IOType, In, KNXDatatype, Out, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, PhysicalStructure, Unknown, UnknownDPT}
 import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
@@ -30,6 +30,15 @@ object EtsParser {
   val COMOBJECT_TAG = "ComObject"
   val DATAPOINTTYPE_PARAM = "DatapointType"
   val NAME_PARAM = "Name"
+  val READFLAG_PARAM = "ReadFlag"
+  val WRITEFLAG_PARAM = "WriteFlag"
+  val COMMUNICATIONFLAG_PARAM = "CommunicationFlag"
+  val TRANSMITFLAG_PARAM = "TransmitFlag"
+  val UPDATEFLAG_PARAM = "UpdateFlag"
+  val READONINITFLAG_PARAM = "ReadOnInitFlag"
+
+  val enabledText = "Enabled"
+  val disabledText = "Disabled"
 
   val etsDpstRegex: Regex = "DPST-[0-9]+".r
   val etsDptRegex: Regex = "DPT-[0-9]+".r
@@ -56,10 +65,11 @@ object EtsParser {
       val datatype = if(dpstOpt.isDefined)
         KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
       else if(dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
-      else if(parsedioPort.dpt == "") Some(Unknown)
+      else if(parsedioPort.dpt == "") Some(UnknownDPT)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
-      PhysicalDeviceChannel(parsedioPort.name, datatype.get, InOut)
+      println(parsedioPort.inOutType)
+      PhysicalDeviceChannel(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
     }
     PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
   }
@@ -135,6 +145,29 @@ object EtsParser {
     }
   })
 
+  private def getIOPortTypeFromFlags(comObjectNode: Node): String = {
+    val cFlag = (comObjectNode \@ COMMUNICATIONFLAG_PARAM) == enabledText // Tells if the device is communicating (i.e., the other flags mean something
+    val rFlag = (comObjectNode \@ READFLAG_PARAM) == enabledText
+    val tFlag = (comObjectNode \@ TRANSMITFLAG_PARAM) == enabledText
+    val wFlag = (comObjectNode \@ WRITEFLAG_PARAM) == enabledText
+    val uFlag = (comObjectNode \@ UPDATEFLAG_PARAM) == enabledText
+    val iFlag = (comObjectNode \@ READONINITFLAG_PARAM) == enabledText
+    println(comObjectNode)
+    println(s"writeFlag = $wFlag")
+
+//    if(!cFlag) throw new CommunicationFlagDisabledOnCommObject(s"Communication flag disabled for the communication object ${comObjectNode \@ ID_PARAM}")
+    if((wFlag || uFlag) && (rFlag || tFlag)) Unknown.toString else if(rFlag || tFlag){
+      // This device will either write on the bus or respond to read request --> Out
+      Out.toString
+    } else if(wFlag || uFlag){
+      // This device will overwrite its value with the one coming from the bus --> In
+      In.toString
+    } else {
+//      throw new NoFlagsOnCommObject(s"No flags set for the communication object ${comObjectNode \@ ID_PARAM}")
+      Unknown.toString
+    }
+  }
+
   private def getIOPortFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] = extractIfNotExist(etsProjectPathString, projectRootPath => {
     if (groupObjectInstanceId.nonEmpty) {
       // Get IOPort info in xmls
@@ -146,7 +179,7 @@ object EtsParser {
           val refId = (comObjectRef \@ REFID_PARAM)
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
-            case Some(value) =>  IOPort((value \@ NAME_PARAM) + " - " + (value \@ TEXT_PARAM), value \@ DATAPOINTTYPE_PARAM) :: Nil
+            case Some(value) =>  IOPort((value \@ NAME_PARAM) + " - " + (value \@ TEXT_PARAM), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value)) :: Nil
             case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
           }
         }
@@ -206,4 +239,6 @@ object EtsParser {
 
   class MalformedXMLException(msg: String) extends Exception(msg)
   class UnsupportedDatatype(msg: String) extends Exception(msg)
+  class CommunicationFlagDisabledOnCommObject(msg: String) extends Exception(msg)
+  class NoFlagsOnCommObject(msg: String) extends Exception(msg)
 }

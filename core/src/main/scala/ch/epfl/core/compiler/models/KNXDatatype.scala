@@ -43,7 +43,7 @@ case object DPT17 extends KNXDatatype
 case object DPT18 extends KNXDatatype
 case object DPT19 extends KNXDatatype
 case object DPT20 extends KNXDatatype
-case object Unknown extends KNXDatatype
+case object UnknownDPT extends KNXDatatype
 
 
 //trait KNXDatatype {

@@ -274,7 +274,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device_type = AppProtoDeviceType("device_type_1", List(
       AppProtoDeviceChannel("name", DPT1, In),
       AppProtoDeviceChannel("name2", DPT1, Out),
-      AppProtoDeviceChannel("name3", DPT1, InOut),
+      AppProtoDeviceChannel("name3", DPT1, In),
     ))
 
     AppInputJsonParser.constructPrototypicalStructure(
@@ -283,7 +283,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
           DeviceTypeJsonParsed("device_type_1", List(
             ChannelJsonParsed("name", "DPT-1.003", "in"),
             ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in/out")
+            ChannelJsonParsed("name3", "DPT-1.023", "in")
           ))
         ),
         List(
@@ -307,7 +307,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
           DeviceTypeJsonParsed("device_type_1", List(
             ChannelJsonParsed("name", "DPT-1.003", "in"),
             ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in/out")
+            ChannelJsonParsed("name3", "DPT-1.023", "in")
           ))
         ),
         List(
@@ -321,7 +321,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name", "DPT-1.003", "In")
+            ChannelJsonParsed("name", "DPT-1.003", "Ign")
           ))
         ),
         List()

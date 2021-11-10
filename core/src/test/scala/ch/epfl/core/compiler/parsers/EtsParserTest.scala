@@ -24,7 +24,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             PhysicalDeviceChannel(
               "Obj_Switching - Channel A: Switch",
               DPT1,
-              InOut
+              In
             )
           )
         ),
@@ -34,7 +34,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             PhysicalDeviceChannel(
               "Obj_Switching - Channel B: Switch",
               DPT1,
-              InOut
+              In
             )
           )
         )
@@ -48,7 +48,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceChannel("Object 1 - Object 1", DPT5, InOut))
+            List(PhysicalDeviceChannel("Object 1 - Object 1", DPT5, Unknown))
           )
         )
       )
@@ -65,46 +65,46 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             PhysicalDeviceChannel(
               "Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
               DPT5,
-              InOut
+              In
             ),
             PhysicalDeviceChannel(
               "Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
               DPT20,
-              InOut
+              In
             ),
             PhysicalDeviceChannel(
               "Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
               DPT20,
-              InOut
+              In
             ),
             PhysicalDeviceChannel(
               "Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
               DPT9,
-              InOut
+              Out
             ),
             PhysicalDeviceChannel(
               "Obj_AktuellerSollwert - RTC: Aktueller Sollwert",
               DPT9,
-              InOut
+              Out
             )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-4 - Function block 1",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S1: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S1: Schalten", DPT14, In)
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-5 - Function block 2",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S3: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S3: Schalten", DPT14, In)
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-6 - Function block 3",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S5: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S5: Schalten", DPT14, In)
           )
         ),
         PhysicalDeviceNode("Channel - CH-7 - Common functions", List())
@@ -118,10 +118,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-1 - Device clock",
           List(
-            PhysicalDeviceChannel(" - Device clock", DPT1, InOut),
-            PhysicalDeviceChannel(" - Device clock", DPT11, InOut),
-            PhysicalDeviceChannel(" - Device clock", DPT10, InOut),
-            PhysicalDeviceChannel(" - Device clock", DPT19, InOut)
+            PhysicalDeviceChannel(" - Device clock", DPT1, In),
+            PhysicalDeviceChannel(" - Device clock", DPT11, In),
+            PhysicalDeviceChannel(" - Device clock", DPT10, In),
+            PhysicalDeviceChannel(" - Device clock", DPT19, In)
           )
         )
       )
@@ -134,23 +134,23 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Default",
           List(
-            PhysicalDeviceChannel("Vanne - Vanne", Unknown, InOut),
-            PhysicalDeviceChannel("Vanne - Vanne", Unknown, InOut),
-            PhysicalDeviceChannel("Vanne - Vanne", Unknown, InOut),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
-              Unknown,
-              InOut
+              UnknownDPT,
+              In
             ),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
-              Unknown,
-              InOut
+              UnknownDPT,
+              In
             ),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
-              Unknown,
-              InOut
+              UnknownDPT,
+              In
             )
           )
         )

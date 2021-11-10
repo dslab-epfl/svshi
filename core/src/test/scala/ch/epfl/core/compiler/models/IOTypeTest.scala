@@ -12,7 +12,7 @@ class IOTypeTest extends AnyFlatSpec with Matchers {
     IOType.fromString("out") shouldEqual Some(Out)
   }
   "The fromString method" should "return InOut with valid String" in {
-    IOType.fromString("in/out") shouldEqual Some(InOut)
+    IOType.fromString("unknown") shouldEqual Some(Unknown)
   }
   "The fromString method" should "return None for invalid String 1" in {
     IOType.fromString("fdas") shouldEqual None
