@@ -123,7 +123,12 @@ object EtsParser {
   })
 
   def getDeviceInOutInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    def constructChannelNodeName(n: Node) = n \@ TYPE_PARAM + " - " + n \@ REFID_PARAM + " - " + n \@ REFID_PARAM +  " - " + n \@ TEXT_PARAM
+    def constructChannelNodeName(n: Node) ={
+      val typeText = n \@ TYPE_PARAM
+      val refIdText = n \@ REFID_PARAM
+      val textText =  n \@ TEXT_PARAM
+      List(typeText, refIdText, textText).filterNot(_ == "").mkString(" - ")
+    }
 
     val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
     deviceInstanceXMLOpt match {
@@ -181,7 +186,7 @@ object EtsParser {
           val refId = (comObjectRef \@ REFID_PARAM)
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
-            case Some(value) =>  IOPort((value \@ NAME_PARAM) + " - " + (value \@ TEXT_PARAM), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value)) :: Nil
+            case Some(value) =>  IOPort(constructIOPortName(value), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value)) :: Nil
             case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
           }
         }
@@ -192,6 +197,13 @@ object EtsParser {
       Nil
     }
   })
+
+  private def constructIOPortName(ioPortNode: Node) : String = {
+    val funText = ioPortNode \@ FUNCTIONTEXT_PARAM
+    val nameText = ioPortNode \@ NAME_PARAM
+    val textText = ioPortNode \@ TEXT_PARAM
+    List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
+  }
 
   private def productCatalogXMLFile(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): Path = extractIfNotExist(etsProjectPathString, projectRootPath => {
     val catalogId = productRefId.split('_').apply(0) // e.g., "M-0002"
