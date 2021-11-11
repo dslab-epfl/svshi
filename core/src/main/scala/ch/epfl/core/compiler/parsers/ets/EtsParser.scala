@@ -1,6 +1,6 @@
 package ch.epfl.core.compiler.parsers.ets
 
-import ch.epfl.core.compiler.models.{IOType, In, KNXDatatype, Out, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, PhysicalStructure, Unknown, UnknownDPT}
+import ch.epfl.core.compiler.models.{IOType, In, InOut, KNXDatatype, Out, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, PhysicalStructure, Unknown, UnknownDPT}
 import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
@@ -36,6 +36,7 @@ object EtsParser {
   val TRANSMITFLAG_PARAM = "TransmitFlag"
   val UPDATEFLAG_PARAM = "UpdateFlag"
   val READONINITFLAG_PARAM = "ReadOnInitFlag"
+  val FUNCTIONTEXT_PARAM = "FunctionText"
 
   val enabledText = "Enabled"
   val disabledText = "Disabled"
@@ -68,7 +69,6 @@ object EtsParser {
       else if(parsedioPort.dpt == "") Some(UnknownDPT)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
-      println(parsedioPort.inOutType)
       PhysicalDeviceChannel(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
     }
     PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
@@ -123,7 +123,7 @@ object EtsParser {
   })
 
   def getDeviceInOutInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    def constructChannelNodeName(n: Node) = n \@ TYPE_PARAM + " - " + n \@ REFID_PARAM + " - " + n \@ TEXT_PARAM
+    def constructChannelNodeName(n: Node) = n \@ TYPE_PARAM + " - " + n \@ REFID_PARAM + " - " + n \@ REFID_PARAM +  " - " + n \@ TEXT_PARAM
 
     val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
     deviceInstanceXMLOpt match {
@@ -152,14 +152,16 @@ object EtsParser {
     val wFlag = (comObjectNode \@ WRITEFLAG_PARAM) == enabledText
     val uFlag = (comObjectNode \@ UPDATEFLAG_PARAM) == enabledText
     val iFlag = (comObjectNode \@ READONINITFLAG_PARAM) == enabledText
-    println(comObjectNode)
-    println(s"writeFlag = $wFlag")
+
+    val in = wFlag || uFlag
+    val out = rFlag || tFlag
 
 //    if(!cFlag) throw new CommunicationFlagDisabledOnCommObject(s"Communication flag disabled for the communication object ${comObjectNode \@ ID_PARAM}")
-    if((wFlag || uFlag) && (rFlag || tFlag)) Unknown.toString else if(rFlag || tFlag){
+    if(in && out) InOut.toString
+    else if(out){
       // This device will either write on the bus or respond to read request --> Out
       Out.toString
-    } else if(wFlag || uFlag){
+    } else if(in){
       // This device will overwrite its value with the one coming from the bus --> In
       In.toString
     } else {

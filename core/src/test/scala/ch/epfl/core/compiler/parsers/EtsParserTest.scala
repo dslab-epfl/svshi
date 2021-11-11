@@ -14,12 +14,12 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       name = "SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC",
       address = ("1", "1", "1"),
       nodes = List(
-        PhysicalDeviceNode("Channel - CH-1 - Device settings", Nil),
-        PhysicalDeviceNode("Channel - CH-2 - Safety", Nil),
-        PhysicalDeviceNode("Channel - CH-3 - Logic/threshold", Nil),
-        PhysicalDeviceNode("Channel - CH-4 - Switch actuator template", Nil),
+        PhysicalDeviceNode("Channel - CH-1 - CH-1 - Device settings", Nil),
+        PhysicalDeviceNode("Channel - CH-2 - CH-2 - Safety", Nil),
+        PhysicalDeviceNode("Channel - CH-3 - CH-3 - Logic/threshold", Nil),
+        PhysicalDeviceNode("Channel - CH-4 - CH-4 - Switch actuator template", Nil),
         PhysicalDeviceNode(
-          "Channel - CH-5 - Switch actuator A",
+          "Channel - CH-5 - CH-5 - Switch actuator A",
           List(
             PhysicalDeviceChannel(
               "Obj_Switching - Channel A: Switch",
@@ -29,7 +29,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           )
         ),
         PhysicalDeviceNode(
-          "Channel - CH-6 - Switch actuator B",
+          "Channel - CH-6 - CH-6 - Switch actuator B",
           List(
             PhysicalDeviceChannel(
               "Obj_Switching - Channel B: Switch",
@@ -48,7 +48,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceChannel("Object 1 - Object 1", DPT5, Unknown))
+            List(PhysicalDeviceChannel("Object 1 - Object 1", DPT5, InOut))
           )
         )
       )
@@ -57,25 +57,25 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       name = "SBR/U6.0 HVAC-Gerät, 6fach BE",
       address = ("1", "1", "3"),
       nodes = List(
-        PhysicalDeviceNode("Channel - CH-1 - Device settings", List()),
-        PhysicalDeviceNode("Channel - CH-2 - Primary function", List()),
+        PhysicalDeviceNode("Channel - CH-1 - CH-1 - Device settings", List()),
+        PhysicalDeviceNode("Channel - CH-2 - CH-2 - Primary function", List()),
         PhysicalDeviceNode(
-          "Channel - CH-3 - RTC",
+          "Channel - CH-3 - CH-3 - RTC",
           List(
             PhysicalDeviceChannel(
               "Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
               DPT5,
-              In
+              Out
             ),
             PhysicalDeviceChannel(
               "Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
               DPT20,
-              In
+              InOut
             ),
             PhysicalDeviceChannel(
               "Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
               DPT20,
-              In
+              InOut
             ),
             PhysicalDeviceChannel(
               "Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
@@ -90,24 +90,24 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           )
         ),
         PhysicalDeviceNode(
-          "Channel - CH-4 - Function block 1",
+          "Channel - CH-4 - CH-4 - Function block 1",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S1: Schalten", DPT14, In)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S1: Schalten", DPT14, InOut)
           )
         ),
         PhysicalDeviceNode(
-          "Channel - CH-5 - Function block 2",
+          "Channel - CH-5 - CH-5 - Function block 2",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S3: Schalten", DPT14, In)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S3: Schalten", DPT14, InOut)
           )
         ),
         PhysicalDeviceNode(
-          "Channel - CH-6 - Function block 3",
+          "Channel - CH-6 - CH-6 - Function block 3",
           List(
-            PhysicalDeviceChannel("Obj_Wert1Bit - S5: Schalten", DPT14, In)
+            PhysicalDeviceChannel("Obj_Wert1Bit - S5: Schalten", DPT14, InOut)
           )
         ),
-        PhysicalDeviceNode("Channel - CH-7 - Common functions", List())
+        PhysicalDeviceNode("Channel - CH-7 - CH-7 - Common functions", List())
       )
     )
 
@@ -116,12 +116,12 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       address = ("1", "1", "4"),
       nodes = List(
         PhysicalDeviceNode(
-          "Channel - CH-1 - Device clock",
+          "Channel - CH-1 - CH-1 - Device clock",
           List(
-            PhysicalDeviceChannel(" - Device clock", DPT1, In),
-            PhysicalDeviceChannel(" - Device clock", DPT11, In),
-            PhysicalDeviceChannel(" - Device clock", DPT10, In),
-            PhysicalDeviceChannel(" - Device clock", DPT19, In)
+            PhysicalDeviceChannel(" - Device clock", DPT1, Unknown),
+            PhysicalDeviceChannel(" - Device clock", DPT11, Out),
+            PhysicalDeviceChannel(" - Device clock", DPT10, Out),
+            PhysicalDeviceChannel(" - Device clock", DPT19, Out)
           )
         )
       )
@@ -134,33 +134,38 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Default",
           List(
-            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
-            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
-            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, In),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceChannel("Vanne - Vanne", UnknownDPT, InOut),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
               UnknownDPT,
-              In
+              InOut
             ),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
               UnknownDPT,
-              In
+              InOut
             ),
             PhysicalDeviceChannel(
               "Indication d'état - Indication d'état",
               UnknownDPT,
-              In
+              InOut
             )
           )
         )
       )
     )
 
-    structure.deviceInstances.contains(device1) shouldEqual true
-    structure.deviceInstances.contains(device2) shouldEqual true
-    structure.deviceInstances.contains(device3) shouldEqual true
-    structure.deviceInstances.contains(device4) shouldEqual true
-    structure.deviceInstances.contains(device5) shouldEqual true
+    structure.deviceInstances.exists(p => p.name == device1.name) shouldEqual true
+    structure.deviceInstances.find(p => p.name == device1.name) shouldEqual Some(device1)
+    structure.deviceInstances.exists(p => p.name == device2.name) shouldEqual true
+    structure.deviceInstances.find(p => p.name == device2.name) shouldEqual Some(device2)
+    structure.deviceInstances.exists(p => p.name == device3.name) shouldEqual true
+    structure.deviceInstances.find(p => p.name == device3.name) shouldEqual Some(device3)
+    structure.deviceInstances.exists(p => p.name == device4.name) shouldEqual true
+    structure.deviceInstances.find(p => p.name == device4.name) shouldEqual Some(device4)
+    structure.deviceInstances.exists(p => p.name == device5.name) shouldEqual true
+    structure.deviceInstances.find(p => p.name == device5.name) shouldEqual Some(device5)
   }
 }
