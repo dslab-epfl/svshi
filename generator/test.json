@@ -2,19 +2,19 @@
   "devices": [
     {
       "name": "binary_sensor_instance_name",
-      "type": "binary"
+      "deviceType": "binary"
     },
     {
       "name": "switch_instance_name",
-      "type": "switch"
+      "deviceType": "switch"
     },
     {
       "name": "temperature_sensor_instance_name",
-      "type": "temperature"
+      "deviceType": "temperature"
     },
     {
       "name": "humidity_sensor_instance_name",
-      "type": "humidity"
+      "deviceType": "humidity"
     }
   ]
 }

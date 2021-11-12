@@ -29,7 +29,7 @@ class Parser:
 
         def to_device(d: dict) -> Device:
             name = d["name"]
-            type = d["type"]
+            type = d["deviceType"]
             import_module_name = type
             if type == "binary":
                 type = "BinarySensor"
