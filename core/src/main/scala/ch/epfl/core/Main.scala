@@ -1,8 +1,13 @@
 package ch.epfl.core
 
-object Main extends App {
-  println(greeting)
+import ch.epfl.core.compiler.parsers.ets.EtsParser
 
-  def greeting: String = "hello, SMOS!"
+object Main extends App {
+//
+//  val projectPathString = "/Users/samuel/EPFL/PdM/windows_VM/workflow_planifier_more_devices.knxproj"
+//  val listAddresses = EtsParser.explore0xmlFindListAddresses(projectPathString)
+//
+//  val physicalStructure = EtsParser.parseEtsProjectFile(projectPathString)
+//  println(physicalStructure)
 
 }

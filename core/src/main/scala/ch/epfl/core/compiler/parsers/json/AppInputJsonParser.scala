@@ -1,37 +1,36 @@
-package ch.epfl.core.compiler.parser
+package ch.epfl.core.compiler.parsers.json
 
 import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.models.jsonModels._
-import scala.util.Using
 
 import scala.io.Source
+import scala.util.Using
 
-object JsonParser {
-  def parse(filePath: String): PrototypicalStructure = {
+object AppInputJsonParser {
+  def parse(filePath: String): AppPrototypicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       constructPrototypicalStructure(parseJson(fileBuff.getLines().toList.mkString))
     }.get
   }
 
-  def constructPrototypicalStructure(parsedStructureJsonParsed: ParsedStructureJsonParsed): PrototypicalStructure = {
-    def convertChannels(parsed: ChannelJsonParsed): DeviceChannel = {
+  def constructPrototypicalStructure(parsedStructureJsonParsed: ParsedStructureJsonParsed): AppPrototypicalStructure = {
+    def convertChannels(parsed: ChannelJsonParsed): AppProtoDeviceChannel = {
       val datatypeString = KNXDatatype.datatypeRegex.findFirstIn(parsed.datatype)
       if(datatypeString.isEmpty) throw new SystemStructureException(s"The datatype ecoding is wrong for ${parsed.datatype} for channel = ${parsed.name}")
       val datatype = KNXDatatype.fromString(datatypeString.get)
       if(datatype.isEmpty) throw new SystemStructureException(s"The datatype encoding is wrong for ${parsed.datatype} or unsupported DPT for channel = ${parsed.name}")
       val ioType = IOType.fromString(parsed.typee)
       if(ioType.isEmpty) throw new SystemStructureException(s"Wrong IoType (type = ${parsed.typee}) for channel = ${parsed.name}")
-      DeviceChannel(parsed.name, datatype.get, ioType.get)
+      AppProtoDeviceChannel(parsed.name, datatype.get, ioType.get)
     }
-    def convertDeviceType(parsed: DeviceTypeJsonParsed): DeviceType = DeviceType(parsed.name, parsed.channels.map(convertChannels))
-    def convertInstances(parsed: DeviceInstanceJsonParsed, deviceTypes: List[DeviceType]): DeviceInstance = {
+    def convertDeviceType(parsed: DeviceTypeJsonParsed): AppProtoDeviceType = AppProtoDeviceType(parsed.name, parsed.channels.map(convertChannels))
+    def convertInstances(parsed: DeviceInstanceJsonParsed, deviceTypes: List[AppProtoDeviceType]): AppProtoDeviceInstance = {
       val deviceType = deviceTypes.find(t => t.name == parsed.typee)
       if(deviceType.isEmpty) throw new SystemStructureException(s"The deviceInstance $parsed has a type that has not been defined in this file.")
-      DeviceInstance(parsed.name, deviceType.get)
+      AppProtoDeviceInstance(parsed.name, deviceType.get)
     }
     val convertedTypes = parsedStructureJsonParsed.deviceTypes.map(convertDeviceType)
     val convertedInstances = parsedStructureJsonParsed.deviceInstances.map(convertInstances(_, convertedTypes))
-    PrototypicalStructure(convertedTypes, convertedInstances)
+    AppPrototypicalStructure(convertedTypes, convertedInstances)
   }
   def parseJson(jsonContent: String): ParsedStructureJsonParsed = try {
     upickle.default.read[ParsedStructureJsonParsed](jsonContent)

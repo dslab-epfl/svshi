@@ -1,7 +1,6 @@
-package ch.epfl.core.compiler.models.jsonModels
+package ch.epfl.core.compiler.parsers.json
 
-import upickle.default.ReadWriter
-import upickle.default.macroRW
+import upickle.default.{ReadWriter, macroRW}
 
 case class ChannelJsonParsed(name: String, datatype: String, @upickle.implicits.key("type") typee: String)
 object ChannelJsonParsed {

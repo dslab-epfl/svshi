@@ -1,14 +1,13 @@
-package ch.epfl.core.compiler
+package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.models.jsonModels._
 import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.parser.{JsonParser, JsonParsingException, SystemStructureException}
+import ch.epfl.core.compiler.parsers.json.{AppInputJsonParser, ChannelJsonParsed, DeviceInstanceJsonParsed, DeviceTypeJsonParsed, JsonParsingException, ParsedStructureJsonParsed, SystemStructureException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class JsonParserTest extends AnyFlatSpec with Matchers {
+class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
   "parseJson" should "return the correct ParsedStructure with correct input" in {
-    JsonParser.parseJson(
+    AppInputJsonParser.parseJson(
       """
         |{
         |    "deviceTypes":
@@ -117,7 +116,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
     )
   }
   "parseJson" should "throw JsonParsingException with incorrect input 1" in {
-    an [JsonParsingException] should be thrownBy JsonParser.parseJson(
+    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson(
       """
         |
         |    "deviceTypes":
@@ -198,7 +197,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
         |}""".stripMargin)
   }
   "parseJson" should "throw JsonParsingException with incorrect input 2" in {
-    an [JsonParsingException] should be thrownBy JsonParser.parseJson(
+    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson(
       """
         |{
         |    "deviceTypes":
@@ -269,46 +268,46 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
         |}""".stripMargin)
   }
   "parseJson" should "throw JsonParsingException with incorrect input 3" in {
-    an [JsonParsingException] should be thrownBy JsonParser.parseJson("")
+    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson("")
   }
   "constructPrototypicalStructure" should "return the correct structure for valid input 1" in {
-    val device_type = DeviceType("device_type_1", List(
-      DeviceChannel("name", DPT1, In),
-      DeviceChannel("name2", DPT1, Out),
-      DeviceChannel("name3", DPT1, InOut),
+    val device_type = AppProtoDeviceType("device_type_1", List(
+      AppProtoDeviceChannel("name", DPT1, In),
+      AppProtoDeviceChannel("name2", DPT1, Out),
+      AppProtoDeviceChannel("name3", DPT1, In),
     ))
 
-    JsonParser.constructPrototypicalStructure(
+    AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
             ChannelJsonParsed("name", "DPT-1.003", "in"),
             ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in/out")
+            ChannelJsonParsed("name3", "DPT-1.023", "in")
           ))
         ),
         List(
           DeviceInstanceJsonParsed("instance_1", "device_type_1")
         )
-      )) shouldEqual PrototypicalStructure(
+      )) shouldEqual AppPrototypicalStructure(
       List(
         device_type
       ),
       List(
-        DeviceInstance("instance_1", device_type)
+        AppProtoDeviceInstance("instance_1", device_type)
       )
     )
   }
 
   "constructPrototypicalStructure" should "throw SystemStructureException when type of instance is not defined above" in {
 
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
             ChannelJsonParsed("name", "DPT-1.003", "in"),
             ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in/out")
+            ChannelJsonParsed("name3", "DPT-1.023", "in")
           ))
         ),
         List(
@@ -318,11 +317,11 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
   }
 
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 1" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name", "DPT-1.003", "In")
+            ChannelJsonParsed("name", "DPT-1.003", "Ign")
           ))
         ),
         List()
@@ -330,7 +329,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
   }
 
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 2" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
@@ -341,7 +340,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
       ))
   }
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 3" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
@@ -353,7 +352,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
   }
 
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 4" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
@@ -364,7 +363,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
       ))
   }
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 1" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
@@ -375,7 +374,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
       ))
   }
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 2" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
@@ -386,7 +385,7 @@ class JsonParserTest extends AnyFlatSpec with Matchers {
       ))
   }
   "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 3" in {
-    an [SystemStructureException] should be thrownBy JsonParser.constructPrototypicalStructure(
+    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       ParsedStructureJsonParsed(
         List(
           DeviceTypeJsonParsed("device_type_1", List(
