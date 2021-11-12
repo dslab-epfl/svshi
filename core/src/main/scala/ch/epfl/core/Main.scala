@@ -1,8 +1,24 @@
 package ch.epfl.core
 
-object Main extends App {
-  println(greeting)
+import ch.epfl.core.compiler.parsers.ets.EtsParser
+import ch.epfl.core.models.application.ApplicationLibrary
 
-  def greeting: String = "hello, SMOS!"
+object Main extends App {
+  val libraryPath : String = "../library"
+  def loadLibrary(path: String): ApplicationLibrary = {
+    //TODO
+    ApplicationLibrary(Nil)
+  }
+
+
+
+
+
+  def main(): Unit = {
+    val library = loadLibrary(libraryPath)
+    val compiledLibrary = verifier.Verifier.verify(compiler.Compiler.compile(library))
+    // DONE
+  }
+
 
 }

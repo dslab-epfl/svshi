@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.models
+package ch.epfl.core.models.physical
 
 import scala.util.matching.Regex
 
@@ -26,23 +26,60 @@ object KNXDatatype {
     case _ => None
   }
 }
-case object DPT1 extends KNXDatatype
-case object DPT2 extends KNXDatatype
-case object DPT3 extends KNXDatatype
-case object DPT5 extends KNXDatatype
-case object DPT6 extends KNXDatatype
-case object DPT7 extends KNXDatatype
-case object DPT9 extends KNXDatatype
-case object DPT10 extends KNXDatatype
-case object DPT11 extends KNXDatatype
-case object DPT12 extends KNXDatatype
-case object DPT13 extends KNXDatatype
-case object DPT14 extends KNXDatatype
-case object DPT16 extends KNXDatatype
-case object DPT17 extends KNXDatatype
-case object DPT18 extends KNXDatatype
-case object DPT19 extends KNXDatatype
-case object DPT20 extends KNXDatatype
+case object DPT1 extends KNXDatatype {
+  override def toString = "DPT-1"
+}
+case object DPT2 extends KNXDatatype {
+  override def toString = "DPT-2"
+}
+case object DPT3 extends KNXDatatype {
+  override def toString = "DPT-3"
+}
+case object DPT5 extends KNXDatatype {
+  override def toString = "DPT-5"
+}
+case object DPT6 extends KNXDatatype {
+  override def toString = "DPT-6"
+}
+case object DPT7 extends KNXDatatype {
+  override def toString = "DPT-7"
+}
+case object DPT9 extends KNXDatatype {
+  override def toString = "DPT-9"
+}
+case object DPT10 extends KNXDatatype {
+  override def toString = "DPT-10"
+}
+case object DPT11 extends KNXDatatype {
+  override def toString = "DPT-11"
+}
+case object DPT12 extends KNXDatatype {
+  override def toString = "DPT-12"
+}
+case object DPT13 extends KNXDatatype {
+  override def toString = "DPT-13"
+}
+case object DPT14 extends KNXDatatype {
+  override def toString = "DPT-14"
+}
+case object DPT16 extends KNXDatatype {
+  override def toString = "DPT-16"
+}
+case object DPT17 extends KNXDatatype {
+  override def toString = "DPT-17"
+}
+case object DPT18 extends KNXDatatype {
+  override def toString = "DPT-18"
+}
+case object DPT19 extends KNXDatatype {
+  override def toString = "DPT-19"
+}
+case object DPT20 extends KNXDatatype {
+  override def toString = "DPT-20"
+}
+case object UnknownDPT extends KNXDatatype {
+  override def toString: String = "DPT-Unknown"
+}
 
 
 //trait KNXDatatype {
