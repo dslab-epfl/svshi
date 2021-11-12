@@ -69,6 +69,8 @@ object PhysicalStructureJsonParser {
       filePath: String,
       physicalStructure: PhysicalStructure
   ): Unit = {
+    val f = Paths.get(filePath).toFile
+    if(f.exists()) f.delete() // So that we get a fresh copy
     Files.write(
       Paths.get(filePath),
       write(
