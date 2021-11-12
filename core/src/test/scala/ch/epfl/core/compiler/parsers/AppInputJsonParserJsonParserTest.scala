@@ -1,398 +1,104 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.models._
-import ch.epfl.core.compiler.parsers.json.{AppInputJsonParser, ChannelJsonParsed, DeviceInstanceJsonParsed, DeviceTypeJsonParsed, JsonParsingException, ParsedStructureJsonParsed, SystemStructureException}
+import ch.epfl.core.compiler.parsers.json.{
+  AppInputJsonParser,
+  DeviceInstanceJson,
+  PrototypicalStructureJson
+}
+import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
   "parseJson" should "return the correct ParsedStructure with correct input" in {
-    AppInputJsonParser.parseJson(
+    val json =
       """
         |{
-        |    "deviceTypes":
+        |    "devices":
         |    [
-        |        {
-        |            "type" : "light",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "switch",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                }
-        |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "button",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "on/off",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "out"
-        |                }
-        |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "hvac",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "percent_hot",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "percent_cool",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "heat_pump_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "cool_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name": "air_temperature",
-        |                    "datatype": "DPT-9.001",
-        |                    "type": "in/out"
-        |                }
-        |
-        |            ]
-        |        }
-        |
-        |    ],
-        |    "deviceInstances":
-        |    [
-        |        {
-        |            "type": "light",
-        |            "name": "light_livingroom_1"
-        |        },
-        |        {
-        |            "type": "light",
-        |            "name": "light_bathroom_2"
-        |        },
-        |        {
-        |            "type": "hvac",
-        |            "name": "home_hvac"
-        |        }
+        |       {
+        |         "name": "device1",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device2",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device3",
+        |         "deviceType": "switch"
+        |       }
         |    ]
-        |}""".stripMargin) shouldEqual
-      ParsedStructureJsonParsed(
-      List(
-        DeviceTypeJsonParsed("light",
-          List(
-            ChannelJsonParsed("switch", "DPT-1.001", "in")
-          )
-        ),
-        DeviceTypeJsonParsed("button",
-          List(
-            ChannelJsonParsed("on/off", "DPT-1.001", "out")
-          )
-        ),
-        DeviceTypeJsonParsed("hvac",
-          List(
-            ChannelJsonParsed("percent_hot", "DPT-5.001", "in"),
-            ChannelJsonParsed("percent_cool", "DPT-5.001", "in"),
-            ChannelJsonParsed("heat_pump_on", "DPT-1.001", "in"),
-            ChannelJsonParsed("cool_on", "DPT-1.001", "in"),
-            ChannelJsonParsed("air_temperature", "DPT-9.001", "in/out")
-          )
-        )
-      ),
-        List(
-          DeviceInstanceJsonParsed("light_livingroom_1", "light"),
-          DeviceInstanceJsonParsed("light_bathroom_2", "light"),
-          DeviceInstanceJsonParsed("home_hvac", "hvac")
-        )
-    )
+        |}
+        |
+        |""".stripMargin
+
+    val device1 = DeviceInstanceJson("device1", "binary")
+    val device2 = DeviceInstanceJson("device2", "binary")
+    val device3 = DeviceInstanceJson("device3", "switch")
+    val app = PrototypicalStructureJson(List(device1, device2, device3))
+
+    AppInputJsonParser.parseJson(json) shouldEqual app
   }
-  "parseJson" should "throw JsonParsingException with incorrect input 1" in {
-    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson(
-      """
-        |
-        |    "deviceTypes":
-        |    [
-        |        {
-        |            "type" : "light",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "switch",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                }
-        |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "button",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "on/off",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "out"
-        |                }
-        |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "hvac",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "percent_hot",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "percent_cool",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "heat_pump_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "cool_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name": "air_temperature",
-        |                    "datatype": "DPT-9.001",
-        |                    "type": "in/out"
-        |                }
-        |
-        |            ]
-        |        }
-        |
-        |    ],
-        |    "deviceInstances":
-        |    [
-        |        {
-        |            "type": "light",
-        |            "name": "light_livingroom_1"
-        |        },
-        |        {
-        |            "type": "light",
-        |            "name": "light_bathroom_2"
-        |        },
-        |        {
-        |            "type": "hvac",
-        |            "name": "home_hvac"
-        |        }
-        |    ]
-        |}""".stripMargin)
-  }
-  "parseJson" should "throw JsonParsingException with incorrect input 2" in {
-    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson(
+
+  "constructPrototypicalStructure(parseJson(...))" should "throw UnsupportedDeviceException on unsupported device type" in {
+    val json =
       """
         |{
-        |    "deviceTypes":
+        |    "devices":
         |    [
-        |        {
-        |            "type" : "light",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "switch",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                }
+        |       {
+        |         "name": "device1",
+        |         "deviceType": "binarySensorHell"
+        |       },
+        |       {
+        |         "name": "device2",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device3",
+        |         "deviceType": "switch"
+        |       }
+        |    ]
+        |}
         |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "button",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "on/off",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "out"
-        |                }
-        |
-        |            ]
-        |        },
-        |        {
-        |            "type" : "hvac",
-        |            "channels" :
-        |            [
-        |                {
-        |                    "name" : "percent_hot",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "percent_cool",
-        |                    "datatype" : "DPT-5.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "heat_pump_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name" : "cool_on",
-        |                    "datatype" : "DPT-1.001",
-        |                    "type": "in"
-        |                },
-        |                {
-        |                    "name": "air_temperature",
-        |                    "datatype": "DPT-9.001",
-        |                    "type": "in/out"
-        |                }
-        |
-        |            ]
-        |        }
-        |
-        |    ],
-        |    "deviceInstances":
-        |    {
-        |       "a":10
-        |    }
-        |
-        |}""".stripMargin)
+        |""".stripMargin
+
+    an[UnsupportedDeviceException] should be thrownBy AppInputJsonParser
+      .constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
   }
-  "parseJson" should "throw JsonParsingException with incorrect input 3" in {
-    an [JsonParsingException] should be thrownBy AppInputJsonParser.parseJson("")
-  }
-  "constructPrototypicalStructure" should "return the correct structure for valid input 1" in {
-    val device_type = AppProtoDeviceType("device_type_1", List(
-      AppProtoDeviceChannel("name", DPT1, In),
-      AppProtoDeviceChannel("name2", DPT1, Out),
-      AppProtoDeviceChannel("name3", DPT1, In),
-    ))
+
+  "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure" in {
+    val json =
+      """
+        |{
+        |    "devices":
+        |    [
+        |       {
+        |         "name": "device1",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device2",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device3",
+        |         "deviceType": "switch"
+        |       }
+        |    ]
+        |}
+        |
+        |""".stripMargin
+
+    val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
+    val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
+    val device3 = AppPrototypicalDeviceInstance("device3", Switch)
+    val app = AppPrototypicalStructure(List(device1, device2, device3))
 
     AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name", "DPT-1.003", "in"),
-            ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in")
-          ))
-        ),
-        List(
-          DeviceInstanceJsonParsed("instance_1", "device_type_1")
-        )
-      )) shouldEqual AppPrototypicalStructure(
-      List(
-        device_type
-      ),
-      List(
-        AppProtoDeviceInstance("instance_1", device_type)
-      )
-    )
+      AppInputJsonParser.parseJson(json)
+    ) shouldEqual app
   }
 
-  "constructPrototypicalStructure" should "throw SystemStructureException when type of instance is not defined above" in {
-
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name", "DPT-1.003", "in"),
-            ChannelJsonParsed("name2", "DPT-1.002", "out"),
-            ChannelJsonParsed("name3", "DPT-1.023", "in")
-          ))
-        ),
-        List(
-          DeviceInstanceJsonParsed("instance_1", "device_type_unknown")
-        )
-      ))
-  }
-
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 1" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name", "DPT-1.003", "Ign")
-          ))
-        ),
-        List()
-      ))
-  }
-
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 2" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name2", "DPT-1.002", "outt")
-          ))
-        ),
-        List()
-      ))
-  }
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 3" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name2", "DPT-1.002", "")
-          ))
-        ),
-        List()
-      ))
-  }
-
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel in a type have an i/o type different from in, out, in/out 4" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name3", "DPT-1.023", "inout")
-          ))
-        ),
-        List()
-      ))
-  }
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 1" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name3", "DPT-42.023", "in")
-          ))
-        ),
-        List()
-      ))
-  }
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 2" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name3", "DPT321", "in")
-          ))
-        ),
-        List()
-      ))
-  }
-  "constructPrototypicalStructure" should "throw SystemStructureException when a channel have an unsupported DPT 3" in {
-    an [SystemStructureException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
-      ParsedStructureJsonParsed(
-        List(
-          DeviceTypeJsonParsed("device_type_1", List(
-            ChannelJsonParsed("name3", "321", "in")
-          ))
-        ),
-        List()
-      ))
-  }
 }

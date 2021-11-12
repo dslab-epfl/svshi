@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.models
+package ch.epfl.core.models.physical
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

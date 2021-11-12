@@ -1,6 +1,7 @@
 package ch.epfl.core.compiler.parsers.ets
 
-import ch.epfl.core.compiler.models.{IOType, In, InOut, KNXDatatype, Out, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, PhysicalStructure, Unknown, UnknownDPT}
+import ch.epfl.core.models.physical
+import ch.epfl.core.models.physical._
 import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
@@ -51,7 +52,7 @@ object EtsParser {
   def parseEtsProjectFile(etsProjectPathString: String) : PhysicalStructure = extractIfNotExist(etsProjectPathString, projectRootPath =>{
     val deviceAddresses = explore0xmlFindListAddresses(etsProjectPathString)
     val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPathString,  _))
-    PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
+    physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
   })
 
   private def parsedDeviceToPhysicalDevice(parsedDevice: ParsedDevice): PhysicalDevice = {
@@ -71,7 +72,7 @@ object EtsParser {
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       PhysicalDeviceChannel(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
     }
-    PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
+    physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
   }
   /**
    * Reads one device from the ETS xml project
