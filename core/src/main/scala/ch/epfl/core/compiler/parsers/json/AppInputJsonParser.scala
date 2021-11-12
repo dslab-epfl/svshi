@@ -8,12 +8,18 @@ import scala.util.Using
 object AppInputJsonParser {
   def parse(filePath: String): AppPrototypicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
-      constructPrototypicalStructure(parseJson(fileBuff.getLines().toList.mkString))
+      constructPrototypicalStructure(
+        parseJson(fileBuff.getLines().toList.mkString)
+      )
     }.get
   }
 
-  def constructPrototypicalStructure(parsedStructure: PrototypicalStructureJson): AppPrototypicalStructure = {
-    def convertDeviceInstance(deviceInstanceJson: DeviceInstanceJson): AppPrototypicalDeviceInstance = {
+  def constructPrototypicalStructure(
+      parsedStructure: PrototypicalStructureJson
+  ): AppPrototypicalStructure = {
+    def convertDeviceInstance(
+        deviceInstanceJson: DeviceInstanceJson
+    ): AppPrototypicalDeviceInstance = {
       val deviceType = SupportedDevice.fromString(deviceInstanceJson.deviceType)
       AppPrototypicalDeviceInstance(deviceInstanceJson.name, deviceType)
     }
@@ -21,8 +27,11 @@ object AppInputJsonParser {
   }
   def parseJson(jsonContent: String): PrototypicalStructureJson = try {
     upickle.default.read[PrototypicalStructureJson](jsonContent)
-  } catch{
-    case e:Exception => throw new JsonParsingException("The given Json is not parsable, it has either a syntax or the wrong structure.")
+  } catch {
+    case e: Exception =>
+      throw new JsonParsingException(
+        "The given Json is not parsable, it has either a syntax or the wrong structure."
+      )
   }
 }
 
