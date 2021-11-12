@@ -1,8 +1,7 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.models._
 import ch.epfl.core.compiler.parsers.ets.EtsParser
-import ch.epfl.core.models.physical.{DPT1, DPT10, DPT11, DPT14, DPT19, DPT20, DPT5, DPT9, In, InOut, Out, PhysicalDevice, PhysicalDeviceChannel, PhysicalDeviceNode, Unknown, UnknownDPT}
+import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
