@@ -24,6 +24,26 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString("SWITCH") shouldEqual Switch
   }
 
+  "fromString" should "return TemperatureSensor on String temperature" in {
+    SupportedDevice.fromString("temperature") shouldEqual TemperatureSensor
+  }
+  "fromString" should "return TemperatureSensor on String Temperature" in {
+    SupportedDevice.fromString("Temperature") shouldEqual TemperatureSensor
+  }
+  "fromString" should "return TemperatureSensor on String TEMPERATURE" in {
+    SupportedDevice.fromString("TEMPERATURE") shouldEqual TemperatureSensor
+  }
+
+  "fromString" should "return HumiditySensor on String humidity" in {
+    SupportedDevice.fromString("humidity") shouldEqual HumiditySensor
+  }
+  "fromString" should "return HumiditySensor on String Humidity" in {
+    SupportedDevice.fromString("Humidity") shouldEqual HumiditySensor
+  }
+  "fromString" should "return HumiditySensor on String HUMIDITY" in {
+    SupportedDevice.fromString("HUMIDITY") shouldEqual HumiditySensor
+  }
+
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {
     an [UnsupportedDeviceException] should be thrownBy  SupportedDevice.fromString("switchhhh")
   }
