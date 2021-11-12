@@ -29,7 +29,7 @@ class Generator:
             device_type_import_name = device.import_module_name
             device_name = device.name
 
-            import_statement = f"from {self.__app_name}.models.{device_type_import_name} import {device_type_name}\n"
+            import_statement = f"from models.{device_type_import_name} import {device_type_name}\n"
             if import_statement not in imports:
                 imports += import_statement
             devices_code += (
