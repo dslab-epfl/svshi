@@ -1,6 +1,8 @@
 package ch.epfl.core.compiler.parsers.json
 
-import ch.epfl.core.compiler.models._
+import ch.epfl.core.models.physical.{IOType, KNXDatatype}
+import ch.epfl.core.models.prototypical
+import ch.epfl.core.models.prototypical.{AppProtoDeviceChannel, AppProtoDeviceInstance, AppProtoDeviceType, AppPrototypicalStructure}
 
 import scala.io.Source
 import scala.util.Using
@@ -22,7 +24,7 @@ object AppInputJsonParser {
       if(ioType.isEmpty) throw new SystemStructureException(s"Wrong IoType (type = ${parsed.typee}) for channel = ${parsed.name}")
       AppProtoDeviceChannel(parsed.name, datatype.get, ioType.get)
     }
-    def convertDeviceType(parsed: DeviceTypeJsonParsed): AppProtoDeviceType = AppProtoDeviceType(parsed.name, parsed.channels.map(convertChannels))
+    def convertDeviceType(parsed: DeviceTypeJsonParsed): AppProtoDeviceType = prototypical.AppProtoDeviceType(parsed.name, parsed.channels.map(convertChannels))
     def convertInstances(parsed: DeviceInstanceJsonParsed, deviceTypes: List[AppProtoDeviceType]): AppProtoDeviceInstance = {
       val deviceType = deviceTypes.find(t => t.name == parsed.typee)
       if(deviceType.isEmpty) throw new SystemStructureException(s"The deviceInstance $parsed has a type that has not been defined in this file.")
@@ -30,7 +32,7 @@ object AppInputJsonParser {
     }
     val convertedTypes = parsedStructureJsonParsed.deviceTypes.map(convertDeviceType)
     val convertedInstances = parsedStructureJsonParsed.deviceInstances.map(convertInstances(_, convertedTypes))
-    AppPrototypicalStructure(convertedTypes, convertedInstances)
+    prototypical.AppPrototypicalStructure(convertedTypes, convertedInstances)
   }
   def parseJson(jsonContent: String): ParsedStructureJsonParsed = try {
     upickle.default.read[ParsedStructureJsonParsed](jsonContent)

@@ -1,5 +1,6 @@
 package ch.epfl.core.compiler.models
 
+import ch.epfl.core.models.physical.{GroupAddress, GroupAddresses, NoMoreAvailableGroupAddressException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

@@ -1,4 +1,6 @@
-package ch.epfl.core.compiler.models
+package ch.epfl.core.models.prototypical
+
+import ch.epfl.core.models.physical.{IOType, KNXDatatype}
 
 case class AppPrototypicalStructure(deviceTypes: List[AppProtoDeviceType], deviceInstances: List[AppProtoDeviceInstance])
 

@@ -1,6 +1,7 @@
 package ch.epfl.core.compiler.models
 
 import ch.epfl.core.Main
+import ch.epfl.core.models.physical.{IOType, In, InOut, Out, Unknown}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

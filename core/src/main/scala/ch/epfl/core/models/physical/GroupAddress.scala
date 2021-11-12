@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.models
+package ch.epfl.core.models.physical
 
 case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int)
 

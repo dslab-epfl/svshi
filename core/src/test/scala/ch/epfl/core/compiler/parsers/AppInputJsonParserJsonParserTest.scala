@@ -2,6 +2,8 @@ package ch.epfl.core.compiler.parsers
 
 import ch.epfl.core.compiler.models._
 import ch.epfl.core.compiler.parsers.json.{AppInputJsonParser, ChannelJsonParsed, DeviceInstanceJsonParsed, DeviceTypeJsonParsed, JsonParsingException, ParsedStructureJsonParsed, SystemStructureException}
+import ch.epfl.core.models.physical.{DPT1, In, Out}
+import ch.epfl.core.models.prototypical.{AppProtoDeviceChannel, AppProtoDeviceInstance, AppProtoDeviceType, AppPrototypicalStructure}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

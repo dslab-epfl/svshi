@@ -1,7 +1,7 @@
 package ch.epfl.core
 
 import ch.epfl.core.compiler.parsers.ets.EtsParser
-import ch.epfl.core.models.ApplicationLibrary
+import ch.epfl.core.models.application.ApplicationLibrary
 
 object Main extends App {
   val libraryPath : String = "../library"

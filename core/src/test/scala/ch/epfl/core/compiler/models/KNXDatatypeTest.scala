@@ -1,5 +1,6 @@
 package ch.epfl.core.compiler.models
 
+import ch.epfl.core.models.physical.{DPT1, DPT13, DPT2, DPT20, KNXDatatype}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
