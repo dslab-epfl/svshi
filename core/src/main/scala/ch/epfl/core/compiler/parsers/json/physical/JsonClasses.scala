@@ -1,6 +1,5 @@
 package ch.epfl.core.compiler.parsers.json.physical
 
-import ch.epfl.core.models.physical.PhysicalDeviceCommObject
 import upickle.default.{ReadWriter, macroRW}
 
 
