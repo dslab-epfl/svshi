@@ -10,8 +10,12 @@
       "readAddress": "3/3/3"
     },
     {
-      "name": "sensor_instance_name",
+      "name": "temperature_instance_name",
       "address": "4/4/4"
+    },
+    {
+      "name": "humidity_instance_name",
+      "address": "4/4/5"
     }
   ]
 }

@@ -10,12 +10,13 @@ from models.multiton import multiton
 
 
 @multiton
-class Sensor(Device):
+class HumiditySensor(Device):
     def __init__(self, name: str):
         self.__sensor = KnxSensor(
             KNX,
             name=name,
             group_address_state=GROUP_ADDRESSES[name]["address"],
+            value_type="percent",
         )
 
     def read(self):

@@ -9,8 +9,12 @@
       "type": "switch"
     },
     {
-      "name": "sensor_instance_name",
-      "type": "sensor"
+      "name": "temperature_sensor_instance_name",
+      "type": "temperature"
+    },
+    {
+      "name": "humidity_sensor_instance_name",
+      "type": "humidity"
     }
   ]
 }

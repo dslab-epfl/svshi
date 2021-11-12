@@ -33,8 +33,10 @@ class Parser:
             import_module_name = type
             if type == "binary":
                 type = "BinarySensor"
-            elif type == "sensor":
-                type = "Sensor"
+            elif type == "temperature":
+                type = "TemperatureSensor"
+            elif type == "humidity":
+                type = "HumiditySensor"
             elif type == "switch":
                 type = "Switch"
             else:
