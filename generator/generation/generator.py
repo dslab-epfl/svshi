@@ -5,6 +5,10 @@ import subprocess
 
 
 class Generator:
+    """
+    A Python code generator.
+    """
+
     def __init__(self, app_name: str):
         self.__app_name = app_name
 

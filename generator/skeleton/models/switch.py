@@ -12,6 +12,10 @@ from typing import Union
 
 @multiton
 class Switch(Device):
+    """
+    A switch.
+    """
+
     def __init__(self, name: str):
         self.__switch = KnxSwitch(
             KNX,

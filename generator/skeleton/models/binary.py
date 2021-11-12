@@ -12,6 +12,10 @@ from typing import Union
 
 @multiton
 class BinarySensor(Device):
+    """
+    A binary sensor.
+    """
+
     def __init__(self, name: str):
         self.__sensor = KnxBinarySensor(
             KNX,

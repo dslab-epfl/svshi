@@ -2,7 +2,11 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
+
 def multiton(cls):
+    """
+    Makes the given class a multiton.
+    """
     instances = {}
 
     def getinstance(name):

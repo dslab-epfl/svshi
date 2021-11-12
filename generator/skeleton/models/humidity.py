@@ -11,6 +11,10 @@ from models.multiton import multiton
 
 @multiton
 class HumiditySensor(Device):
+    """
+    A humidity sensor.
+    """
+
     def __init__(self, name: str):
         self.__sensor = KnxSensor(
             KNX,

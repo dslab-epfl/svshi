@@ -11,6 +11,10 @@ from models.multiton import multiton
 
 @multiton
 class TemperatureSensor(Device):
+    """
+    A temperature sensor.
+    """
+
     def __init__(self, name: str):
         self.__sensor = KnxSensor(
             KNX,
