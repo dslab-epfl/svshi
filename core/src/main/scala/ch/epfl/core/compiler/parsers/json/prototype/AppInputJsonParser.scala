@@ -1,5 +1,6 @@
-package ch.epfl.core.compiler.parsers.json
+package ch.epfl.core.compiler.parsers.json.prototype
 
+import ch.epfl.core.compiler.parsers.json.JsonParsingException
 import ch.epfl.core.models.prototypical._
 
 import scala.io.Source
@@ -35,5 +36,5 @@ object AppInputJsonParser {
   }
 }
 
-class SystemStructureException(msg: String) extends Exception(msg)
-class JsonParsingException(msg: String) extends Exception(msg)
+
+
