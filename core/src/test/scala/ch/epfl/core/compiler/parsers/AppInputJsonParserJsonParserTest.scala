@@ -1,7 +1,11 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.parsers.json.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
-import ch.epfl.core.models.prototypical.{AppPrototypicalDeviceInstance, AppPrototypicalStructure, BinarySensor, Switch, UnsupportedDeviceException}
+import ch.epfl.core.compiler.parsers.json.{
+  AppInputJsonParser,
+  DeviceInstanceJson,
+  PrototypicalStructureJson
+}
+import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -32,7 +36,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson(List(device1, device2,device3))
+    val app = PrototypicalStructureJson(List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -60,8 +64,8 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |
         |""".stripMargin
 
-
-    an [UnsupportedDeviceException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
+    an[UnsupportedDeviceException] should be thrownBy AppInputJsonParser
+      .constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
   }
 
   "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure" in {
@@ -92,7 +96,9 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
     val app = AppPrototypicalStructure(List(device1, device2, device3))
 
-    AppInputJsonParser.constructPrototypicalStructure(AppInputJsonParser.parseJson(json)) shouldEqual app
+    AppInputJsonParser.constructPrototypicalStructure(
+      AppInputJsonParser.parseJson(json)
+    ) shouldEqual app
   }
 
 }

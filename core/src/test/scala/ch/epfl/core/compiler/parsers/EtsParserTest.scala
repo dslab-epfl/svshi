@@ -92,19 +92,31 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-4 - Function block 1",
           List(
-            PhysicalDeviceChannel("Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel(
+              "Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten",
+              DPT14,
+              InOut
+            )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-5 - Function block 2",
           List(
-            PhysicalDeviceChannel("Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel(
+              "Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten",
+              DPT14,
+              InOut
+            )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-6 - Function block 3",
           List(
-            PhysicalDeviceChannel("Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten", DPT14, InOut)
+            PhysicalDeviceChannel(
+              "Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten",
+              DPT14,
+              InOut
+            )
           )
         ),
         PhysicalDeviceNode("Channel - CH-7 - Common functions", List())
@@ -134,8 +146,16 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Default",
           List(
-            PhysicalDeviceChannel("Commande % - Vanne - Vanne", UnknownDPT, InOut),
-            PhysicalDeviceChannel("Forçage % - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceChannel(
+              "Commande % - Vanne - Vanne",
+              UnknownDPT,
+              InOut
+            ),
+            PhysicalDeviceChannel(
+              "Forçage % - Vanne - Vanne",
+              UnknownDPT,
+              InOut
+            ),
             PhysicalDeviceChannel("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
             PhysicalDeviceChannel(
               "Position vanne % - Indication d'état - Indication d'état",
@@ -157,15 +177,35 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       )
     )
 
-    structure.deviceInstances.exists(p => p.name == device1.name) shouldEqual true
-    structure.deviceInstances.find(p => p.name == device1.name) shouldEqual Some(device1)
-    structure.deviceInstances.exists(p => p.name == device2.name) shouldEqual true
-    structure.deviceInstances.find(p => p.name == device2.name) shouldEqual Some(device2)
-    structure.deviceInstances.exists(p => p.name == device3.name) shouldEqual true
-    structure.deviceInstances.find(p => p.name == device3.name) shouldEqual Some(device3)
-    structure.deviceInstances.exists(p => p.name == device4.name) shouldEqual true
-    structure.deviceInstances.find(p => p.name == device4.name) shouldEqual Some(device4)
-    structure.deviceInstances.exists(p => p.name == device5.name) shouldEqual true
-    structure.deviceInstances.find(p => p.name == device5.name) shouldEqual Some(device5)
+    structure.deviceInstances.exists(p =>
+      p.name == device1.name
+    ) shouldEqual true
+    structure.deviceInstances.find(p =>
+      p.name == device1.name
+    ) shouldEqual Some(device1)
+    structure.deviceInstances.exists(p =>
+      p.name == device2.name
+    ) shouldEqual true
+    structure.deviceInstances.find(p =>
+      p.name == device2.name
+    ) shouldEqual Some(device2)
+    structure.deviceInstances.exists(p =>
+      p.name == device3.name
+    ) shouldEqual true
+    structure.deviceInstances.find(p =>
+      p.name == device3.name
+    ) shouldEqual Some(device3)
+    structure.deviceInstances.exists(p =>
+      p.name == device4.name
+    ) shouldEqual true
+    structure.deviceInstances.find(p =>
+      p.name == device4.name
+    ) shouldEqual Some(device4)
+    structure.deviceInstances.exists(p =>
+      p.name == device5.name
+    ) shouldEqual true
+    structure.deviceInstances.find(p =>
+      p.name == device5.name
+    ) shouldEqual Some(device5)
   }
 }
