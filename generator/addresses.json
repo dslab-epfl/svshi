@@ -1,16 +1,17 @@
 {
-  "devices": [
+  "addresses": [
     {
       "name": "binary_sensor_instance_name",
-      "type": "binary"
+      "address": "1/1/1"
     },
     {
       "name": "switch_instance_name",
-      "type": "switch"
+      "writeAddress": "2/2/2",
+      "readAddress": "3/3/3"
     },
     {
       "name": "sensor_instance_name",
-      "type": "sensor"
+      "address": "4/4/4"
     }
   ]
 }

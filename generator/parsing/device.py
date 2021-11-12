@@ -1,14 +1,5 @@
-from typing import List
-from generator.parsing.channel import Channel
-
-
-class DeviceType:
-    def __init__(self, type: str, channels: List[Channel]):
-        self.type = type
-        self.channels = channels
-
-
-class DeviceInstance:
-    def __init__(self, name: str, device_type: DeviceType):
+class Device:
+    def __init__(self, name: str, type: str, import_module_name: str):
         self.name = name
-        self.device_type = device_type
+        self.type = type
+        self.import_module_name = import_module_name

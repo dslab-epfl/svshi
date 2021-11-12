@@ -22,15 +22,11 @@ if __name__ == "__main__":
 
     print(f"Parsing the JSON file '{devices_json}'...")
     parser = Parser(devices_json)
-    device_types = parser.read_device_types()
-    device_types_map = {dt.type: dt for dt in device_types}
-    device_instances = parser.read_device_instances(device_types_map)
+    devices = parser.read_devices()
 
     print(f"Generating the app '{app_name}'...")
     generator = Generator(app_name)
-    generator.generate_multiton_class()
-    generator.generate_device_classes(device_types)
-    generator.generate_device_instances(device_instances)
+    generator.generate_device_instances(devices)
     generator.generate_init_files()
     generator.copy_skeleton_to_generated_app()
 
