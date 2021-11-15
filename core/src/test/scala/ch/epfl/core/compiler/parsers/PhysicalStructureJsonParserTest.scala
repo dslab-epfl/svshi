@@ -1,6 +1,9 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser.{constructPhysicalStructure, parseJson}
+import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser.{
+  constructPhysicalStructure,
+  parseJson
+}
 import ch.epfl.core.compiler.parsers.json.physical._
 import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -392,7 +395,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         )
       )
     )
-    val physicalStructure = PhysicalStructure(List(device1After, device2After, device3After))
+    val physicalStructure =
+      PhysicalStructure(List(device1After, device2After, device3After))
     val filePath = "res/test_physicalJson.txt"
     PhysicalStructureJsonParser.writeToFile(filePath, physicalStructure)
     Using(Source.fromFile(filePath)) { fileBuff =>

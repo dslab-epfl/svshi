@@ -8,18 +8,19 @@ import scala.util.Using
 
 object FileUtils {
 
-  /**
-   * The suffix append to the end of a ETS project file name when unzipped
-   * @return
-   */
+  /** The suffix append to the end of a ETS project file name when unzipped
+    * @return
+    */
   def unzippedSuffix: String = "_unzip_temp"
 
-  /**
-   * Unzip the archive at the given path
-   * @param zipPathString
-   * @return outputPath
-   */
-  def unzip(zipPathString: String, outputFolderPathString: String): Option[Path] = {
+  /** Unzip the archive at the given path
+    * @param zipPathString
+    * @return outputPath
+    */
+  def unzip(
+      zipPathString: String,
+      outputFolderPathString: String
+  ): Option[Path] = {
     Using(new ZipFile(Path.of(zipPathString).toFile)) { zipFile =>
       for (entry <- zipFile.entries.asScala) {
         val path = Path.of(outputFolderPathString).resolve(entry.getName)
@@ -34,12 +35,10 @@ object FileUtils {
     }.getOrElse(None)
   }
 
-
-  /**
-   * List all files in the given directory recursively
-   * @param f a directory
-   * @return
-   */
+  /** List all files in the given directory recursively
+    * @param f a directory
+    * @return
+    */
   def recursiveListFiles(f: File): Array[File] = {
     val these = f.listFiles
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)

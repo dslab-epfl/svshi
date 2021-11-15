@@ -130,7 +130,11 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-1 - Device clock",
           List(
-            PhysicalDeviceCommObject("Request time - Device clock", DPT1, Unknown),
+            PhysicalDeviceCommObject(
+              "Request time - Device clock",
+              DPT1,
+              Unknown
+            ),
             PhysicalDeviceCommObject("Date - Device clock", DPT11, Out),
             PhysicalDeviceCommObject("Time - Device clock", DPT10, Out),
             PhysicalDeviceCommObject("Date/Time - Device clock", DPT19, Out)
@@ -156,7 +160,11 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
               UnknownDPT,
               InOut
             ),
-            PhysicalDeviceCommObject("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceCommObject(
+              "Arrêt - Vanne - Vanne",
+              UnknownDPT,
+              InOut
+            ),
             PhysicalDeviceCommObject(
               "Position vanne % - Indication d'état - Indication d'état",
               UnknownDPT,

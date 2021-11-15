@@ -35,6 +35,3 @@ object AppInputJsonParser {
       )
   }
 }
-
-
-

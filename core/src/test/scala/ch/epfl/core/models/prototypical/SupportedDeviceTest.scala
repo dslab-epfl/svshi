@@ -45,7 +45,8 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
 
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {
-    an [UnsupportedDeviceException] should be thrownBy  SupportedDevice.fromString("switchhhh")
+    an[UnsupportedDeviceException] should be thrownBy SupportedDevice
+      .fromString("switchhhh")
   }
 
 }

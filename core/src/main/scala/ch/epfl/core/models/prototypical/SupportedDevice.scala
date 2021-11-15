@@ -1,19 +1,20 @@
 package ch.epfl.core.models.prototypical
 
-sealed trait SupportedDevice {
-
-}
+sealed trait SupportedDevice {}
 object SupportedDevice {
   final val binarySensorString = "binary"
   final val switchString = "switch"
   final val temperatureSensor = "temperature"
   final val humiditySensor = "humidity"
-  def fromString(s: String) : SupportedDevice = s.toLowerCase match {
+  def fromString(s: String): SupportedDevice = s.toLowerCase match {
     case SupportedDevice.binarySensorString => BinarySensor
-    case SupportedDevice.switchString => Switch
-    case SupportedDevice.temperatureSensor => TemperatureSensor
-    case SupportedDevice.humiditySensor => HumiditySensor
-    case _ => throw new UnsupportedDeviceException(s"The device $s is not supported by Pistis!")
+    case SupportedDevice.switchString       => Switch
+    case SupportedDevice.temperatureSensor  => TemperatureSensor
+    case SupportedDevice.humiditySensor     => HumiditySensor
+    case _ =>
+      throw new UnsupportedDeviceException(
+        s"The device $s is not supported by Pistis!"
+      )
   }
 }
 
