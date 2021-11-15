@@ -5,64 +5,26 @@ import scala.util.matching.Regex
 sealed trait KNXDatatype
 object KNXDatatype {
   def datatypeRegex: Regex = "DPT-[0-9]+".r
-  def fromString(s: String): Option[KNXDatatype] = if (
-    datatypeRegex.findFirstIn(s).isEmpty
-  ) None
-  else
-    s match {
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1 =>
-        Some(DPT1)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2 =>
-        Some(DPT2)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3 =>
-        Some(DPT3)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 5 =>
-        Some(DPT5)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 6 =>
-        Some(DPT6)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 7 =>
-        Some(DPT7)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 9 =>
-        Some(DPT9)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 10 =>
-        Some(DPT10)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 11 =>
-        Some(DPT11)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 12 =>
-        Some(DPT12)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 13 =>
-        Some(DPT13)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 14 =>
-        Some(DPT14)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 16 =>
-        Some(DPT16)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 17 =>
-        Some(DPT17)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 18 =>
-        Some(DPT18)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 19 =>
-        Some(DPT19)
-      case _
-          if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 20 =>
-        Some(DPT20)
-      case _ => None
-    }
+  def fromString(s: String): Option[KNXDatatype] = if(datatypeRegex.findFirstIn(s).isEmpty) None else s match {
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1 => Some(DPT1)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2 => Some(DPT2)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3 => Some(DPT3)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 5 => Some(DPT5)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 6 => Some(DPT6)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 7 => Some(DPT7)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 9 => Some(DPT9)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 10 => Some(DPT10)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 11 => Some(DPT11)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 12 => Some(DPT12)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 13 => Some(DPT13)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 14 => Some(DPT14)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 16 => Some(DPT16)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 17 => Some(DPT17)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 18 => Some(DPT18)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 19 => Some(DPT19)
+    case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 20 => Some(DPT20)
+    case _ => None
+  }
 }
 case object DPT1 extends KNXDatatype {
   override def toString = "DPT-1"
@@ -118,6 +80,7 @@ case object DPT20 extends KNXDatatype {
 case object UnknownDPT extends KNXDatatype {
   override def toString: String = "DPT-Unknown"
 }
+
 
 //trait KNXDatatype {
 //  def fromString(s: String): Option[KNXDatatype] = s match {

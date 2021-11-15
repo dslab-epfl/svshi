@@ -70,12 +70,11 @@ object PhysicalStructureJsonParser {
       physicalStructure: PhysicalStructure
   ): Unit = {
     val f = Paths.get(filePath).toFile
-    if (f.exists()) f.delete() // So that we get a fresh copy
+    if(f.exists()) f.delete() // So that we get a fresh copy
     Files.write(
       Paths.get(filePath),
       write(
-        physicalStructureToJson(physicalStructure),
-        indent = 2
+        physicalStructureToJson(physicalStructure),  indent = 2
       ) getBytes StandardCharsets.UTF_8
     )
   }
