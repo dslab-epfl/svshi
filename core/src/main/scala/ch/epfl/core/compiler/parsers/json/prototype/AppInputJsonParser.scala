@@ -15,12 +15,8 @@ object AppInputJsonParser {
     }.get
   }
 
-  def constructPrototypicalStructure(
-      parsedStructure: PrototypicalStructureJson
-  ): AppPrototypicalStructure = {
-    def convertDeviceInstance(
-        deviceInstanceJson: DeviceInstanceJson
-    ): AppPrototypicalDeviceInstance = {
+  def constructPrototypicalStructure(parsedStructure: PrototypicalStructureJson): AppPrototypicalStructure = {
+    def convertDeviceInstance(deviceInstanceJson: DeviceInstanceJson): AppPrototypicalDeviceInstance = {
       val deviceType = SupportedDevice.fromString(deviceInstanceJson.deviceType)
       AppPrototypicalDeviceInstance(deviceInstanceJson.name, deviceType)
     }
@@ -30,8 +26,6 @@ object AppInputJsonParser {
     upickle.default.read[PrototypicalStructureJson](jsonContent)
   } catch {
     case e: Exception =>
-      throw new JsonParsingException(
-        "The given Json is not parsable, it has either a syntax error or the wrong structure."
-      )
+      throw new JsonParsingException("The given Json is not parsable, it has either a syntax error or the wrong structure.")
   }
 }
