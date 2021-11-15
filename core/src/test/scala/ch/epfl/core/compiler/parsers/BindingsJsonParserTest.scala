@@ -5,7 +5,6 @@ import ch.epfl.core.compiler.parsers.json.bindings.BindingsJsonParser
 import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import upickle.default.{write, macroRW, ReadWriter}
 
 class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
   "parse" should "return the right structure given a valid file" in {
@@ -31,6 +30,8 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 38))
       ))
     ))
-    println(write(expected, indent = 2))
+    BindingsJsonParser.writeToFile("res/test_bindings_json_parser_write.json", expected)
+    val res = BindingsJsonParser.parse("res/test_bindings_json_parser_write.json")
+    res shouldEqual expected
   }
 }

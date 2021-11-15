@@ -12,29 +12,26 @@ object SupportedDeviceBinding {
   implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)
 }
 
-case class BinarySensorBinding(typeString: String, bsPhysDeviceId: Int) extends SupportedDeviceBinding
+case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding
 object BinarySensorBinding {
   implicit val rw: ReadWriter[BinarySensorBinding] =
     macroRW[BinarySensorBinding]
 }
-case class SwitchBinding(typeString: String, swWritePhysDeviceId: Int, swReadPhysDeviceId: Int) extends SupportedDeviceBinding
+case class SwitchBinding(typeString: String, writePhysDeviceId: Int, readPhysDeviceId: Int) extends SupportedDeviceBinding
 object SwitchBinding {
   implicit val rw: ReadWriter[SwitchBinding] =
     macroRW[SwitchBinding]
 }
-case class TemperatureSensorBinding(typeString: String, tsPhysDeviceId: Int) extends SupportedDeviceBinding
+case class TemperatureSensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding
 object TemperatureSensorBinding {
   implicit val rw: ReadWriter[TemperatureSensorBinding] =
     macroRW[TemperatureSensorBinding]
 }
-case class HumiditySensorBinding(typeString: String, hsPhysDeviceId: Int) extends SupportedDeviceBinding
+case class HumiditySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding
 object HumiditySensorBinding {
   implicit val rw: ReadWriter[HumiditySensorBinding] =
     macroRW[HumiditySensorBinding]
 }
-
-
-
 
 case class DeviceInstanceBinding(name: String, binding: SupportedDeviceBinding)
 object DeviceInstanceBinding {
