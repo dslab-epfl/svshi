@@ -1,0 +1,42 @@
+{
+  "appBindings": [
+    {
+      "name": "app1",
+      "bindings": [
+        {
+          "name": "device1",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "bsPhysDeviceId": 42
+          }
+        },
+        {
+          "name": "device2",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.SwitchBinding",
+            "typeString": "switch",
+            "swWritePhysDeviceId": 41,
+            "swReadPhysDeviceId": 40
+          }
+        },
+        {
+          "name": "device3",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.TemperatureSensorBinding",
+            "typeString": "temperature",
+            "tsPhysDeviceId": 39
+          }
+        },
+        {
+          "name": "device4",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.HumiditySensorBinding",
+            "typeString": "humidity",
+            "hsPhysDeviceId": 38
+          }
+        }
+      ]
+    }
+  ]
+}

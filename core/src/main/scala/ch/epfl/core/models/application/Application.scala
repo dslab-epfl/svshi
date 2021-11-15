@@ -1,3 +1,5 @@
 package ch.epfl.core.models.application
 
-case class Application(name: String, appFolderPath: String)
+import ch.epfl.core.models.prototypical.AppPrototypicalStructure
+
+case class Application(name: String, appFolderPath: String, appProtoStructure: AppPrototypicalStructure)

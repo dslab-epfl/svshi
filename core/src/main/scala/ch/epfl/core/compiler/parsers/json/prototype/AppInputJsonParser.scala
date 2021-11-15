@@ -7,6 +7,8 @@ import scala.io.Source
 import scala.util.Using
 
 object AppInputJsonParser {
+  val APP_PROTO_JSON_RELATIVE_PATH = "app_prototypical_structure.json"
+
   def parse(filePath: String): AppPrototypicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       constructPrototypicalStructure(
