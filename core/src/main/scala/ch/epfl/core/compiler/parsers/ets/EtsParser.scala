@@ -61,7 +61,7 @@ object EtsParser {
      * @param parsedioPort
      * @return
      */
-    def ioPortToPhysicalChannel(parsedioPort: IOPort): PhysicalDeviceChannel = {
+    def ioPortToPhysicalChannel(parsedioPort: IOPort): PhysicalDeviceCommObject = {
       val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
       val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
       val datatype = if(dpstOpt.isDefined)
@@ -70,7 +70,7 @@ object EtsParser {
       else if(parsedioPort.dpt == "") Some(UnknownDPT)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
-      PhysicalDeviceChannel(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
+      PhysicalDeviceCommObject(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
     }
     physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
   }

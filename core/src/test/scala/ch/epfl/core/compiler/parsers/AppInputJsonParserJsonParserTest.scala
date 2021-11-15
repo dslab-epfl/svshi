@@ -1,10 +1,6 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.parsers.json.{
-  AppInputJsonParser,
-  DeviceInstanceJson,
-  PrototypicalStructureJson
-}
+import ch.epfl.core.compiler.parsers.json.prototype.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
 import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

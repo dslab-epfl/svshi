@@ -21,7 +21,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-5 - Switch actuator A",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Switch - Obj_Switching - Channel A: Switch",
               DPT1,
               In
@@ -31,7 +31,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-6 - Switch actuator B",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Switch - Obj_Switching - Channel B: Switch",
               DPT1,
               In
@@ -48,7 +48,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceChannel("Object 1 - Object 1", DPT5, InOut))
+            List(PhysicalDeviceCommObject("Object 1 - Object 1", DPT5, InOut))
           )
         )
       )
@@ -62,27 +62,27 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-3 - RTC",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ausgang - Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
               DPT5,
               Out
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ein-/Ausgang - Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
               DPT20,
               InOut
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Eingang - Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
               DPT20,
               InOut
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ausgang - Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
               DPT9,
               Out
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ausgang - Obj_AktuellerSollwert - RTC: Aktueller Sollwert",
               DPT9,
               Out
@@ -92,7 +92,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-4 - Function block 1",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten",
               DPT14,
               InOut
@@ -102,7 +102,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-5 - Function block 2",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten",
               DPT14,
               InOut
@@ -112,7 +112,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-6 - Function block 3",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten",
               DPT14,
               InOut
@@ -130,10 +130,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-1 - Device clock",
           List(
-            PhysicalDeviceChannel("Request time - Device clock", DPT1, Unknown),
-            PhysicalDeviceChannel("Date - Device clock", DPT11, Out),
-            PhysicalDeviceChannel("Time - Device clock", DPT10, Out),
-            PhysicalDeviceChannel("Date/Time - Device clock", DPT19, Out)
+            PhysicalDeviceCommObject("Request time - Device clock", DPT1, Unknown),
+            PhysicalDeviceCommObject("Date - Device clock", DPT11, Out),
+            PhysicalDeviceCommObject("Time - Device clock", DPT10, Out),
+            PhysicalDeviceCommObject("Date/Time - Device clock", DPT19, Out)
           )
         )
       )
@@ -146,28 +146,28 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Default",
           List(
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Commande % - Vanne - Vanne",
               UnknownDPT,
               InOut
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Forçage % - Vanne - Vanne",
               UnknownDPT,
               InOut
             ),
-            PhysicalDeviceChannel("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceCommObject(
               "Position vanne % - Indication d'état - Indication d'état",
               UnknownDPT,
               InOut
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Valeur commande la plus élevée - Indication d'état - Indication d'état",
               UnknownDPT,
               InOut
             ),
-            PhysicalDeviceChannel(
+            PhysicalDeviceCommObject(
               "Présence / Absence commande - Indication d'état - Indication d'état",
               UnknownDPT,
               InOut
