@@ -23,22 +23,20 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-5 - Switch actuator A",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Switch - Obj_Switching - Channel A: Switch",
               DPT1,
-              In,
-              MurmurHash3.listHash(List("Switch - Obj_Switching - Channel A: Switch", DPT1, In), MurmurHash3.seqSeed)
+              In
             )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-6 - Switch actuator B",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Switch - Obj_Switching - Channel B: Switch",
               DPT1,
-              In,
-              MurmurHash3.listHash(List("Switch - Obj_Switching - Channel B: Switch", DPT1, In), MurmurHash3.seqSeed)
+              In
             )
           )
         )
@@ -52,7 +50,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceCommObject("Object 1 - Object 1", DPT5, InOut,MurmurHash3.listHash(List("Object 1 - Object 1", DPT5, InOut), MurmurHash3.seqSeed)))
+            List(PhysicalDeviceCommObject.from("Object 1 - Object 1", DPT5, InOut))
           )
         )
       )
@@ -66,59 +64,50 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-3 - RTC",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ausgang - Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
               DPT5,
-              Out,
-              MurmurHash3.listHash(List("Ausgang - Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen", DPT5, Out), MurmurHash3.seqSeed)
+              Out
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ein-/Ausgang - Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
               DPT20,
-              InOut,
-              MurmurHash3.listHash(List("Ein-/Ausgang - Obj_Betriebsart_Single - RTC: Betriebsmodus Normal", DPT20, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Eingang - Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
               DPT20,
-              InOut,
-              MurmurHash3.listHash(List("Eingang - Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung", DPT20, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ausgang - Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
               DPT9,
-              Out,
-              MurmurHash3.listHash(List("Ausgang - Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur", DPT9, Out), MurmurHash3.seqSeed)
-
+              Out
           ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ausgang - Obj_AktuellerSollwert - RTC: Aktueller Sollwert",
               DPT9,
-              Out,
-              MurmurHash3.listHash(List("Ausgang - Obj_AktuellerSollwert - RTC: Aktueller Sollwert", DPT9, Out), MurmurHash3.seqSeed)
-
+              Out
             )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-4 - Function block 1",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten",
               DPT14,
-              InOut,
-              MurmurHash3.listHash(List("Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten", DPT14, InOut), MurmurHash3.seqSeed)
+              InOut
             )
           )
         ),
         PhysicalDeviceNode(
           "Channel - CH-5 - Function block 2",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten",
               DPT14,
-              InOut,
-              MurmurHash3.listHash(List("Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten", DPT14, InOut), MurmurHash3.seqSeed)
+              InOut
 
             )
           )
@@ -126,12 +115,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-6 - Function block 3",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten",
               DPT14,
-              InOut,
-              MurmurHash3.listHash(List("Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten", DPT14, InOut), MurmurHash3.seqSeed)
-
+              InOut
             )
           )
         ),
@@ -146,11 +133,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Channel - CH-1 - Device clock",
           List(
-            PhysicalDeviceCommObject("Request time - Device clock", DPT1, Unknown, MurmurHash3.listHash(List("Request time - Device clock", DPT1, Unknown), MurmurHash3.seqSeed)
-            ),
-            PhysicalDeviceCommObject("Date - Device clock", DPT11, Out, MurmurHash3.listHash(List("Date - Device clock", DPT11, Out), MurmurHash3.seqSeed)),
-            PhysicalDeviceCommObject("Time - Device clock", DPT10, Out, MurmurHash3.listHash(List("Time - Device clock", DPT10, Out), MurmurHash3.seqSeed)),
-            PhysicalDeviceCommObject("Date/Time - Device clock", DPT19, Out, MurmurHash3.listHash(List("Date/Time - Device clock", DPT19, Out), MurmurHash3.seqSeed))
+            PhysicalDeviceCommObject.from("Request time - Device clock", DPT1, Unknown),
+            PhysicalDeviceCommObject.from("Date - Device clock", DPT11, Out),
+            PhysicalDeviceCommObject.from("Time - Device clock", DPT10, Out),
+            PhysicalDeviceCommObject.from("Date/Time - Device clock", DPT19, Out)
           )
         )
       )
@@ -163,36 +149,31 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "Default",
           List(
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Commande % - Vanne - Vanne",
               UnknownDPT,
-              InOut,
-              MurmurHash3.listHash(List("Commande % - Vanne - Vanne", UnknownDPT, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Forçage % - Vanne - Vanne",
               UnknownDPT,
-              InOut,
-              MurmurHash3.listHash(List("Forçage % - Vanne - Vanne", UnknownDPT, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject("Arrêt - Vanne - Vanne", UnknownDPT, InOut, MurmurHash3.listHash(List("Arrêt - Vanne - Vanne", UnknownDPT, InOut), MurmurHash3.seqSeed)),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceCommObject.from(
               "Position vanne % - Indication d'état - Indication d'état",
               UnknownDPT,
-              InOut,
-              MurmurHash3.listHash(List("Position vanne % - Indication d'état - Indication d'état", UnknownDPT, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Valeur commande la plus élevée - Indication d'état - Indication d'état",
               UnknownDPT,
-              InOut,
-              MurmurHash3.listHash(List("Valeur commande la plus élevée - Indication d'état - Indication d'état", UnknownDPT, InOut), MurmurHash3.seqSeed)
+              InOut
             ),
-            PhysicalDeviceCommObject(
+            PhysicalDeviceCommObject.from(
               "Présence / Absence commande - Indication d'état - Indication d'état",
               UnknownDPT,
-              InOut,
-              MurmurHash3.listHash(List("Présence / Absence commande - Indication d'état - Indication d'état", UnknownDPT, InOut), MurmurHash3.seqSeed)
+              InOut
             )
           )
         )

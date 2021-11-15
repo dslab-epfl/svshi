@@ -73,8 +73,7 @@ object EtsParser {
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
-      val id = MurmurHash3.listHash(List(parsedioPort.name, datatype.get, ioType), MurmurHash3.seqSeed)
-      PhysicalDeviceCommObject(parsedioPort.name, datatype.get, ioType, id)
+      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType)
     }
     physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
   }

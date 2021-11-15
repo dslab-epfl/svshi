@@ -23,7 +23,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 11))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
         )
       )
     )
