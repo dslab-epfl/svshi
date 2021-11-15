@@ -28,7 +28,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         |                   {
         |                     "name": "device1Node1ComObj1",
         |                     "datatype": "DPT-1",
-        |                     "ioType" : "in"
+        |                     "ioType" : "in",
+        |                     "id": 111
         |                   }
         |                 ]
         |             }
@@ -46,12 +47,14 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         |                   {
         |                     "name": "device2Node1ComObj1",
         |                     "datatype": "DPT-2",
-        |                     "ioType" : "out"
+        |                     "ioType" : "out",
+        |                     "id": 211
         |                   },
         |                   {
         |                     "name": "device2Node1ComObj2",
         |                     "datatype": "DPT-5",
-        |                     "ioType" : "in"
+        |                     "ioType" : "in",
+        |                     "id": 212
         |                   }
         |                 ]
         |             }
@@ -69,7 +72,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device1Node1",
           List(
-            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in")
+            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in", 111)
           )
         )
       )
@@ -81,8 +84,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device2Node1",
           List(
-            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out", 211),
+            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in", 212)
           )
         )
       )
@@ -99,7 +102,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device1Node1",
           List(
-            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in")
+            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in", 111)
           )
         )
       )
@@ -111,8 +114,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device2Node1",
           List(
-            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out", 211),
+            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in", 212)
           )
         )
       )
@@ -124,18 +127,19 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device3Node1",
           List(
-            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out", 311),
+            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in", 312)
           )
         ),
         PhysicalDeviceNodeJson(
           "device3Node2",
           List(
-            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in"),
+            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in", 321),
             PhysicalDeviceCommObjectJson(
               "device3Node2ComObj2",
               "DPT-12",
-              "in/out"
+              "in/out",
+              322
             )
           )
         )
@@ -149,7 +153,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
         )
       )
     )
@@ -160,8 +164,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
           )
         )
       )
@@ -173,15 +177,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
           )
         )
       )
@@ -202,7 +206,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device1Node1",
           List(
-            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in")
+            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in", 111)
           )
         )
       )
@@ -214,8 +218,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device2Node1",
           List(
-            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out", 211),
+            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in", 212)
           )
         )
       )
@@ -227,18 +231,19 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device3Node1",
           List(
-            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out", 311),
+            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in", 312)
           )
         ),
         PhysicalDeviceNodeJson(
           "device3Node2",
           List(
-            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in"),
+            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in", 321),
             PhysicalDeviceCommObjectJson(
               "device3Node2ComObj2",
               "DPT-12",
-              "in/out"
+              "in/out",
+              322
             )
           )
         )
@@ -252,7 +257,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
         )
       )
     )
@@ -263,8 +268,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
           )
         )
       )
@@ -276,15 +281,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
           )
         )
       )
@@ -305,7 +310,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device1Node1",
           List(
-            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in")
+            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in", 111)
           )
         )
       )
@@ -317,8 +322,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device2Node1",
           List(
-            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out", 211),
+            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-5", "in", 212)
           )
         )
       )
@@ -330,18 +335,19 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device3Node1",
           List(
-            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out"),
-            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in")
+            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out", 311),
+            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in", 312)
           )
         ),
         PhysicalDeviceNodeJson(
           "device3Node2",
           List(
-            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in"),
+            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in", 321),
             PhysicalDeviceCommObjectJson(
               "device3Node2ComObj2",
               "DPT-12",
-              "in/out"
+              "in/out",
+              322
             )
           )
         )
@@ -355,7 +361,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
         )
       )
     )
@@ -366,8 +372,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
           )
         )
       )
@@ -379,15 +385,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
           )
         )
       )

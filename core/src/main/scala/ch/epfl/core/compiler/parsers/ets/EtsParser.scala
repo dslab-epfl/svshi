@@ -6,6 +6,7 @@ import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
+import scala.util.hashing.MurmurHash3
 import scala.util.matching.Regex
 import scala.xml.{Node, XML}
 
@@ -58,6 +59,7 @@ object EtsParser {
   private def parsedDeviceToPhysicalDevice(parsedDevice: ParsedDevice): PhysicalDevice = {
     /**
      * DPT types can be either format DPST-X-Y or DPT-X
+     * The id is the hash using MurmurHash3 on List(name, datatype, ioType)
      * @param parsedioPort
      * @return
      */
@@ -70,7 +72,9 @@ object EtsParser {
       else if(parsedioPort.dpt == "") Some(UnknownDPT)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
-      PhysicalDeviceCommObject(parsedioPort.name, datatype.get, IOType.fromString(parsedioPort.inOutType).get)
+      val ioType = IOType.fromString(parsedioPort.inOutType).get
+      val id = MurmurHash3.listHash(List(parsedioPort.name, datatype.get, ioType), MurmurHash3.seqSeed)
+      PhysicalDeviceCommObject(parsedioPort.name, datatype.get, ioType, id)
     }
     physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
   }

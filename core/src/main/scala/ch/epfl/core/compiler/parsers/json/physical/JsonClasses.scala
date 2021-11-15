@@ -17,7 +17,7 @@ object PhysicalDeviceNodeJson {
   implicit val physicalDeviceNodeJson: ReadWriter[PhysicalDeviceNodeJson] = macroRW[PhysicalDeviceNodeJson]
 }
 
-case class PhysicalDeviceCommObjectJson(name: String, datatype: String, ioType: String)
+case class PhysicalDeviceCommObjectJson(name: String, datatype: String, ioType: String, id: Int)
 object PhysicalDeviceCommObjectJson {
   implicit val physicalDeviceCommObjectJson: ReadWriter[PhysicalDeviceCommObjectJson] = macroRW[PhysicalDeviceCommObjectJson]
 }

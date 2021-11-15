@@ -17,7 +17,7 @@ object PhysicalStructureJsonParser {
   }
   def constructPhysicalStructure(parsed: PhysicalStructureJson): PhysicalStructure = {
     def convertPhysDeviceCommObject(parsed: PhysicalDeviceCommObjectJson): PhysicalDeviceCommObject =
-      PhysicalDeviceCommObject(parsed.name, KNXDatatype.fromString(parsed.datatype).get, IOType.fromString(parsed.ioType).get)
+      PhysicalDeviceCommObject(parsed.name, KNXDatatype.fromString(parsed.datatype).get, IOType.fromString(parsed.ioType).get, parsed.id)
     def convertPhysDeviceNode(parsed: PhysicalDeviceNodeJson): PhysicalDeviceNode =
       PhysicalDeviceNode(parsed.name, parsed.comObjects.map(convertPhysDeviceCommObject))
     def convertPhysicalDevice(parsed: PhysicalDeviceJson): PhysicalDevice = {
@@ -61,7 +61,8 @@ object PhysicalStructureJsonParser {
                 PhysicalDeviceCommObjectJson(
                   obj.name,
                   obj.datatype.toString,
-                  obj.ioType.toString
+                  obj.ioType.toString,
+                  obj.id
                 )
               )
             )

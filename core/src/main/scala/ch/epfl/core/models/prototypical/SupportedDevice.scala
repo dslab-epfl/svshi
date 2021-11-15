@@ -14,14 +14,12 @@ object SupportedDevice {
     case SupportedDevice.switchString => Switch
     case SupportedDevice.temperatureSensor => TemperatureSensor
     case SupportedDevice.humiditySensor => HumiditySensor
-    case _ => throw new UnsupportedDeviceException(s"The device $s is not supported by Pistis!")
   }
   def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
     case BinarySensor => BinarySensorBinding(deviceType.toString, defaultPhysicalId)
     case Switch => SwitchBinding(deviceType.toString, defaultPhysicalId, defaultPhysicalId)
     case TemperatureSensor => TemperatureSensorBinding(deviceType.toString, defaultPhysicalId)
     case HumiditySensor => HumiditySensorBinding(deviceType.toString, defaultPhysicalId)
-    case _ => throw new RuntimeException("the passed deviceType has not been added to the getDeviceBinding method!")
   }
 }
 

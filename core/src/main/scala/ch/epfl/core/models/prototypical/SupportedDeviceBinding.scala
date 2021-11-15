@@ -1,7 +1,6 @@
 package ch.epfl.core.models.prototypical
 
-import ch.epfl.core.compiler.parsers.json.prototype.PrototypicalStructureJson
-import upickle.default.{macroRW, ReadWriter}
+import upickle.default.{ReadWriter, macroRW}
 
 
 // WARNING!!!!!!

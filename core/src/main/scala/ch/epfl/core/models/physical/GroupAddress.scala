@@ -1,6 +1,8 @@
 package ch.epfl.core.models.physical
 
-case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int)
+case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int) {
+  override def toString: String = s"$mainGroup/$middleGroup/$groupAddressN"
+}
 
 object GroupAddresses {
   private var nextMainGroup = 0 // 0 -> 31

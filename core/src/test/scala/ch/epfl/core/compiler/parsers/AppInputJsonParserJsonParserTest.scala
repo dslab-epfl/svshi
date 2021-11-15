@@ -60,7 +60,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |
         |""".stripMargin
 
-    an[UnsupportedDeviceException] should be thrownBy AppInputJsonParser
+    an[MatchError] should be thrownBy AppInputJsonParser
       .constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
   }
 
