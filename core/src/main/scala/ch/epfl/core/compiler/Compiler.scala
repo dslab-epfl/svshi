@@ -1,13 +1,15 @@
 package ch.epfl.core.compiler
 
+import ch.epfl.core.compiler.binding._
+import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
+import ch.epfl.core.compiler.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
+import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.models.application.ApplicationLibrary
-import ch.epfl.core.compiler.programming.Programmer
-import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical._
-import ch.epfl.core.models.prototypical._
+import ch.epfl.core.utils.Constants
 
 object Compiler {
-  def compile(library: ApplicationLibrary): ApplicationLibrary = {
+  def compile(library: ApplicationLibrary, physicalStructure: PhysicalStructure): ApplicationLibrary = {
     //TODO
     // here we need to read assignment of physical communicationObjects to XKNX stuff
     // assign Group addresses to communicationObject
@@ -39,7 +41,24 @@ object Compiler {
     // )
     // val mapping = Map(1 -> GroupAddress(1, 1, 1), 2 -> GroupAddress(1, 2, 1), 3 -> GroupAddress(1, 2, 2))
     // Programmer.outputProgrammingFile(GroupAddressAssignment(struct, bindings, mapping))
+
+
+    val appLibraryBindings = BindingsJsonParser.parse(Constants.APP_LIBRARY_FOLDER_PATH + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
+    for(app <- library.apps){
+      val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
+      PythonAddressJsonParser.writeToFile(app.appFolderPath + Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
+    }
+
+    // TODO Call the KNX Programing ? or return something
+
     library
+  }
+
+  def generateBindingsFiles(library: ApplicationLibrary, physicalStructure: PhysicalStructure): Unit = {
+    PhysicalStructureJsonParser.writeToFile(Constants.APP_LIBRARY_FOLDER_PATH + Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME, physicalStructure)
+    val appLibraryBindings = Binding.appLibraryBindingsFromLibrary(library)
+    BindingsJsonParser.writeToFile(Constants.APP_LIBRARY_FOLDER_PATH + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
   }
 
 }
