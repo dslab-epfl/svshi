@@ -74,7 +74,7 @@ object PhysicalStructureJsonParser {
     Files.write(
       Paths.get(filePath),
       write(
-        physicalStructureToJson(physicalStructure)
+        physicalStructureToJson(physicalStructure),  indent = 2
       ) getBytes StandardCharsets.UTF_8
     )
   }
