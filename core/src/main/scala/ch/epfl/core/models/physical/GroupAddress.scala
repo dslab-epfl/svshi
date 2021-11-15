@@ -22,9 +22,9 @@ object GroupAddresses {
     nextGroupAddressN = 0
   }
   def getNextGroupAddress: GroupAddress = {
-    if(nextGroupAddressN + 1 > maxGroupAddressN){
-      if(nextMiddleGroup + 1 > maxMiddleGroup){
-        if(nextMainGroup + 1 > maxMainGroup){
+    if (nextGroupAddressN + 1 > maxGroupAddressN) {
+      if (nextMiddleGroup + 1 > maxMiddleGroup) {
+        if (nextMainGroup + 1 > maxMainGroup) {
           throw new NoMoreAvailableGroupAddressException
         } else {
           nextMainGroup += 1

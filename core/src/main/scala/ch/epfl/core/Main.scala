@@ -20,5 +20,5 @@ object Main extends App {
     // DONE
   }
 
-
+  main()
 }
