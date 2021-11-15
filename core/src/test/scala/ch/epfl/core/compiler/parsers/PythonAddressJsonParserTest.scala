@@ -1,9 +1,10 @@
 package ch.epfl.core.compiler.parsers
 
-import ch.epfl.core.compiler.parsers.json.bindings.PythonAddressJsonParser
+import ch.epfl.core.compiler.parsers.json.bindings.{AppPythonAddressesJson, BinarySensorAddressJson, DeviceAddressJson, HumiditySensorAddressJson, PythonAddressJsonParser, SwitchAddressJson, TemperatureSensorAddressJson}
 import ch.epfl.core.models.application.Application
-import ch.epfl.core.models.physical.{DPT1, DPT12, DPT2, DPT5, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
-import ch.epfl.core.models.prototypical.{AppPrototypicalDeviceInstance, AppPrototypicalStructure, BinarySensor, Switch, TemperatureSensor}
+import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.models.physical.{DPT1, DPT12, DPT2, DPT5, GroupAddress, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
+import ch.epfl.core.models.prototypical.{AppLibraryBindings, AppPrototypeBindings, AppPrototypicalDeviceInstance, AppPrototypicalStructure, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -54,12 +55,36 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, Out, 321),
             PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
           )
         )
       )
     )
     val physicalStructure = PhysicalStructure(List(device1Physical, device2Physical, device3Physical))
+    val appLibraryBindings = AppLibraryBindings(List(
+      AppPrototypeBindings("app1", List(
+        DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
+        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 211, 212)),
+        DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
+        DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321))
+      ))
+    ))
+    val mapping = List(
+      (211, GroupAddress(2,1,1)),
+      (212, GroupAddress(2,1,2)),
+      (311, GroupAddress(3,1,1)),
+      (321, GroupAddress(3,2,1)),
+      (322, GroupAddress(3,2,2))
+    ).toMap
+    val assignment = GroupAddressAssignment(physicalStructure, appLibraryBindings, mapping)
+
+    val expected = AppPythonAddressesJson(List(
+      BinarySensorAddressJson("device1", "3/1/1"),
+      SwitchAddressJson("device2", "2/1/1", "2/1/2"),
+      TemperatureSensorAddressJson("device3", "3/2/2"),
+      HumiditySensorAddressJson("device4", "3/2/1")
+    ))
+    PythonAddressJsonParser.assignmentToPythonAddressJson(app, assignment) shouldEqual expected
   }
 }
