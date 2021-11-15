@@ -25,9 +25,11 @@ if __name__ == "__main__":
     devices = parser.read_devices()
 
     print(f"Generating the app '{app_name}'...")
-    generator = Generator(app_name)
-    generator.generate_device_instances(devices)
+    generator = Generator(app_name, devices)
+    generator.generate_multiton_class()
+    generator.generate_device_instances()
     generator.generate_init_files()
     generator.copy_skeleton_to_generated_app()
+    generator.add_device_instances_imports_to_main()
 
     print("Done!")

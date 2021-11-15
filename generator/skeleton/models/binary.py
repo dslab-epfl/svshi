@@ -17,6 +17,7 @@ class BinarySensor(Device):
     """
 
     def __init__(self, name: str):
+        super().__init__()
         self.__sensor = KnxBinarySensor(
             KNX,
             name=name,
