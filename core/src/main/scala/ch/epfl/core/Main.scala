@@ -20,7 +20,7 @@ object Main extends App {
     if(task == "compile"){
       val compiledLibrary = compiler.Compiler.compile(library, physicalStructure)
       val verifiedLibrary = verifier.Verifier.verify(compiledLibrary)
-    } else if(task == "generateBindings"){
+    } else if(task == "generatebindings"){
       compiler.Compiler.generateBindingsFiles(library, physicalStructure)
     } else {
       println(s"Unknown task $task! Exiting...")
