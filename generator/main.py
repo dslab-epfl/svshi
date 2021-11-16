@@ -3,6 +3,7 @@ from generator.parsing.parser import Parser
 from generator.generation.generator import Generator
 
 DEVICES_JSON_FILENAME = "app_prototypical_structure.json"
+GENERATED_APPS_FOLDER_NAME = "generated"
 
 
 def parse_args():
@@ -24,7 +25,9 @@ if __name__ == "__main__":
     devices = parser.read_devices()
 
     print(f"Generating the app '{app_name}'...")
-    generator = Generator(app_name, devices, DEVICES_JSON_FILENAME)
+    generator = Generator(
+        f"{GENERATED_APPS_FOLDER_NAME}/{app_name}", devices, DEVICES_JSON_FILENAME
+    )
     generator.generate_multiton_class()
     generator.generate_device_instances()
     generator.generate_init_files()
