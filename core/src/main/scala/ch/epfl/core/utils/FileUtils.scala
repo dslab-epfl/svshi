@@ -8,7 +8,7 @@ import scala.util.Using
 
 object FileUtils {
 
-  /** The suffix append to the end of a ETS project file name when unzipped
+  /** The suffix appended to the end of a ETS project file name when unzipped
     * @return
     */
   def unzippedSuffix: String = "_unzip_temp"
