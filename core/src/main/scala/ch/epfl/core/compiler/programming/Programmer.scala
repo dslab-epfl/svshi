@@ -32,7 +32,7 @@ object Programmer {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val filePath = os.pwd / filename
+    val filePath = os.pwd / os.up / "app-library" / filename
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, text)
   }
