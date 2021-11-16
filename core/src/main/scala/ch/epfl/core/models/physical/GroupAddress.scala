@@ -1,6 +1,8 @@
 package ch.epfl.core.models.physical
 
-case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int)
+case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int) {
+  override def toString: String = s"$mainGroup/$middleGroup/$groupAddressN"
+}
 
 object GroupAddresses {
   private var nextMainGroup = 0 // 0 -> 31
@@ -20,9 +22,9 @@ object GroupAddresses {
     nextGroupAddressN = 0
   }
   def getNextGroupAddress: GroupAddress = {
-    if(nextGroupAddressN + 1 > maxGroupAddressN){
-      if(nextMiddleGroup + 1 > maxMiddleGroup){
-        if(nextMainGroup + 1 > maxMainGroup){
+    if (nextGroupAddressN + 1 > maxGroupAddressN) {
+      if (nextMiddleGroup + 1 > maxMiddleGroup) {
+        if (nextMainGroup + 1 > maxMainGroup) {
           throw new NoMoreAvailableGroupAddressException
         } else {
           nextMainGroup += 1
