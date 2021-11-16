@@ -1,7 +1,7 @@
 package ch.epfl.core
 
 import ch.epfl.core.compiler.parsers.ets.EtsParser
-import ch.epfl.core.models.application.ApplicationLibrary
+import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 
 object Main extends App {
@@ -14,14 +14,15 @@ object Main extends App {
       return
     }
     val task = args(0).toLowerCase
-    val library = loadApplicationsLibrary(args(1))
-    // parse PhysicalStructure here
+    val existingAppsLibrary = loadApplicationsLibrary(args(1))
+    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH_STRING)
+    
     val physicalStructure = EtsParser.parseEtsProjectFile(args(2))
     if (task == "compile") {
-      val compiledLibrary = compiler.Compiler.compile(library, physicalStructure)
-      val verifiedLibrary = verifier.Verifier.verify(compiledLibrary)
+      val compiledLibrary = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
+      val verifiedLibrary = verifier.Verifier.verify(newAppsLibrary, compiledLibrary)
     } else if (task == "generatebindings") {
-      compiler.Compiler.generateBindingsFiles(library, physicalStructure)
+      compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, physicalStructure)
     } else {
       println(s"Unknown task $task! Exiting...")
     }
