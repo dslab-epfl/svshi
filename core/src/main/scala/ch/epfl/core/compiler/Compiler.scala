@@ -9,6 +9,8 @@ import ch.epfl.core.models.physical._
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.compiler.programming.Programmer
 
+import java.nio.file.Path
+
 object Compiler {
   def compile(library: ApplicationLibrary, physicalStructure: PhysicalStructure): ApplicationLibrary = {
     //TODO
@@ -17,11 +19,11 @@ object Compiler {
     // generate files for the python apps with the group addresses
     // generate files for the KNX programmming module
 
-    val appLibraryBindings = BindingsJsonParser.parse(library.path + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    val appLibraryBindings = BindingsJsonParser.parse(Path.of(library.path).resolve(Path.of(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
     for (app <- library.apps) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
-      PythonAddressJsonParser.writeToFile(app.appFolderPath + Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
+      PythonAddressJsonParser.writeToFile(Path.of(app.appFolderPath).resolve(Path.of(Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME)).toString, pythonAddr)
     }
     Programmer.outputProgrammingFile(gaAssignment)
 
@@ -29,9 +31,9 @@ object Compiler {
   }
 
   def generateBindingsFiles(library: ApplicationLibrary, physicalStructure: PhysicalStructure): Unit = {
-    PhysicalStructureJsonParser.writeToFile(library.path + Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME, physicalStructure)
+    PhysicalStructureJsonParser.writeToFile(Path.of(library.path).resolve(Path.of(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString, physicalStructure)
     val appLibraryBindings = Binding.appLibraryBindingsFromLibrary(library)
-    BindingsJsonParser.writeToFile(library.path + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
+    BindingsJsonParser.writeToFile(Path.of(library.path).resolve(Path.of(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 
 }
