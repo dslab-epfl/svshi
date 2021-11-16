@@ -6,7 +6,6 @@ import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
-import scala.util.hashing.MurmurHash3
 import scala.util.matching.Regex
 import scala.xml.{Node, XML}
 
