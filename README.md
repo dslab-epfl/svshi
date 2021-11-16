@@ -2,7 +2,38 @@
 
 This project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
+## Supported devices
+
+- **Binary sensors** (deviceType = "binary")
+- **Temperature sensors**: (deviceType = "temperature")
+- **Humidity sensors**: (deviceType = "humidity")
+- **Switches**: (deviceType = "switch")
+
 ## App generator
+
+### Prototypical structure
+
+This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types.
+
+This file has to be named `app_prototypical_structure.json`.
+
+Here is an example:
+
+```json
+{
+  "devices": [
+    {
+      "name": "name_of_the_instances",
+      "deviceType": "type_of_the_devices"
+    }
+  ]
+}
+```
+
+The `name` is used as the instance name in the Python app that is generated. It should then be unique in a given app, and should follow the Python variables naming conventions: no whitespaces nor numbers.
+The `deviceType` should be [supported by Pistis](#supported-devices).
+
+### Usage
 
 ```text
 usage: main.py [-h] devices_json app_name
@@ -21,7 +52,6 @@ The app generator is a small Python module that generates a Python app skeleton 
 
 It requires Python >= 3.8 and a Unix-based OS (Linux or macOS).
 
-To execute it, run `python -m generator.main devices.json app`, where:
+Before executing it, you need to create the file `app_prototypical_structure.json` containing the list of the devices the app should use, as explained [above](#prototypical-structure).
 
-- The first argument (`devices.json` in the example) is the name of the JSON file containing the devices description.
-- The second argument (`app` in the example) is the name of the app to be used. The name has to follow the same rules as for Python modules: short, all-lowercase names. Underscores can be used if it improves readability.
+To execute the generator, run `python -m generator.main app`, where the first argument (`app` in the example) is the name of the app to be used. The name has to follow the same rules as for Python modules: short, all-lowercase names. Underscores can be used if it improves readability.
