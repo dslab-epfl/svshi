@@ -17,22 +17,21 @@ object Compiler {
     // generate files for the python apps with the group addresses
     // generate files for the KNX programmming module
 
-    val appLibraryBindings = BindingsJsonParser.parse(Constants.APP_LIBRARY_FOLDER_PATH + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    val appLibraryBindings = BindingsJsonParser.parse(library.path + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
     for (app <- library.apps) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
       PythonAddressJsonParser.writeToFile(app.appFolderPath + Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
-
     Programmer.outputProgrammingFile(gaAssignment)
 
     library
   }
 
   def generateBindingsFiles(library: ApplicationLibrary, physicalStructure: PhysicalStructure): Unit = {
-    PhysicalStructureJsonParser.writeToFile(Constants.APP_LIBRARY_FOLDER_PATH + Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME, physicalStructure)
+    PhysicalStructureJsonParser.writeToFile(library.path + Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME, physicalStructure)
     val appLibraryBindings = Binding.appLibraryBindingsFromLibrary(library)
-    BindingsJsonParser.writeToFile(Constants.APP_LIBRARY_FOLDER_PATH + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
+    BindingsJsonParser.writeToFile(library.path + Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
   }
 
 }
