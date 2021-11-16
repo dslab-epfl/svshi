@@ -16,10 +16,10 @@ object Programmer {
     */
   def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt") = {
     val idToGroupAddress = assignment.physIdToGA
-    val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, address, nodes) =>
-      val addressString = s"${address._1}.${address._2}.${address._3}"
+    val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
+      val addressString = s"$a1.$a2.$a3"
       nodes.flatMap { case PhysicalDeviceNode(nodeName, comObjects) =>
-        comObjects.map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
+        comObjects.filter(idToGroupAddress contains _.id).map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
           Assignment(addressString, nodeName, objName, idToGroupAddress(id))
         }
       }
