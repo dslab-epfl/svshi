@@ -2,6 +2,7 @@ package ch.epfl.core.compiler.programming
 
 import ch.epfl.core.models.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
 import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
 import ch.epfl.core.models.prototypical._
 
 private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress)
@@ -32,7 +33,7 @@ object Programmer {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val filePath = os.pwd / os.up / "app-library" / filename
+    val filePath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME / filename
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, text)
   }

@@ -16,4 +16,4 @@ def __read_group_addresses(filename: str) -> dict:
         return addresses
 
 
-GROUP_ADDRESSES = __read_group_addresses("../app-library/addresses.json")
+GROUP_ADDRESSES = __read_group_addresses("../assignments/addresses.json")
