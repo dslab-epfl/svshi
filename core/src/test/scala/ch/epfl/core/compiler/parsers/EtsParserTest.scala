@@ -156,10 +156,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             ),
             PhysicalDeviceCommObject.from(
               "Forçage % - Vanne - Vanne",
-              UnknownDPT,
+              DPT1,
               InOut
             ),
-            PhysicalDeviceCommObject.from("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceCommObject.from("Arrêt - Vanne - Vanne", DPT1, InOut),
             PhysicalDeviceCommObject.from(
               "Position vanne % - Indication d'état - Indication d'état",
               UnknownDPT,
@@ -172,7 +172,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             ),
             PhysicalDeviceCommObject.from(
               "Présence / Absence commande - Indication d'état - Indication d'état",
-              UnknownDPT,
+              DPT1,
               InOut
             )
           )

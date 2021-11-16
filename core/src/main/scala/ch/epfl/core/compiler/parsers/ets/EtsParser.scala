@@ -31,6 +31,7 @@ object EtsParser {
   val COMOBJECTREF_TAG = "ComObjectRef"
   val COMOBJECT_TAG = "ComObject"
   val DATAPOINTTYPE_PARAM = "DatapointType"
+  val OBJECTSIZE_PARAM = "ObjectSize"
   val NAME_PARAM = "Name"
   val READFLAG_PARAM = "ReadFlag"
   val WRITEFLAG_PARAM = "WriteFlag"
@@ -69,8 +70,9 @@ object EtsParser {
       val datatype = if(dpstOpt.isDefined)
         KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
       else if(dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
+      else if(KNXDatatype.fromDPTSize(parsedioPort.objectSizeString).isDefined) KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
       else if(parsedioPort.dpt == "") Some(UnknownDPT)
-      else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
+      else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
       PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType)
@@ -98,7 +100,7 @@ object EtsParser {
     }
   })
 
-  private def getDeviceInstanceIn0Xml(deviceAddress: (String, String, String), projectRootPath: Path) = {
+  private def getDeviceInstanceIn0Xml(deviceAddress: (String, String, String), projectRootPath: Path): Option[Node] = {
     val file0XmlPath = recursiveListFiles(projectRootPath.toFile).find(file => file.getName == FILE_0_XML_NAME)
     if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
     val (areaN, lineN, deviceN) = deviceAddress
@@ -190,7 +192,7 @@ object EtsParser {
           val refId = (comObjectRef \@ REFID_PARAM)
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
-            case Some(value) =>  IOPort(constructIOPortName(value), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value)) :: Nil
+            case Some(value) =>  IOPort(constructIOPortName(value), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM ) :: Nil
             case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
           }
         }

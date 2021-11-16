@@ -25,6 +25,27 @@ object KNXDatatype {
     case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 20 => Some(DPT20)
     case _ => None
   }
+
+  /**
+   * Returns a DPT given the object size string from the ETS project.
+   * BE CAREFUL IF ADDING NEW PARSED VALUES: TYPES OTHER THAN 1 OR 2 BITS CAN CORRESPOND TO MULTIPLE
+   * DIFFERENT DPTS (UNSIGNED, TWO'2 COMPLEMENT, ...)
+   * @param dptSize
+   * @return
+   */
+  def fromDPTSize(dptSize: String): Option[KNXDatatype] = {
+    if(dptSize.toLowerCase.contains("bit")){
+      if(dptSize.contains("1 ") || dptSize.toLowerCase.contains("one")){
+        Some(DPT1)
+      } else if(dptSize.contains("2 ") || dptSize.toLowerCase.contains("two")){
+        Some(DPT2)
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
 }
 case object DPT1 extends KNXDatatype {
   override def toString = "DPT-1"
