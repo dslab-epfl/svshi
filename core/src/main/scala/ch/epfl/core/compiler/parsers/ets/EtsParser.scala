@@ -7,7 +7,7 @@ import ch.epfl.core.utils.FileUtils._
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
 import scala.util.matching.Regex
-import scala.xml.{Node, XML}
+import scala.xml.{Elem, Node, XML}
 
 object EtsParser {
   val FILE_0_XML_NAME = "0.xml"
@@ -39,6 +39,13 @@ object EtsParser {
   val UPDATEFLAG_PARAM = "UpdateFlag"
   val READONINITFLAG_PARAM = "ReadOnInitFlag"
   val FUNCTIONTEXT_PARAM = "FunctionText"
+  val LANGUAGE_TAG = "Language"
+  val IDENTIFIER_PARAM = "Identifier"
+  val TRANSLATIONELEMENT_TAG = "TranslationElement"
+  val ATTRIBUTENAME_PARAM = "AttributeName"
+  val TRANSLATION_TAG = "Translation"
+
+  val enUsLanguageCode = "en-US"
 
   val enabledText = "Enabled"
   val disabledText = "Disabled"
@@ -191,7 +198,7 @@ object EtsParser {
           val refId = (comObjectRef \@ REFID_PARAM)
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
-            case Some(value) =>  IOPort(constructIOPortName(value), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM ) :: Nil
+            case Some(value) =>  IOPort(constructIOPortName(value, catalogEntry), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM ) :: Nil
             case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
           }
         }
@@ -203,10 +210,29 @@ object EtsParser {
     }
   })
 
-  private def constructIOPortName(ioPortNode: Node) : String = {
-    val funText = ioPortNode \@ FUNCTIONTEXT_PARAM
-    val nameText = ioPortNode \@ NAME_PARAM
-    val textText = ioPortNode \@ TEXT_PARAM
+  private def constructIOPortName(ioPortNode: Node, catalogEntry: Elem) : String = {
+    // First check if there exists a translation element
+    val languageObjectOpt = (catalogEntry \\ LANGUAGE_TAG).find(n => n \@ IDENTIFIER_PARAM == enUsLanguageCode)
+    val textMap: Map[String, String] = if(languageObjectOpt.isDefined){
+      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).find(n => (n \@ REFID_PARAM) == (ioPortNode \@ ID_PARAM))
+      if(translationElementOpt.isDefined){
+        val funTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == FUNCTIONTEXT_PARAM)
+        val nameTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == NAME_PARAM)
+        val textTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == TEXT_PARAM)
+
+        List((FUNCTIONTEXT_PARAM, funTextTransOpt), (NAME_PARAM, nameTextTransOpt), (TEXT_PARAM, textTextTransOpt)).map(kv => {
+          if(kv._2.isDefined) (kv._1, kv._2.get \@ TEXT_PARAM) else (kv._1, "")
+        }).toMap
+      } else {
+        Map.empty
+      }
+    } else {
+      Map.empty
+    }
+
+    val funText = if(textMap.getOrElse(FUNCTIONTEXT_PARAM, "") != "") textMap(FUNCTIONTEXT_PARAM) else ioPortNode \@ FUNCTIONTEXT_PARAM
+    val nameText = if(textMap.getOrElse(NAME_PARAM, "") != "") textMap(NAME_PARAM) else ioPortNode \@ NAME_PARAM
+    val textText = if(textMap.getOrElse(TEXT_PARAM, "") != "") textMap(TEXT_PARAM) else ioPortNode \@ TEXT_PARAM
     List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
   }
 

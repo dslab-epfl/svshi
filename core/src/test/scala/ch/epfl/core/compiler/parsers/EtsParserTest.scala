@@ -65,27 +65,27 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-3 - RTC",
           List(
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
+              "Output - Obj_StellgroesseHeizen_Switch - RTC: Heating control value",
               DPT5,
               Out
             ),
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
+              "Input/Output - Obj_Betriebsart_Single - RTC: Normal operating mode",
               DPT20,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Eingang - Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
+              "Input - Obj_BetriebsartUeberlagert_Single - RTC: Override operating mode",
               DPT20,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
+              "Output - Obj_AktuelleIstTemperatur - RTC: Actual temperature",
               DPT9,
               Out
           ),
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_AktuellerSollwert - RTC: Aktueller Sollwert",
+              "Output - Obj_AktuellerSollwert - RTC: actual setpoint",
               DPT9,
               Out
             )
@@ -95,7 +95,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-4 - Function block 1",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten",
+              "Input/Output - Obj_Wert1Bit - S1: Switching",
               DPT14,
               InOut
             )
@@ -105,7 +105,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-5 - Function block 2",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten",
+              "Input/Output - Obj_Wert1Bit - S3: Switching",
               DPT14,
               InOut
 
@@ -116,7 +116,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-6 - Function block 3",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten",
+              "Input/Output - Obj_Wert1Bit - S5: Switching",
               DPT14,
               InOut
             )
@@ -150,28 +150,28 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Default",
           List(
             PhysicalDeviceCommObject.from(
-              "Commande % - Vanne - Vanne",
+              "Command % - Vanne - Valve",
               UnknownDPT,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Forçage % - Vanne - Vanne",
+              "Priority % - Vanne - Valve",
               DPT1,
               InOut
             ),
-            PhysicalDeviceCommObject.from("Arrêt - Vanne - Vanne", DPT1, InOut),
+            PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut),
             PhysicalDeviceCommObject.from(
-              "Position vanne % - Indication d'état - Indication d'état",
+              "Valve position % - Indication d'état - Status indication",
               UnknownDPT,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Valeur commande la plus élevée - Indication d'état - Indication d'état",
+              "Highest command value - Indication d'état - Status indication",
               UnknownDPT,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Présence / Absence commande - Indication d'état - Indication d'état",
+              "Presence / Absence command - Indication d'état - Status indication",
               DPT1,
               InOut
             )
