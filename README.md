@@ -7,9 +7,9 @@ This project is about developing a platform/runtime/toolchain for developing and
 ## Supported devices
 
 - **Binary sensors** (deviceType = "binary")
-- **Temperature sensors**: (deviceType = "temperature")
-- **Humidity sensors**: (deviceType = "humidity")
-- **Switches**: (deviceType = "switch")
+- **Temperature sensors** (deviceType = "temperature")
+- **Humidity sensors** (deviceType = "humidity")
+- **Switches** (deviceType = "switch")
 
 ## App generator
 
