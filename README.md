@@ -13,6 +13,10 @@ This project is about developing a platform/runtime/toolchain for developing and
 
 ## App generator
 
+### Setup
+
+To install all the dependencies, run `pip install -r requirements.txt` in `generator/`.
+
 ### Prototypical structure
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types.
@@ -57,3 +61,7 @@ It requires Python >= 3.8 and a Unix-based OS (Linux or macOS).
 Before executing it, you need to create the file `app_prototypical_structure.json` containing the list of the devices the app should use, as explained [above](#prototypical-structure).
 
 To execute the generator, run `python -m generator.main app`, where the first argument (`app` in the example) is the name of the app to be used. The name has to follow the same rules as for Python modules: short, all-lowercase names. Underscores can be used if it improves readability.
+
+### Tests
+
+To run the tests, execute `pytest` in `generator/`.
