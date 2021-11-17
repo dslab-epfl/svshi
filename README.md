@@ -2,6 +2,16 @@
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
 
+- [Formal Verification for Smart Infrastructure](#formal-verification-for-smart-infrastructure)
+  - [Supported devices](#supported-devices)
+  - [Developing an application](#developing-an-application)
+  - [Running the applications](#running-the-applications)
+  - [App generator](#app-generator)
+    - [Setup](#setup)
+    - [Prototypical structure](#prototypical-structure)
+    - [Usage](#usage)
+    - [Tests](#tests)
+
 This project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
 ## Supported devices
