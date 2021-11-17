@@ -7,7 +7,7 @@ import ch.epfl.core.utils.FileUtils._
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
 import scala.util.matching.Regex
-import scala.xml.{Elem, Node, XML}
+import scala.xml.{Document, Elem, Group, Node, SpecialNode, XML}
 
 object EtsParser {
   val FILE_0_XML_NAME = "0.xml"
@@ -44,6 +44,7 @@ object EtsParser {
   val TRANSLATIONELEMENT_TAG = "TranslationElement"
   val ATTRIBUTENAME_PARAM = "AttributeName"
   val TRANSLATION_TAG = "Translation"
+  val APPLICATIONPROGRAM_TAG = "ApplicationProgram"
 
   val enUsLanguageCode = "en-US"
 
@@ -98,7 +99,8 @@ object EtsParser {
     deviceInstanceXMLOpt match {
       case Some(deviceInstanceXML) => {
         val productRefId = deviceInstanceXML \@ PRODUCTREFID_PARAM
-        val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId)
+        val hardware2ProgramRefId = deviceInstanceXML \@ HARDWARE2PROGRAMREFID_PARAM
+        val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId, hardware2ProgramRefId)
         val inOut = getDeviceInOutInCatalog(etsProjectPathString, deviceAddress)
         ParsedDevice(deviceAddress, deviceName, inOut)
       }
@@ -116,22 +118,26 @@ object EtsParser {
   }
 
   /**
-   * Get the name of the device in the Hardware.xml file in the ETS project
+   * Get the name of the device in the catalog entry xml file (ApplicationProgram object)
    *
    * @param etsProjectPathString the path to the etsProject file as String
    * @param productRefId   the productRefId of the device
    * @return
    */
-  private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String): String = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    val catalogID = productRefId.split('_').apply(0)
-    val folderHardwareXmlPath = recursiveListFiles(projectRootPath.toFile).find(file => file.getName == catalogID)
-    if (folderHardwareXmlPath.isEmpty || folderHardwareXmlPath.get.isFile) throw new MalformedXMLException(s"Missing folder for product with catalogID = $catalogID")
-    val fileHardwareXmlPath = recursiveListFiles(folderHardwareXmlPath.get).find(file => file.getName == HARDWARE_XML_NAME)
-    if (fileHardwareXmlPath.isEmpty) throw new MalformedXMLException(s"Missing Hardware.xml for product with catalogID = $catalogID")
-    val hardwareXml = XML.loadFile(fileHardwareXmlPath.get)
-    val productXml = (hardwareXml \\ PRODUCT_TAG).find(p => p \@ ID_PARAM == productRefId)
-    if (productXml.isEmpty) throw new MalformedXMLException(s"Impossible to find the product name in the project for productRefID = $productRefId")
-    productXml.get \@ TEXT_PARAM
+  private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(etsProjectPathString, projectRootPath => {
+
+    val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+    val catalogEntry = XML.loadFile(xmlPath.toFile)
+    val applicationProgramList = (catalogEntry \\ APPLICATIONPROGRAM_TAG)
+    if(applicationProgramList.length > 1){
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has more than one ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    if(applicationProgramList.length < 1){
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has no ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    val originalName = applicationProgramList.head \@ NAME_PARAM
+    val id = applicationProgramList.head \@ ID_PARAM
+    getTranslation(catalogEntry, enUsLanguageCode, id, NAME_PARAM).getOrElse(originalName)
   })
 
   def getDeviceInOutInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {

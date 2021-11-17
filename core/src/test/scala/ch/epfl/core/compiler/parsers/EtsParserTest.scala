@@ -13,7 +13,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     val structure = EtsParser.parseEtsProjectFile(testFilePathString)
     println(structure)
     val device1 = PhysicalDevice(
-      name = "SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC",
+      name = "Switch Standard 2-fold 16A/1.0a",
       address = ("1", "1", "1"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", Nil),
@@ -45,7 +45,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
 
     val device2 =
       PhysicalDevice(
-        name = "STANDARDdue Taster 1-4fach Feuchtigkeitsschutz",
+        name = "Push-button 1- to 4-gang moisture protection",
         address = ("1", "1", "2"),
         nodes = List(
           PhysicalDeviceNode(
@@ -56,7 +56,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       )
 
     val device3 = PhysicalDevice(
-      name = "SBR/U6.0 HVAC-Gerät, 6fach BE",
+      name = "HVAC device, 6gang BE/1",
       address = ("1", "1", "3"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", List()),
@@ -127,7 +127,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     val device4 = PhysicalDevice(
-      name = "AC/S1.2.1 Application Controller, BACnet",
+      name = "HVAC Application/1.0a with BACnet",
       address = ("1", "1", "4"),
       nodes = List(
         PhysicalDeviceNode(
@@ -143,7 +143,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     val device5 = PhysicalDevice(
-      name = "Vanne motorisée",
+      name = "TL501A V1.1",
       address = ("1", "2", "1"),
       nodes = List(
         PhysicalDeviceNode(
@@ -181,34 +181,34 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     structure.deviceInstances.exists(p =>
-      p.name == device1.name
+      p.address == device1.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device1.name
+      p.address == device1.address
     ) shouldEqual Some(device1)
     structure.deviceInstances.exists(p =>
-      p.name == device2.name
+      p.address == device2.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device2.name
+      p.address == device2.address
     ) shouldEqual Some(device2)
     structure.deviceInstances.exists(p =>
-      p.name == device3.name
+      p.address == device3.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device3.name
+      p.address == device3.address
     ) shouldEqual Some(device3)
     structure.deviceInstances.exists(p =>
-      p.name == device4.name
+      p.address == device4.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device4.name
+      p.address == device4.address
     ) shouldEqual Some(device4)
     structure.deviceInstances.exists(p =>
-      p.name == device5.name
+      p.address == device5.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device5.name
+      p.address == device5.address
     ) shouldEqual Some(device5)
   }
 }
