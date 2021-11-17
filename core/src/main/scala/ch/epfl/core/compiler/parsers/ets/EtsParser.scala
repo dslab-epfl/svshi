@@ -211,29 +211,44 @@ object EtsParser {
   })
 
   private def constructIOPortName(ioPortNode: Node, catalogEntry: Elem) : String = {
-    // First check if there exists a translation element
-    val languageObjectOpt = (catalogEntry \\ LANGUAGE_TAG).find(n => n \@ IDENTIFIER_PARAM == enUsLanguageCode)
-    val textMap: Map[String, String] = if(languageObjectOpt.isDefined){
-      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).find(n => (n \@ REFID_PARAM) == (ioPortNode \@ ID_PARAM))
-      if(translationElementOpt.isDefined){
-        val funTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == FUNCTIONTEXT_PARAM)
-        val nameTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == NAME_PARAM)
-        val textTextTransOpt = (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == TEXT_PARAM)
+    val funText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ FUNCTIONTEXT_PARAM
+      case None => ioPortNode \@ FUNCTIONTEXT_PARAM
+    }
+    val nameText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ NAME_PARAM
+      case None => ioPortNode \@ NAME_PARAM
+    }
+    val textText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ TEXT_PARAM
+      case None => ioPortNode \@ TEXT_PARAM
+    }
+    List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
+  }
 
-        List((FUNCTIONTEXT_PARAM, funTextTransOpt), (NAME_PARAM, nameTextTransOpt), (TEXT_PARAM, textTextTransOpt)).map(kv => {
-          if(kv._2.isDefined) (kv._1, kv._2.get \@ TEXT_PARAM) else (kv._1, "")
-        }).toMap
-      } else {
-        Map.empty
+  /**
+   * Search for a translation for the given id and given attribute name, for the given language, if not found, return None
+   * @param xmlElem
+   * @param languageIdentifier
+   * @param refID
+   * @param attributeName
+   * @return
+   */
+  private def getTranslation(xmlElem: Elem, languageIdentifier: String, refID: String, attributeName: String) : Option[String] = {
+    val languageObjectOpt = (xmlElem \\ LANGUAGE_TAG).find(n => n \@ IDENTIFIER_PARAM == languageIdentifier)
+    if(languageObjectOpt.isDefined) {
+      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).find(n => (n \@ REFID_PARAM) == refID)
+      if (translationElementOpt.isDefined) {
+        (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == attributeName) match {
+          case Some(value) => Some(value \@ TEXT_PARAM)
+          case None => None
+        }
+      }else {
+        None
       }
     } else {
-      Map.empty
+      None
     }
-
-    val funText = if(textMap.getOrElse(FUNCTIONTEXT_PARAM, "") != "") textMap(FUNCTIONTEXT_PARAM) else ioPortNode \@ FUNCTIONTEXT_PARAM
-    val nameText = if(textMap.getOrElse(NAME_PARAM, "") != "") textMap(NAME_PARAM) else ioPortNode \@ NAME_PARAM
-    val textText = if(textMap.getOrElse(TEXT_PARAM, "") != "") textMap(TEXT_PARAM) else ioPortNode \@ TEXT_PARAM
-    List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
   }
 
   private def productCatalogXMLFile(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): Path = extractIfNotExist(etsProjectPathString, projectRootPath => {
