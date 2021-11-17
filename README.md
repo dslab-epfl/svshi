@@ -11,6 +11,24 @@ This project is about developing a platform/runtime/toolchain for developing and
 - **Humidity sensors** (deviceType = "humidity")
 - **Switches** (deviceType = "switch")
 
+## Developing an application
+
+To develop an app for Pistis:
+
+1. Create the `app_prototypical_structure.json` file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
+2. Run the app generator, as explained in the [app generator usage](#usage) section, to get the app skeleton.
+3. Inside `core/`, run Pistis to generate the bindings with `sbt run generateBindings ../app-library ../ets.knxproj`, where the first argument is the app library path, while the second one is the path to the ETS project file.
+4. Map the right physical ids given in `app-library/physical_structure.json` to the right device in `app-library/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
+5. Write your app.
+6. Run Pistis to compile and verify the app with `sbt run compile ../app-library ../ets.knxproj`.
+
+## Running the applications
+
+To run all the installed apps:
+
+1. In ETS, assign to each communication object the right group address as presented in `assignments/assignment.txt`.
+2. Execute `./runtime.sh`.
+
 ## App generator
 
 ### Setup
