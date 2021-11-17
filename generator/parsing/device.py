@@ -7,3 +7,12 @@ class Device:
         self.name = name
         self.type = type
         self.import_module_name = import_module_name
+
+    def __eq__(self, other):
+        if isinstance(other, Device):
+            return (
+                self.name == other.name
+                and self.type == other.type
+                and self.import_module_name == other.import_module_name
+            )
+        return False

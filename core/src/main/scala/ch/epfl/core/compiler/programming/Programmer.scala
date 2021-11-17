@@ -2,6 +2,7 @@ package ch.epfl.core.compiler.programming
 
 import ch.epfl.core.models.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
 import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
 import ch.epfl.core.models.prototypical._
 
 private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress)
@@ -15,10 +16,10 @@ object Programmer {
     */
   def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt") = {
     val idToGroupAddress = assignment.physIdToGA
-    val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, address, nodes) =>
-      val addressString = s"${address._1}.${address._2}.${address._3}"
+    val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
+      val addressString = s"$a1.$a2.$a3"
       nodes.flatMap { case PhysicalDeviceNode(nodeName, comObjects) =>
-        comObjects.map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
+        comObjects.filter(idToGroupAddress contains _.id).map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
           Assignment(addressString, nodeName, objName, idToGroupAddress(id))
         }
       }
@@ -32,7 +33,7 @@ object Programmer {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val filePath = os.pwd / filename
+    val filePath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME / filename
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, text)
   }

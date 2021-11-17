@@ -9,15 +9,22 @@ class Generator:
     A Python code generator.
     """
 
-    def __init__(self, app_name: str, devices: List[Device]):
+    def __init__(self, app_name: str, devices: List[Device], devices_json_filename: str):
         self.__app_name = app_name
         self.__devices = devices
+        self.__devices_json_filename = devices_json_filename
 
     def copy_skeleton_to_generated_app(self):
         """
         Copies the skeleton to the newly generated app.
         """
         subprocess.run(f"cp -r generator/skeleton/* {self.__app_name}", shell=True)
+
+    def move_devices_json_to_generated_app(self):
+        """
+        Moves the devices json to the newly generated app.
+        """
+        subprocess.run(f"mv {self.__devices_json_filename} {self.__app_name}", shell=True)
 
     def generate_multiton_class(self):
         """
