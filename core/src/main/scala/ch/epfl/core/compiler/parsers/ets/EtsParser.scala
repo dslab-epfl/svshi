@@ -7,7 +7,7 @@ import ch.epfl.core.utils.FileUtils._
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Path}
 import scala.util.matching.Regex
-import scala.xml.{Node, XML}
+import scala.xml.{Document, Elem, Group, Node, SpecialNode, XML}
 
 object EtsParser {
   val FILE_0_XML_NAME = "0.xml"
@@ -30,6 +30,7 @@ object EtsParser {
   val COMOBJECTREF_TAG = "ComObjectRef"
   val COMOBJECT_TAG = "ComObject"
   val DATAPOINTTYPE_PARAM = "DatapointType"
+  val OBJECTSIZE_PARAM = "ObjectSize"
   val NAME_PARAM = "Name"
   val READFLAG_PARAM = "ReadFlag"
   val WRITEFLAG_PARAM = "WriteFlag"
@@ -38,6 +39,14 @@ object EtsParser {
   val UPDATEFLAG_PARAM = "UpdateFlag"
   val READONINITFLAG_PARAM = "ReadOnInitFlag"
   val FUNCTIONTEXT_PARAM = "FunctionText"
+  val LANGUAGE_TAG = "Language"
+  val IDENTIFIER_PARAM = "Identifier"
+  val TRANSLATIONELEMENT_TAG = "TranslationElement"
+  val ATTRIBUTENAME_PARAM = "AttributeName"
+  val TRANSLATION_TAG = "Translation"
+  val APPLICATIONPROGRAM_TAG = "ApplicationProgram"
+
+  val enUsLanguageCode = "en-US"
 
   val enabledText = "Enabled"
   val disabledText = "Disabled"
@@ -68,8 +77,9 @@ object EtsParser {
       val datatype = if(dpstOpt.isDefined)
         KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
       else if(dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
+      else if(KNXDatatype.fromDPTSize(parsedioPort.objectSizeString).isDefined) KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
       else if(parsedioPort.dpt == "") Some(UnknownDPT)
-      else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
+      else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
       PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType)
@@ -89,15 +99,16 @@ object EtsParser {
     deviceInstanceXMLOpt match {
       case Some(deviceInstanceXML) => {
         val productRefId = deviceInstanceXML \@ PRODUCTREFID_PARAM
-        val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId)
-        val inOut = getDeviceInOutInCatalog(etsProjectPathString, deviceAddress)
+        val hardware2ProgramRefId = deviceInstanceXML \@ HARDWARE2PROGRAMREFID_PARAM
+        val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId, hardware2ProgramRefId)
+        val inOut = getDeviceCommObjectsInCatalog(etsProjectPathString, deviceAddress)
         ParsedDevice(deviceAddress, deviceName, inOut)
       }
       case None => throw new MalformedXMLException(s"Cannot find the XML specific to $deviceAddress in $etsProjectPathString")
     }
   })
 
-  private def getDeviceInstanceIn0Xml(deviceAddress: (String, String, String), projectRootPath: Path) = {
+  private def getDeviceInstanceIn0Xml(deviceAddress: (String, String, String), projectRootPath: Path): Option[Node] = {
     val file0XmlPath = recursiveListFiles(projectRootPath.toFile).find(file => file.getName == FILE_0_XML_NAME)
     if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
     val (areaN, lineN, deviceN) = deviceAddress
@@ -107,30 +118,44 @@ object EtsParser {
   }
 
   /**
-   * Get the name of the device in the Hardware.xml file in the ETS project
+   * Get the name of the device in the catalog entry xml file (ApplicationProgram object)
    *
    * @param etsProjectPathString the path to the etsProject file as String
    * @param productRefId   the productRefId of the device
    * @return
    */
-  private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String): String = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    val catalogID = productRefId.split('_').apply(0)
-    val folderHardwareXmlPath = recursiveListFiles(projectRootPath.toFile).find(file => file.getName == catalogID)
-    if (folderHardwareXmlPath.isEmpty || folderHardwareXmlPath.get.isFile) throw new MalformedXMLException(s"Missing folder for product with catalogID = $catalogID")
-    val fileHardwareXmlPath = recursiveListFiles(folderHardwareXmlPath.get).find(file => file.getName == HARDWARE_XML_NAME)
-    if (fileHardwareXmlPath.isEmpty) throw new MalformedXMLException(s"Missing Hardware.xml for product with catalogID = $catalogID")
-    val hardwareXml = XML.loadFile(fileHardwareXmlPath.get)
-    val productXml = (hardwareXml \\ PRODUCT_TAG).find(p => p \@ ID_PARAM == productRefId)
-    if (productXml.isEmpty) throw new MalformedXMLException(s"Impossible to find the product name in the project for productRefID = $productRefId")
-    productXml.get \@ TEXT_PARAM
+  private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(etsProjectPathString, projectRootPath => {
+    val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+    val catalogEntry = XML.loadFile(xmlPath.toFile)
+    val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
+    val originalName = applicationProgram \@ NAME_PARAM
+    val id = applicationProgram \@ ID_PARAM
+    getTranslation(catalogEntry, enUsLanguageCode, id, NAME_PARAM).getOrElse(originalName)
   })
 
-  def getDeviceInOutInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    def constructChannelNodeName(n: Node) ={
-      val typeText = n \@ TYPE_PARAM
-      val refIdText = n \@ REFID_PARAM
-      val textText =  n \@ TEXT_PARAM
-      List(typeText, refIdText, textText).filterNot(_ == "").mkString(" - ")
+  private def getApplicationProgramNode(productRefId: String, xmlPath: Path, catalogEntry: Elem) = {
+    val applicationProgramList = catalogEntry \\ APPLICATIONPROGRAM_TAG
+    if (applicationProgramList.length > 1) {
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has more than one ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    if (applicationProgramList.length < 1) {
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has no ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    val applicationProgram = applicationProgramList.head
+    applicationProgram
+  }
+
+  def getDeviceCommObjectsInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
+    def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
+      val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+      val catalogEntry = XML.loadFile(xmlPath.toFile)
+      val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
+      val appProgramId = applicationProgram \@ ID_PARAM
+      val refId = n \@ REFID_PARAM
+      val channelId = appProgramId + "_" + refId
+      val typeText = getTranslation(catalogEntry, enUsLanguageCode, channelId, TYPE_PARAM).getOrElse(n \@ TYPE_PARAM)
+      val textText =  getTranslation(catalogEntry, enUsLanguageCode, channelId, TEXT_PARAM).getOrElse(n \@ TEXT_PARAM)
+      List(typeText, refId, textText).filterNot(_ == "").mkString(" - ")
     }
 
     val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
@@ -143,9 +168,9 @@ object EtsParser {
         val nodes = groupObjectTreeInstance \\ NODES_TAG
         if (nodes.isEmpty) {
           // There is no Nodes object in the xml, but only directly the GroupObjectInstances
-          ChannelNode(defaultNodeName, (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getIOPortFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList) :: Nil
+          ChannelNode(defaultNodeName, (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList) :: Nil
         } else {
-          (nodes \\ NODE_TAG).map(n => ChannelNode(constructChannelNodeName(n), (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getIOPortFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList)).toList
+          (nodes \\ NODE_TAG).map(n => ChannelNode(constructChannelNodeName(n, productRefId, hardware2programRefId), (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList)).toList
         }
 
       }
@@ -178,7 +203,7 @@ object EtsParser {
     }
   }
 
-  private def getIOPortFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] = extractIfNotExist(etsProjectPathString, projectRootPath => {
+  private def getCommObjectsFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] = extractIfNotExist(etsProjectPathString, projectRootPath => {
     if (groupObjectInstanceId.nonEmpty) {
       // Get IOPort info in xmls
       val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
@@ -189,7 +214,7 @@ object EtsParser {
           val refId = (comObjectRef \@ REFID_PARAM)
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
-            case Some(value) =>  IOPort(constructIOPortName(value), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value)) :: Nil
+            case Some(value) =>  IOPort(constructIOPortName(value, catalogEntry), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM ) :: Nil
             case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
           }
         }
@@ -201,11 +226,45 @@ object EtsParser {
     }
   })
 
-  private def constructIOPortName(ioPortNode: Node) : String = {
-    val funText = ioPortNode \@ FUNCTIONTEXT_PARAM
-    val nameText = ioPortNode \@ NAME_PARAM
-    val textText = ioPortNode \@ TEXT_PARAM
+  private def constructIOPortName(ioPortNode: Node, catalogEntry: Elem) : String = {
+    val funText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ FUNCTIONTEXT_PARAM
+      case None => ioPortNode \@ FUNCTIONTEXT_PARAM
+    }
+    val nameText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ NAME_PARAM
+      case None => ioPortNode \@ NAME_PARAM
+    }
+    val textText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if(value != "") value else ioPortNode \@ TEXT_PARAM
+      case None => ioPortNode \@ TEXT_PARAM
+    }
     List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
+  }
+
+  /**
+   * Search for a translation for the given id and given attribute name, for the given language, if not found, return None
+   * @param xmlElem
+   * @param languageIdentifier
+   * @param refID
+   * @param attributeName
+   * @return
+   */
+  private def getTranslation(xmlElem: Elem, languageIdentifier: String, refID: String, attributeName: String) : Option[String] = {
+    val languageObjectOpt = (xmlElem \\ LANGUAGE_TAG).find(n => n \@ IDENTIFIER_PARAM == languageIdentifier)
+    if(languageObjectOpt.isDefined) {
+      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).find(n => (n \@ REFID_PARAM) == refID)
+      if (translationElementOpt.isDefined) {
+        (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == attributeName) match {
+          case Some(value) => Some(value \@ TEXT_PARAM)
+          case None => None
+        }
+      }else {
+        None
+      }
+    } else {
+      None
+    }
   }
 
   private def productCatalogXMLFile(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): Path = extractIfNotExist(etsProjectPathString, projectRootPath => {
