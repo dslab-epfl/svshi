@@ -3,6 +3,7 @@
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
 
 - [Formal Verification for Smart Infrastructure](#formal-verification-for-smart-infrastructure)
+  - [Requirements](#requirements)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
   - [Running the applications](#running-the-applications)
@@ -13,6 +14,13 @@
     - [Tests](#tests)
 
 This project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+
+## Requirements
+
+- Unix-based OS (Linux or macOS).
+- [Python](https://www.python.org) 3.8 or newer.
+- [Scala](https://www.scala-lang.org) 2.13.x or newer. Scala 3 is not yet supported.
+- [sbt](https://www.scala-sbt.org) 1.5.5 or newer.
 
 ## Supported devices
 
@@ -26,7 +34,7 @@ This project is about developing a platform/runtime/toolchain for developing and
 To develop an app for Pistis:
 
 1. Create the `app_prototypical_structure.json` file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
-2. Run the app generator, as explained in the [app generator usage](#usage) section, to get the app skeleton.
+2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton.
 3. Inside `core/`, run Pistis to generate the bindings with `sbt run generateBindings ../app-library ../ets.knxproj`, where the first argument is the app library path, while the second one is the path to the ETS project file.
 4. Map the right physical ids given in `app-library/physical_structure.json` to the right device in `app-library/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 5. Write your app.
@@ -36,7 +44,7 @@ To develop an app for Pistis:
 
 To run all the installed apps:
 
-1. In ETS, assign to each communication object the right group address as presented in `assignments/assignment.txt`.
+1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
 2. Execute `./runtime.sh`.
 
 ## App generator
