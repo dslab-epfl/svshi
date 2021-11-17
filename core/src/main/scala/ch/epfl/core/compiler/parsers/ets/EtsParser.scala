@@ -101,7 +101,7 @@ object EtsParser {
         val productRefId = deviceInstanceXML \@ PRODUCTREFID_PARAM
         val hardware2ProgramRefId = deviceInstanceXML \@ HARDWARE2PROGRAMREFID_PARAM
         val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId, hardware2ProgramRefId)
-        val inOut = getDeviceInOutInCatalog(etsProjectPathString, deviceAddress)
+        val inOut = getDeviceCommObjectsInCatalog(etsProjectPathString, deviceAddress)
         ParsedDevice(deviceAddress, deviceName, inOut)
       }
       case None => throw new MalformedXMLException(s"Cannot find the XML specific to $deviceAddress in $etsProjectPathString")
@@ -125,27 +125,37 @@ object EtsParser {
    * @return
    */
   private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(etsProjectPathString, projectRootPath => {
-
     val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
     val catalogEntry = XML.loadFile(xmlPath.toFile)
-    val applicationProgramList = (catalogEntry \\ APPLICATIONPROGRAM_TAG)
-    if(applicationProgramList.length > 1){
-      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has more than one ApplicationProgram object in the xml (file=$xmlPath)!")
-    }
-    if(applicationProgramList.length < 1){
-      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has no ApplicationProgram object in the xml (file=$xmlPath)!")
-    }
-    val originalName = applicationProgramList.head \@ NAME_PARAM
-    val id = applicationProgramList.head \@ ID_PARAM
+    val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
+    val originalName = applicationProgram \@ NAME_PARAM
+    val id = applicationProgram \@ ID_PARAM
     getTranslation(catalogEntry, enUsLanguageCode, id, NAME_PARAM).getOrElse(originalName)
   })
 
-  def getDeviceInOutInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
-    def constructChannelNodeName(n: Node) ={
-      val typeText = n \@ TYPE_PARAM
-      val refIdText = n \@ REFID_PARAM
-      val textText =  n \@ TEXT_PARAM
-      List(typeText, refIdText, textText).filterNot(_ == "").mkString(" - ")
+  private def getApplicationProgramNode(productRefId: String, xmlPath: Path, catalogEntry: Elem) = {
+    val applicationProgramList = catalogEntry \\ APPLICATIONPROGRAM_TAG
+    if (applicationProgramList.length > 1) {
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has more than one ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    if (applicationProgramList.length < 1) {
+      throw new MalformedXMLException(s"The catalog applicationProgram for the device with productRefId=$productRefId has no ApplicationProgram object in the xml (file=$xmlPath)!")
+    }
+    val applicationProgram = applicationProgramList.head
+    applicationProgram
+  }
+
+  def getDeviceCommObjectsInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
+    def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
+      val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+      val catalogEntry = XML.loadFile(xmlPath.toFile)
+      val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
+      val appProgramId = applicationProgram \@ ID_PARAM
+      val refId = n \@ REFID_PARAM
+      val channelId = appProgramId + "_" + refId
+      val typeText = getTranslation(catalogEntry, enUsLanguageCode, channelId, TYPE_PARAM).getOrElse(n \@ TYPE_PARAM)
+      val textText =  getTranslation(catalogEntry, enUsLanguageCode, channelId, TEXT_PARAM).getOrElse(n \@ TEXT_PARAM)
+      List(typeText, refId, textText).filterNot(_ == "").mkString(" - ")
     }
 
     val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
@@ -158,9 +168,9 @@ object EtsParser {
         val nodes = groupObjectTreeInstance \\ NODES_TAG
         if (nodes.isEmpty) {
           // There is no Nodes object in the xml, but only directly the GroupObjectInstances
-          ChannelNode(defaultNodeName, (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getIOPortFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList) :: Nil
+          ChannelNode(defaultNodeName, (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList) :: Nil
         } else {
-          (nodes \\ NODE_TAG).map(n => ChannelNode(constructChannelNodeName(n), (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getIOPortFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList)).toList
+          (nodes \\ NODE_TAG).map(n => ChannelNode(constructChannelNodeName(n, productRefId, hardware2programRefId), (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList)).toList
         }
 
       }
@@ -193,7 +203,7 @@ object EtsParser {
     }
   }
 
-  private def getIOPortFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] = extractIfNotExist(etsProjectPathString, projectRootPath => {
+  private def getCommObjectsFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] = extractIfNotExist(etsProjectPathString, projectRootPath => {
     if (groupObjectInstanceId.nonEmpty) {
       // Get IOPort info in xmls
       val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
