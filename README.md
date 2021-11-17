@@ -15,7 +15,7 @@ This project is about developing a platform/runtime/toolchain for developing and
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types.
 
-This file has to be named `app_prototypical_structure.json`.
+This file has to be named `app_prototypical_structure.json` and needs to be saved at the root of the project, i.e. the same level as `core`, `app-library` etc. Once the app is generated, it is moved to the app folder.
 
 Here is an example:
 
