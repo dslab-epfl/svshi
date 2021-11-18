@@ -10,6 +10,4 @@ def main():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(with_knx_client(GATEWAY_ADDRESS, main))
-    loop.close()
+    asyncio.run(with_knx_client(GATEWAY_ADDRESS, main))
