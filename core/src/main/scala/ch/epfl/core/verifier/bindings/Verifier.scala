@@ -29,42 +29,24 @@ object Verifier {
         val protoDevice = appProtoStructure.deviceInstances.find(d => d.name == deviceInstBinding.name).get
         deviceInstBinding.binding match {
           case BinarySensorBinding(typeString, physDeviceId) => {
-            checkOnePhysIdDevice(physicalStructure, deviceInstBinding, protoDevice, typeString, physDeviceId)
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
           case SwitchBinding(typeString, writePhysDeviceId, readPhysDeviceId) => {
-            val writeTypeIo = deviceInstBinding.binding.getIOTypes(writePhysDeviceId)
-            val writePhysicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, writePhysDeviceId)
-            if (writePhysicalDeviceOpt.isEmpty) {
-              throw new ErrorNotBoundToPhysicalDeviceException(s"The device name = ${deviceInstBinding.name} with writePhysDeviceId = $writePhysDeviceId is not bound to a physical device's communication object!")
-            }
-            val writePhysicalDevice = writePhysicalDeviceOpt.get
-            val writeCommObject = getCommObjectByBoundId(writePhysDeviceId, writePhysicalDevice).get
-            // commObject IS DEFINED by construction
-            checkCompatibilityIOTypes(writeTypeIo, writeCommObject.ioType, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}, writePhysDeviceId; physical device address = ${writePhysicalDevice.address}, commObject = ${writeCommObject.name}, physicalId = ${writeCommObject.id}")
-
-            val readTypeIo = deviceInstBinding.binding.getIOTypes(readPhysDeviceId)
-            val readPhysicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, readPhysDeviceId)
-            if (readPhysicalDeviceOpt.isEmpty) {
-              throw new ErrorNotBoundToPhysicalDeviceException(s"The device name = ${deviceInstBinding.name} with readPhysDeviceId = $readPhysDeviceId is not bound to a physical device's communication object!")
-            }
-            val readPhysicalDevice = readPhysicalDeviceOpt.get
-            val readCommObject = getCommObjectByBoundId(readPhysDeviceId, readPhysicalDevice).get
-            // commObject IS DEFINED by construction
-            checkCompatibilityIOTypes(readTypeIo, readCommObject.ioType, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}, readPhysDeviceId; physical device address = ${readPhysicalDevice.address}, commObject = ${readCommObject.name}, physicalId = ${readCommObject.id}")
-
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, writePhysDeviceId)
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, readPhysDeviceId)
           }
           case TemperatureSensorBinding(typeString, physDeviceId) => {
-            checkOnePhysIdDevice(physicalStructure, deviceInstBinding, protoDevice, typeString, physDeviceId)
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
           case HumiditySensorBinding(typeString, physDeviceId) => {
-            checkOnePhysIdDevice(physicalStructure, deviceInstBinding, protoDevice, typeString, physDeviceId)
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
         }
       })
     })
   }
 
-  private def checkOnePhysIdDevice(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, typeString: String, physDeviceId: Int): Unit = {
+  private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): Unit = {
     val typeIo = deviceInstBinding.binding.getIOTypes(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
