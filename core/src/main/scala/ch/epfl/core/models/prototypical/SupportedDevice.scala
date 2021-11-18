@@ -1,8 +1,7 @@
 package ch.epfl.core.models.prototypical
 
-sealed trait SupportedDevice {
+sealed trait SupportedDevice
 
-}
 object SupportedDevice {
   val defaultPhysicalId: Int = -1
   final val binarySensorString = "binary"

@@ -19,8 +19,8 @@ object Main extends App {
     
     val physicalStructure = EtsParser.parseEtsProjectFile(args(2))
     if (task == "compile") {
-      val (newAppsCompiledLibrary, existingAppsCompiledLibrary) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
-      val verifiedLibrary = verifier.Verifier.verify(newAppsCompiledLibrary, existingAppsCompiledLibrary)
+      val compiledLibrary = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
+      val verifiedLibrary = verifier.Verifier.verify(compiledLibrary)
     } else if (task == "generatebindings") {
       compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, physicalStructure)
     } else {

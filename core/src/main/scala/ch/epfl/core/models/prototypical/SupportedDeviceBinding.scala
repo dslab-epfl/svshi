@@ -1,5 +1,6 @@
 package ch.epfl.core.models.prototypical
 
+import ch.epfl.core.models.physical.{IOType, In, Out}
 import upickle.default.{ReadWriter, macroRW}
 
 
@@ -8,6 +9,7 @@ import upickle.default.{ReadWriter, macroRW}
 
 sealed trait SupportedDeviceBinding {
   def getBoundIds: List[Int]
+  def getIOTypes: Map[Int, IOType]
 }
 object SupportedDeviceBinding {
   implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)
@@ -15,6 +17,7 @@ object SupportedDeviceBinding {
 
 case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = List((physDeviceId, Out)).toMap
 }
 object BinarySensorBinding {
   implicit val rw: ReadWriter[BinarySensorBinding] =
@@ -22,6 +25,7 @@ object BinarySensorBinding {
 }
 case class SwitchBinding(typeString: String, writePhysDeviceId: Int, readPhysDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(writePhysDeviceId, readPhysDeviceId)
+  override def getIOTypes: Map[Int, IOType] = List((writePhysDeviceId, In), (readPhysDeviceId, Out)).toMap
 }
 object SwitchBinding {
   implicit val rw: ReadWriter[SwitchBinding] =
@@ -29,6 +33,7 @@ object SwitchBinding {
 }
 case class TemperatureSensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = List((physDeviceId, Out)).toMap
 }
 object TemperatureSensorBinding {
   implicit val rw: ReadWriter[TemperatureSensorBinding] =
@@ -36,6 +41,7 @@ object TemperatureSensorBinding {
 }
 case class HumiditySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = List((physDeviceId, Out)).toMap
 }
 object HumiditySensorBinding {
   implicit val rw: ReadWriter[HumiditySensorBinding] =
