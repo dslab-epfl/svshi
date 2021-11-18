@@ -71,7 +71,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures) shouldEqual Nil
   }
 
   "verifyBindings" should "detects an OUT physical to IN proto Switch write" in {
@@ -136,7 +136,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [ErrorIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [ErrorIOType]
+    res.head.msg.contains("212") shouldEqual true
   }
 
   "verifyBindings" should "detects an IN physical to OUT proto Switch read" in {
@@ -201,7 +204,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [ErrorIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [ErrorIOType]
+    res.head.msg.contains("211") shouldEqual true
   }
 
   "verifyBindings" should "detects an IN physical to OUT proto HumiditySensor" in {
@@ -266,7 +272,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [ErrorIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [ErrorIOType]
+    res.head.msg.contains("313") shouldEqual true
   }
 
   "verifyBindings" should "detects an IN physical to OUT proto Temperature" in {
@@ -331,7 +340,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [ErrorIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [ErrorIOType]
+    res.head.msg.contains("322") shouldEqual true
   }
 
   "verifyBindings" should "detects an IN physical to OUT proto Binary" in {
@@ -396,7 +408,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [ErrorIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [ErrorIOType]
+    res.head.msg.contains("311") shouldEqual true
   }
 
   "verifyBindings" should "throw detect an Unknown IOType for proto Binary" in {
@@ -461,7 +476,11 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [WarningIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [WarningIOType]
+    res.head.msg.contains("device1") shouldEqual true
+    res.head.msg.contains("Unknown") shouldEqual true
   }
 
   "verifyBindings" should "throw detect an Unknown IOType for proto Temperature" in {
@@ -526,7 +545,11 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [WarningIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [WarningIOType]
+    res.head.msg.contains("device3") shouldEqual true
+    res.head.msg.contains("Unknown") shouldEqual true
   }
 
   "verifyBindings" should "throw detect an Unknown IOType for proto Humidity" in {
@@ -591,8 +614,13 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [WarningIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [WarningIOType]
+    res.head.msg.contains("device4") shouldEqual true
+    res.head.msg.contains("Unknown") shouldEqual true
   }
+
   "verifyBindings" should "throw detect an Unknown IOType for proto Switch read" in {
 
     val device1Physical = PhysicalDevice(
@@ -655,7 +683,11 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [WarningIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [WarningIOType]
+    res.head.msg.contains("device2") shouldEqual true
+    res.head.msg.contains("Unknown") shouldEqual true
   }
 
   "verifyBindings" should "throw detect an Unknown IOType for proto Switch write" in {
@@ -720,6 +752,10 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
-    an [WarningIOType] should be thrownBy  verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    val res = verifyBindings(physicalStructure, appLibraryBindings, appPrototypicalStructures)
+    res.length shouldEqual 1
+    res.head shouldBe an [WarningIOType]
+    res.head.msg.contains("device2") shouldEqual true
+    res.head.msg.contains("Unknown") shouldEqual true
   }
 }
