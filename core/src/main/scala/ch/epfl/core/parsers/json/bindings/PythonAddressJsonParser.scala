@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.parsers.json.bindings
+package ch.epfl.core.parsers.json.bindings
 
 import ch.epfl.core.models.application.Application
 import ch.epfl.core.models.bindings.GroupAddressAssignment

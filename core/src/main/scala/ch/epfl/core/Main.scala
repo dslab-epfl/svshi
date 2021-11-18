@@ -1,6 +1,6 @@
 package ch.epfl.core
 
-import ch.epfl.core.compiler.parsers.ets.EtsParser
+import ch.epfl.core.parsers.ets.EtsParser
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 

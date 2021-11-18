@@ -2,8 +2,8 @@ package ch.epfl.core.compiler
 
 import ch.epfl.core.compiler.binding._
 import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
-import ch.epfl.core.compiler.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
-import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser
+import ch.epfl.core.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
+import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.models.application.ApplicationLibrary
 import ch.epfl.core.models.physical._
 import ch.epfl.core.utils.Constants

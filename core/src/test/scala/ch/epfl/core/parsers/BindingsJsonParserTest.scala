@@ -1,7 +1,7 @@
-package ch.epfl.core.compiler.parsers
+package ch.epfl.core.parsers
 
 
-import ch.epfl.core.compiler.parsers.json.bindings.BindingsJsonParser
+import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
 import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
