@@ -4,7 +4,7 @@ sealed trait BindingsVerifierReturnValues {
   def msg: String
 }
 
-case class ErrorNotBoundToPhysicalDeviceException(msg: String) extends BindingsVerifierReturnValues
+case class ErrorNotBoundToPhysicalDevice(msg: String) extends BindingsVerifierReturnValues
 case class ErrorKNXDatatype(msg: String) extends BindingsVerifierReturnValues
 case class WarningKNXDatatype(msg: String) extends BindingsVerifierReturnValues
 case class ErrorIOType(msg: String) extends BindingsVerifierReturnValues

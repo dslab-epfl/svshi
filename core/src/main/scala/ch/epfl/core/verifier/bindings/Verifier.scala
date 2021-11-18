@@ -50,7 +50,7 @@ object Verifier {
     val typeIo = deviceInstBinding.binding.getIOTypes(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
-      return List(ErrorNotBoundToPhysicalDeviceException(s"The device name = ${deviceInstBinding.name} with physDeviceId = $physDeviceId is not bound to a physical device's communication object!"))
+      return List(ErrorNotBoundToPhysicalDevice(s"The device name = ${deviceInstBinding.name} with physDeviceId = $physDeviceId is not bound to a physical device's communication object!"))
     }
     val physicalDevice = physicalDeviceOpt.get
     val commObject = getCommObjectByBoundId(physDeviceId, physicalDevice).get
