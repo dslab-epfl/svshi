@@ -28,6 +28,7 @@ object Compiler {
     }
     Programmer.outputProgrammingFile(gaAssignment)
 
+    // TODO move new app in the existing library
     existingAppsLibrary
   }
 
