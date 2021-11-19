@@ -13,7 +13,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     val structure = EtsParser.parseEtsProjectFile(testFilePathString)
     println(structure)
     val device1 = PhysicalDevice(
-      name = "SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC",
+      name = "Switch Standard 2-fold 16A/1.0a",
       address = ("1", "1", "1"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", Nil),
@@ -45,7 +45,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
 
     val device2 =
       PhysicalDevice(
-        name = "STANDARDdue Taster 1-4fach Feuchtigkeitsschutz",
+        name = "Push-button 1- to 4-gang moisture protection",
         address = ("1", "1", "2"),
         nodes = List(
           PhysicalDeviceNode(
@@ -56,7 +56,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
       )
 
     val device3 = PhysicalDevice(
-      name = "SBR/U6.0 HVAC-Gerät, 6fach BE",
+      name = "HVAC device, 6gang BE/1",
       address = ("1", "1", "3"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", List()),
@@ -65,27 +65,27 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-3 - RTC",
           List(
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_StellgroesseHeizen_Switch - RTC: Stellgröße Heizen",
+              "Output - Obj_StellgroesseHeizen_Switch - RTC: Heating control value",
               DPT5,
               Out
             ),
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Betriebsart_Single - RTC: Betriebsmodus Normal",
+              "Input/Output - Obj_Betriebsart_Single - RTC: Normal operating mode",
               DPT20,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Eingang - Obj_BetriebsartUeberlagert_Single - RTC: Betriebsmodus Übersteuerung",
+              "Input - Obj_BetriebsartUeberlagert_Single - RTC: Override operating mode",
               DPT20,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_AktuelleIstTemperatur - RTC: Ist-Temperatur",
+              "Output - Obj_AktuelleIstTemperatur - RTC: Actual temperature",
               DPT9,
               Out
           ),
             PhysicalDeviceCommObject.from(
-              "Ausgang - Obj_AktuellerSollwert - RTC: Aktueller Sollwert",
+              "Output - Obj_AktuellerSollwert - RTC: actual setpoint",
               DPT9,
               Out
             )
@@ -95,7 +95,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-4 - Function block 1",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S1: Schalten",
+              "Input/Output - Obj_Wert1Bit - S1: Switching",
               DPT14,
               InOut
             )
@@ -105,7 +105,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-5 - Function block 2",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S3: Schalten",
+              "Input/Output - Obj_Wert1Bit - S3: Switching",
               DPT14,
               InOut
 
@@ -116,7 +116,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           "Channel - CH-6 - Function block 3",
           List(
             PhysicalDeviceCommObject.from(
-              "Ein-/Ausgang - Obj_Wert1Bit - S5: Schalten",
+              "Input/Output - Obj_Wert1Bit - S5: Switching",
               DPT14,
               InOut
             )
@@ -127,7 +127,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     val device4 = PhysicalDevice(
-      name = "AC/S1.2.1 Application Controller, BACnet",
+      name = "HVAC Application/1.0a with BACnet",
       address = ("1", "1", "4"),
       nodes = List(
         PhysicalDeviceNode(
@@ -143,36 +143,36 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     val device5 = PhysicalDevice(
-      name = "Vanne motorisée",
+      name = "TL501A V1.1",
       address = ("1", "2", "1"),
       nodes = List(
         PhysicalDeviceNode(
           "Default",
           List(
             PhysicalDeviceCommObject.from(
-              "Commande % - Vanne - Vanne",
+              "Command % - Vanne - Valve",
               UnknownDPT,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Forçage % - Vanne - Vanne",
-              UnknownDPT,
+              "Priority % - Vanne - Valve",
+              DPT1,
               InOut
             ),
-            PhysicalDeviceCommObject.from("Arrêt - Vanne - Vanne", UnknownDPT, InOut),
+            PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut),
             PhysicalDeviceCommObject.from(
-              "Position vanne % - Indication d'état - Indication d'état",
-              UnknownDPT,
-              InOut
-            ),
-            PhysicalDeviceCommObject.from(
-              "Valeur commande la plus élevée - Indication d'état - Indication d'état",
+              "Valve position % - Indication d'état - Status indication",
               UnknownDPT,
               InOut
             ),
             PhysicalDeviceCommObject.from(
-              "Présence / Absence commande - Indication d'état - Indication d'état",
+              "Highest command value - Indication d'état - Status indication",
               UnknownDPT,
+              InOut
+            ),
+            PhysicalDeviceCommObject.from(
+              "Presence / Absence command - Indication d'état - Status indication",
+              DPT1,
               InOut
             )
           )
@@ -181,34 +181,34 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     )
 
     structure.deviceInstances.exists(p =>
-      p.name == device1.name
+      p.address == device1.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device1.name
+      p.address == device1.address
     ) shouldEqual Some(device1)
     structure.deviceInstances.exists(p =>
-      p.name == device2.name
+      p.address == device2.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device2.name
+      p.address == device2.address
     ) shouldEqual Some(device2)
     structure.deviceInstances.exists(p =>
-      p.name == device3.name
+      p.address == device3.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device3.name
+      p.address == device3.address
     ) shouldEqual Some(device3)
     structure.deviceInstances.exists(p =>
-      p.name == device4.name
+      p.address == device4.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device4.name
+      p.address == device4.address
     ) shouldEqual Some(device4)
     structure.deviceInstances.exists(p =>
-      p.name == device5.name
+      p.address == device5.address
     ) shouldEqual true
     structure.deviceInstances.find(p =>
-      p.name == device5.name
+      p.address == device5.address
     ) shouldEqual Some(device5)
   }
 }
