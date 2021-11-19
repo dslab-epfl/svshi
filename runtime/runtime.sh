@@ -4,7 +4,7 @@ coilmq
 # TODO: Run the runtime verifier
 
 # Run all the apps
-cd app-library
+cd ../app-library
 for d in */ ; do
     cd $d
     ./run.sh &
