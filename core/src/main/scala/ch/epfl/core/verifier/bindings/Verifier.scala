@@ -13,7 +13,7 @@ import java.nio.file.Path
 
 object Verifier {
 
-  def verify(appLibrary: ApplicationLibrary): (List[BindingsVerifierReturnValues], ApplicationLibrary) = {
+  def verify(appLibrary: ApplicationLibrary): (List[BindingsVerifierErrors], ApplicationLibrary) = {
     val physicalStructure = PhysicalStructureJsonParser.parse(Path.of(appLibrary.path).resolve(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString)
     val bindings = BindingsJsonParser.parse(Path.of(appLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
     val appPrototypicalStructures = appLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
@@ -21,7 +21,7 @@ object Verifier {
     (returnValues, appLibrary)
   }
 
-  def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierReturnValues] = {
+  def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
       val appProtoStructure = appPrototypicalStructures(appName)
@@ -46,7 +46,7 @@ object Verifier {
     })
   }
 
-  def verifyBindingsIoTypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierReturnValues] = {
+  def verifyBindingsIoTypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
       val appProtoStructure = appPrototypicalStructures(appName)
@@ -71,7 +71,7 @@ object Verifier {
     })
   }
 
-  private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierReturnValues] = {
+  private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierErrors] = {
     val knxDpt = deviceInstBinding.binding.getKNXDpt(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
@@ -83,7 +83,7 @@ object Verifier {
     checkCompatibilityKNXTypes(knxDpt, commObject.datatype, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}; physical device address = ${physicalDevice.address}, commObject = ${commObject.name}, physicalId = ${commObject.id}")
   }
 
-  private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierReturnValues] = {
+  private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierErrors] = {
     val typeIo = deviceInstBinding.binding.getIOTypes(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
@@ -95,7 +95,7 @@ object Verifier {
     checkCompatibilityIOTypes(typeIo, commObject.ioType, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}; physical device address = ${physicalDevice.address}, commObject = ${commObject.name}, physicalId = ${commObject.id}")
   }
 
-  private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierReturnValues] = {
+  private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierErrors] = {
     dpt1 match {
       case UnknownDPT => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
       case _ => dpt2 match {
@@ -106,7 +106,7 @@ object Verifier {
     }
   }
 
-  private def checkCompatibilityIOTypes(ioType1: IOType, ioType2: IOType, msgDevicesDescription: String): List[BindingsVerifierReturnValues] = {
+  private def checkCompatibilityIOTypes(ioType1: IOType, ioType2: IOType, msgDevicesDescription: String): List[BindingsVerifierErrors] = {
     ioType1 match {
       case In => ioType2 match {
         case Out =>  List(ErrorIOType(s"$msgDevicesDescription: type '$ioType1' is incompatible with type '$ioType2'!"))
