@@ -3,6 +3,9 @@ import subprocess
 
 
 class Verifier:
+    """
+    App verifier.
+    """
     def __init__(self, apps_pids: dict):
         self.__apps_pids = apps_pids
 
@@ -18,5 +21,3 @@ class Verifier:
         device = message.device
         data = message.data
         print(app, device, data)
-        if app == "trace_test":
-            self.__kill_app(app)

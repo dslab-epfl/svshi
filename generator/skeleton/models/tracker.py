@@ -50,13 +50,13 @@ class StompWritesTracker(WritesTracker):
 
     def __init__(self):
         super().__init__()
-        self.conn = stomp.Connection()
+        self.__conn = stomp.Connection()
 
     def connect(self):
-        self.conn.connect(username=self.__APP_NAME, wait=True)
+        self.__conn.connect(username=self.__APP_NAME, wait=True)
 
     def disconnect(self):
-        self.conn.disconnect()
+        self.__conn.disconnect()
 
     def save(self, device: "Device", data: str):
         msg = {
@@ -65,4 +65,4 @@ class StompWritesTracker(WritesTracker):
             "deviceName": device.name,
             "data": data,
         }
-        self.conn.send(self.__QUEUE_NAME, json.dumps(msg))
+        self.__conn.send(self.__QUEUE_NAME, json.dumps(msg))

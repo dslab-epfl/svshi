@@ -65,7 +65,7 @@ class _ReconnectListener(ConnectionListener):
         self.__conn = conn
 
     def on_disconnected(self):
-        print("Disconnected, reconnecting... ", end=None)
+        print("Disconnected, reconnecting... ", end="")
         _connect_and_subscribe(self.__conn)
         print("done!")
 
@@ -75,10 +75,9 @@ class _MessageListener(ConnectionListener):
         self.__callback = callback
 
     def on_error(self, frame):
-        print('Received an error "%s"' % frame.body)
+        print('Warning: received an error "%s"' % frame.body)
 
     def on_message(self, frame):
-        print('Received a message "%s"' % frame.body)
         msg = json.loads(frame.body)
         self.__callback(
             Message(
