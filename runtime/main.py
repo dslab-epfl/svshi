@@ -1,8 +1,6 @@
 from verifier.verifier import Verifier
 from verifier.tracker import StompWritesTracker
-import signal
 import argparse
-import subprocess
 
 
 def parse_args():
@@ -20,8 +18,9 @@ if __name__ == "__main__":
     try:
         apps = {s.split("/")[0]: s.split("/")[1] for s in apps_pids}
         with StompWritesTracker() as tracker:
-            verifier = Verifier()
+            verifier = Verifier(apps)
             tracker.on_message(verifier.verify_write)
-            signal.pause()
+            while True:
+                pass
     except KeyboardInterrupt:
         print("Exiting...")

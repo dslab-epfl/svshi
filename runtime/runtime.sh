@@ -24,5 +24,14 @@ python3 main.py -l "${apps_pid[@]}"
 
 sleep 1
 
+# Kill all remaining apps
+for app in "${apps_pid[@]}"; do
+    arr=(${app//// })
+    pid=${arr[1]}
+    kill $pid  
+done
+
+sleep 1
+
 # Kill the Stomp server
 kill $coilmq_pid
