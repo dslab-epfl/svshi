@@ -111,20 +111,16 @@ object Verifier {
       case In => ioType2 match {
         case Out =>  List(ErrorIOType(s"$msgDevicesDescription: type '$ioType1' is incompatible with type '$ioType2'!"))
         case Unknown =>  List(WarningIOType(s"$msgDevicesDescription: one ioType is Unknown, attention required!"))
-        case In => Nil
-        case InOut => Nil
+        case _ => Nil
       }
       case Out =>  ioType2 match {
         case Unknown =>  List(WarningIOType(s"$msgDevicesDescription: one ioType is Unknown, attention required!"))
         case In =>  List(ErrorIOType(s"$msgDevicesDescription: type '$ioType1' is incompatible with type '$ioType2'!"))
-        case Out => Nil
-        case InOut => Nil
+        case _ => Nil
       }
       case InOut => ioType2 match {
         case Unknown =>  List(WarningIOType(s"$msgDevicesDescription: one ioType is Unknown, attention required!"))
-        case In => Nil
-        case Out => Nil
-        case InOut => Nil
+        case _ => Nil
       }
       case Unknown => List(WarningIOType(s"$msgDevicesDescription: one ioType is Unknown, attention required!"))
     }
