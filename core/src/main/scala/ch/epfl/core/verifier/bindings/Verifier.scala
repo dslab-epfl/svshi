@@ -13,12 +13,15 @@ import java.nio.file.Path
 
 object Verifier {
 
-  def verify(appLibrary: ApplicationLibrary): (List[BindingsVerifierErrors], ApplicationLibrary) = {
-    val physicalStructure = PhysicalStructureJsonParser.parse(Path.of(appLibrary.path).resolve(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString)
-    val bindings = BindingsJsonParser.parse(Path.of(appLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
-    val appPrototypicalStructures = appLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary): (List[BindingsVerifierErrors], ApplicationLibrary, ApplicationLibrary) = {
+    val combinedApps = newAppLibrary.apps ++ existingAppsLibrary.apps
+    val physicalStructure = PhysicalStructureJsonParser.parse(Path.of(existingAppsLibrary.path).resolve(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString)
+    val bindings = BindingsJsonParser.parse(Path.of(newAppLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
+    val existingAppPrototypicalStructures = existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+    val newAppPrototypicalStructures = newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+    val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
     val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++ verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures)
-    (returnValues, appLibrary)
+    (returnValues, newAppLibrary, existingAppsLibrary)
   }
 
   def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
