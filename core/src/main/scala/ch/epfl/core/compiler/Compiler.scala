@@ -22,6 +22,9 @@ object Compiler {
 
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
+
+    generateGroupAddressesList(gaAssignment.physIdToGA.values)
+
     for (app <- existingAppsLibrary.apps.appendedAll(newAppsLibrary.apps)) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
       PythonAddressJsonParser.writeToFile(Path.of(app.appFolderPath).resolve(Path.of(Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME)).toString, pythonAddr)
@@ -33,9 +36,20 @@ object Compiler {
   }
 
   def generateBindingsFiles(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): Unit = {
-    PhysicalStructureJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString, physicalStructure)
+    PhysicalStructureJsonParser.writeToFile(
+      Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
+      physicalStructure
+    )
     val appLibraryBindings = Binding.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary)
     BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
+  }
+
+  private def generateGroupAddressesList(groupAddresses: Iterable[GroupAddress]) = {
+    val list = GroupAddressesList(groupAddresses.map(_.toString()).toList)
+    val json = upickle.default.write(list)
+    val filePath = os.pwd / os.up / Constants.GENERATED_FOLDER_NAME / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
+    if (os.exists(filePath)) os.remove(filePath)
+    os.write(filePath, json)
   }
 
 }
