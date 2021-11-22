@@ -25,10 +25,10 @@ object Programmer {
       }
     }
     val tree = assignments.groupBy(_.deviceAddress).map { case (deviceAddress, assignments) =>
-      s"device address $deviceAddress\n" + assignments
+      s"device address '$deviceAddress'\n" + assignments
         .groupBy(_.nodeName)
         .map { case (nodeName, assigns) =>
-          s"  node $nodeName\n" + assigns.map(a => s"    comm object ${a.commObjectName} => group address ${a.groupAddress}").mkString("\n")
+          s"  node '$nodeName'\n" + assigns.map(a => s"    comm object '${a.commObjectName}' => group address '${a.groupAddress}'").mkString("\n")
         }
         .mkString("\n")
     }

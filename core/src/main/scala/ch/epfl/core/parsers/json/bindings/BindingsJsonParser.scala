@@ -1,6 +1,6 @@
-package ch.epfl.core.compiler.parsers.json.bindings
+package ch.epfl.core.parsers.json.bindings
 
-import ch.epfl.core.compiler.parsers.json.JsonParsingException
+import ch.epfl.core.parsers.json.JsonParsingException
 import ch.epfl.core.models.prototypical.AppLibraryBindings
 import upickle.default.write
 

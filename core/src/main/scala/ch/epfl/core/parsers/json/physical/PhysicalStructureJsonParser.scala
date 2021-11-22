@@ -1,6 +1,6 @@
-package ch.epfl.core.compiler.parsers.json.physical
+package ch.epfl.core.parsers.json.physical
 
-import ch.epfl.core.compiler.parsers.json.{JsonParsingException, SystemStructureException}
+import ch.epfl.core.parsers.json.{JsonParsingException, SystemStructureException}
 import ch.epfl.core.models.physical._
 import upickle.default.write
 

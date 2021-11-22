@@ -2,8 +2,8 @@ package ch.epfl.core.compiler
 
 import ch.epfl.core.compiler.binding._
 import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
-import ch.epfl.core.compiler.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
-import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser
+import ch.epfl.core.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
+import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.models.application.ApplicationLibrary
 import ch.epfl.core.models.physical._
 import ch.epfl.core.utils.Constants
@@ -13,7 +13,7 @@ import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATE
 import java.nio.file.Path
 
 object Compiler {
-  def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): ApplicationLibrary = {
+  def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary) = {
     //TODO
     // here we need to read assignment of physical communicationObjects to XKNX stuff
     // assign Group addresses to communicationObject
@@ -28,7 +28,8 @@ object Compiler {
     }
     Programmer.outputProgrammingFile(gaAssignment)
 
-    existingAppsLibrary
+    // TODO move new app in the existing library
+    (newAppsLibrary, existingAppsLibrary)
   }
 
   def generateBindingsFiles(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): Unit = {

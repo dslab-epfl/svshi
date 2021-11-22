@@ -1,6 +1,6 @@
-package ch.epfl.core.compiler.parsers.json.prototype
+package ch.epfl.core.parsers.json.prototype
 
-import ch.epfl.core.compiler.parsers.json.JsonParsingException
+import ch.epfl.core.parsers.json.JsonParsingException
 import ch.epfl.core.models.prototypical._
 
 import scala.io.Source

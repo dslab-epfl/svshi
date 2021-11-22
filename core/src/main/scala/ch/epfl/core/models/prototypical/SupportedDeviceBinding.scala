@@ -1,5 +1,6 @@
 package ch.epfl.core.models.prototypical
 
+import ch.epfl.core.models.physical.{DPT1, DPT9, IOType, In, KNXDatatype, Out}
 import upickle.default.{ReadWriter, macroRW}
 
 
@@ -8,6 +9,8 @@ import upickle.default.{ReadWriter, macroRW}
 
 sealed trait SupportedDeviceBinding {
   def getBoundIds: List[Int]
+  def getIOTypes: Map[Int, IOType]
+  def getKNXDpt: Map[Int, KNXDatatype]
 }
 object SupportedDeviceBinding {
   implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)
@@ -15,6 +18,9 @@ object SupportedDeviceBinding {
 
 case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
+
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1))
 }
 object BinarySensorBinding {
   implicit val rw: ReadWriter[BinarySensorBinding] =
@@ -22,6 +28,8 @@ object BinarySensorBinding {
 }
 case class SwitchBinding(typeString: String, writePhysDeviceId: Int, readPhysDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(writePhysDeviceId, readPhysDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((writePhysDeviceId, In), (readPhysDeviceId, Out))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((writePhysDeviceId, DPT1), (readPhysDeviceId, DPT1))
 }
 object SwitchBinding {
   implicit val rw: ReadWriter[SwitchBinding] =
@@ -29,6 +37,8 @@ object SwitchBinding {
 }
 case class TemperatureSensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
 }
 object TemperatureSensorBinding {
   implicit val rw: ReadWriter[TemperatureSensorBinding] =
@@ -36,6 +46,8 @@ object TemperatureSensorBinding {
 }
 case class HumiditySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
 }
 object HumiditySensorBinding {
   implicit val rw: ReadWriter[HumiditySensorBinding] =
