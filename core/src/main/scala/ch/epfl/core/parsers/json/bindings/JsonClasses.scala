@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.parsers.json.bindings
+package ch.epfl.core.parsers.json.bindings
 
 import upickle.default.{ReadWriter, macroRW}
 

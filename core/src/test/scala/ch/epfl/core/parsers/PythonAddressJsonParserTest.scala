@@ -1,6 +1,6 @@
-package ch.epfl.core.compiler.parsers
+package ch.epfl.core.parsers
 
-import ch.epfl.core.compiler.parsers.json.bindings.{AppPythonAddressesJson, BinarySensorAddressJson, DeviceAddressJson, HumiditySensorAddressJson, PythonAddressJsonParser, SwitchAddressJson, TemperatureSensorAddressJson}
+import ch.epfl.core.parsers.json.bindings.{AppPythonAddressesJson, BinarySensorAddressJson, DeviceAddressJson, HumiditySensorAddressJson, PythonAddressJsonParser, SwitchAddressJson, TemperatureSensorAddressJson}
 import ch.epfl.core.models.application.Application
 import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical.{DPT1, DPT12, DPT2, DPT5, GroupAddress, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}

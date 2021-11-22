@@ -1,7 +1,7 @@
-package ch.epfl.core.compiler.parsers
+package ch.epfl.core.parsers
 
-import ch.epfl.core.compiler.parsers.json.physical.PhysicalStructureJsonParser.{constructPhysicalStructure, parseJson}
-import ch.epfl.core.compiler.parsers.json.physical._
+import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser.{constructPhysicalStructure, parseJson}
+import ch.epfl.core.parsers.json.physical._
 import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

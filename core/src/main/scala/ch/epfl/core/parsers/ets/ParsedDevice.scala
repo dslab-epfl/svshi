@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.parsers.ets
+package ch.epfl.core.parsers.ets
 
 case class ParsedDevice(address: (String, String, String), name: String, io: List[ChannelNode])
 

@@ -1,6 +1,6 @@
 package ch.epfl.core.utils
 
-import ch.epfl.core.compiler.parsers.json.prototype.AppInputJsonParser
+import ch.epfl.core.parsers.json.prototype.AppInputJsonParser
 import ch.epfl.core.models.application.{Application, ApplicationLibrary}
 import ch.epfl.core.utils.FileUtils.getListOfFolders
 

@@ -1,6 +1,6 @@
 package ch.epfl.core
 
-import ch.epfl.core.compiler.parsers.ets.EtsParser
+import ch.epfl.core.parsers.ets.EtsParser
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 
@@ -19,8 +19,8 @@ object Main extends App {
     
     val physicalStructure = EtsParser.parseEtsProjectFile(args(2))
     if (task == "compile") {
-      val compiledLibrary = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
-      val verifiedLibrary = verifier.Verifier.verify(newAppsLibrary, compiledLibrary)
+      val (compiledNewApps, compiledExistingApps) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
+      val verifiedLibrary = verifier.Verifier.verify(compiledNewApps, compiledExistingApps)
     } else if (task == "generatebindings") {
       compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, physicalStructure)
     } else {

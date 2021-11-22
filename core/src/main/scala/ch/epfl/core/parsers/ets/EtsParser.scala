@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.parsers.ets
+package ch.epfl.core.parsers.ets
 
 import ch.epfl.core.models.physical
 import ch.epfl.core.models.physical._

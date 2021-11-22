@@ -1,6 +1,6 @@
-package ch.epfl.core.compiler.parsers
+package ch.epfl.core.parsers
 
-import ch.epfl.core.compiler.parsers.ets.EtsParser
+import ch.epfl.core.parsers.ets.EtsParser
 import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
