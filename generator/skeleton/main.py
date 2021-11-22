@@ -12,18 +12,18 @@ def iteration():
 
 
 def main():
-    '''
+    """
     DO NOT MODIFY THIS FUNCTION !!!!!!
-    '''
+    """
     while True:
         iteration()
         time.sleep(SLEEP_INTERVAL_SECONDS)
 
 
 if __name__ == "__main__":
-    '''
+    """
     DO NOT MODIFY THIS FUNCTION !!!!!!
-    '''
+    """
     loop = asyncio.get_event_loop()
     loop.run_until_complete(with_knx_client(GATEWAY_ADDRESS, main))
     loop.close()
