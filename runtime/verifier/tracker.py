@@ -6,8 +6,7 @@ from abc import ABC
 from stomp import Connection, ConnectionListener
 import json
 
-from typing import Callable
-from verifier.device import Device, get_device_from_type
+from typing import Callable, Union
 
 
 class Message:
@@ -15,9 +14,9 @@ class Message:
     A write message received by the tracker.
     """
 
-    def __init__(self, app_name: str, device: Device, data: str):
+    def __init__(self, app_name: str, group_address: str, data: Union[bool, int]):
         self.app_name = app_name
-        self.device = device
+        self.group_address = group_address
         self.data = data
 
 
@@ -82,7 +81,7 @@ class _MessageListener(ConnectionListener):
         self.__callback(
             Message(
                 msg["app"],
-                get_device_from_type(msg["deviceType"], msg["deviceName"]),
+                msg["groupAddress"],
                 msg["data"],
             )
         )
