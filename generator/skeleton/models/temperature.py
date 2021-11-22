@@ -18,13 +18,17 @@ class TemperatureSensor(Device):
 
     def __init__(self, name: str):
         super().__init__(name, "temperature")
+        self.__group_address = GROUP_ADDRESSES[name]["address"]
         self.__sensor = KnxSensor(
             KNX,
             name=name,
-            group_address_state=GROUP_ADDRESSES[name]["address"],
+            group_address_state=self.__group_address,
             value_type="temperature",
         )
 
     def read(self):
         async_to_sync(self.__sensor.sync)(wait_for_result=True)
-        return self.__sensor.resolve_state()
+        state = self.__sensor.resolve_state()
+        if state:
+            self._tracker.save(self.__group_address, state)
+        return state

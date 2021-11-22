@@ -19,12 +19,16 @@ class BinarySensor(Device):
 
     def __init__(self, name: str):
         super().__init__(name, "binary")
+        self.__group_address = GROUP_ADDRESSES[name]["address"]
         self.__sensor = KnxBinarySensor(
             KNX,
             name=name,
-            group_address_state=GROUP_ADDRESSES[name]["address"],
+            group_address_state=self.__group_address,
         )
 
     def is_on(self) -> Union[bool, None]:
         async_to_sync(self.__sensor.sync)(wait_for_result=True)
-        return self.__sensor.state
+        state = self.__sensor.state
+        if state:
+            self._tracker.save(self.__group_address, state)
+        return state

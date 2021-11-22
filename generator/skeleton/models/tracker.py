@@ -6,11 +6,8 @@ from abc import ABC
 import stomp
 import json
 
-from typing import TYPE_CHECKING
+from typing import Union
 from pathlib import Path
-
-if TYPE_CHECKING:
-    from models.device import Device
 
 
 class WritesTracker(ABC):
@@ -33,9 +30,9 @@ class WritesTracker(ABC):
         """
         pass
 
-    def save(self, device: "Device", data: str):
+    def save(self, group_address: str, data: Union[bool, int]):
         """
-        Saves in the tracker the write from the given device with the given data.
+        Saves in the tracker the write to the given group address with the given data.
         """
         pass
 
@@ -58,11 +55,10 @@ class StompWritesTracker(WritesTracker):
     def disconnect(self):
         self.__conn.disconnect()
 
-    def save(self, device: "Device", data: str):
+    def save(self, group_address: str, data: Union[bool, int]):
         msg = {
             "app": self.__APP_NAME,
-            "deviceType": device.type,
-            "deviceName": device.name,
+            "groupAddress": group_address,
             "data": data,
         }
         self.__conn.send(self.__QUEUE_NAME, json.dumps(msg))
