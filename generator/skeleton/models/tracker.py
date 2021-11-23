@@ -2,7 +2,7 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from abc import ABC
+from abc import ABC, abstractmethod
 import stomp
 import json
 
@@ -18,18 +18,21 @@ class WritesTracker(ABC):
     def __init__(self):
         super().__init__()
 
+    @abstractmethod
     def connect(self):
         """
         Connects to the tracker.
         """
         pass
 
+    @abstractmethod
     def disconnect(self):
         """
         Disconnects from the tracker.
         """
         pass
 
+    @abstractmethod
     def save(self, group_address: str, data: Union[bool, int]):
         """
         Saves in the tracker the write to the given group address with the given data.

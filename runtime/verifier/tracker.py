@@ -2,7 +2,7 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from stomp import Connection, ConnectionListener
 import json
 
@@ -28,18 +28,21 @@ class WritesTracker(ABC):
     def __init__(self):
         super().__init__()
 
+    @abstractmethod
     def connect(self):
         """
         Connects to the tracker.
         """
         pass
 
+    @abstractmethod
     def disconnect(self):
         """
         Disconnects from the tracker.
         """
         pass
 
+    @abstractmethod
     def on_message(self, callback: Callable[[Message], None]):
         """
         Registers a callback to execute when a message is received.

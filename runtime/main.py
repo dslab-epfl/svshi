@@ -30,7 +30,7 @@ async def initialize_state() -> dict:
         async with XKNX() as xknx:
             addresses_dict = json.load(addresses_file)
             for address in addresses_dict["addresses"]:
-                # TODO Read from KNX the current value
+                # Read from KNX the current value
                 value_reader = ValueReader(xknx, GroupAddress(address))
                 telegram = await value_reader.read()
                 if telegram:
