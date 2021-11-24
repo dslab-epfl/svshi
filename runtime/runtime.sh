@@ -8,7 +8,7 @@ sleep 1
 
 # Run all the apps
 apps_pid=()
-cd ../app-library
+cd ../app_library
 for d in */ ; do
     python3 $d/main.py &
     apps_pid+=($d$!)

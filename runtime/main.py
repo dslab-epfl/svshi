@@ -7,6 +7,7 @@ import argparse
 import time
 import json
 import asyncio
+import os
 
 
 def parse_args():
@@ -26,7 +27,7 @@ async def initialize_state() -> dict:
     Initializes the system state by reading it from the KNX bus.
     """
     state = {}
-    with open("../app-library/group_addresses.json") as addresses_file:
+    with open("../app_library/group_addresses.json") as addresses_file:
         async with XKNX() as xknx:
             addresses_dict = json.load(addresses_file)
             for address in addresses_dict["addresses"]:
@@ -41,20 +42,69 @@ async def initialize_state() -> dict:
     return state
 
 
+def generate_conditions_file():
+    """
+    Generates the conditions file given the conditions of all the apps installed in the library.
+    """
+    # TODO: replace devices usages with the verification ones, same with the function calls with the physical state
+    apps_dirs = [
+        f.name
+        for f in os.scandir("../app_library")
+        if f.is_dir() and f.name != "__pycache__"
+    ]
+    imports = ""
+    imports_code = []
+    for app in apps_dirs:
+        import_statement = f"import app_library.{app}.main\n"
+        if import_statement not in imports:
+            imports += import_statement
+            imports_code.append(f"app_library.{app}.main")
+
+    check_conditions_body = ""
+    nb_imports = len(imports_code)
+    for i, import_code in enumerate(imports_code):
+        suffix = " and " if i < nb_imports - 1 else ""
+        check_conditions_body += f"{import_code}.precond(state){suffix}"
+
+    file = f"""
+{imports}
+def check_conditions(state: dict) -> bool:
+  return {check_conditions_body}
+        """.strip()
+
+    output_filename = f"verifier/conditions.py"
+    os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+    with open(output_filename, "w+") as output_file:
+        output_file.write(file)
+
+
+def reset_conditions_file():
+    """
+    Resets the conditions file.
+    """
+    file = f"""
+def check_conditions(state: dict) -> bool:
+  return True    
+    """.strip()
+
+    output_filename = f"verifier/conditions.py"
+    os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+    with open(output_filename, "w+") as output_file:
+        output_file.write(file)
+
+
 async def main():
     apps_pids = parse_args()
     print("Welcome to the Pistis runtime verifier!")
-
     try:
         apps = {s.split("/")[0]: s.split("/")[1] for s in apps_pids}
         print("Connecting to the tracker... ", end="")
         with StompWritesTracker() as tracker:
             print("done!")
             print("Initializing verifier... ", end="")
-            # TODO: preconditions_check
+            generate_conditions_file()
             state = await initialize_state()
-            preconditions_check = lambda s: True
-            verifier = Verifier(apps, state, preconditions_check)
+            verifier = Verifier(apps, state)
             print("done!")
 
             # Register on message callback to verify writes
@@ -66,6 +116,7 @@ async def main():
 
     except KeyboardInterrupt:
         print("Exiting...")
+        reset_conditions_file()
 
 
 if __name__ == "__main__":
