@@ -5,11 +5,17 @@ import time
 SLEEP_INTERVAL_SECONDS = 0.01 # Change that if needed
 GATEWAY_ADDRESS = "15.15.0"  # Replace this with the right address
 
+def precond() -> bool:
+     # Write the preconditions of the app here
+     # It can be any boolean expressions containing the read properties of the devices and constants
+     True
 
 def iteration():
     # Write your app code here
     print("Hello, world!")
 
+####################################################################################################
+# DO NOT MODIFY THE CODE BELOW
 
 def main():
     """
