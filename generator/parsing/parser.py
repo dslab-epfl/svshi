@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from generator.parsing.device import Device
+from .device import Device
 
 
 class ParserException(Exception):
