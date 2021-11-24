@@ -6,18 +6,18 @@ import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 
 object Main extends App {
 
-  /** args = [compile | generateBindings] app_library_path ets_proj_file.knxproj
+  /** args = [compile | generateBindings] ets_proj_file.knxproj
     */
   def main(): Unit = {
-    if (args.length != 3) {
+    if (args.length != 2) {
       println("Wrong number of arguments! Exiting...")
       return
     }
     val task = args(0).toLowerCase
-    val existingAppsLibrary = loadApplicationsLibrary(args(1))
+    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH_STRING)
     val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH_STRING)
     
-    val physicalStructure = EtsParser.parseEtsProjectFile(args(2))
+    val physicalStructure = EtsParser.parseEtsProjectFile(args(1))
     if (task == "compile") {
       val (compiledNewApps, compiledExistingApps) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, physicalStructure)
       val verifiedLibrary = verifier.Verifier.verify(compiledNewApps, compiledExistingApps)

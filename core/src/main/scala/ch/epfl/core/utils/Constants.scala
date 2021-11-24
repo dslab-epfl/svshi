@@ -9,4 +9,5 @@ object Constants {
   val APP_PROTO_STRUCT_FILE_NAME = "app_prototypical_structure.json"
   val GENERATED_FOLDER_NAME = "generated"
   val GENERATED_FOLDER_PATH_STRING = s"../$GENERATED_FOLDER_NAME"
+  val APP_LIBRARY_FOLDER_PATH_STRING = s"../app_library"
 }
