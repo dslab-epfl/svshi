@@ -1,3 +1,4 @@
+from xknx.telegram.telegram import Telegram
 from verifier.verifier import Verifier
 from verifier.tracker import StompWritesTracker
 from xknx import XKNX
@@ -22,22 +23,21 @@ def parse_args():
     return args.list
 
 
-async def initialize_state() -> dict:
+async def initialize_state(xknx: XKNX) -> dict:
     """
     Initializes the system state by reading it from the KNX bus.
     """
     state = {}
     with open("../app_library/group_addresses.json") as addresses_file:
-        async with XKNX() as xknx:
-            addresses_dict = json.load(addresses_file)
-            for address in addresses_dict["addresses"]:
-                # Read from KNX the current value
-                value_reader = ValueReader(xknx, GroupAddress(address))
-                telegram = await value_reader.read()
-                if telegram:
-                    state[address] = telegram.payload.value.value
-                else:
-                    state[address] = None
+        addresses_dict = json.load(addresses_file)
+        for address in addresses_dict["addresses"]:
+            # Read from KNX the current value
+            value_reader = ValueReader(xknx, GroupAddress(address))
+            telegram = await value_reader.read()
+            if telegram and telegram.payload.value:
+                state[address] = telegram.payload.value.value
+            else:
+                state[address] = None
 
     return state
 
@@ -93,17 +93,32 @@ def check_conditions(state: dict) -> bool:
         output_file.write(file)
 
 
+async def telegram_received_cb(telegram: Telegram):
+    """Do something with the received telegram."""
+    v = telegram.payload.value
+    if v:
+        state[str(telegram.destination_address)] = v.value
+
+
+state = {}
+
+
 async def main():
     apps_pids = parse_args()
     print("Welcome to the Pistis runtime verifier!")
+    xknx = XKNX(daemon_mode=True)
     try:
+        print("Connecting to KNX... ", end="")
+        xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
+        await xknx.start()
+        print("done!")
         apps = {s.split("/")[0]: s.split("/")[1] for s in apps_pids}
         print("Connecting to the tracker... ", end="")
         with StompWritesTracker() as tracker:
             print("done!")
             print("Initializing verifier... ", end="")
             generate_conditions_file()
-            state = await initialize_state()
+            state = await initialize_state(xknx)
             verifier = Verifier(apps, state)
             print("done!")
 
@@ -117,6 +132,7 @@ async def main():
     except KeyboardInterrupt:
         print("Exiting...")
         reset_conditions_file()
+        await xknx.stop()
 
 
 if __name__ == "__main__":
