@@ -13,7 +13,7 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
     val expected = AppLibraryBindings(List(
       AppPrototypeBindings("app1", List(
         DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 42)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 41, 40)),
+        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 41)),
         DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 39)),
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 38))
       ))
@@ -25,7 +25,7 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
     val expected = AppLibraryBindings(List(
       AppPrototypeBindings("app1", List(
         DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 42)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 41, 40)),
+        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 41)),
         DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 39)),
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 38))
       ))
