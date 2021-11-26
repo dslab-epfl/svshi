@@ -1,3 +1,4 @@
+from typing import List
 from xknx.telegram.telegram import Telegram
 from verifier.verifier import Verifier
 from verifier.tracker import StompWritesTracker
@@ -11,7 +12,7 @@ import asyncio
 import os
 
 
-def parse_args():
+def parse_args() -> List[str]:
     """
     Parses the arguments, returning the list of apps process ids.
     """
@@ -94,7 +95,9 @@ def check_conditions(state: dict) -> bool:
 
 
 async def telegram_received_cb(telegram: Telegram):
-    """Do something with the received telegram."""
+    """
+    Updates the state once a telegram is received.
+    """
     v = telegram.payload.value
     if v:
         state[str(telegram.destination_address)] = v.value
@@ -117,6 +120,7 @@ async def main():
         with StompWritesTracker() as tracker:
             print("done!")
             print("Initializing verifier... ", end="")
+            # TODO add state to all conditions
             generate_conditions_file()
             state = await initialize_state(xknx)
             verifier = Verifier(apps, state)
