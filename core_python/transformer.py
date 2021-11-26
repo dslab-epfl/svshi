@@ -3,6 +3,7 @@ import astor
 from typing import List, Union
 
 __STATE_ARGUMENT = "physical_state"
+__STATE_TYPE = "PhysicalState"
 
 
 def __recursively_add_state_argument(
@@ -83,11 +84,7 @@ def __recursively_add_state_argument(
     elif isinstance(op, ast.FunctionDef) and (
         op.name == "precond" or op.name == "iteration"
     ):
-        annotation = ast.Subscript(
-            ast.Name("Dict", ast.Load),
-            ast.Tuple([ast.Name("str", ast.Load), ast.Name("int", ast.Load)], ast.Load),
-            ast.Load,
-        )
+        annotation = ast.Name(__STATE_TYPE, ast.Load)
         op.args.args.append(ast.arg(__STATE_ARGUMENT, annotation))
         __recursively_add_state_argument(op.body, accepted_names)
 
