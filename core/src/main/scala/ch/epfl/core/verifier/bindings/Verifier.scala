@@ -1,6 +1,7 @@
 package ch.epfl.core.verifier.bindings
 
 import ch.epfl.core.models.application.ApplicationLibrary
+import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical._
 import ch.epfl.core.models.prototypical._
 import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
@@ -13,15 +14,25 @@ import java.nio.file.Path
 
 object Verifier {
 
-  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary): (List[BindingsVerifierErrors], ApplicationLibrary, ApplicationLibrary) = {
+  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): (List[BindingsVerifierErrors], ApplicationLibrary, ApplicationLibrary) = {
     val combinedApps = newAppLibrary.apps ++ existingAppsLibrary.apps
     val physicalStructure = PhysicalStructureJsonParser.parse(Path.of(existingAppsLibrary.path).resolve(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString)
-    val bindings = BindingsJsonParser.parse(Path.of(newAppLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
+//    val bindings = BindingsJsonParser.parse(Path.of(newAppLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
+    val bindings = groupAddressAssignment.appLibraryBindings
     val existingAppPrototypicalStructures = existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
     val newAppPrototypicalStructures = newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
-    val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++ verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures)
+    val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
+      verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++
+      verifyBindingsPythonType(groupAddressAssignment)
     (returnValues, newAppLibrary, existingAppsLibrary)
+  }
+
+  def verifyBindingsPythonType(groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierErrors] = {
+    groupAddressAssignment.getPythonTypesMap.toList.map{case (ga, pythonTypes) => (ga, pythonTypes.toSet)}.flatMap{
+      case (_, pythonTypesSet) if pythonTypesSet.size == 1 => Nil
+      case (ga, pythonTypesSet) => List(ErrorGroupAddressConflictingPythonTypes(s"groupAddress: $ga is bound to object channels with conflicting types: $pythonTypesSet"))
+    }
   }
 
   def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
