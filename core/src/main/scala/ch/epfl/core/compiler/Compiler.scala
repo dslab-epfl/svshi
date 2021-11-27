@@ -47,15 +47,9 @@ object Compiler {
   }
 
   private def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment): Unit = {
-    val list = groupAddressAssignment.physIdToGA.map {
-      case (id, groupAddress) => {
-        val groupAddrString = groupAddress.toString
-        val devInstBinding: DeviceInstanceBinding = groupAddressAssignment.appLibraryBindings.appBindings.map(appProtoBinding => appProtoBinding.bindings.find(devInstBinding => devInstBinding.binding.getBoundIds.contains(id))).find(opt => opt.isDefined).get.get
-
-      }
-    }
-
-    val json = upickle.default.write(list)
+    val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.head.toString)}
+    val groupAddresses = GroupAddressesList(list)
+    val json = upickle.default.write(groupAddresses)
     val filePath = os.pwd / os.up / Constants.GENERATED_FOLDER_NAME / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, json)
