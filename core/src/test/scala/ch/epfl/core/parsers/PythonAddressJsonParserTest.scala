@@ -65,7 +65,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
     val appLibraryBindings = AppLibraryBindings(List(
       AppPrototypeBindings("app1", List(
         DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 211, 212)),
+        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 211)),
         DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321))
       ))
@@ -81,7 +81,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
 
     val expected = AppPythonAddressesJson(List(
       BinarySensorAddressJson("device1", "3/1/1"),
-      SwitchAddressJson("device2", "2/1/1", "2/1/2"),
+      SwitchAddressJson("device2", "2/1/1", "2/1/1"),
       TemperatureSensorAddressJson("device3", "3/2/2"),
       HumiditySensorAddressJson("device4", "3/2/1")
     ))

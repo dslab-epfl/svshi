@@ -1,6 +1,6 @@
 package ch.epfl.core.models.prototypical
 
-import ch.epfl.core.models.physical.{DPT1, DPT9, IOType, In, KNXDatatype, Out}
+import ch.epfl.core.models.physical.{DPT1, DPT9, IOType, In, InOut, KNXDatatype, Out}
 import upickle.default.{ReadWriter, macroRW}
 
 
@@ -27,11 +27,10 @@ object BinarySensorBinding {
   implicit val rw: ReadWriter[BinarySensorBinding] =
     macroRW[BinarySensorBinding]
 }
-case class SwitchBinding(typeString: String, writePhysDeviceId: Int, readPhysDeviceId: Int) extends SupportedDeviceBinding {
-  override def getBoundIds: List[Int] = List(writePhysDeviceId, readPhysDeviceId)
-  override def getIOTypes: Map[Int, IOType] = Map((writePhysDeviceId, In), (readPhysDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((writePhysDeviceId, DPT1), (readPhysDeviceId, DPT1))
-  override def getPythonTypes: Map[Int, String] = ???
+case class SwitchBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
+  override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, InOut))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1), (physDeviceId, DPT1))
 }
 object SwitchBinding {
   implicit val rw: ReadWriter[SwitchBinding] =
