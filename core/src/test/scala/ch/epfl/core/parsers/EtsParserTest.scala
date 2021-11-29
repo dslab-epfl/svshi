@@ -5,6 +5,7 @@ import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.nio.file.Path
 import scala.util.hashing.MurmurHash3
 
 class EtsParserTest extends AnyFlatSpec with Matchers {
@@ -210,5 +211,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     structure.deviceInstances.find(p =>
       p.address == device5.address
     ) shouldEqual Some(device5)
+  }
+
+  "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {
+    EtsParser.parseEtsProjectFile(testFilePathString)
+    EtsParser.computeExtractedPath(testFilePathString).toFile.exists() shouldBe false
   }
 }

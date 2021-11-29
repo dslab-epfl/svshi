@@ -10,10 +10,9 @@ import ch.epfl.core.parsers.json.bindings.{BindingsJsonParser, PythonAddressJson
 import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH_STRING, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
-import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path}
 
 object Compiler {
   def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
@@ -21,7 +20,7 @@ object Compiler {
     // here we need to read assignment of physical communicationObjects to XKNX stuff
     // assign Group addresses to communicationObject
     // generate files for the python apps with the group addresses
-    // generate files for the KNX programmming module
+    // generate files for the KNX programming module
 
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
