@@ -85,8 +85,10 @@ class Switch_{app_name}_{instance_name}():
         self.__devices_classes = devices_classes
         self.__instances_names_per_app = {}
         for key, group in groupby(self.__devices_classes, lambda x: x[0]):
+            names = set()
             for device in group:
-                self.__instances_names_per_app[key] = device[1]
+                names.add(device[1].upper())
+            self.__instances_names_per_app[key] = names
         self.__manipulator = Manipulator(self.__instances_names_per_app)
         self.__code: List[str] = []
         self.__imports: List[str] = []
