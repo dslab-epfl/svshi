@@ -16,8 +16,7 @@
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.SwitchBinding",
             "typeString": "switch",
-            "writePhysDeviceId": 41,
-            "readPhysDeviceId": 40
+            "physDeviceId": 41
           }
         },
         {

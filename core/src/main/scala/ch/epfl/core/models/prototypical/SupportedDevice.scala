@@ -16,7 +16,7 @@ object SupportedDevice {
   }
   def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
     case BinarySensor => BinarySensorBinding(deviceType.toString, defaultPhysicalId)
-    case Switch => SwitchBinding(deviceType.toString, defaultPhysicalId, defaultPhysicalId)
+    case Switch => SwitchBinding(deviceType.toString, defaultPhysicalId)
     case TemperatureSensor => TemperatureSensorBinding(deviceType.toString, defaultPhysicalId)
     case HumiditySensor => HumiditySensorBinding(deviceType.toString, defaultPhysicalId)
   }
