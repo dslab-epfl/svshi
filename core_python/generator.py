@@ -71,9 +71,15 @@ class Switch_{app_name}_{instance_name}():
     """
     )
 
-    def __init__(self, filename: str, group_addresses: List[Tuple[str, str]]):
+    def __init__(
+        self,
+        filename: str,
+        group_addresses: List[Tuple[str, str]],
+        devices_instances: List[Tuple[str, str]],
+    ):
         self.__filename: str = filename
-        self.__group_addresses: List[Tuple[str, str]] = group_addresses
+        self.__group_addresses = group_addresses
+        self.__devices_instances = devices_instances
         self.__code: List[str] = []
         self.__imports: List[str] = []
 
@@ -147,6 +153,21 @@ class PhysicalState:
 
         self.__code.extend(code)
 
+    def __generate_devices_instances(self):
+        devices_code = []
+        for (name, type) in self.__devices_instances:
+            device_class = "Binary_sensor_"
+            if type == "switch":
+                device_class = "Switch_"
+            elif type == "temperature":
+                device_class = "Temperature_sensor_"
+            elif type == "humidity":
+                device_class = "Humidity_sensor_"
+
+            devices_code.append(f"{name.upper()} = {device_class}{name}()")
+
+        self.__code.extend(devices_code)
+
     def generate_verification_file(self):
         """
         Generates the whole verification file.
@@ -154,6 +175,7 @@ class PhysicalState:
         with open(self.__filename, "w") as file:
             self.__generate_physical_state_class()
             self.__generate_device_classes()
+            self.__generate_devices_instances()
             file.write("\n".join(self.__imports))
             file.write("\n")
             file.write("\n".join(self.__code))
