@@ -142,11 +142,21 @@ class Manipulator:
         conditions = []
         for app_name in app_names:
             precond = pre_str
-            precond += construct_func_call(app_name.upper() + "_" + precond_name_str, [physical_state_name_str])
+            precond += construct_func_call(app_name + "_" + precond_name_str, [physical_state_name_str])
             conditions.append(precond)
         for app_name in app_names:
             postcond = post_str
-            postcond += construct_func_call(app_name.upper() + "_" + precond_name_str, [return_value_name_str])
+            postcond += construct_func_call(app_name + "_" + precond_name_str, [return_value_name_str])
             conditions.append(postcond)
         res = '\n'.join(conditions)
         return res
+
+    def add_doc_string(f: ast.FunctionDef, doc_string: str) -> ast.FunctionDef:
+        old_doc_string = ast.get_docstring(f)
+        s = ast.Str("\n" + doc_string + "\n")
+        new_doc_string_ast = ast.Expr(value=s)
+        if old_doc_string:
+            f.body[0] = new_doc_string_ast
+        else:
+            f.body.insert(0, new_doc_string_ast)
+        return f
