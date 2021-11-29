@@ -1,15 +1,13 @@
 import ast
 import astor
-from typing import List, Union
+import itertools
+from typing import List, Tuple, Union
 
 
 class Manipulator:
 
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
-
-    def __init__(self, app_names: List[str]):
-        self.__app_names = app_names
 
     def __rename_instances_add_state(
         self,
@@ -92,7 +90,7 @@ class Manipulator:
                 # If the function name is in the list of accepted names, add the state argument to the call
                 op.args.append(ast.Name(self.__STATE_ARGUMENT, ast.Load))
 
-                # Rename
+                # Rename the instance calling the function, adding the app name to it
                 new_name = f"{app_name.upper()}_{f_name}"
                 if isinstance(op.func, ast.Attribute):
                     op.func.value.id = new_name
@@ -105,19 +103,62 @@ class Manipulator:
             annotation = ast.Name(self.__STATE_TYPE, ast.Load)
             op.args.args.append(ast.arg(self.__STATE_ARGUMENT, annotation))
 
-            # Rename
+            # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
 
-    def add_state_to_file(self, filename: str, accepted_names: List[str]):
+    def manipulate_app_main(
+        self, app_name: str, accepted_names: List[str]
+    ) -> Tuple[List[str], str]:
         """
-        Parses the given file, adds the state argument to all the function calls with a name
-        in the given list of names, then overwrites the file with the new source code.
+        Manipulates the `main.py` of the given file, modifying the names of the functions and instances (specified in `accepted_names`),
+        and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
+        and dumps them in the verification file.
         """
-        with open(filename, "r+") as file:
+
+        def flatmap(func, *iterable):
+            return itertools.chain.from_iterable(map(func, *iterable))
+
+        def extract_functions_and_imports(module_body: List[ast.stmt]):
+            functions_ast = list(
+                filter(
+                    lambda n: isinstance(n, ast.FunctionDef)
+                    and (
+                        n.name == f"{app_name}_precond"
+                        or n.name == f"{app_name}_iteration"
+                    ),
+                    module_body,
+                )
+            )
+            imports_ast = list(
+                filter(
+                    lambda n: isinstance(n, ast.Import)
+                    and (
+                        set(flatmap(lambda a: [a.name], n.names))
+                        - set(["asyncio", "time"])
+                    ),
+                    module_body,
+                )
+            )
+            from_imports_ast = list(
+                filter(
+                    lambda n: isinstance(n, ast.ImportFrom)
+                    and not n.module in ["devices", "communication.client"],
+                    module_body,
+                )
+            )
+            return functions_ast, imports_ast, from_imports_ast
+
+        with open(f"generated/{app_name}/main.py", "r") as file:
             p = ast.parse(file.read())
-            self.__rename_instances_add_state(p.body, "test", accepted_names)
-            modified = astor.to_source(p)
-            file.seek(0)
-            file.write(modified)
-            file.truncate()
+            module_body = p.body
+            self.__rename_instances_add_state(module_body, app_name, accepted_names)
+            (
+                functions_ast,
+                imports_ast,
+                from_imports_ast,
+            ) = extract_functions_and_imports(module_body)
+            functions = astor.to_source(ast.Module(functions_ast))
+            imports = astor.to_source(ast.Module(imports_ast))
+            from_imports = astor.to_source(ast.Module(from_imports_ast))
+            return [imports, from_imports], functions

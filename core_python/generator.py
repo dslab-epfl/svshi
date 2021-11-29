@@ -1,4 +1,7 @@
+from itertools import groupby
 from typing import List, Tuple
+
+from core_python.manipulator import Manipulator
 
 
 class Generator:
@@ -80,6 +83,11 @@ class Switch_{app_name}_{instance_name}():
         self.__group_addresses = group_addresses
         self.__devices_instances = devices_instances
         self.__devices_classes = devices_classes
+        self.__instances_names_per_app = {}
+        for key, group in groupby(self.__devices_classes, lambda x: x[0]):
+            for device in group:
+                self.__instances_names_per_app[key] = device[1]
+        self.__manipulator = Manipulator()
         self.__code: List[str] = []
         self.__imports: List[str] = []
 
@@ -120,6 +128,7 @@ class PhysicalState:
         self.__code.extend(code)
 
     def __generate_devices_instances(self):
+        self.__code.append("\n")
         devices_code = []
         for (name, type) in self.__devices_instances:
             device_class = "Binary_sensor_"
@@ -134,6 +143,13 @@ class PhysicalState:
 
         self.__code.extend(devices_code)
 
+    def __generate_precond_iteration_functions(self):
+        self.__code.append("\n")
+        for app, accepted_names in self.__instances_names_per_app.items():
+            imports, funcs = self.__manipulator.manipulate_app_main(app, accepted_names)
+            self.__imports.extend(imports)
+            self.__code.append(funcs)
+
     def generate_verification_file(self):
         """
         Generates the whole verification file.
@@ -142,6 +158,7 @@ class PhysicalState:
             self.__generate_physical_state_class()
             self.__generate_device_classes()
             self.__generate_devices_instances()
+            self.__generate_precond_iteration_functions()
             file.write("\n".join(self.__imports))
             file.write("\n")
             file.write("\n".join(self.__code))
