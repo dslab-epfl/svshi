@@ -1,6 +1,4 @@
 from typing import List, Tuple
-import os
-import json
 
 
 class Generator:
@@ -76,10 +74,12 @@ class Switch_{app_name}_{instance_name}():
         filename: str,
         group_addresses: List[Tuple[str, str]],
         devices_instances: List[Tuple[str, str]],
+        devices_classes: List[Tuple[str, str, str, str]],
     ):
         self.__filename: str = filename
         self.__group_addresses = group_addresses
         self.__devices_instances = devices_instances
+        self.__devices_classes = devices_classes
         self.__code: List[str] = []
         self.__imports: List[str] = []
 
@@ -97,59 +97,25 @@ class PhysicalState:
         self.__imports.append("import dataclasses")
 
     def __generate_device_classes(self):
-        device_and_app_name_to_type_map = {}
-        with open("generated/apps_bindings.json") as bindings_file:
-            bindings_dict = json.load(bindings_file)
-            for app in bindings_dict["appBindings"]:
-                app_name = app["name"]
-                for device in app["bindings"]:
-                    device_name = device["name"]
-                    type = device["binding"]["typeString"]
-                    device_and_app_name_to_type_map[(app_name, device_name)] = type
-
-        apps_dirs = [
-            f.name
-            for f in os.scandir("generated")
-            if f.is_dir() and f.name != "__pycache__"
-        ]
         code = []
-        for app in apps_dirs:
-            with open(f"generated/{app}/addresses.json") as file:
-                devices_dict = json.load(file)
-                for device in devices_dict["addresses"]:
-                    name = device["name"]
-                    type = device_and_app_name_to_type_map[(app, name)]
-                    if type == "binary":
-                        formatted_group_address = device["address"].replace("/", "_")
-                        code.append(
-                            self.__BINARY_SENSOR_TEMPLATE(
-                                app, name, f"GA_{formatted_group_address}"
-                            )
-                        )
-                    elif type == "temperature":
-                        formatted_group_address = device["address"].replace("/", "_")
-                        code.append(
-                            self.__TEMPERATURE_SENSOR_TEMPLATE(
-                                app, name, f"GA_{formatted_group_address}"
-                            )
-                        )
-                    elif type == "humidity":
-                        formatted_group_address = device["address"].replace("/", "_")
-                        code.append(
-                            self.__HUMIDITY_SENSOR_TEMPLATE(
-                                app, name, f"GA_{formatted_group_address}"
-                            )
-                        )
-                    elif type == "switch":
-                        # Use one of the two addresses (writeAddress or readAddress), as they are actually the same
-                        formatted_group_address = device["writeAddress"].replace(
-                            "/", "_"
-                        )
-                        code.append(
-                            self.__SWITCH_TEMPLATE(
-                                app, name, f"GA_{formatted_group_address}"
-                            )
-                        )
+        for (app, name, type, address) in self.__devices_classes:
+            formatted_group_address = f"GA_{address.replace('/', '_')}"
+            if type == "binary":
+                code.append(
+                    self.__BINARY_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                )
+            elif type == "temperature":
+                code.append(
+                    self.__TEMPERATURE_SENSOR_TEMPLATE(
+                        app, name, formatted_group_address
+                    )
+                )
+            elif type == "humidity":
+                code.append(
+                    self.__HUMIDITY_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                )
+            elif type == "switch":
+                code.append(self.__SWITCH_TEMPLATE(app, name, formatted_group_address))
 
         self.__code.extend(code)
 
