@@ -1,7 +1,8 @@
 from itertools import groupby
-from typing import List, Tuple
+from typing import List
 
 from core_python.manipulator import Manipulator
+from core_python.parser import DeviceClass, DeviceInstance, GroupAddress
 
 
 class Generator:
@@ -75,19 +76,19 @@ class Switch_{app_name}_{instance_name}():
     def __init__(
         self,
         filename: str,
-        group_addresses: List[Tuple[str, str]],
-        devices_instances: List[Tuple[str, str]],
-        devices_classes: List[Tuple[str, str, str, str]],
+        group_addresses: List[GroupAddress],
+        devices_instances: List[DeviceInstance],
+        devices_classes: List[DeviceClass],
     ):
         self.__filename: str = filename
         self.__group_addresses = group_addresses
         self.__devices_instances = devices_instances
         self.__devices_classes = devices_classes
         self.__instances_names_per_app = {}
-        for key, group in groupby(self.__devices_classes, lambda x: x[0]):
+        for key, group in groupby(self.__devices_classes, lambda d: d.app_name):
             names = set()
             for device in group:
-                names.add(device[1].upper())
+                names.add(device.name.upper())
             self.__instances_names_per_app[key] = names
         self.__manipulator = Manipulator(self.__instances_names_per_app)
         self.__code: List[str] = []
@@ -95,8 +96,10 @@ class Switch_{app_name}_{instance_name}():
 
     def __generate_physical_state_class(self):
         fields = ""
-        for (name, typee) in self.__group_addresses:
-            fields += f" GA_{name.replace('/', '_')}: {typee}\n"
+        for group_address in self.__group_addresses:
+            fields += (
+                f" GA_{group_address.address.replace('/', '_')}: {group_address.type}\n"
+            )
 
         code = f"""
 @dataclasses.dataclass
@@ -108,7 +111,11 @@ class PhysicalState:
 
     def __generate_device_classes(self):
         code = []
-        for (app, name, type, address) in self.__devices_classes:
+        for device in self.__devices_classes:
+            app = device.app_name
+            name = device.name
+            type = device.type
+            address = device.address
             formatted_group_address = f"GA_{address.replace('/', '_')}"
             if type == "binary":
                 code.append(
@@ -132,7 +139,9 @@ class PhysicalState:
     def __generate_devices_instances(self):
         self.__code.append("\n")
         devices_code = []
-        for (name, type) in self.__devices_instances:
+        for instance in self.__devices_instances:
+            name = instance.name
+            type = instance.type
             device_class = "Binary_sensor_"
             if type == "switch":
                 device_class = "Switch_"
