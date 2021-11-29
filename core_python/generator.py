@@ -10,66 +10,66 @@ class Generator:
     """
 
     __BINARY_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f"""
+        lambda self, app_name, instance_name, group_address: f'''
 class Binary_sensor_{app_name}_{instance_name}():
     def is_on(self, physical_state: PhysicalState) -> bool:
-        '''
+        """
         pre:
         post: physical_state.{group_address} == __return__
-        '''
+        """
         return physical_state.{group_address}
-    """
+    '''
     )
 
     __HUMIDITY_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f"""
+        lambda self, app_name, instance_name, group_address: f'''
 class Humidity_sensor_{app_name}_{instance_name}():
     def read(self, physical_state: PhysicalState) -> float:
-        '''
+        """
         pre:
         post: physical_state.{group_address} == __return__
-        '''
+        """
         return physical_state.{group_address}
-    """
+    '''
     )
 
     __TEMPERATURE_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f"""
+        lambda self, app_name, instance_name, group_address: f'''
 class Temperature_sensor_{app_name}_{instance_name}():
     def read(self, physical_state: PhysicalState) -> float:
-        '''
+        """
         pre:
         post: physical_state.{group_address} == __return__
-        '''
+        """
         return physical_state.{group_address}
-    """
+    '''
     )
 
     __SWITCH_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f"""
+        lambda self, app_name, instance_name, group_address: f'''
 class Switch_{app_name}_{instance_name}():
     def on(self, physical_state: PhysicalState):
-        '''
+        """
         pre: 
         post: physical_state.{group_address}  == True
-        '''
+        """
         physical_state.{group_address} = True
         
 
     def off(self, physical_state: PhysicalState):
-        '''
+        """
         pre: 
         post: physical_state.{group_address}  == False
-        '''
+        """
         physical_state.{group_address} = False
 
     def is_on(self, physical_state: PhysicalState) -> bool:
-        '''
+        """
         pre: 
         post: physical_state.{group_address}  == __return__
-        '''
+        """
         return physical_state.{group_address}
-    """
+    '''
     )
 
     def __init__(

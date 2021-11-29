@@ -5,6 +5,9 @@ from typing import Dict, List, Tuple, Union, cast
 
 
 class Manipulator:
+    """
+    Python AST manipulator.
+    """
 
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
