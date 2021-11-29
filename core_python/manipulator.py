@@ -1,7 +1,7 @@
 import ast
 import astor
 import itertools
-from typing import Dict, List, Tuple, Union, cast
+from typing import Dict, List, Set, Tuple, Union, cast
 
 
 class Manipulator:
@@ -12,7 +12,7 @@ class Manipulator:
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
 
-    def __init__(self, instances_names_per_app: Dict[str, List[str]]) -> None:
+    def __init__(self, instances_names_per_app: Dict[str, Set[str]]) -> None:
         self.__app_names = list(instances_names_per_app.keys())
         self.__instances_names_per_app = instances_names_per_app
 
@@ -27,7 +27,7 @@ class Manipulator:
             List[ast.comprehension],
         ],
         app_name: str,
-        accepted_names: List[str],
+        accepted_names: Set[str],
     ):
         if isinstance(op, list) or isinstance(op, tuple):
             [
@@ -40,7 +40,7 @@ class Manipulator:
             self.__rename_instances_add_state(op.values, app_name, accepted_names)
         elif isinstance(op, ast.UnaryOp):
             self.__rename_instances_add_state(op.operand, app_name, accepted_names)
-        elif isinstance(op, ast.NamedExpr):
+        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
             self.__rename_instances_add_state(op.value, app_name, accepted_names)
         elif isinstance(op, ast.Lambda):
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
@@ -55,7 +55,7 @@ class Manipulator:
         elif isinstance(op, ast.BinOp):
             self.__rename_instances_add_state(op.left, app_name, accepted_names)
             self.__rename_instances_add_state(op.right, app_name, accepted_names)
-        elif isinstance(op, ast.IfExp):
+        elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
             self.__rename_instances_add_state(op.test, app_name, accepted_names)
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
             self.__rename_instances_add_state(op.orelse, app_name, accepted_names)
@@ -82,6 +82,9 @@ class Manipulator:
             self.__rename_instances_add_state(op.value, app_name, accepted_names)
         elif isinstance(op, ast.JoinedStr):
             self.__rename_instances_add_state(op.values, app_name, accepted_names)
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__rename_instances_add_state(op.value, app_name, accepted_names)
         elif isinstance(op, ast.Call):
             self.__rename_instances_add_state(op.args, app_name, accepted_names)
             f_name = ""
@@ -156,6 +159,10 @@ class Manipulator:
             f.body.insert(0, new_doc_string_ast)
         return f
 
+    def __add_return_state(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        f.body.append(ast.Return(ast.Name("physical_state", ast.Load)))
+        return f
+
     def manipulate_mains(self) -> Tuple[List[str], List[str]]:
         imports = []
         functions = []
@@ -166,7 +173,7 @@ class Manipulator:
         return imports, functions
 
     def __manipulate_app_main(
-        self, app_name: str, accepted_names: List[str]
+        self, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
         """
         Manipulates the `main.py` of the given file, modifying the names of the functions and instances (specified in `accepted_names`),
@@ -181,9 +188,13 @@ class Manipulator:
             # We only keep precond and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
                 map(
-                    lambda f: self.__add_doc_string(
-                        f, self.__construct_contracts(self.__app_names)
-                    ),
+                    lambda f: self.__add_return_state(
+                        self.__add_doc_string(
+                            f, self.__construct_contracts(self.__app_names)
+                        )
+                    )
+                    if f.name == f"{app_name}_iteration"
+                    else f,
                     cast(
                         List[ast.FunctionDef],
                         filter(

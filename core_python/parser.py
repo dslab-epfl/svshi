@@ -24,7 +24,7 @@ class Parser:
         """
         with open(self.__group_addresses_filename, "r") as file:
             addrs_dict = json.load(file)
-            return [(ga["address"], ga["type"]) for ga in addrs_dict["addresses"]]
+            return [(ga[0], ga[1]) for ga in addrs_dict["addresses"]]
 
     def parse_devices_instances(self) -> List[Tuple[str, str]]:
         """
