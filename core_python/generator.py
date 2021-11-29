@@ -87,7 +87,7 @@ class Switch_{app_name}_{instance_name}():
         for key, group in groupby(self.__devices_classes, lambda x: x[0]):
             for device in group:
                 self.__instances_names_per_app[key] = device[1]
-        self.__manipulator = Manipulator()
+        self.__manipulator = Manipulator(self.__instances_names_per_app)
         self.__code: List[str] = []
         self.__imports: List[str] = []
 
@@ -145,10 +145,9 @@ class PhysicalState:
 
     def __generate_precond_iteration_functions(self):
         self.__code.append("\n")
-        for app, accepted_names in self.__instances_names_per_app.items():
-            imports, funcs = self.__manipulator.manipulate_app_main(app, accepted_names)
-            self.__imports.extend(imports)
-            self.__code.append(funcs)
+        imports, functions = self.__manipulator.manipulate_mains()
+        self.__imports.extend(imports)
+        self.__code.extend(functions)
 
     def generate_verification_file(self):
         """

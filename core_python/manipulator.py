@@ -1,13 +1,17 @@
 import ast
 import astor
 import itertools
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union, cast
 
 
 class Manipulator:
 
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
+
+    def __init__(self, instances_names_per_app: Dict[str, List[str]]) -> None:
+        self.__app_names = list(instances_names_per_app.keys())
+        self.__instances_names_per_app = instances_names_per_app
 
     def __rename_instances_add_state(
         self,
@@ -107,7 +111,58 @@ class Manipulator:
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
 
-    def manipulate_app_main(
+    def __construct_contracts(self, app_names: List[str]) -> str:
+        def construct_func_call(func_name: str, arg_names: List[str]) -> str:
+            res = func_name + "("
+            for i in range(len(arg_names)):
+                res += arg_names[i] + ", "
+            if len(res) > 2:
+                res = res[:-2]
+            res += ")"
+            return res
+
+        pre_str = "pre: "
+        post_str = "post: "
+        precond_name_str = "precond"
+        return_value_name_str = "__return__"
+        physical_state_name_str = "physical_state"
+
+        conditions = []
+        for app_name in app_names:
+            precond = pre_str
+            precond += construct_func_call(
+                app_name + "_" + precond_name_str, [physical_state_name_str]
+            )
+            conditions.append(precond)
+        for app_name in app_names:
+            postcond = post_str
+            postcond += construct_func_call(
+                app_name + "_" + precond_name_str, [return_value_name_str]
+            )
+            conditions.append(postcond)
+        res = "\n".join(conditions)
+        return res
+
+    def __add_doc_string(self, f: ast.FunctionDef, doc_string: str) -> ast.FunctionDef:
+        old_doc_string = ast.get_docstring(f)
+        s = ast.Str("\n" + doc_string + "\n")
+        new_doc_string_ast = ast.Expr(value=s)
+        if old_doc_string:
+            f.body[0] = new_doc_string_ast
+        else:
+            f.body.insert(0, new_doc_string_ast)
+        return f
+
+    def manipulate_mains(self) -> Tuple[List[str], List[str]]:
+        imports = []
+        functions = []
+        for app, accepted_names in self.__instances_names_per_app.items():
+            imps, funcs = self.__manipulate_app_main(app, accepted_names)
+            imports.extend(imps)
+            functions.append(funcs)
+        return imports, functions
+
+    def __manipulate_app_main(
         self, app_name: str, accepted_names: List[str]
     ) -> Tuple[List[str], str]:
         """
@@ -120,16 +175,26 @@ class Manipulator:
             return itertools.chain.from_iterable(map(func, *iterable))
 
         def extract_functions_and_imports(module_body: List[ast.stmt]):
+            # We only keep precond and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
-                filter(
-                    lambda n: isinstance(n, ast.FunctionDef)
-                    and (
-                        n.name == f"{app_name}_precond"
-                        or n.name == f"{app_name}_iteration"
+                map(
+                    lambda f: self.__add_doc_string(
+                        f, self.__construct_contracts(self.__app_names)
                     ),
-                    module_body,
+                    cast(
+                        List[ast.FunctionDef],
+                        filter(
+                            lambda n: isinstance(n, ast.FunctionDef)
+                            and (
+                                n.name == f"{app_name}_precond"
+                                or n.name == f"{app_name}_iteration"
+                            ),
+                            module_body,
+                        ),
+                    ),
                 )
             )
+            # We only keep the imports that were added by the user
             imports_ast = list(
                 filter(
                     lambda n: isinstance(n, ast.Import)
