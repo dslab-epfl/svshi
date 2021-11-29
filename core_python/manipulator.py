@@ -12,8 +12,10 @@ class Manipulator:
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
 
-    def __init__(self, instances_names_per_app: Dict[str, Set[str]]) -> None:
-        self.__app_names = list(instances_names_per_app.keys())
+    def __init__(
+        self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
+    ) -> None:
+        self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
     def __rename_instances_add_state(
@@ -166,14 +168,19 @@ class Manipulator:
     def manipulate_mains(self) -> Tuple[List[str], List[str]]:
         imports = []
         functions = []
-        for app, accepted_names in self.__instances_names_per_app.items():
-            imps, funcs = self.__manipulate_app_main(app, accepted_names)
+        for (
+            directory,
+            app_name,
+        ), accepted_names in self.__instances_names_per_app.items():
+            imps, funcs = self.__manipulate_app_main(
+                directory, app_name, accepted_names
+            )
             imports.extend(imps)
             functions.append(funcs)
         return imports, functions
 
     def __manipulate_app_main(
-        self, app_name: str, accepted_names: Set[str]
+        self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
         """
         Manipulates the `main.py` of the given file, modifying the names of the functions and instances (specified in `accepted_names`),
@@ -228,7 +235,7 @@ class Manipulator:
             )
             return functions_ast, imports_ast, from_imports_ast
 
-        with open(f"generated/{app_name}/main.py", "r") as file:
+        with open(f"{directory}/{app_name}/main.py", "r") as file:
             p = ast.parse(file.read())
             module_body = p.body
             self.__rename_instances_add_state(module_body, app_name, accepted_names)

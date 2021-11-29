@@ -85,11 +85,11 @@ class Switch_{app_name}_{instance_name}():
         self.__devices_instances = devices_instances
         self.__devices_classes = devices_classes
         self.__instances_names_per_app = {}
-        for key, group in groupby(self.__devices_classes, lambda d: d.app_name):
+        for key, group in groupby(self.__devices_classes, lambda d: d.app):
             names = set()
             for device in group:
                 names.add(device.name.upper())
-            self.__instances_names_per_app[key] = names
+            self.__instances_names_per_app[(key.directory, key.name)] = names
         self.__manipulator = Manipulator(self.__instances_names_per_app)
         self.__code: List[str] = []
         self.__imports: List[str] = []
@@ -112,7 +112,7 @@ class PhysicalState:
     def __generate_device_classes(self):
         code = []
         for device in self.__devices_classes:
-            app = device.app_name
+            app = device.app.name
             name = device.name
             type = device.type
             address = device.address
