@@ -53,7 +53,8 @@ object Compiler {
     val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min)}
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
-    if (filePath.toFile.exists()) filePath.toFile.delete()
+    val file = filePath.toFile
+    if (file.exists()) file.delete()
     Files.write(filePath, json getBytes StandardCharsets.UTF_8)
   }
 
