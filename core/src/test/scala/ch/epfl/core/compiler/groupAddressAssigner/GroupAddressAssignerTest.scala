@@ -55,7 +55,7 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
     val appLibraryBindings = AppLibraryBindings(List(
       AppPrototypeBindings("app1", List(
         DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 211, 212)),
+        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
         DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321))
       ))
@@ -67,12 +67,11 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
     result.appLibraryBindings shouldEqual appLibraryBindings
 
     result.physIdToGA.contains(311) shouldBe true
-    result.physIdToGA.contains(211) shouldBe true
     result.physIdToGA.contains(212) shouldBe true
     result.physIdToGA.contains(322) shouldBe true
     result.physIdToGA.contains(321) shouldBe true
 
-    val ga = List(result.physIdToGA(311), result.physIdToGA(211), result.physIdToGA(212), result.physIdToGA(321), result.physIdToGA(322))
+    val ga = List(result.physIdToGA(311), result.physIdToGA(212), result.physIdToGA(321), result.physIdToGA(322))
     ga.length shouldEqual ga.toSet.size
 
 

@@ -20,7 +20,7 @@ object PythonAddressJsonParser {
     def createAddressJsonFromBinding(instBinding: DeviceInstanceBinding, physIdToGA: Map[Int, GroupAddress]): DeviceAddressJson = {
       instBinding.binding match {
         case BinarySensorBinding(_, physDeviceId) => BinarySensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
-        case SwitchBinding(_, writePhysDeviceId, readPhysDeviceId) => SwitchAddressJson(instBinding.name, physIdToGA(writePhysDeviceId).toString, physIdToGA(readPhysDeviceId).toString)
+        case SwitchBinding(_, physDeviceId) => SwitchAddressJson(instBinding.name, physIdToGA(physDeviceId).toString, physIdToGA(physDeviceId).toString)
         case TemperatureSensorBinding(_, physDeviceId) => TemperatureSensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
         case HumiditySensorBinding(_, physDeviceId) => HumiditySensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
       }
