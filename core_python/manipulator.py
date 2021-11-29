@@ -121,3 +121,32 @@ class Manipulator:
             file.seek(0)
             file.write(modified)
             file.truncate()
+
+
+    def construct_contracts(app_names: List[str]) -> str: 
+        def construct_func_call(func_name: str, arg_names: List[str]) -> str:
+            res = func_name + "("
+            for i in range(len(arg_names)):
+                res += arg_names[i] + ", "
+            if len(res) > 2:
+                res = res[: -2]
+            res += ")"
+            return res
+
+        pre_str = "pre: "
+        post_str = "post: "
+        precond_name_str = "precond"
+        return_value_name_str = "__return__"
+        physical_state_name_str = "physical_state"
+
+        conditions = []
+        for app_name in app_names:
+            precond = pre_str
+            precond += construct_func_call(app_name.upper() + "_" + precond_name_str, [physical_state_name_str])
+            conditions.append(precond)
+        for app_name in app_names:
+            postcond = post_str
+            postcond += construct_func_call(app_name.upper() + "_" + precond_name_str, [return_value_name_str])
+            conditions.append(postcond)
+        res = '\n'.join(conditions)
+        return res
