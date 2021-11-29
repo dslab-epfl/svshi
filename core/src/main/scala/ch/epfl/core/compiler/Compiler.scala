@@ -2,17 +2,18 @@ package ch.epfl.core.compiler
 
 import ch.epfl.core.compiler.binding._
 import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
+import ch.epfl.core.compiler.programming.Programmer
+import ch.epfl.core.models.application.ApplicationLibrary
+import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.models.physical._
 import ch.epfl.core.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.models.application.ApplicationLibrary
-import ch.epfl.core.models.physical._
 import ch.epfl.core.utils.Constants
-import ch.epfl.core.compiler.programming.Programmer
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.prototypical.{AppLibraryBindings, DeviceInstanceBinding}
 import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH_STRING, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
+import upickle.default.write
 
-import java.nio.file.Path
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Path, Paths}
 
 object Compiler {
   def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
@@ -25,7 +26,9 @@ object Compiler {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
-    generateGroupAddressesList(gaAssignment)
+    val filePath: Path = (os.pwd / os.up / Constants.GENERATED_FOLDER_NAME / Constants.GROUP_ADDRESSES_LIST_FILE_NAME).toNIO
+
+    generateGroupAddressesList(gaAssignment, filePath)
 
     for (app <- existingAppsLibrary.apps.appendedAll(newAppsLibrary.apps)) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
@@ -46,13 +49,12 @@ object Compiler {
     BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 
-  private def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment): Unit = {
-    val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.head.toString)}
+  def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: Path): Unit = {
+    val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min)}
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
-    val filePath = os.pwd / os.up / Constants.GENERATED_FOLDER_NAME / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
-    if (os.exists(filePath)) os.remove(filePath)
-    os.write(filePath, json)
+    if (filePath.toFile.exists()) filePath.toFile.delete()
+    Files.write(filePath, json getBytes StandardCharsets.UTF_8)
   }
 
 }
