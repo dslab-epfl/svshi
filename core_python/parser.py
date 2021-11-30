@@ -59,9 +59,7 @@ class Parser:
                 addrs_dict = json.load(file)
                 return [GroupAddress(ga[0], ga[1]) for ga in addrs_dict["addresses"]]
 
-        return read_addresses(self.__GENERATED_DIR_NAME) + read_addresses(
-            self.__APP_LIBRARY_DIR_NAME
-        )
+        return read_addresses(self.__GENERATED_DIR_NAME) # + read_addresses(self.__APP_LIBRARY_DIR_NAME)
 
     def parse_devices_instances(self) -> List[DeviceInstance]:
         """
@@ -109,7 +107,7 @@ class Parser:
 
             return {
                 **generate_map(self.__GENERATED_DIR_NAME),
-                **generate_map(self.__APP_LIBRARY_DIR_NAME),
+                # **generate_map(self.__APP_LIBRARY_DIR_NAME),
             }
 
         devices_types = parse_devices_types()

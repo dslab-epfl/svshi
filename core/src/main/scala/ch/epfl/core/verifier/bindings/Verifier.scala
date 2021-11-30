@@ -8,13 +8,14 @@ import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
 import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.parsers.json.prototype.AppInputJsonParser
 import ch.epfl.core.utils.Constants
+import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.bindings.exceptions._
 
 import java.nio.file.Path
 
-object Verifier {
+object Verifier extends VerifierTr{
 
-  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): (List[BindingsVerifierErrors], ApplicationLibrary, ApplicationLibrary) = {
+  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierMessage] = {
     val combinedApps = newAppLibrary.apps ++ existingAppsLibrary.apps
     val physicalStructure = groupAddressAssignment.physStruct
     val bindings = groupAddressAssignment.appLibraryBindings
@@ -24,17 +25,17 @@ object Verifier {
     val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsPythonType(groupAddressAssignment)
-    (returnValues, newAppLibrary, existingAppsLibrary)
+    returnValues
   }
 
-  def verifyBindingsPythonType(groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierErrors] = {
+  def verifyBindingsPythonType(groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierMessage] = {
     groupAddressAssignment.getPythonTypesMap.toList.map{case (ga, pythonTypes) => (ga, pythonTypes.toSet)}.flatMap{
       case (_, pythonTypesSet) if pythonTypesSet.size == 1 => Nil
       case (ga, pythonTypesSet) => List(ErrorGroupAddressConflictingPythonTypes(s"groupAddress: $ga is bound to object channels with conflicting types: $pythonTypesSet"))
     }
   }
 
-  def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
+  def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
       val appProtoStructure = appPrototypicalStructures(appName)
@@ -58,7 +59,7 @@ object Verifier {
     })
   }
 
-  def verifyBindingsIoTypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierErrors] = {
+  def verifyBindingsIoTypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
       val appProtoStructure = appPrototypicalStructures(appName)
@@ -82,7 +83,7 @@ object Verifier {
     })
   }
 
-  private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierErrors] = {
+  private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierMessage] = {
     val knxDpt = deviceInstBinding.binding.getKNXDpt(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
@@ -94,7 +95,7 @@ object Verifier {
     checkCompatibilityKNXTypes(knxDpt, commObject.datatype, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}; physical device address = ${physicalDevice.address}, commObject = ${commObject.name}, physicalId = ${commObject.id}")
   }
 
-  private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierErrors] = {
+  private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierMessage] = {
     val protoTypeIo = deviceInstBinding.binding.getIOTypes(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
     if (physicalDeviceOpt.isEmpty) {
@@ -106,7 +107,7 @@ object Verifier {
     checkCompatibilityIOTypes(protoTypeIo, physCommObject.ioType, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}; physical device address = ${physicalDevice.address}, commObject = ${physCommObject.name}, physicalId = ${physCommObject.id}")
   }
 
-  private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierErrors] = {
+  private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierMessage] = {
     dpt1 match {
       case DPTUnknown => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
       case _ => dpt2 match {
@@ -117,7 +118,7 @@ object Verifier {
     }
   }
 
-  private def checkCompatibilityIOTypes(protoIOType: IOType, physIOType: IOType, msgDevicesDescription: String): List[BindingsVerifierErrors] = {
+  private def checkCompatibilityIOTypes(protoIOType: IOType, physIOType: IOType, msgDevicesDescription: String): List[BindingsVerifierMessage] = {
     protoIOType match {
       case In => physIOType match {
         case Out =>  List(ErrorIOType(s"$msgDevicesDescription: protoIOType '$protoIOType' is incompatible with physicalIOType '$physIOType'!"))
