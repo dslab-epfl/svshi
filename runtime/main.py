@@ -73,7 +73,6 @@ async def main():
     apps_pids = parse_args()
     print("Welcome to the Pistis runtime verifier!")
     xknx = XKNX(daemon_mode=True)
-    state = await initialize_state(xknx)
     try:
         print("Connecting to KNX... ", end="")
         xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
