@@ -9,7 +9,8 @@ object ProcRunner {
 
   def callCrosshair(filePath: String, perConditionTimeoutSeconds: Int): (Int, List[String]) = {
     val wd = os.pwd / os.up
-    val invoked = os.proc("crosshair", "check", filePath, s"--per_condition_timeout $perConditionTimeoutSeconds").call(cwd = wd)
+//    val invoked = os.proc("crosshair", "check", filePath, s"--per_condition_timeout $perConditionTimeoutSeconds").call(cwd = wd)
+    val invoked = os.proc("crosshair", "check", filePath).call(cwd = wd)
     (invoked.exitCode, invoked.out.lines.toList)
   }
 }

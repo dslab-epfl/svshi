@@ -2,15 +2,6 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Defining default non-root user UID, GID, and name 
-ARG USER_UID="1000"
-ARG USER_GID="1000"
-ARG USER_NAME="pistis"
-
-# Creating default non-user 
-# RUN groupadd -g $USER_GID $USER_NAME && \
-# 	useradd -m -g $USER_GID -u $USER_UID $USER_NAME
-
 # Installing basic packages 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
@@ -36,19 +27,4 @@ RUN pip3 install -U pip
 RUN mkdir /smartinfra
 COPY . /smartinfra/
 
-# # Switching to non-root user to install SDKMAN! 
-# USER $USER_UID:$USER_GID
-
-# RUN echo 'PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
-
-# # Downloading SDKMAN! 
-# RUN curl -s "https://get.sdkman.io" | bash
-
-# # Installing Java and Maven, removing some unnecessary SDKMAN files 
-# RUN bash -c "source $HOME/.sdkman/bin/sdkman-init.sh && \
-#     yes | sdk install java $(sdk list java | grep -o "8\.[0-9]*\.[0-9]*\.hs-adpt" | head -1) && \
-#     yes | sdk install sbt&& \
-#     rm -rf $HOME/.sdkman/archives/* && \
-#     rm -rf $HOME/.sdkman/tmp/*"
-
-RUN cd smartinfra && pip3 install -r requirements.txt && cd generator && pip3 install -r requirements.txt && cd ..
+RUN cd smartinfra && pip3 install -r requirements.txt && cd generator && pip3 install -r requirements.txt && cd .. && cd core_python && pip3 install -r requirements.txt
