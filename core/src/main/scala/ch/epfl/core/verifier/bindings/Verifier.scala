@@ -16,8 +16,7 @@ object Verifier {
 
   def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): (List[BindingsVerifierErrors], ApplicationLibrary, ApplicationLibrary) = {
     val combinedApps = newAppLibrary.apps ++ existingAppsLibrary.apps
-    val physicalStructure = PhysicalStructureJsonParser.parse(Path.of(existingAppsLibrary.path).resolve(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString)
-//    val bindings = BindingsJsonParser.parse(Path.of(newAppLibrary.path).resolve(Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
+    val physicalStructure = groupAddressAssignment.physStruct
     val bindings = groupAddressAssignment.appLibraryBindings
     val existingAppPrototypicalStructures = existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
     val newAppPrototypicalStructures = newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
@@ -109,9 +108,9 @@ object Verifier {
 
   private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierErrors] = {
     dpt1 match {
-      case UnknownDPT => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
+      case DPTUnknown => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
       case _ => dpt2 match {
-        case UnknownDPT => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
+        case DPTUnknown => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
         case _ if dpt1 == dpt2 => Nil
         case _ => List(ErrorKNXDatatype(s"$msgDevicesDescription: KNXDatatype '$dpt1' is incompatible with KNXDatatype '$dpt2'!"))
       }

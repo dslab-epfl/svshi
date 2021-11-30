@@ -4,8 +4,9 @@ import scala.util.matching.Regex
 
 sealed trait KNXDatatype
 object KNXDatatype {
-  def datatypeRegex: Regex = "DPT-[0-9]+".r
+  def datatypeRegex: Regex = "(DPT-[0-9]+)|DPT-Unknown".r
   def fromString(s: String): Option[KNXDatatype] = if(datatypeRegex.findFirstIn(s).isEmpty) None else s match {
+    case _ if datatypeRegex.findFirstIn(s).get == "DPT-Unknown" => Some(DPTUnknown)
     case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1 => Some(DPT1)
     case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2 => Some(DPT2)
     case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3 => Some(DPT3)
@@ -98,7 +99,7 @@ case object DPT19 extends KNXDatatype {
 case object DPT20 extends KNXDatatype {
   override def toString = "DPT-20"
 }
-case object UnknownDPT extends KNXDatatype {
+case object DPTUnknown extends KNXDatatype {
   override def toString: String = "DPT-Unknown"
 }
 

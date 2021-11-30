@@ -80,7 +80,7 @@ object EtsParser {
         KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
       else if(dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
       else if(KNXDatatype.fromDPTSize(parsedioPort.objectSizeString).isDefined) KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
-      else if(parsedioPort.dpt == "") Some(UnknownDPT)
+      else if(parsedioPort.dpt == "") Some(DPTUnknown)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get

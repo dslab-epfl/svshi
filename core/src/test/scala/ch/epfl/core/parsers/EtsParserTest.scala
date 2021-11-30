@@ -152,7 +152,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           List(
             PhysicalDeviceCommObject.from(
               "Command % - Vanne - Valve",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(
@@ -163,12 +163,12 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut),
             PhysicalDeviceCommObject.from(
               "Valve position % - Indication d'état - Status indication",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(
               "Highest command value - Indication d'état - Status indication",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(

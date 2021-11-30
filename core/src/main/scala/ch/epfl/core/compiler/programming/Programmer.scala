@@ -14,7 +14,7 @@ object Programmer {
     * @param assignment the group address assignment data structure
     * @param filename the output filename. Defaults to "assignment.txt"
     */
-  def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt") = {
+  def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt"): Unit = {
     val idToGroupAddress = assignment.physIdToGA
     val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
       val addressString = s"$a1.$a2.$a3"

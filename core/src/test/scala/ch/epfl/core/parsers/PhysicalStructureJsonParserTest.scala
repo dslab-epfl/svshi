@@ -302,7 +302,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
     ) shouldEqual app
   }
 
-  "writeToFile" should "write the correct content to the given file" in {
+  "writeToFile" should "write the correct content to the given file without DPT-Unknown" in {
     val device1 = PhysicalDeviceJson(
       "device1",
       "1.1.1",
@@ -399,7 +399,111 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       )
     )
     val physicalStructure = PhysicalStructure(List(device1After, device2After, device3After))
-    val filePath = "res/test_physicalJson.txt"
+    val filePath = "res/test_physicalJson.json"
+    PhysicalStructureJsonParser.writeToFile(filePath, physicalStructure)
+    Using(Source.fromFile(filePath)) { fileBuff =>
+      parseJson(fileBuff.mkString) shouldEqual app
+    }
+  }
+
+  "writeToFile" should "write the correct content to the given file with DPT-Unknown" in {
+    val device1 = PhysicalDeviceJson(
+      "device1",
+      "1.1.1",
+      List(
+        PhysicalDeviceNodeJson(
+          "device1Node1",
+          List(
+            PhysicalDeviceCommObjectJson("device1Node1ComObj1", "DPT-1", "in", 111)
+          )
+        )
+      )
+    )
+    val device2 = PhysicalDeviceJson(
+      "device2",
+      "1.1.2",
+      List(
+        PhysicalDeviceNodeJson(
+          "device2Node1",
+          List(
+            PhysicalDeviceCommObjectJson("device2Node1ComObj1", "DPT-2", "out", 211),
+            PhysicalDeviceCommObjectJson("device2Node1ComObj2", "DPT-Unknown", "in", 212)
+          )
+        )
+      )
+    )
+    val device3 = PhysicalDeviceJson(
+      "device3",
+      "1.1.3",
+      List(
+        PhysicalDeviceNodeJson(
+          "device3Node1",
+          List(
+            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-2", "out", 311),
+            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in", 312)
+          )
+        ),
+        PhysicalDeviceNodeJson(
+          "device3Node2",
+          List(
+            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in", 321),
+            PhysicalDeviceCommObjectJson(
+              "device3Node2ComObj2",
+              "DPT-12",
+              "in/out",
+              322
+            )
+          )
+        )
+      )
+    )
+    val app = PhysicalStructureJson(List(device1, device2, device3))
+
+    val device1After = PhysicalDevice(
+      "device1",
+      ("1", "1", "1"),
+      List(
+        PhysicalDeviceNode(
+          "device1Node1",
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+        )
+      )
+    )
+    val device2After = PhysicalDevice(
+      "device2",
+      ("1", "1", "2"),
+      List(
+        PhysicalDeviceNode(
+          "device2Node1",
+          List(
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, In, 212)
+          )
+        )
+      )
+    )
+    val device3After = PhysicalDevice(
+      "device3",
+      ("1", "1", "3"),
+      List(
+        PhysicalDeviceNode(
+          "device3Node1",
+          List(
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+          )
+        ),
+        PhysicalDeviceNode(
+          "device3Node2",
+          List(
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+          )
+        )
+      )
+    )
+    val physicalStructure = PhysicalStructure(List(device1After, device2After, device3After))
+    val filePath = "res/test_physicalJson.json"
     PhysicalStructureJsonParser.writeToFile(filePath, physicalStructure)
     Using(Source.fromFile(filePath)) { fileBuff =>
       parseJson(fileBuff.mkString) shouldEqual app
