@@ -1,2 +1,4 @@
-def check_conditions(state: dict) -> bool:
-  return True
+from verification_file import PhysicalState
+
+def check_conditions(state: PhysicalState) -> bool:
+  return True 

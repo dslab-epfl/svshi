@@ -1,6 +1,6 @@
-from typing import Callable
-from verifier.tracker import Message
-from verifier.conditions import check_conditions
+from verification_file import PhysicalState
+from runtime.verifier.tracker import Message
+from runtime.verifier.conditions import check_conditions
 import subprocess
 
 
@@ -9,7 +9,7 @@ class Verifier:
     App verifier.
     """
 
-    def __init__(self, apps_pids: dict, state: dict):
+    def __init__(self, apps_pids: dict, state: PhysicalState):
         self.__apps_pids = apps_pids
         self.__state = state
 
@@ -26,7 +26,7 @@ class Verifier:
         data = message.data
 
         # Update state
-        self.__state[group_address] = data
+        setattr(self.__state, f"GA_{group_address.replace('/', '_')}", data)
 
         # Check if the state is still valid, if not, kill the app
         if not check_conditions(self.__state):
