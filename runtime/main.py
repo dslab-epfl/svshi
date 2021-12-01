@@ -1,30 +1,17 @@
-from typing import List
 from xknx.telegram.telegram import Telegram
+from runtime.app import load_apps
 from runtime.generation import generate_conditions_file, reset_conditions_file
+from runtime.runner import AppRunner
 from verification_file import PhysicalState
 from runtime.verifier.verifier import Verifier
 from runtime.verifier.tracker import StompWritesTracker
 from xknx import XKNX
 from xknx.core.value_reader import ValueReader
 from xknx.telegram import GroupAddress
-import argparse
-import time
 import json
 import asyncio
 
 GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
-
-
-def parse_args() -> List[str]:
-    """
-    Parses the arguments, returning the list of apps process ids.
-    """
-    parser = argparse.ArgumentParser(description="Runtime verifier.")
-    parser.add_argument(
-        "-l", "--list", nargs="+", help="A list of '<app_name>/<pid>'", required=True
-    )
-    args = parser.parse_args()
-    return args.list
 
 
 async def initialize_state(xknx: XKNX) -> PhysicalState:
@@ -66,40 +53,46 @@ async def telegram_received_cb(telegram: Telegram):
         )
 
 
+async def cleanup(xknx: XKNX):
+    print("Exiting... ", end="")
+    reset_conditions_file()
+    await xknx.stop()
+    print("bye!")
+
+
 state: PhysicalState
 
 
 async def main():
-    apps_pids = parse_args()
     print("Welcome to the Pistis runtime verifier!")
     xknx = XKNX(daemon_mode=True)
-    state = await initialize_state(xknx)
     try:
         print("Connecting to KNX... ", end="")
         xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
         await xknx.start()
         print("done!")
-        apps = {s.split("/")[0]: s.split("/")[1] for s in apps_pids}
         print("Connecting to the tracker... ", end="")
         with StompWritesTracker() as tracker:
             print("done!")
             print("Initializing verifier... ", end="")
             generate_conditions_file()
             state = await initialize_state(xknx)
-            verifier = Verifier(apps, state)
+            apps = load_apps()
+            app_runner = AppRunner(apps)
+            verifier = Verifier(app_runner, state)
             print("done!")
 
             # Register on message callback to verify writes
             tracker.on_message(verifier.verify_write)
 
-            # Infinite loop for listening to messages
-            while True:
-                time.sleep(1)
+            # Run the apps in an infinite loop
+            print("Starting the apps...")
+            app_runner.run_all()
+
+            await cleanup(xknx)
 
     except KeyboardInterrupt:
-        print("Exiting...")
-        reset_conditions_file()
-        await xknx.stop()
+        await cleanup(xknx)
 
 
 if __name__ == "__main__":

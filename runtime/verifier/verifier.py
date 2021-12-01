@@ -1,7 +1,8 @@
+from typing import List
+from runtime.runner import AppRunner
 from verification_file import PhysicalState
 from runtime.verifier.tracker import Message
 from runtime.verifier.conditions import check_conditions
-import subprocess
 
 
 class Verifier:
@@ -9,13 +10,12 @@ class Verifier:
     App verifier.
     """
 
-    def __init__(self, apps_pids: dict, state: PhysicalState):
-        self.__apps_pids = apps_pids
+    def __init__(self, app_runner: AppRunner, state: PhysicalState):
+        self.__app_runner = app_runner
         self.__state = state
 
     def __kill_app(self, app_name: str):
-        app_pid = self.__apps_pids[app_name]
-        subprocess.run(f"kill {app_pid}", shell=True)
+        self.__app_runner.stop(app_name)
 
     def verify_write(self, message: Message):
         """
