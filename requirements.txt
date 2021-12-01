@@ -1,1 +1,3 @@
+CoilMQ==1.0.1
+xknx==0.18.12
 crosshair-tool==0.0.19

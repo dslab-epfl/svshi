@@ -17,18 +17,18 @@ import scala.annotation.tailrec
 
 object Main extends App {
 
-  /** args = [compile | generateBindings] app_library_path ets_proj_file.knxproj
+  /** args = [compile | generateBindings] ets_proj_file.knxproj
     */
   def main(): Unit = {
-    if (args.length != 3) {
+    if (args.length != 2) {
       println("Wrong number of arguments! Exiting...")
       return
     }
     val task = args(0).toLowerCase
-    val existingAppsLibrary = loadApplicationsLibrary(args(1))
+    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH_STRING)
     val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH_STRING)
     
-    val newPhysicalStructure = EtsParser.parseEtsProjectFile(args(2))
+    val newPhysicalStructure = EtsParser.parseEtsProjectFile(args(1))
     val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME))
     val existingPhysicalStructure = if(existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
     if (task == "compile") {
