@@ -2,9 +2,13 @@ package ch.epfl.core.verifier
 
 import ch.epfl.core.models.application.ApplicationLibrary
 import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.verifier.exceptions.VerifierMessage
 
-object Verifier {
-  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): ApplicationLibrary = {
-    existingAppsLibrary
+object Verifier extends VerifierTr{
+  def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[VerifierMessage] = {
+    val physicalStructure = groupAddressAssignment.physStruct
+    val bindingsMessages = bindings.Verifier.verify(newAppLibrary, existingAppsLibrary, groupAddressAssignment)
+    val pythonVerifierMessages = static.python.Verifier.verify(newAppLibrary, existingAppsLibrary, groupAddressAssignment)
+    bindingsMessages ++ pythonVerifierMessages
   }
 }
