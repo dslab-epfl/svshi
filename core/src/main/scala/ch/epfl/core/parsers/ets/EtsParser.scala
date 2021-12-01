@@ -73,7 +73,7 @@ object EtsParser {
      * @param parsedioPort
      * @return
      */
-    def ioPortToPhysicalChannel(parsedioPort: IOPort): PhysicalDeviceCommObject = {
+    def ioPortToPhysicalChannel(parsedioPort: IOPort, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
       val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
       val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
       val datatype = if(dpstOpt.isDefined)
@@ -84,9 +84,9 @@ object EtsParser {
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
-      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType)
+      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType, physicalAddress)
     }
-    physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel))))
+    physical.PhysicalDevice(parsedDevice.name, parsedDevice.address, parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel(_, parsedDevice.address)))))
   }
   /**
    * Reads one device from the ETS xml project
@@ -213,7 +213,7 @@ object EtsParser {
       val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(groupObjectInstanceId))
       comObjectRef match {
         case Some(comObjectRef) => {
-          val refId = (comObjectRef \@ REFID_PARAM)
+          val refId = comObjectRef \@ REFID_PARAM
           val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
           comObject match {
             case Some(value) =>  IOPort(constructIOPortName(value, catalogEntry), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM ) :: Nil
@@ -315,7 +315,7 @@ object EtsParser {
     }
   }
 
-  def computeExtractedPath[B](etsProjectPathString: String) = {
+  def computeExtractedPath[B](etsProjectPathString: String): Path = {
     Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toUri.toString.appendedAll(unzippedSuffix))
   }
 
