@@ -39,27 +39,24 @@ class Parser:
     __APP_LIBRARY_DIR_NAME = "app_library"
 
     def __get_apps(self) -> List[App]:
-        return [
-            App(f.name, self.__GENERATED_DIR_NAME)
-            for f in os.scandir(self.__GENERATED_DIR_NAME)
-            if f.is_dir() and f.name != "__pycache__"
-        ] + [
-            App(f.name, self.__APP_LIBRARY_DIR_NAME)
-            for f in os.scandir(self.__APP_LIBRARY_DIR_NAME)
-            if f.is_dir() and f.name != "__pycache__"
-        ]
+        def get_apps_from_directory(directory: str) -> List[App]:
+            return [
+                App(f.name, directory)
+                for f in os.scandir(directory)
+                if f.is_dir() and f.name != "__pycache__"
+            ]
+
+        return get_apps_from_directory(
+            self.__GENERATED_DIR_NAME
+        ) + get_apps_from_directory(self.__APP_LIBRARY_DIR_NAME)
 
     def parse_group_addresses(self) -> List[GroupAddress]:
         """
         Parses the group addresses file, returning a list of (address, type) pairs.
         """
-
-        def read_addresses(directory: str) -> List[GroupAddress]:
-            with open(f"{directory}/group_addresses.json", "r") as file:
-                addrs_dict = json.load(file)
-                return [GroupAddress(ga[0], ga[1]) for ga in addrs_dict["addresses"]]
-
-        return read_addresses(self.__GENERATED_DIR_NAME) # + read_addresses(self.__APP_LIBRARY_DIR_NAME)
+        with open(f"{self.__GENERATED_DIR_NAME}/group_addresses.json", "r") as file:
+            addrs_dict = json.load(file)
+            return [GroupAddress(ga[0], ga[1]) for ga in addrs_dict["addresses"]]
 
     def parse_devices_instances(self) -> List[DeviceInstance]:
         """
@@ -90,28 +87,20 @@ class Parser:
             """
             Parses the devices types for all the apps, returning a map (app_name, device_name) -> type.
             """
-
-            def generate_map(directory: str) -> Dict[Tuple[str, str], str]:
-                device_and_app_name_to_type_map = {}
-                with open(f"{directory}/apps_bindings.json") as bindings_file:
-                    bindings_dict = json.load(bindings_file)
-                    for app in bindings_dict["appBindings"]:
-                        app_name = app["name"]
-                        for device in app["bindings"]:
-                            device_name = device["name"]
-                            type = device["binding"]["typeString"]
-                            device_and_app_name_to_type_map[
-                                (app_name, device_name)
-                            ] = type
-                return device_and_app_name_to_type_map
-
-            return {
-                **generate_map(self.__GENERATED_DIR_NAME),
-                # **generate_map(self.__APP_LIBRARY_DIR_NAME),
-            }
+            device_and_app_name_to_type_map = {}
+            with open(
+                f"{self.__GENERATED_DIR_NAME}/apps_bindings.json"
+            ) as bindings_file:
+                bindings_dict = json.load(bindings_file)
+                for app in bindings_dict["appBindings"]:
+                    app_name = app["name"]
+                    for device in app["bindings"]:
+                        device_name = device["name"]
+                        type = device["binding"]["typeString"]
+                        device_and_app_name_to_type_map[(app_name, device_name)] = type
+            return device_and_app_name_to_type_map
 
         devices_types = parse_devices_types()
-
         apps_dirs = self.__get_apps()
         devices = []
         for app in apps_dirs:

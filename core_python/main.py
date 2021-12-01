@@ -10,5 +10,3 @@ if __name__ == "__main__":
     output_file_name = "verification_file.py"
     generator = Generator(output_file_name, group_addresses_with_types, devices_instances, devices_classes)
     generator.generate_verification_file()
-    print(output_file_name)
-    exit
