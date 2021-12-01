@@ -58,10 +58,12 @@ object EtsParser {
   private val defaultNodeName = "Default"
 
 
-  def parseEtsProjectFile(etsProjectPathString: String) : PhysicalStructure = extractIfNotExist(etsProjectPathString, projectRootPath =>{
+  def parseEtsProjectFile(etsProjectPathString: String) : PhysicalStructure = extractIfNotExist(etsProjectPathString, _ =>{
     val deviceAddresses = explore0xmlFindListAddresses(etsProjectPathString)
     val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPathString,  _))
-    physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
+    val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
+    deleteUnzippedFiles(etsProjectPathString)
+    res
   })
 
   private def parsedDeviceToPhysicalDevice(parsedDevice: ParsedDevice): PhysicalDevice = {
@@ -78,7 +80,7 @@ object EtsParser {
         KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
       else if(dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
       else if(KNXDatatype.fromDPTSize(parsedioPort.objectSizeString).isDefined) KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
-      else if(parsedioPort.dpt == "") Some(UnknownDPT)
+      else if(parsedioPort.dpt == "") Some(DPTUnknown)
       else throw new MalformedXMLException(s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}")
       if(datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
@@ -305,11 +307,32 @@ object EtsParser {
   })
 
   private def extractIfNotExist[B](etsProjectPathString: String, operation: Path => B): B = {
-    val extractedPath = Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toUri.toString.appendedAll(unzippedSuffix))
+    val extractedPath = computeExtractedPath(etsProjectPathString)
     val unzippedPath = if (!Files.exists(extractedPath)) unzip(etsProjectPathString, extractedPath.toString) else Some(extractedPath)
     unzippedPath match {
       case Some(projectRootPath) => operation(projectRootPath)
       case None => throw new FileNotFoundException()
+    }
+  }
+
+  def computeExtractedPath[B](etsProjectPathString: String) = {
+    Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toUri.toString.appendedAll(unzippedSuffix))
+  }
+
+  private def deleteUnzippedFiles(etsProjectPathString: String): Unit = {
+    val extractedPath = computeExtractedPath(etsProjectPathString)
+    deleteRecursive(extractedPath)
+  }
+
+  private def deleteRecursive(filePath: Path): Unit = {
+    val f = filePath.toFile
+    if(f.isDirectory) {
+      if(f.listFiles().length > 0){
+        f.listFiles.foreach(file => deleteRecursive(file.toPath))
+      }
+      f.delete()
+    } else {
+      f.delete()
     }
   }
 

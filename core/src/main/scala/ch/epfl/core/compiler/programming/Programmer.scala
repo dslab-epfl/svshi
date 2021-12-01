@@ -14,7 +14,7 @@ object Programmer {
     * @param assignment the group address assignment data structure
     * @param filename the output filename. Defaults to "assignment.txt"
     */
-  def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt") = {
+  def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt"): Unit = {
     val idToGroupAddress = assignment.physIdToGA
     val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
       val addressString = s"$a1.$a2.$a3"
@@ -33,7 +33,10 @@ object Programmer {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val filePath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME / filename
+    val directoryPath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME
+    if(!os.exists(directoryPath)) os.makeDir(directoryPath)
+    val filePath = directoryPath / filename
+
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, text)
   }

@@ -1135,8 +1135,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", UnknownDPT, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", UnknownDPT, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, InOut, 212)
           )
         )
       )
@@ -1275,8 +1275,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", UnknownDPT, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", UnknownDPT, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, InOut, 212)
           )
         )
       )
