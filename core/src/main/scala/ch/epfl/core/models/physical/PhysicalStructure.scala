@@ -7,6 +7,6 @@ case class PhysicalDevice(name: String, address: (String, String, String), nodes
 case class PhysicalDeviceNode(name: String, comObjects: List[PhysicalDeviceCommObject])
 case class PhysicalDeviceCommObject(name: String, datatype: KNXDatatype, ioType: IOType, id: Int)
 object PhysicalDeviceCommObject{
-  def from(name: String, datatype: KNXDatatype, ioType: IOType): PhysicalDeviceCommObject = PhysicalDeviceCommObject(name, datatype, ioType, MurmurHash3.listHash(List(name, datatype, ioType), MurmurHash3.seqSeed))
+  def from(name: String, datatype: KNXDatatype, ioType: IOType, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = PhysicalDeviceCommObject(name, datatype, ioType, MurmurHash3.listHash(List(physicalAddress, name, datatype, ioType), MurmurHash3.seqSeed))
 }
 
