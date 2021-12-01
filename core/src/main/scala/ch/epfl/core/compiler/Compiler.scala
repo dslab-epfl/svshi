@@ -16,12 +16,6 @@ import java.nio.file.{Files, Path}
 
 object Compiler {
   def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
-    //TODO
-    // here we need to read assignment of physical communicationObjects to XKNX stuff
-    // assign Group addresses to communicationObject
-    // generate files for the python apps with the group addresses
-    // generate files for the KNX programming module
-
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 

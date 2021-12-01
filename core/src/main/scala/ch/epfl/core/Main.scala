@@ -3,7 +3,7 @@ package ch.epfl.core
 import ch.epfl.core.models.physical.PhysicalStructure
 import ch.epfl.core.parsers.ets.EtsParser
 import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.utils.Constants
+import ch.epfl.core.utils.{Constants, FileUtils}
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.verifier.bindings.exceptions.BindingsVerifierMessage
@@ -36,7 +36,7 @@ object Main extends App {
       val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
       if(validateProgram(verifierMessages)){
         // Copy new app + all files in app_library
-
+        FileUtils.moveAllFileToOtherDirectory(Constants.GENERATED_FOLDER_PATH_STRING, existingAppsLibrary.path)
         printTrace(verifierMessages)
       } else {
         // new App is rejected
