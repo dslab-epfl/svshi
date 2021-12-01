@@ -166,6 +166,11 @@ class Manipulator:
         return f
 
     def manipulate_mains(self) -> Tuple[List[str], List[str]]:
+        """
+        Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
+        and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
+        and dumps them in the verification file.
+        """
         imports = []
         functions = []
         for (
@@ -182,12 +187,6 @@ class Manipulator:
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
-        """
-        Manipulates the `main.py` of the given file, modifying the names of the functions and instances (specified in `accepted_names`),
-        and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
-        and dumps them in the verification file.
-        """
-
         def flatmap(func, *iterable):
             return itertools.chain.from_iterable(map(func, *iterable))
 
