@@ -5,6 +5,7 @@ import ch.epfl.core.models.physical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.nio.file.Path
 import scala.util.hashing.MurmurHash3
 
 class EtsParserTest extends AnyFlatSpec with Matchers {
@@ -151,7 +152,7 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
           List(
             PhysicalDeviceCommObject.from(
               "Command % - Vanne - Valve",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(
@@ -162,12 +163,12 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
             PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut),
             PhysicalDeviceCommObject.from(
               "Valve position % - Indication d'état - Status indication",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(
               "Highest command value - Indication d'état - Status indication",
-              UnknownDPT,
+              DPTUnknown,
               InOut
             ),
             PhysicalDeviceCommObject.from(
@@ -210,5 +211,10 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
     structure.deviceInstances.find(p =>
       p.address == device5.address
     ) shouldEqual Some(device5)
+  }
+
+  "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {
+    EtsParser.parseEtsProjectFile(testFilePathString)
+    EtsParser.computeExtractedPath(testFilePathString).toFile.exists() shouldBe false
   }
 }
