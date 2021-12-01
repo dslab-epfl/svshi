@@ -34,9 +34,9 @@ This project is about developing a platform/runtime/toolchain for developing and
 To develop an app for Pistis:
 
 1. Create the `app_prototypical_structure.json` file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
-2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton.
+2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. Inside `core/`, run Pistis to generate the bindings with `sbt "run generateBindings ../ets.knxproj"`, where the argument is the path to the ETS project file.
-4. Map the right physical ids given in `app_library/physical_structure.json` to the right device in `app_library/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
+4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 5. Write your app.
 6. Run Pistis to compile and verify the app with `sbt "run compile ../ets.knxproj"`.
 
@@ -57,7 +57,7 @@ To install all the dependencies, run `pip install -r requirements.txt` in `gener
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types.
 
-This file has to be named `app_prototypical_structure.json` and needs to be saved at the root of the project, i.e. the same level as `core`, `app_library` etc. Once the app is generated, it is moved to the app folder.
+This file has to be named `app_prototypical_structure.json` and needs to be saved at the root of the project, i.e. the same level as `core`, `app_library` etc. Once the app is generated, it is moved to the `generated` folder.
 
 Here is an example:
 
