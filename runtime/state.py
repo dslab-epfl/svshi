@@ -1,10 +1,12 @@
 import json
-from typing import Dict, List, Union
+import dataclasses
+from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 from verification_file import PhysicalState
 from runtime.app import App
+from runtime.verifier.conditions import check_conditions
 
 
 class State:
@@ -42,12 +44,26 @@ class State:
 
         self.__physical_state = state
 
+    def __compare(
+        self, new_state: PhysicalState, old_state: PhysicalState
+    ) -> List[Tuple[str, Union[str, bool, float]]]:
+        # TODO Returns a list of (group_address, value) pairs
+        return []
+
     def __notify_listeners(self, address: str):
-        [
-            app.notify(self.__physical_state)
-            for app in self.__addresses_listeners[address]
-            if app.should_run
-        ]
+        for app in self.__addresses_listeners[address]:
+            if app.should_run:
+                old_state = dataclasses.replace(self.__physical_state)
+                app.notify(self.__physical_state)
+                if not check_conditions(self.__physical_state):
+                    # Conditions are not preserved, revert to previous state and prevent app from running again
+                    self.__physical_state = old_state
+                    app.stop()
+                else:
+                    diff = self.__compare(self.__physical_state, old_state)
+                    if diff:
+                        # Write to KNX
+                        pass
 
     def update(self, address: str, value: Union[str, bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
