@@ -1,5 +1,6 @@
 import json
 import dataclasses
+from inspect import signature
 from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
 from xknx.telegram.address import GroupAddress
@@ -52,7 +53,8 @@ class State:
         updated_fields = []
         for field, value in new_state_fields.items():
             if value != old_state_fields[field]:
-                updated_fields.append((field, value))
+                address = field.replace("GA_", "").replace("_", "/")
+                updated_fields.append((address, value))
 
         return updated_fields
 
@@ -69,7 +71,15 @@ class State:
                     updated_fields = self.__compare(self.__physical_state, old_state)
                     if updated_fields:
                         # Write to KNX
-                        pass
+                        for address, value in updated_fields:
+                            # The action to call for the given address
+                            action = app.group_address_to_action[address]
+                            if signature(action).parameters:
+                                # The action takes the value as parameter
+                                action(value)
+                            else:
+                                # The action does not take any parameter
+                                action()
 
     def update(self, address: str, value: Union[str, bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)

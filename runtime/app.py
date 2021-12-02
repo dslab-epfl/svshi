@@ -4,6 +4,7 @@ import json
 from typing import Callable, Dict, List, Tuple
 from itertools import groupby
 from importlib import import_module
+from xknx.devices import Device
 
 from verification_file import PhysicalState
 
@@ -12,6 +13,8 @@ from verification_file import PhysicalState
 class App:
     name: str
     code: Callable[[PhysicalState], None]
+    devices: List[Device]
+    group_address_to_action: Dict[str, Callable]
     is_privileged: bool = False
     should_run: bool = True
 
@@ -54,6 +57,7 @@ def get_addresses_listeners() -> Dict[str, List[App]]:
             app_code = getattr(
                 import_module("verification_file"), f"{app_name}_iteration"
             )
+            # TODO add missing arguments
             apps.append(App(app_name, app_code))
         listeners[key] = apps
 
