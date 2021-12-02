@@ -47,8 +47,14 @@ class State:
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
     ) -> List[Tuple[str, Union[str, bool, float]]]:
-        # TODO Returns a list of (group_address, value) pairs
-        return []
+        new_state_fields = {k: v for k, v in new_state.__dict__ if k.startswith("GA_")}
+        old_state_fields = {k: v for k, v in old_state.__dict__ if k.startswith("GA_")}
+        updated_fields = []
+        for field, value in new_state_fields.items():
+            if value != old_state_fields[field]:
+                updated_fields.append((field, value))
+
+        return updated_fields
 
     def __notify_listeners(self, address: str):
         for app in self.__addresses_listeners[address]:
@@ -60,8 +66,8 @@ class State:
                     self.__physical_state = old_state
                     app.stop()
                 else:
-                    diff = self.__compare(self.__physical_state, old_state)
-                    if diff:
+                    updated_fields = self.__compare(self.__physical_state, old_state)
+                    if updated_fields:
                         # Write to KNX
                         pass
 

@@ -16,9 +16,15 @@ class App:
     should_run: bool = True
 
     def notify(self, state: PhysicalState):
+        """
+        Notifies the app, triggering an iteration.
+        """
         self.code(state)
 
     def stop(self):
+        """
+        Prevents the app from running again.
+        """
         self.should_run = False
 
 
