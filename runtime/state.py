@@ -43,7 +43,11 @@ class State:
         self.__physical_state = state
 
     def __notify_listeners(self, address: str):
-        [app.notify(self.__physical_state) for app in self.__addresses_listeners[address]]
+        [
+            app.notify(self.__physical_state)
+            for app in self.__addresses_listeners[address]
+            if app.should_run
+        ]
 
     def update(self, address: str, value: Union[str, bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
