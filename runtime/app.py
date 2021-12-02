@@ -3,6 +3,7 @@ import os
 import json
 from typing import Callable, Dict, List, Tuple
 from itertools import groupby
+from importlib import import_module
 
 from verification_file import PhysicalState
 
@@ -12,9 +13,13 @@ class App:
     name: str
     code: Callable[[PhysicalState], None]
     is_privileged: bool = False
+    should_run: bool = True
 
     def notify(self, state: PhysicalState):
         self.code(state)
+
+    def stop(self):
+        self.should_run = False
 
 
 def get_addresses_listeners() -> Dict[str, List[App]]:
@@ -33,10 +38,17 @@ def get_addresses_listeners() -> Dict[str, List[App]]:
             for address in file_dict["addresses"]:
                 apps_addresses.append((app, address))
 
-    listeners = {}
+    listeners: Dict[str, List[App]] = {}
     for key, group in groupby(
         sorted(apps_addresses, key=lambda p: p[0]), lambda x: x[1]
     ):
-        listeners[key] = [tup[0] for tup in group]
+        apps = []
+        for tup in group:
+            app_name = tup[0]
+            app_code = getattr(
+                import_module("verification_file"), f"{app_name}_iteration"
+            )
+            apps.append(App(app_name, app_code))
+        listeners[key] = apps
 
     return listeners
