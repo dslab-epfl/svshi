@@ -19,12 +19,21 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install sbt
 
+RUN useradd -rm -d /home/pistis -s /bin/bash -g root -G sudo -u 1001 pistis
+USER pistis
+WORKDIR /home/pistis
+
 RUN pip3 install -U pip
+
+RUN echo 'PATH="/home/pistis/.local/lib/python3.9/site-packages:$PATH"' >> ~/.bashrc 
+RUN echo 'PATH="/home/pistis/.local/bin:$PATH"' >> ~/.bashrc 
 
 
 
 # Copy Smartinfra folder
-RUN mkdir /smartinfra
-COPY . /smartinfra/
+RUN mkdir /home/pistis/smartinfra
+COPY . /home/pistis/smartinfra/
 
-RUN cd smartinfra && pip3 install -r requirements.txt && cd generator && pip3 install -r requirements.txt && cd .. && cd core_python && pip3 install -r requirements.txt
+RUN cd /home/pistis/smartinfra && pip3 install -r requirements.txt && \
+    cd generator && pip3 install -r requirements.txt && cd .. && \
+    cd core_python && pip3 install -r requirements.txt
