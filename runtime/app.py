@@ -35,6 +35,13 @@ def get_addresses_listeners() -> Dict[str, List[App]]:
     """
     Gets, per each address, a list of apps listening to it.
     """
+
+    def get_devices() -> List[Device]:
+        return []
+
+    def compute_action_per_group_address(devices: List[Device]) -> Dict[str, Callable]:
+        return {}
+
     apps = [
         f.name
         for f in os.scandir("app_library")
@@ -58,7 +65,9 @@ def get_addresses_listeners() -> Dict[str, List[App]]:
                 import_module("verification_file"), f"{app_name}_iteration"
             )
             # TODO add missing arguments
-            apps.append(App(app_name, app_code))
+            devices = get_devices()
+            group_address_to_action_dict = compute_action_per_group_address(devices)
+            apps.append(App(app_name, app_code, devices, group_address_to_action_dict))
         listeners[key] = apps
 
     return listeners
