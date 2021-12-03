@@ -14,7 +14,7 @@ async def telegram_received_cb(telegram: Telegram):
     """
     v = telegram.payload.value
     if v:
-        state.update(str(telegram.destination_address), v.value)
+        await state.update(str(telegram.destination_address), v.value)
 
 
 async def cleanup(xknx: XKNX):
@@ -36,8 +36,8 @@ async def main():
         addresses_listeners = get_addresses_listeners()
         apps = get_apps()
         [app.install_requirements() for app in apps]
-        state = State(addresses_listeners, apps)
-        await state.initialize(xknx)
+        state = State(xknx, addresses_listeners, apps)
+        await state.initialize()
         print("done!")
 
         await cleanup(xknx)

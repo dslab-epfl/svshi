@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
+from xknx.devices import RawValue
 from verification.verification_file import PhysicalState
 from runtime.app import App
 from runtime.verifier.conditions import check_conditions
@@ -13,12 +14,15 @@ class State:
 
     __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
 
-    def __init__(self, addresses_listeners: Dict[str, List[str]], apps: List[App]):
+    def __init__(
+        self, xknx: XKNX, addresses_listeners: Dict[str, List[str]], apps: List[App]
+    ):
         self.__physical_state: PhysicalState
+        self.__xknx = xknx
         self.__addresses_listeners = addresses_listeners
         self.__app_name_to_app = {app.name: app for app in apps}
 
-    async def initialize(self, xknx: XKNX):
+    async def initialize(self):
         """
         Initializes the system state by reading it from the KNX bus.
         """
@@ -33,7 +37,7 @@ class State:
                 # Read from KNX the current value
                 address = address_and_type[0]
                 value_reader = ValueReader(
-                    xknx, GroupAddress(address), timeout_in_seconds=5
+                    self.__xknx, GroupAddress(address), timeout_in_seconds=5
                 )
                 telegram = await value_reader.read()
                 if telegram and telegram.payload.value:
@@ -47,9 +51,12 @@ class State:
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
-    ) -> List[Tuple[str, Union[str, bool, float]]]:
-        new_state_fields = {k: v for k, v in new_state.__dict__ if k.startswith("GA_")}
-        old_state_fields = {k: v for k, v in old_state.__dict__ if k.startswith("GA_")}
+    ) -> List[Tuple[str, Union[bool, float]]]:
+        def read_fields(state: PhysicalState) -> Dict[str, str]:
+            return {k: v for k, v in state.__dict__ if k.startswith("GA_")}
+
+        new_state_fields = read_fields(new_state)
+        old_state_fields = read_fields(old_state)
         updated_fields = []
         for field, value in new_state_fields.items():
             if value != old_state_fields[field]:
@@ -58,7 +65,7 @@ class State:
 
         return updated_fields
 
-    def __notify_listeners(self, address: str):
+    async def __notify_listeners(self, address: str):
         for app_name in self.__addresses_listeners[address]:
             app = self.__app_name_to_app[app_name]
             if app.should_run:
@@ -73,9 +80,15 @@ class State:
                     if updated_fields:
                         # Write to KNX
                         for address, value in updated_fields:
-                            # TODO
-                            pass
+                            if isinstance(value, bool):
+                                await RawValue(
+                                    self.__xknx, "", 0, group_address=address
+                                ).set(value)
+                            else:
+                                await RawValue(
+                                    self.__xknx, "", 1, group_address=address
+                                ).set(int(value))
 
-    def update(self, address: str, value: Union[str, bool, float]):
+    async def update(self, address: str, value: Union[bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
-        self.__notify_listeners(address)
+        await self.__notify_listeners(address)
