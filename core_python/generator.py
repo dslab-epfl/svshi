@@ -1,3 +1,4 @@
+import os
 from itertools import groupby
 from typing import List
 
@@ -97,9 +98,11 @@ class Switch_{app_name}_{instance_name}():
     def __generate_physical_state_class(self):
         fields = ""
         for group_address in self.__group_addresses:
-            fields += (
+            new_field = (
                 f" GA_{group_address.address.replace('/', '_')}: {group_address.type}\n"
             )
+            if new_field not in fields:
+                fields += new_field
 
         code = f"""
 @dataclasses.dataclass
@@ -164,11 +167,12 @@ class PhysicalState:
         """
         Generates the whole verification file.
         """
+        os.makedirs(os.path.dirname(self.__filename), exist_ok=True)
         with open(self.__filename, "w") as file:
             self.__generate_physical_state_class()
             self.__generate_device_classes()
             self.__generate_devices_instances()
             self.__generate_precond_iteration_functions()
-            file.write("\n".join(self.__imports))
+            file.write("\n".join(set(self.__imports)))
             file.write("\n")
             file.write("\n".join(self.__code))
