@@ -21,8 +21,9 @@ object Verifier extends VerifierTr{
       val verificationWdStr =  strings.toList.reverse.tail.reverse.mkString("/")
       val verificationWd = os.Path(verificationWdStr, base = os.pwd / os.up)
       val (_, crosshairStdOutLines) = ProcRunner.callCrosshair(verificationFileName, verificationWd, CROSSHAIR_TIMEOUT_SECONDS)
-      crosshairStdOutLines.filter(_.toLowerCase.contains(CONFIRMED_ALL_PATHS_MSG)).map(l => PythonVerifierInfo(l)) ++
-      crosshairStdOutLines.filterNot(_.toLowerCase.contains(CONFIRMED_ALL_PATHS_MSG)).map(l => PythonVerifierError(l))
+      val tupl = crosshairStdOutLines.partition(_.toLowerCase.contains(CONFIRMED_ALL_PATHS_MSG))
+      tupl._1.map(l => PythonVerifierInfo(l)) ++
+      tupl._2.map(l => PythonVerifierError(l))
     }
   }
 }
