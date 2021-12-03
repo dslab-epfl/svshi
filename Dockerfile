@@ -1,3 +1,15 @@
+# Docker container to run Pistis, a platform for formally verified smart buildings
+
+# COMMANDS:
+
+# BUILD:
+## docker build -t pistis:ubuntu22.04 .
+
+# START AND RUN (execute from `smartinfra` folder):
+## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name pistis -i pistis:ubuntu22.04 && docker exec -it pistis /bin/bash'
+
+
+
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
