@@ -12,7 +12,7 @@ object Verifier extends VerifierTr{
     if(stdOutLines.length != 1) {
       // Error while creating the verification file, output
       if(stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierErrors(s"Verification_file creation ERRORS: $l"))
-      else List(PythonVerifierErrors("Verification_file creation ERRORS: The Core_python module returned nothing!"))
+      else List(PythonVerifierErrors("Verification_file creation ERRORS: The core_python module returned nothing!"))
     } else {
       val verificationFileName = stdOutLines.head.split('/').last
       val verificationWdStr =  stdOutLines.head.split('/').toList.reverse.tail.reverse.mkString("/")
