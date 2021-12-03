@@ -121,7 +121,6 @@ object Verifier extends VerifierTr{
   private def checkCompatibilityIOTypes(protoIOType: IOType, physIOType: IOType, msgDevicesDescription: String): List[BindingsVerifierMessage] = {
     protoIOType match {
       case In => physIOType match {
-        case Out =>  List(ErrorIOType(s"$msgDevicesDescription: protoIOType '$protoIOType' is incompatible with physicalIOType '$physIOType'!"))
         case Unknown =>  List(WarningIOType(s"$msgDevicesDescription: physicalIOType is Unknown, attention required!"))
         case _ => Nil
       }
@@ -132,6 +131,7 @@ object Verifier extends VerifierTr{
       }
       case InOut => physIOType match {
         case InOut => Nil
+        case Out => Nil
         case Unknown =>  List(WarningIOType(s"$msgDevicesDescription: physicalIOType is Unknown, attention required!"))
         case _ => List(ErrorIOType(s"$msgDevicesDescription: protoIOType '$protoIOType' is incompatible with physicalIOType '$physIOType'!"))
       }
