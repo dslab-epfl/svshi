@@ -14,8 +14,9 @@ object Verifier extends VerifierTr{
       if(stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierErrors(s"Verification_file creation ERRORS: $l"))
       else List(PythonVerifierErrors("Verification_file creation ERRORS: The core_python module returned nothing!"))
     } else {
-      val verificationFileName = stdOutLines.head.split('/').last
-      val verificationWdStr =  stdOutLines.head.split('/').toList.reverse.tail.reverse.mkString("/")
+      val strings = stdOutLines.head.split('/')
+      val verificationFileName = strings.last
+      val verificationWdStr =  strings.toList.reverse.tail.reverse.mkString("/")
       val verificationWd = os.Path(verificationWdStr, base = os.pwd / os.up)
       val (_, crosshairStdOutLines) = ProcRunner.callCrosshair(verificationFileName, verificationWd, CROSSHAIR_TIMEOUT_SECONDS)
       crosshairStdOutLines.map(l => PythonVerifierErrors(l))
