@@ -1,6 +1,5 @@
 import ast
 import astor
-import itertools
 from typing import Dict, List, Set, Tuple, Union, cast
 
 
@@ -187,9 +186,6 @@ class Manipulator:
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
-        def flatmap(func, *iterable):
-            return itertools.chain.from_iterable(map(func, *iterable))
-
         def extract_functions_and_imports(module_body: List[ast.stmt]):
             # We only keep precond and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
@@ -217,26 +213,21 @@ class Manipulator:
             # We only keep the imports that were added by the user
             imports_ast = list(
                 filter(
-                    lambda n: isinstance(n, ast.Import)
-                    and (
-                        set(flatmap(lambda a: [a.name], n.names))
-                        - set(["asyncio", "time"])
-                    ),
+                    lambda n: isinstance(n, ast.Import),
                     module_body,
                 )
             )
             from_imports_ast = list(
                 filter(
-                    lambda n: isinstance(n, ast.ImportFrom)
-                    and not n.module in ["devices", "communication.client"],
+                    lambda n: isinstance(n, ast.ImportFrom) and n.module != "devices",
                     module_body,
                 )
             )
             return functions_ast, imports_ast, from_imports_ast
 
         with open(f"{directory}/{app_name}/main.py", "r") as file:
-            p = ast.parse(file.read())
-            module_body = p.body
+            module = ast.parse(file.read())
+            module_body = module.body
             self.__rename_instances_add_state(module_body, app_name, accepted_names)
             (
                 functions_ast,

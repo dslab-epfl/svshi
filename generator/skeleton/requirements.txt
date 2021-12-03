@@ -1,3 +1,0 @@
-xknx==0.18.12
-stomp.py==7.0.0
-asgiref==3.4.1

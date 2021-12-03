@@ -88,8 +88,8 @@ def multiton(cls):
             nb_devices = len(self.__devices)
             for i, device in enumerate(self.__devices):
                 prefix = "from devices import " if i == 0 else ", "
-                suffix = "\n" if i == nb_devices - 1 else ""
-                lines.insert(i + 1, f"{prefix}{device.name.upper()}{suffix}")
+                suffix = "\n\n" if i == nb_devices - 1 else ""
+                lines.insert(i, f"{prefix}{device.name.upper()}{suffix}")
             fp.seek(0)
             fp.writelines(lines)
 

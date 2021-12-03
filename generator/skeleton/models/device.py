@@ -4,8 +4,6 @@
 
 from abc import ABC
 
-from models.tracker import WritesTracker, StompWritesTracker
-
 
 class Device(ABC):
     """
@@ -16,9 +14,3 @@ class Device(ABC):
         super().__init__()
         self.name = name
         self.type = type
-        self._tracker: WritesTracker = self.__init_writes_tracker()
-
-    def __init_writes_tracker(self) -> WritesTracker:
-        tracker = StompWritesTracker()
-        tracker.connect()
-        return tracker
