@@ -1,6 +1,8 @@
 import dataclasses
 import os
 import json
+import subprocess
+import sys
 from typing import Callable, Dict, List, Tuple
 from itertools import groupby
 from importlib import import_module
@@ -26,6 +28,21 @@ class App:
         Prevents the app from running again.
         """
         self.should_run = False
+
+    def install_requirements(self):
+        """
+        Installs the app's requirements.
+        """
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                f"app_library/{self.name}/requirements.txt",
+            ]
+        )
 
 
 def __get_apps_names() -> List[str]:

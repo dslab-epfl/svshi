@@ -35,6 +35,7 @@ async def main():
         generate_conditions_file()
         addresses_listeners = get_addresses_listeners()
         apps = get_apps()
+        [app.install_requirements() for app in apps]
         state = State(addresses_listeners, apps)
         await state.initialize(xknx)
         print("done!")
