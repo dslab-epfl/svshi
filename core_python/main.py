@@ -7,6 +7,7 @@ if __name__ == "__main__":
     devices_instances = parser.parse_devices_instances()
     devices_classes = parser.parse_devices_classes()
     
-    output_file_name = "verification_file.py"
+    output_file_name = "verification/verification_file.py"
     generator = Generator(output_file_name, group_addresses_with_types, devices_instances, devices_classes)
     generator.generate_verification_file()
+    print(output_file_name)
