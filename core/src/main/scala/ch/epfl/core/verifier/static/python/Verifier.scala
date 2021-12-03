@@ -11,10 +11,14 @@ object Verifier extends VerifierTr{
     val (_, stdOutLines) = ProcRunner.callPython(CORE_PYTHON_MODULE)
     if(stdOutLines.length != 1) {
       // Error while creating the verification file, output
-      stdOutLines.map(l => PythonVerifierErrors(s"Verification_file creation ERRORS: $l"))
+      if(stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierErrors(s"Verification_file creation ERRORS: $l"))
+      else List(PythonVerifierErrors("Verification_file creation ERRORS: The core_python module returned nothing!"))
     } else {
-      val verificationFileName = stdOutLines.head
-      val (_, crosshairStdOutLines) = ProcRunner.callCrosshair(verificationFileName, CROSSHAIR_TIMEOUT_SECONDS)
+      val strings = stdOutLines.head.split('/')
+      val verificationFileName = strings.last
+      val verificationWdStr =  strings.toList.reverse.tail.reverse.mkString("/")
+      val verificationWd = os.Path(verificationWdStr, base = os.pwd / os.up)
+      val (_, crosshairStdOutLines) = ProcRunner.callCrosshair(verificationFileName, verificationWd, CROSSHAIR_TIMEOUT_SECONDS)
       crosshairStdOutLines.map(l => PythonVerifierErrors(l))
     }
   }

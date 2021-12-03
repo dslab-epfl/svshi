@@ -30,7 +30,7 @@ object BinarySensorBinding {
 }
 case class SwitchBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
-  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, InOut))
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, In))
   override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1), (physDeviceId, DPT1))
   override def getPythonTypes: Map[Int, PythonType] = Map((physDeviceId, PythonBool))
 }
