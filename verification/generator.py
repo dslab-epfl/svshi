@@ -2,8 +2,8 @@ import os
 from itertools import groupby
 from typing import List
 
-from core_python.manipulator import Manipulator
-from core_python.parser import DeviceClass, DeviceInstance, GroupAddress
+from verification.manipulator import Manipulator
+from verification.parser import DeviceClass, DeviceInstance, GroupAddress
 
 
 class Generator:

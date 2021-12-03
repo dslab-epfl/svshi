@@ -1,5 +1,5 @@
-from core_python.generator import Generator
-from core_python.parser import Parser
+from verification.generator import Generator
+from verification.parser import Parser
 
 if __name__ == "__main__":
     parser = Parser()
