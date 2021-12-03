@@ -1,11 +1,10 @@
 import json
 import dataclasses
-from inspect import signature
 from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
-from verification_file import PhysicalState
+from verification.verification_file import PhysicalState
 from runtime.app import App
 from runtime.verifier.conditions import check_conditions
 
@@ -14,9 +13,10 @@ class State:
 
     __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
 
-    def __init__(self, addresses_listeners: Dict[str, List[App]]):
+    def __init__(self, addresses_listeners: Dict[str, List[str]], apps: List[App]):
         self.__physical_state: PhysicalState
         self.__addresses_listeners = addresses_listeners
+        self.__app_name_to_app = {app.name: app for app in apps}
 
     async def initialize(self, xknx: XKNX):
         """
@@ -59,7 +59,8 @@ class State:
         return updated_fields
 
     def __notify_listeners(self, address: str):
-        for app in self.__addresses_listeners[address]:
+        for app_name in self.__addresses_listeners[address]:
+            app = self.__app_name_to_app[app_name]
             if app.should_run:
                 old_state = dataclasses.replace(self.__physical_state)
                 app.notify(self.__physical_state)
@@ -72,14 +73,8 @@ class State:
                     if updated_fields:
                         # Write to KNX
                         for address, value in updated_fields:
-                            # The action to call for the given address
-                            action = app.group_address_to_action[address]
-                            if signature(action).parameters:
-                                # The action takes the value as parameter
-                                action(value)
-                            else:
-                                # The action does not take any parameter
-                                action()
+                            # TODO
+                            pass
 
     def update(self, address: str, value: Union[str, bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)

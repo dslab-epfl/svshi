@@ -21,7 +21,7 @@ def generate_conditions_file():
     imports = ""
     imports_code = []
     for app in apps_dirs:
-        import_statement = f"from verification_file import {app}_precond\n"
+        import_statement = f"from verification.verification_file import {app}_precond\n"
         if import_statement not in imports:
             imports += import_statement
             imports_code.append(f"{app}_precond")
@@ -46,7 +46,7 @@ def reset_conditions_file():
     Resets the conditions file.
     """
     file = f"""
-from verification_file import PhysicalState
+from verification.verification_file import PhysicalState
 
 def check_conditions(state: PhysicalState) -> bool:
   return True    

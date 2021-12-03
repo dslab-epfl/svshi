@@ -1,4 +1,4 @@
-from verification_file import PhysicalState
+from verification.verification_file import PhysicalState
 
 def check_conditions(state: PhysicalState) -> bool:
   return True 

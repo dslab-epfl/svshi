@@ -1,5 +1,5 @@
 from xknx.telegram.telegram import Telegram
-from runtime.app import get_addresses_listeners
+from runtime.app import get_addresses_listeners, get_apps
 from runtime.conditions import generate_conditions_file, reset_conditions_file
 from runtime.state import State
 from xknx import XKNX
@@ -34,7 +34,8 @@ async def main():
         print("Initializing state and listeners... ", end="")
         generate_conditions_file()
         addresses_listeners = get_addresses_listeners()
-        state = State(addresses_listeners)
+        apps = get_apps()
+        state = State(addresses_listeners, apps)
         await state.initialize(xknx)
         print("done!")
 
