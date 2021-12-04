@@ -3,7 +3,7 @@ package ch.epfl.core.verifier.bindings
 import ch.epfl.core.models.application.ApplicationLibrary
 import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical._
-import ch.epfl.core.models.prototypical._
+import ch.epfl.core.models.prototypical.{SupportedDeviceBinding, _}
 import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
 import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.parsers.json.prototype.AppInputJsonParser
@@ -24,7 +24,8 @@ object Verifier extends VerifierTr{
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
     val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++
-      verifyBindingsPythonType(groupAddressAssignment)
+      verifyBindingsPythonType(groupAddressAssignment) ++
+      verifyBindingsMutualDPT(bindings)
     returnValues
   }
 
@@ -83,6 +84,27 @@ object Verifier extends VerifierTr{
     })
   }
 
+  def verifyBindingsMutualDPT(bindings: AppLibraryBindings): List[BindingsVerifierMessage] = {
+    bindings.appBindings.flatMap(binding => {
+      binding.bindings.flatMap(deviceInstBinding => {
+        deviceInstBinding.binding match {
+          case BinarySensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case SwitchBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case TemperatureSensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case HumiditySensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+        }
+      })
+    })
+  }
+
   private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierMessage] = {
     val knxDpt = deviceInstBinding.binding.getKNXDpt(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)
@@ -93,6 +115,13 @@ object Verifier extends VerifierTr{
     val commObject = getCommObjectByBoundId(physDeviceId, physicalDevice).get
     // commObject IS DEFINED by construction
     checkCompatibilityKNXTypes(knxDpt, commObject.datatype, s"Proto device name = ${deviceInstBinding.name}, type = ${protoDevice.deviceType}; physical device address = ${physicalDevice.address}, commObject = ${commObject.name}, physicalId = ${commObject.id}")
+  }
+
+  private def checkMutualDPTCompatibility(deviceInstBinding: DeviceInstanceBinding, bindings: AppLibraryBindings, physDeviceId: Int): List[BindingsVerifierMessage] = {
+    val others = boundProtoDevicesSamePhysId(bindings, physDeviceId)
+    val msgBegin = s"Proto device name = ${deviceInstBinding.name}, physicalId = $physDeviceId; KNX DPT = ${deviceInstBinding.binding.getKNXDpt(physDeviceId)} conflicts with "
+    others.filter(bind => bind.binding.getKNXDpt(physDeviceId) != deviceInstBinding.binding.getKNXDpt(physDeviceId)).map(b =>
+      ErrorProtoDevicesBoundSameIdDifferentDPT(s"$msgBegin Proto device name = ${b.name}, physicalId = $physDeviceId, KNX DPT = ${b.binding.getKNXDpt(physDeviceId)}"))
   }
 
   private def checkPhysIdIOCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierMessage] = {
@@ -137,6 +166,14 @@ object Verifier extends VerifierTr{
       }
       case Unknown => List(WarningIOType(s"$msgDevicesDescription: protoIOType is Unknown, attention required!"))
     }
+  }
+
+  private def boundProtoDevicesSamePhysId(bindings: AppLibraryBindings, physDeviceId: Int): List[DeviceInstanceBinding] = {
+    bindings.appBindings.flatMap(appProtoBind =>
+      appProtoBind.bindings.flatMap(bind =>
+        List(bind).filter(b => b.binding.getBoundIds.contains(physDeviceId))
+      )
+    )
   }
 
   private def getCommObjectByBoundId(physDeviceId: Int, physicalDevice: PhysicalDevice): Option[PhysicalDeviceCommObject] = {
