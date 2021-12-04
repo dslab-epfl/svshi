@@ -88,6 +88,9 @@ class State:
                                 await RawValue(
                                     self.__xknx, "", 1, group_address=address
                                 ).set(int(value))
+                            
+                            # Notify the listeners of the change
+                            await self.__notify_listeners(address)
 
     async def update(self, address: str, value: Union[bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
