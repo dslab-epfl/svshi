@@ -2,7 +2,7 @@ from verification.generator import Generator
 from verification.parser import Parser
 
 if __name__ == "__main__":
-    parser = Parser()
+    parser = Parser("generated", "app_library")
     group_addresses_with_types = parser.parse_group_addresses()
     devices_instances = parser.parse_devices_instances()
     devices_classes = parser.parse_devices_classes()

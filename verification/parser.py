@@ -35,8 +35,9 @@ class Parser:
     JSON files parser.
     """
 
-    __GENERATED_DIR_NAME = "generated"
-    __APP_LIBRARY_DIR_NAME = "app_library"
+    def __init__(self, generated_dir_name: str, app_library_dir_name: str):
+        self.__generated_dir_name = generated_dir_name
+        self.__app_library_dir_name = app_library_dir_name
 
     def __get_apps(self) -> List[App]:
         def get_apps_from_directory(directory: str) -> List[App]:
@@ -47,14 +48,14 @@ class Parser:
             ]
 
         return get_apps_from_directory(
-            self.__GENERATED_DIR_NAME
-        ) + get_apps_from_directory(self.__APP_LIBRARY_DIR_NAME)
+            self.__generated_dir_name
+        ) + get_apps_from_directory(self.__app_library_dir_name)
 
     def parse_group_addresses(self) -> List[GroupAddress]:
         """
         Parses the group addresses file, returning a list of (address, type) pairs.
         """
-        with open(f"{self.__GENERATED_DIR_NAME}/group_addresses.json", "r") as file:
+        with open(f"{self.__generated_dir_name}/group_addresses.json", "r") as file:
             addrs_dict = json.load(file)
             return [GroupAddress(ga[0], ga[1]) for ga in addrs_dict["addresses"]]
 
@@ -89,7 +90,7 @@ class Parser:
             """
             device_and_app_name_to_type_map = {}
             with open(
-                f"{self.__GENERATED_DIR_NAME}/apps_bindings.json"
+                f"{self.__generated_dir_name}/apps_bindings.json"
             ) as bindings_file:
                 bindings_dict = json.load(bindings_file)
                 for app in bindings_dict["appBindings"]:
