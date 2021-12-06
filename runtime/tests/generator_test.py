@@ -4,6 +4,7 @@ import pytest
 from ..generator import ConditionsGenerator
 
 CONDITIONS_FILE = "tests/conditions.py"
+VERIFICATIONS_FILE = "tests/verification_file.py"
 EXPECTED_CONDITIONS_FILE = "tests/expected_conditions.py"
 EXPECTED_DEFAULT_CONDITIONS_FILE = "tests/expected_default_conditions.py"
 
@@ -16,7 +17,7 @@ def run_before_and_after_tests():
     yield  # this is where the testing happens
 
     # Cleanup
-    os.remove("tests/conditions.py")
+    os.remove(CONDITIONS_FILE)
 
 
 def test_generator_generate_conditions_file():

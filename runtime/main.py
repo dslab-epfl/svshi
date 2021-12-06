@@ -23,6 +23,7 @@ async def telegram_received_cb(telegram: Telegram):
 
 async def cleanup(xknx: XKNX, generator: ConditionsGenerator):
     print("Exiting... ", end="")
+    generator.reset_verification_file()
     generator.reset_conditions_file()
     await xknx.stop()
     print("bye!")
@@ -37,12 +38,12 @@ async def main():
         await xknx.start()
         print("done!")
         print("Initializing state and listeners... ", end="")
+        conditions_generator.copy_verification_file_from_verification_module()
         conditions_generator.generate_conditions_file()
         addresses_listeners = get_addresses_listeners(APP_LIBRARY_DIR)
-        apps = get_apps(APP_LIBRARY_DIR, "verification.verification_file")
+        apps = get_apps(APP_LIBRARY_DIR, "verification_file")
         [app.install_requirements() for app in apps]
-        state = State(xknx, addresses_listeners, apps)
-        await state.initialize()
+        state = await State.create(xknx, addresses_listeners, apps)
         print("done!")
 
         await cleanup(xknx, conditions_generator)

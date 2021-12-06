@@ -5,7 +5,7 @@ from xknx.core.value_reader import ValueReader
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 from xknx.devices import RawValue
-from verification.verification_file import PhysicalState
+from .verification_file import PhysicalState
 from .app import App
 from .conditions import check_conditions
 
@@ -14,15 +14,35 @@ class State:
 
     __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
 
-    def __init__(
-        self, xknx: XKNX, addresses_listeners: Dict[str, List[str]], apps: List[App]
+    __create_key = object()
+
+    @classmethod
+    async def create(
+        cls, xknx: XKNX, addresses_listeners: Dict[str, List[str]], apps: List[App]
     ):
-        self.__physical_state: PhysicalState
+        """
+        Creates the state, initializing it through XKNX as well.
+        """
+        self = State(cls.__create_key)
+        self.__physical_state = await self.__initialize()
         self.__xknx = xknx
         self.__addresses_listeners = addresses_listeners
         self.__app_name_to_app = {app.name: app for app in apps}
+        return self
 
-    async def initialize(self):
+    def __init__(self, create_key: object):
+        """
+        This constructor is only meant to be used internally.
+        """
+        assert (
+            create_key == State.__create_key
+        ), "State objects must be created using State.create"
+        self.__physical_state: PhysicalState
+        self.__xknx: XKNX
+        self.__addresses_listeners: Dict[str, List[str]]
+        self.__app_name_to_app: Dict[str, App]
+
+    async def __initialize(self):
         """
         Initializes the system state by reading it from the KNX bus.
         """
@@ -47,7 +67,7 @@ class State:
                         telegram.payload.value.value,
                     )
 
-        self.__physical_state = state
+        return state
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
