@@ -6,8 +6,8 @@ from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 from xknx.devices import RawValue
 from verification.verification_file import PhysicalState
-from runtime.app import App
-from runtime.verifier.conditions import check_conditions
+from .app import App
+from .conditions import check_conditions
 
 
 class State:
@@ -88,7 +88,7 @@ class State:
                                 await RawValue(
                                     self.__xknx, "", 1, group_address=address
                                 ).set(int(value))
-                            
+
                             # Notify the listeners of the change
                             await self.__notify_listeners(address)
 

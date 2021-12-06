@@ -1,2 +1,3 @@
 xknx==0.18.12
 crosshair-tool==0.0.19
+pytest==6.2.4
