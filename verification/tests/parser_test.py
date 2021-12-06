@@ -12,8 +12,10 @@ def test_parser_parse_group_addresses():
 
     assert group_addresses == [
         GroupAddress("0/0/1", "bool"),
-        GroupAddress("0/0/2", "int"),
+        GroupAddress("0/0/2", "bool"),
         GroupAddress("0/0/3", "float"),
+        GroupAddress("0/0/4", "float"),
+        GroupAddress("0/0/5", "int"),
     ]
 
 
