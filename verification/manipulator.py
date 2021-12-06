@@ -182,8 +182,8 @@ class Manipulator:
             imports.extend(imps)
             functions.append(funcs)
 
-        # Keep only non-empty imports and sort them
-        return sorted([imp for imp in imports if imp]), functions
+        # Keep only non-empty imports
+        return [imp.replace("\n", "") for imp in imports if imp], functions
 
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]

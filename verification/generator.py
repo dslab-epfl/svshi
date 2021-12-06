@@ -173,6 +173,6 @@ class PhysicalState:
             self.__generate_device_classes()
             self.__generate_devices_instances()
             self.__generate_precond_iteration_functions()
-            file.write("\n".join(set(self.__imports)))
-            file.write("\n")
+            file.write("\n".join((sorted(set(self.__imports)))))
+            file.write("\n\n")
             file.write("\n".join(self.__code))
