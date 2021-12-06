@@ -168,7 +168,7 @@ class Manipulator:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
         and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
-        and dumps them in the verification file.
+        and dumped in the verification file.
         """
         imports = []
         functions = []
