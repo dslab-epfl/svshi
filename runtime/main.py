@@ -6,6 +6,7 @@ from xknx import XKNX
 import asyncio
 
 APP_LIBRARY_DIR = "app_library"
+CONDITIONS_FILE_PATH = "runtime/conditions.py"
 
 
 state: State
@@ -29,7 +30,7 @@ async def cleanup(xknx: XKNX, generator: ConditionsGenerator):
 
 async def main():
     xknx = XKNX(daemon_mode=True)
-    conditions_generator = ConditionsGenerator("app_library", "runtime/conditions.py")
+    conditions_generator = ConditionsGenerator(APP_LIBRARY_DIR, CONDITIONS_FILE_PATH)
     try:
         print("Connecting to KNX... ", end="")
         xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
@@ -37,8 +38,8 @@ async def main():
         print("done!")
         print("Initializing state and listeners... ", end="")
         conditions_generator.generate_conditions_file()
-        addresses_listeners = get_addresses_listeners()
-        apps = get_apps()
+        addresses_listeners = get_addresses_listeners(APP_LIBRARY_DIR)
+        apps = get_apps(APP_LIBRARY_DIR, "verification.verification_file")
         [app.install_requirements() for app in apps]
         state = State(xknx, addresses_listeners, apps)
         await state.initialize()
