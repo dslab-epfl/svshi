@@ -1,4 +1,4 @@
-from generator.parsing.device import Device
+from ..parsing.device import Device
 from typing import List
 import os
 import subprocess
@@ -14,11 +14,11 @@ class Generator:
         self.__devices = devices
         self.__devices_json_filename = devices_json_filename
 
-    def copy_skeleton_to_generated_app(self):
+    def copy_skeleton_to_generated_app(self, skeleton_path: str):
         """
-        Copies the skeleton to the newly generated app.
+        Copies the skeleton to the newly generated app. The skeleton path should have the form "generator/skeleton".
         """
-        subprocess.run(f"cp -r generator/skeleton/* {self.__app_name}", shell=True)
+        subprocess.run(f"cp -r {skeleton_path}/* {self.__app_name}", shell=True)
 
     def move_devices_json_to_generated_app(self):
         """
