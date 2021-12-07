@@ -135,13 +135,14 @@ class Manipulator:
         physical_state_name_str = "physical_state"
 
         conditions = []
-        for app_name in app_names:
+        sorted_app_names = sorted(app_names)
+        for app_name in sorted_app_names:
             precond = pre_str
             precond += construct_func_call(
                 app_name + "_" + precond_name_str, [physical_state_name_str]
             )
             conditions.append(precond)
-        for app_name in app_names:
+        for app_name in sorted_app_names:
             postcond = post_str
             postcond += construct_func_call(
                 app_name + "_" + precond_name_str, [return_value_name_str]
