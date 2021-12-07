@@ -30,7 +30,7 @@ class ConditionsGenerator:
         imports = "from verification_file import "
         imports_code = []
         nb_apps = len(apps_dirs)
-        for i, app in enumerate(apps_dirs):
+        for i, app in enumerate(sorted(apps_dirs)):
             # We also need to import the PhysicalState at the end
             suffix = ", " if i < nb_apps - 1 else ", PhysicalState\n"
             precond_function = f"{app}_precond"
