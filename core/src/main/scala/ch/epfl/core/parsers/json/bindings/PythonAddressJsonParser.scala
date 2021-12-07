@@ -28,7 +28,7 @@ object PythonAddressJsonParser {
     val applicationBindingsOpt = assignment.appLibraryBindings.appBindings.find(b => b.name == app.name)
     if(applicationBindingsOpt.isEmpty) throw new IllegalArgumentException("The given application is not present in the assignment.")
     val applicationBindings = applicationBindingsOpt.get
-    AppPythonAddressesJson(applicationBindings.bindings.map(createAddressJsonFromBinding(_,assignment.physIdToGA)))
+    AppPythonAddressesJson(permissionLevel = app.appProtoStructure.permissionLevel.toString, addresses = applicationBindings.bindings.map(createAddressJsonFromBinding(_,assignment.physIdToGA)))
   }
 
 
