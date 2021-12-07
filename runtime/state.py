@@ -37,7 +37,6 @@ class State:
         self.__physical_state: PhysicalState
         self.__xknx: XKNX
         self.__addresses_listeners: Dict[str, List[App]]
-        self.__app_name_to_app: Dict[str, App]
 
     async def __initialize(self):
         """
@@ -92,14 +91,13 @@ class State:
                 old_state_before_app = dataclasses.replace(self.__physical_state)
                 app.notify(self.__physical_state)
                 if not check_conditions(self.__physical_state):
-                    # Conditions are not preserved, revert to previous state and prevent app from running again
+                    # If conditions are not preserved, we revert to the previous state and prevent the app from running again
                     self.__physical_state = old_state_before_app
                     app.stop()
 
-        # Then we write to KNX for just the final value given to the updated fields
+        # Then we write to KNX for just the final values given to the updated fields
         updated_fields = self.__compare(self.__physical_state, old_state)
         if updated_fields:
-            # Write to KNX
             for address, value in updated_fields:
                 if isinstance(value, bool):
                     await RawValue(self.__xknx, "", 0, group_address=address).set(value)
