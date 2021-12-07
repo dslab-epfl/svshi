@@ -60,7 +60,7 @@ To run the tests of all the modules at once, execute `./run_tests.sh`.
 ## Structure
 
 ```
-┌── app_library - Contains installed apps and their bindings
+┌── app_library - Contains installed apps, their bindings and the physical structure at the latest installation time
 ├── assignments - Contains group address assignments for KNX communication objects
 ├── core - ETS project parser, bindings generator and apps compiler/verifier (Scala sbt project)
 ├── generated - Contains generated but not yet installed apps and their bindings
