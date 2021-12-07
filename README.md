@@ -8,11 +8,11 @@
   - [Setup](#setup)
   - [Developing an application](#developing-an-application)
   - [Running the applications](#running-the-applications)
-  - [Tests](#tests)
+  - [Running the tests](#running-the-tests)
   - [App generator](#app-generator)
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
-    - [Tests](#tests-1)
+    - [Tests](#tests)
 
 This project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
@@ -52,7 +52,7 @@ To run all the installed apps:
 1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
 2. Execute `python -m runtime.main` at the root of the project.
 
-## Tests
+## Running the tests
 
 To run the tests of all the modules at once, execute `./run_tests.sh`.
 
@@ -83,16 +83,15 @@ The `deviceType` should be [supported by Pistis](#supported-devices).
 ### Usage
 
 ```text
-usage: main.py [-h] devices_json app_name
+usage: main.py [-h] app_name
 
 App generator.
 
 positional arguments:
-  devices_json  the name of the devices JSON file
-  app_name      the name of the app
+  app_name    the name of the app
 
 optional arguments:
-  -h, --help    show this help message and exit
+  -h, --help  show this help message and exit
 ```
 
 The app generator is a small Python module that generates a Python app skeleton to be modified by the user. It takes as input the devices JSON file and the name of the app.
