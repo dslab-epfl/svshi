@@ -1,7 +1,7 @@
 package ch.epfl.core.parsers
 
 import ch.epfl.core.parsers.json.bindings.{AppPythonAddressesJson, BinarySensorAddressJson, DeviceAddressJson, HumiditySensorAddressJson, PythonAddressJsonParser, SwitchAddressJson, TemperatureSensorAddressJson}
-import ch.epfl.core.models.application.Application
+import ch.epfl.core.models.application.{Application, NonPrivileged}
 import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical.{DPT1, DPT12, DPT2, DPT5, GroupAddress, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
 import ch.epfl.core.models.prototypical.{AppLibraryBindings, AppPrototypeBindings, AppPrototypicalDeviceInstance, AppPrototypicalStructure, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
@@ -14,7 +14,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor)
-    ))
+    ), NonPrivileged)
     val app = Application("app1", "app1Path", appPrototypicalStructure)
 
 

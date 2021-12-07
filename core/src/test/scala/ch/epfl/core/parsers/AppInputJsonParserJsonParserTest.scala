@@ -1,5 +1,6 @@
 package ch.epfl.core.parsers
 
+import ch.epfl.core.models.application.NonPrivileged
 import ch.epfl.core.parsers.json.prototype.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
 import ch.epfl.core.models.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -90,7 +91,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(List(device1, device2, device3))
+    val app = AppPrototypicalStructure(List(device1, device2, device3), NonPrivileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
