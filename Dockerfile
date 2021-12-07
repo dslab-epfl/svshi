@@ -1,3 +1,15 @@
+# Docker container to run Pistis, a platform for formally verified smart buildings
+
+# COMMANDS:
+
+# BUILD:
+## docker build -t pistis:ubuntu22.04 .
+
+# START AND RUN (execute from `smartinfra` folder):
+## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name pistis -i pistis:ubuntu22.04 && docker exec -it pistis /bin/bash'
+
+
+
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -19,12 +31,21 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install sbt
 
+RUN useradd -rm -d /home/pistis -s /bin/bash -g root -G sudo -u 1001 pistis
+USER pistis
+WORKDIR /home/pistis
+
 RUN pip3 install -U pip
+
+RUN echo 'PATH="/home/pistis/.local/lib/python3.9/site-packages:$PATH"' >> ~/.bashrc 
+RUN echo 'PATH="/home/pistis/.local/bin:$PATH"' >> ~/.bashrc 
 
 
 
 # Copy Smartinfra folder
-RUN mkdir /smartinfra
-COPY . /smartinfra/
+RUN mkdir /home/pistis/smartinfra
+COPY . /home/pistis/smartinfra/
 
-RUN cd smartinfra && pip3 install -r requirements.txt && cd generator && pip3 install -r requirements.txt && cd .. && cd core_python && pip3 install -r requirements.txt
+RUN cd /home/pistis/smartinfra && pip3 install -r requirements.txt && \
+    cd generator && pip3 install -r requirements.txt && cd .. && \
+    cd core_python && pip3 install -r requirements.txt

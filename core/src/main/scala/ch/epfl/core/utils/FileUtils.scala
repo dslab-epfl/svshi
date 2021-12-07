@@ -67,7 +67,8 @@ object FileUtils {
     if(!to.isDirectory) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
     val fromOsPath = os.Path(dir, base = os.pwd)
     val toOsPath = os.Path(destinationDir, base = os.pwd)
-    os.move.over(fromOsPath, toOsPath)
+    os.copy(fromOsPath, toOsPath, mergeFolders = true, replaceExisting = true)
+    os.remove.all(fromOsPath)
     os.makeDir(fromOsPath)
   }
 

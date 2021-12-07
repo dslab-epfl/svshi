@@ -13,6 +13,7 @@ from .verification_file import PhysicalState
 @dataclasses.dataclass
 class App:
     name: str
+    directory: str
     code: Callable[[PhysicalState], None]
     is_privileged: bool = False
     should_run: bool = True
@@ -63,18 +64,23 @@ def get_apps(app_library_dir: str, verification_file_module: str) -> List[App]:
         app_code = getattr(
             import_module(verification_file_module), f"{app_name}_iteration"
         )
-        apps.append(App(app_name, app_code))
+        with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
+            file_dict = json.load(file)
+            is_privileged = file_dict["permissionLevel"] == "privileged"
+            apps.append(App(app_name, app_library_dir, app_code, is_privileged))
+
     return apps
 
 
-def get_addresses_listeners(app_library_dir: str) -> Dict[str, List[str]]:
+def get_addresses_listeners(apps: List[App]) -> Dict[str, List[App]]:
     """
     Gets, per each address, a list of apps names listening to it.
     """
-    apps = __get_apps_names(app_library_dir)
-    apps_addresses: List[Tuple[str, str]] = []
+    apps_addresses: List[Tuple[App, str]] = []
     for app in apps:
-        with open(f"{app_library_dir}/{app}/addresses.json", "r") as file:
+        app_name = app.name
+        app_directory = app.directory
+        with open(f"{app_directory}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
             for address_obj in file_dict["addresses"]:
                 address = (
@@ -84,14 +90,15 @@ def get_addresses_listeners(app_library_dir: str) -> Dict[str, List[str]]:
                 )
                 apps_addresses.append((app, address))
 
-    listeners: Dict[str, List[str]] = {}
-    for key, group in groupby(
+    listeners: Dict[str, List[App]] = {}
+    for address, group in groupby(
         sorted(apps_addresses, key=lambda p: p[1]), lambda x: x[1]
     ):
-        apps = []
-        for tup in group:
-            app_name = tup[0]
-            apps.append(app_name)
-        listeners[key] = apps
+        ga_listeners = []
+        # Sort the apps first by permission level (not privileged first), then by name
+        for pair in sorted(group, key=lambda p: (p[0].is_privileged, p[0].name)):
+            app = pair[0]
+            ga_listeners.append(app)
+        listeners[address] = ga_listeners
 
     return listeners
