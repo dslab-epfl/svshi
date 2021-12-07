@@ -1,6 +1,6 @@
 package ch.epfl.core.verifier.bindings
 
-import ch.epfl.core.models.application.NonPrivileged
+import ch.epfl.core.models.application.NotPrivileged
 import ch.epfl.core.models.bindings.GroupAddressAssignment
 import ch.epfl.core.models.physical._
 import ch.epfl.core.models.prototypical._
@@ -66,12 +66,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures) shouldEqual Nil
   }
@@ -131,12 +131,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -199,12 +199,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     println(res)
@@ -268,12 +268,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -336,12 +336,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -404,12 +404,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -472,12 +472,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -541,12 +541,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -610,12 +610,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -679,12 +679,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -748,12 +748,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 2
@@ -820,12 +820,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
 
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
@@ -890,12 +890,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
 
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
@@ -965,12 +965,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures) shouldEqual Nil
   }
@@ -1030,12 +1030,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -1101,12 +1101,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -1172,12 +1172,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
     res.length shouldEqual 1
@@ -1242,12 +1242,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
 
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
@@ -1312,12 +1312,12 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
       ))
     ))
-    val appPrototypicalStructure = AppPrototypicalStructure(List(
+    val appPrototypicalStructure = AppPrototypicalStructure(permissionLevel = NotPrivileged, deviceInstances = List(
       AppPrototypicalDeviceInstance("device1", BinarySensor),
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor),
       AppPrototypicalDeviceInstance("device4", HumiditySensor)
-    ), NonPrivileged)
+    ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsKNXDatatypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
 

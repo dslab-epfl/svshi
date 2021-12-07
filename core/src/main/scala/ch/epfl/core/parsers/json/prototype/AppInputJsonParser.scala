@@ -1,6 +1,6 @@
 package ch.epfl.core.parsers.json.prototype
 
-import ch.epfl.core.models.application.NonPrivileged
+import ch.epfl.core.models.application.{NotPrivileged, PermissionLevel, Privileged}
 import ch.epfl.core.parsers.json.JsonParsingException
 import ch.epfl.core.models.prototypical._
 
@@ -23,7 +23,9 @@ object AppInputJsonParser {
       val deviceType = SupportedDevice.fromString(deviceInstanceJson.deviceType)
       AppPrototypicalDeviceInstance(deviceInstanceJson.name, deviceType)
     }
-    AppPrototypicalStructure(parsedStructure.devices.map(convertDeviceInstance), NonPrivileged)
+    val permissionLevel = PermissionLevel.fromString(parsedStructure.permissionLevel)
+    if(permissionLevel.isEmpty) throw new JsonParsingException(s"The permission level '${parsedStructure.permissionLevel}' is unknown. PermissionLevel must be '${NotPrivileged.toString}' or '${Privileged.toString}'!")
+    AppPrototypicalStructure(permissionLevel = permissionLevel.get, deviceInstances = parsedStructure.devices.map(convertDeviceInstance))
   }
   def parseJson(jsonContent: String): PrototypicalStructureJson = try {
     upickle.default.read[PrototypicalStructureJson](jsonContent)
