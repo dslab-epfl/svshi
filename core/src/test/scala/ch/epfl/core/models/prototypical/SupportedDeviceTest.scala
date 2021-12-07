@@ -48,4 +48,17 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     an [MatchError] should be thrownBy  SupportedDevice.fromString("switchhhh")
   }
 
+  "getDeviceBinding" should "return the correct binding for BinarySensor" in {
+    SupportedDevice.getDeviceBinding(BinarySensor) shouldEqual BinarySensorBinding(BinarySensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for HumiditySensor" in {
+    SupportedDevice.getDeviceBinding(HumiditySensor) shouldEqual HumiditySensorBinding(HumiditySensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for TemperatureSensor" in {
+    SupportedDevice.getDeviceBinding(TemperatureSensor) shouldEqual TemperatureSensorBinding(TemperatureSensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for Switch" in {
+    SupportedDevice.getDeviceBinding(Switch) shouldEqual SwitchBinding(Switch.toString, SupportedDevice.defaultPhysicalId)
+  }
+
 }
