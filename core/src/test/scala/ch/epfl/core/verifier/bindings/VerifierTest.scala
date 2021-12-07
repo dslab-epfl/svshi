@@ -213,7 +213,6 @@ class VerifierTest extends AnyFlatSpec with Matchers {
   }
 
   "verifyBindingsIoTypes" should "detects an IN physical to OUT proto Binary" in {
-
     val device1Physical = PhysicalDevice(
       "device1",
       ("1", "1", "1"),
