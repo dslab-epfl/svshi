@@ -37,7 +37,6 @@ class State:
         self.__physical_state: PhysicalState
         self.__xknx: XKNX
         self.__addresses_listeners: Dict[str, List[App]]
-        self.__app_name_to_app: Dict[str, App]
 
     async def __initialize(self):
         """
@@ -83,30 +82,32 @@ class State:
         return updated_fields
 
     async def __notify_listeners(self, address: str):
+        # We first execute all the listeners
+        old_state = dataclasses.replace(self.__physical_state)
         for app in self.__addresses_listeners[address]:
+            # First all the non-privileged apps are run in alphabetical order, then the privileged ones in alphabetical order
+            # In this way the privileged apps can override the behavior of the non-privileged ones
             if app.should_run:
-                old_state = dataclasses.replace(self.__physical_state)
+                old_state_before_app = dataclasses.replace(self.__physical_state)
                 app.notify(self.__physical_state)
                 if not check_conditions(self.__physical_state):
-                    # Conditions are not preserved, revert to previous state and prevent app from running again
-                    self.__physical_state = old_state
+                    # If conditions are not preserved, we revert to the previous state and prevent the app from running again
+                    self.__physical_state = old_state_before_app
                     app.stop()
-                else:
-                    updated_fields = self.__compare(self.__physical_state, old_state)
-                    if updated_fields:
-                        # Write to KNX
-                        for address, value in updated_fields:
-                            if isinstance(value, bool):
-                                await RawValue(
-                                    self.__xknx, "", 0, group_address=address
-                                ).set(value)
-                            else:
-                                await RawValue(
-                                    self.__xknx, "", 1, group_address=address
-                                ).set(int(value))
 
-                            # Notify the listeners of the change
-                            await self.__notify_listeners(address)
+        # Then we write to KNX for just the final values given to the updated fields
+        updated_fields = self.__compare(self.__physical_state, old_state)
+        if updated_fields:
+            for address, value in updated_fields:
+                if isinstance(value, bool):
+                    await RawValue(self.__xknx, "", 0, group_address=address).set(value)
+                else:
+                    await RawValue(self.__xknx, "", 1, group_address=address).set(
+                        int(value)
+                    )
+
+                # Notify the listeners of the change
+                await self.__notify_listeners(address)
 
     async def update(self, address: str, value: Union[bool, float]):
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
