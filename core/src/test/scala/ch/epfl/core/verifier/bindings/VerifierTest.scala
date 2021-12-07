@@ -206,7 +206,6 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     ))
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
     val res = verifyBindingsIoTypes(physicalStructure, appLibraryBindings, appPrototypicalStructures)
-    println(res)
     res.length shouldEqual 1
     res.head shouldBe an [ErrorIOType]
     res.head.msg.contains("212") shouldEqual true

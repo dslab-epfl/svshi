@@ -12,7 +12,6 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
   val testFilePathString = "res/ets_project_test.knxproj"
   "parseEtsProjectFile" should "return the correct structure on the test file" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePathString)
-    println(structure)
     val device1 = PhysicalDevice(
       name = "Switch Standard 2-fold 16A/1.0a",
       address = ("1", "1", "1"),

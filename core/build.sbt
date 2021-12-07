@@ -5,6 +5,8 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "ch.epfl.core"
 ThisBuild / organizationName := "epfl"
 
+Test / parallelExecution := false
+
 lazy val root = (project in file("."))
   .settings(
     name := "core",
