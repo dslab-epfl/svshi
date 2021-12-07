@@ -13,7 +13,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val json =
       """
         |{
-        |    "permissionLevel": "NotPrivileged",
+        |    "permissionLevel": "notPrivileged",
         |    "devices":
         |    [
         |       {
@@ -36,7 +36,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson("NotPrivileged", List(device1, device2, device3))
+    val app = PrototypicalStructureJson("notPrivileged", List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -44,7 +44,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val json =
       """
         |{
-        |    "permissionLevel": "Privileged",
+        |    "permissionLevel": "privileged",
         |    "devices":
         |    [
         |       {
@@ -67,7 +67,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson("Privileged", List(device1, device2, device3))
+    val app = PrototypicalStructureJson("privileged", List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -76,7 +76,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val json =
       """
         |{
-        |    "permissionLevel": "NotPrivileged",
+        |    "permissionLevel": "notPrivileged",
         |    "devices":
         |    [
         |       {
@@ -100,11 +100,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       .constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
   }
 
-  "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure NotPrivileged" in {
+  "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure notPrivileged" in {
     val json =
       """
         |{
-        |    "permissionLevel": "NotPrivileged",
+        |    "permissionLevel": "notPrivileged",
         |    "devices":
         |    [
         |       {
@@ -133,11 +133,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       AppInputJsonParser.parseJson(json)
     ) shouldEqual app
   }
-  "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure Privileged" in {
+  "constructPrototypicalStructure(parseJson(...))" should "return the correct converted structure privileged" in {
     val json =
       """
         |{
-        |    "permissionLevel": "Privileged",
+        |    "permissionLevel": "privileged",
         |    "devices":
         |    [
         |       {
@@ -170,7 +170,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val json =
       """
         |{
-        |    "permissionLevel": "Unknown",
+        |    "permissionLevel": "unknown",
         |    "devices":
         |    [
         |       {

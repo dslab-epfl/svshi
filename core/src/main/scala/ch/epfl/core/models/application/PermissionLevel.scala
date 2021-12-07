@@ -10,8 +10,8 @@ object PermissionLevel {
 }
 
 case object Privileged extends PermissionLevel {
-  override def toString: String = "Privileged"
+  override def toString: String = "privileged"
 }
 case object NotPrivileged extends PermissionLevel {
-  override def toString: String = "NotPrivileged"
+  override def toString: String = "notPrivileged"
 }
