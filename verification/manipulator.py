@@ -175,7 +175,7 @@ class Manipulator:
         for (
             directory,
             app_name,
-        ), accepted_names in self.__instances_names_per_app.items():
+        ), accepted_names in sorted(self.__instances_names_per_app.items()):
             imps, funcs = self.__manipulate_app_main(
                 directory, app_name, accepted_names
             )
