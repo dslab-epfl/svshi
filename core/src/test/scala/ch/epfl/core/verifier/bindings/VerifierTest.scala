@@ -347,7 +347,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     res.head.msg.contains("322") shouldEqual true
   }
 
-  "verifyBindingsIoTypes" should "detects an IN physical to OUT proto Binary" in {
+  "verifyBindingsIoTypes" should "accept an IN physical to OUT proto Binary" in {
 
     val device1Physical = PhysicalDevice(
       "device1",
