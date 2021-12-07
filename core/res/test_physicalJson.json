@@ -1,0 +1,84 @@
+{
+  "deviceInstances": [
+    {
+      "name": "device1",
+      "address": "1.1.1",
+      "nodes": [
+        {
+          "name": "device1Node1",
+          "comObjects": [
+            {
+              "name": "device1Node1ComObj1",
+              "datatype": "DPT-1",
+              "ioType": "in",
+              "id": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "device2",
+      "address": "1.1.2",
+      "nodes": [
+        {
+          "name": "device2Node1",
+          "comObjects": [
+            {
+              "name": "device2Node1ComObj1",
+              "datatype": "DPT-2",
+              "ioType": "out",
+              "id": 211
+            },
+            {
+              "name": "device2Node1ComObj2",
+              "datatype": "DPT-Unknown",
+              "ioType": "in",
+              "id": 212
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "device3",
+      "address": "1.1.3",
+      "nodes": [
+        {
+          "name": "device3Node1",
+          "comObjects": [
+            {
+              "name": "device3Node1ComObj1",
+              "datatype": "DPT-2",
+              "ioType": "out",
+              "id": 311
+            },
+            {
+              "name": "device3Node1ComObj2",
+              "datatype": "DPT-5",
+              "ioType": "in",
+              "id": 312
+            }
+          ]
+        },
+        {
+          "name": "device3Node2",
+          "comObjects": [
+            {
+              "name": "device3Node2ComObj1",
+              "datatype": "DPT-5",
+              "ioType": "in",
+              "id": 321
+            },
+            {
+              "name": "device3Node2ComObj2",
+              "datatype": "DPT-12",
+              "ioType": "in/out",
+              "id": 322
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

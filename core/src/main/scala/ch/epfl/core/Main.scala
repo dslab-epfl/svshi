@@ -7,9 +7,7 @@ import ch.epfl.core.utils.{Constants, FileUtils}
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.verifier.bindings.exceptions.BindingsVerifierMessage
-import ch.epfl.core.verifier.exceptions.VerifierMessage
-import ch.epfl.core.verifier.exceptions.VerifierError
-import ch.epfl.core.verifier.exceptions.VerifierWarning
+import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
 import ch.epfl.core.verifier.static.python.exceptions.PythonVerifierMessage
 
 import java.nio.file.Path
@@ -56,6 +54,7 @@ object Main extends App {
       case head :: tl => head match {
         case _:VerifierError => false
         case _:VerifierWarning => validateProgram(tl)
+        case _:VerifierInfo => validateProgram(tl)
       }
       case Nil => true
     }
@@ -67,6 +66,7 @@ object Main extends App {
         head match {
           case error: VerifierError => println(s"ERROR: ${error.msg}")
           case warning: VerifierWarning => println(s"WARNING: ${warning.msg}")
+          case info: VerifierInfo => println(s"INFO: ${info.msg}")
           case _ => ()
         }
         printTrace(tl)

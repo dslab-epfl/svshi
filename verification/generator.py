@@ -114,7 +114,7 @@ class PhysicalState:
 
     def __generate_device_classes(self):
         code = []
-        for device in self.__devices_classes:
+        for device in sorted(self.__devices_classes, key=lambda c: c.app.name):
             app = device.app.name
             name = device.name
             type = device.type
@@ -142,7 +142,7 @@ class PhysicalState:
     def __generate_devices_instances(self):
         self.__code.append("\n")
         devices_code = []
-        for instance in self.__devices_instances:
+        for instance in sorted(self.__devices_instances, key=lambda i: i.name):
             name = instance.name
             type = instance.type
             device_class = "Binary_sensor_"

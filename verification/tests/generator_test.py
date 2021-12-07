@@ -25,6 +25,9 @@ def test_generator_generate_verification_file():
     )
     generator.generate_verification_file()
 
+    with open(verification_file_path, "r") as v:
+        print(v.read())
+
     assert (
         filecmp.cmp(
             verification_file_path,

@@ -3,20 +3,29 @@ import subprocess
 
 
 class ConditionsGenerator:
-    def __init__(self, app_library_dir: str, conditions_file_path: str):
+    def __init__(
+        self,
+        app_library_dir: str,
+        conditions_file_path: str,
+        verification_file_path: str,
+    ):
         self.__app_library_dir = app_library_dir
         self.__conditions_file_path = conditions_file_path
+        self.__verification_file_path = verification_file_path
 
     def __write_conditions_file(self, data: str):
         os.makedirs(os.path.dirname(self.__conditions_file_path), exist_ok=True)
         with open(self.__conditions_file_path, "w+") as output_file:
             output_file.write(data)
 
-    def copy_verification_file_from_verification_module(self):
+    def copy_verification_file_from_verification_module(self, verification_module_path: str):
         """
         Copies the verification file from the verification module in the runtime module.
         """
-        subprocess.run(f"cp verification/verification_file.py runtime/verification_file.py", shell=True)
+        subprocess.run(
+            f"cp {verification_module_path}/verification_file.py {self.__verification_file_path}",
+            shell=True,
+        )
 
     def generate_conditions_file(self):
         """
@@ -30,7 +39,7 @@ class ConditionsGenerator:
         imports = "from verification_file import "
         imports_code = []
         nb_apps = len(apps_dirs)
-        for i, app in enumerate(apps_dirs):
+        for i, app in enumerate(sorted(apps_dirs)):
             # We also need to import the PhysicalState at the end
             suffix = ", " if i < nb_apps - 1 else ", PhysicalState\n"
             precond_function = f"{app}_precond"
@@ -78,5 +87,5 @@ class PhysicalState:
       pass   
 """.strip()
 
-        with open("runtime/verification_file.py", "w") as output_file:
+        with open(self.__verification_file_path, "w") as output_file:
             output_file.write(file)

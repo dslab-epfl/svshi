@@ -5,4 +5,5 @@ trait VerifierMessage {
 }
 
 trait VerifierWarning extends VerifierMessage
+trait VerifierInfo extends VerifierMessage
 trait VerifierError extends VerifierMessage

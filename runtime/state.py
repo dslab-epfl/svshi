@@ -17,9 +17,7 @@ class State:
     __create_key = object()
 
     @classmethod
-    async def create(
-        cls, xknx: XKNX, addresses_listeners: Dict[str, List[str]], apps: List[App]
-    ):
+    async def create(cls, xknx: XKNX, addresses_listeners: Dict[str, List[App]]):
         """
         Creates the state, initializing it through XKNX as well.
         """
@@ -27,7 +25,6 @@ class State:
         self.__physical_state = await self.__initialize()
         self.__xknx = xknx
         self.__addresses_listeners = addresses_listeners
-        self.__app_name_to_app = {app.name: app for app in apps}
         return self
 
     def __init__(self, create_key: object):
@@ -39,7 +36,7 @@ class State:
         ), "State objects must be created using State.create"
         self.__physical_state: PhysicalState
         self.__xknx: XKNX
-        self.__addresses_listeners: Dict[str, List[str]]
+        self.__addresses_listeners: Dict[str, List[App]]
         self.__app_name_to_app: Dict[str, App]
 
     async def __initialize(self):
@@ -86,8 +83,7 @@ class State:
         return updated_fields
 
     async def __notify_listeners(self, address: str):
-        for app_name in self.__addresses_listeners[address]:
-            app = self.__app_name_to_app[app_name]
+        for app in self.__addresses_listeners[address]:
             if app.should_run:
                 old_state = dataclasses.replace(self.__physical_state)
                 app.notify(self.__physical_state)

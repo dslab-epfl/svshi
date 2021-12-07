@@ -1,8 +1,41 @@
 package ch.epfl.core.models.physical
 
+import ch.epfl.core.models.python.{PythonBool, PythonFloat, PythonInt, PythonType}
+
 import scala.util.matching.Regex
 
-sealed trait KNXDatatype
+/**
+ * Structure:
+    data type: format + encoding
+    size: value range + unit
+    Notation: X.YYY
+    X: defines format + encoding
+    YYY: defines value range + unit
+    The most often used Datapoint Types are:
+    1.yyy = boolean, like switching, move up/down, step
+    2.yyy = 2 x boolean, e.g. switching + priority control
+    3.yyy = boolean + 3-bit unsigned value, e.g. dimming up/down
+    4.yyy = character (8-bit)
+    5.yyy = 8-bit unsigned value, like dim value (0..100%), blinds position (0..100%)
+    6.yyy = 8-bit 2's complement, e.g. %
+    7.yyy = 2 x 8-bit unsigned value, i.e. pulse counter
+    8.yyy = 2 x 8-bit 2's complement, e.g. %
+    9.yyy = 16-bit float, e.g. temperature
+    10.yyy = time
+    11.yyy = date
+    12.yyy = 4 x 8-bit unsigned value, i.e. pulse counter
+    13.yyy = 4 x 8-bit 2's complement, i.e. pulse counter
+    14.yyy = 32-bit float, e.g. temperature
+    15.yyy = access control
+    16.yyy = string -> 14 characters (14 x 8-bit)
+    17.yyy = scene number
+    18.yyy = scene control
+    19.yyy = time + data
+    20.yyy = 8-bit enumeration, e.g. HVAC mode ('auto', 'comfort', 'standby', 'economy', 'protection')
+ */
+sealed trait KNXDatatype {
+  def toPythonType: PythonType
+}
 object KNXDatatype {
   def datatypeRegex: Regex = "(DPT-[0-9]+)|DPT-Unknown".r
   def fromString(s: String): Option[KNXDatatype] = if(datatypeRegex.findFirstIn(s).isEmpty) None else s match {
@@ -50,148 +83,74 @@ object KNXDatatype {
 }
 case object DPT1 extends KNXDatatype {
   override def toString = "DPT-1"
+  override def toPythonType: PythonType = PythonBool
 }
 case object DPT2 extends KNXDatatype {
   override def toString = "DPT-2"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT3 extends KNXDatatype {
   override def toString = "DPT-3"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT5 extends KNXDatatype {
   override def toString = "DPT-5"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT6 extends KNXDatatype {
   override def toString = "DPT-6"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT7 extends KNXDatatype {
   override def toString = "DPT-7"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT9 extends KNXDatatype {
   override def toString = "DPT-9"
+  override def toPythonType: PythonType = PythonFloat
 }
 case object DPT10 extends KNXDatatype {
   override def toString = "DPT-10"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT11 extends KNXDatatype {
   override def toString = "DPT-11"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT12 extends KNXDatatype {
   override def toString = "DPT-12"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT13 extends KNXDatatype {
   override def toString = "DPT-13"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT14 extends KNXDatatype {
   override def toString = "DPT-14"
+  override def toPythonType: PythonType = PythonFloat
 }
 case object DPT16 extends KNXDatatype {
   override def toString = "DPT-16"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT17 extends KNXDatatype {
   override def toString = "DPT-17"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT18 extends KNXDatatype {
   override def toString = "DPT-18"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT19 extends KNXDatatype {
   override def toString = "DPT-19"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPT20 extends KNXDatatype {
   override def toString = "DPT-20"
+  override def toPythonType: PythonType = PythonInt
 }
 case object DPTUnknown extends KNXDatatype {
   override def toString: String = "DPT-Unknown"
+  override def toPythonType: PythonType = PythonInt
 }
 
-
-//trait KNXDatatype {
-//  def fromString(s: String): Option[KNXDatatype] = s match {
-//    case _ if s.startsWith("DPT-1.") => Some(DPT1(false))
-//  }
-//}
-//
-//// 1.yyy = boolean
-//case class DPT1(value: Boolean) extends KNXDatatype {
-//  override def toString: String = "DPT-1.002"
-//}
-//// 2.yyy = 2 x boolean
-//case class DPT2(control: Boolean, value: Boolean) extends KNXDatatype {
-//  override def toString: String = "DPT-2.002"
-//}
-//// 3.yyy = boolean + 3-bit unsigned value (0 -> 7)
-//case class DPT3(control: Boolean, stepCode: Int)
-//  extends KNXDatatype {
-//  require(0 <= stepCode && stepCode <= 7)
-//
-//  override def toString: String = "DPT-3.007"
-//}
-//// 5.yyy = 8-bit unsigned value
-//case class DPT5(value: Int) extends KNXDatatype {
-//  require(0 <= value && value <= 255)
-//
-//  override def toString: String = "DPT-5.001"
-//}
-//// 6.yyy = 8-bit 2's complement (Scala Byte is a signed value)
-//case class DPT6(value: Byte) extends KNXDatatype {
-//  override def toString: String = "DPT-6.001"
-//}
-//// 7.yyy = 16-bit unsigned value
-//case class DPT7(value: Int) extends KNXDatatype {
-//  require(0 <= value && value <= 65535)
-//
-//  override def toString: String = "DPT-7.002"
-//}
-//// 9.yyy = 16-bit float (in Scala Float is 32-bit, be careful)
-//case class DPT9(value: Float) extends KNXDatatype {
-//  override def toString: String = "DPT-9.001"
-//}
-//// 10.yyy = time
-//case class DPT10(value: LocalTime) extends KNXDatatype {
-//  override def toString: String = "DPT-10.001"
-//}
-//// 11.yyy = date (Hour of the day is included
-//case class DPT11(value: LocalDateTime) extends KNXDatatype {
-//  override def toString: String = "DPT-11.001"
-//}
-//// 12.yyy = 32-bit unsigned value
-//case class DPT12(value: Long) extends KNXDatatype {
-//  require(0 <= value && value <= 4294967295L)
-//
-//  override def toString: String = "DPT-12.001"
-//}
-//// 13.yyy = 32-bit 2's complement
-//case class DPT13(value: Int) extends KNXDatatype {
-//  override def toString: String = "DPT-13.010"
-//}
-//// 14.yyy = 32-bit float
-//case class DPT14(value: Float) extends KNXDatatype {
-//  override def toString: String = "DPT-14.000"
-//}
-//// 16.yyy = string -> 14 characters (14 x 8-bit)
-//case class DPT16(value: String) extends KNXDatatype {
-//  require(value.length == 14)
-//
-//  override def toString: String = "DPT-16.000"
-//}
-//// 17.yyy = scene number
-//case class DPT17(value: Byte) extends KNXDatatype {
-//  require(0 <= value && value <= 63)
-//
-//  override def toString: String = "DPT-17.001"
-//}
-//// 18.yyy = scene control (!learn = activate)
-//case class DPT18(learn: Boolean, sceneNumber: Byte) extends KNXDatatype {
-//  require(0 <= sceneNumber && sceneNumber <= 63)
-//
-//  override def toString: String = "DPT-18.001"
-//}
-//// 19.yyy = time + data
-//case class DPT19(value: LocalDateTime) extends KNXDatatype { // TODO
-//  override def toString: String = "DPT-19.001"
-//}
-//// 20.yyy = 8-bit enumeration
-//case class DPT20(value: Array[Boolean]) extends KNXDatatype {
-//  require(value.length <= 8)
-//
-//  override def toString: String = "DPT-20.001"
-//}

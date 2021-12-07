@@ -1,4 +1,5 @@
 {
+  "permissionLevel": "privileged",
   "addresses": [
     {
       "$type": "ch.epfl.core.parsers.json.bindings.BinarySensorAddressJson",
