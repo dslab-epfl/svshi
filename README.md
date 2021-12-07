@@ -5,10 +5,10 @@
 - [Formal Verification for Smart Infrastructure](#formal-verification-for-smart-infrastructure)
   - [Requirements](#requirements)
   - [Supported devices](#supported-devices)
+  - [Setup](#setup)
   - [Developing an application](#developing-an-application)
   - [Running the applications](#running-the-applications)
   - [App generator](#app-generator)
-    - [Setup](#setup)
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
     - [Tests](#tests)
@@ -29,6 +29,10 @@ This project is about developing a platform/runtime/toolchain for developing and
 - **Humidity sensors** (deviceType = "humidity")
 - **Switches** (deviceType = "switch")
 
+## Setup
+
+To install all the Python dependencies, run `pip install -r requirements.txt`.
+
 ## Developing an application
 
 To develop an app for Pistis:
@@ -48,10 +52,6 @@ To run all the installed apps:
 2. Execute `./runtime.sh`.
 
 ## App generator
-
-### Setup
-
-To install all the dependencies, run `pip install -r requirements.txt` in `generator/`.
 
 ### Prototypical structure
 
