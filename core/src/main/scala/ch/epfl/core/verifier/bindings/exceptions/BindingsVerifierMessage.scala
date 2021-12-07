@@ -12,3 +12,4 @@ case class WarningKNXDatatype(msg: String) extends BindingsVerifierWarning
 case class ErrorIOType(msg: String) extends BindingsVerifierError
 case class WarningIOType(msg: String) extends BindingsVerifierWarning
 case class ErrorGroupAddressConflictingPythonTypes(msg: String) extends BindingsVerifierError
+case class ErrorProtoDevicesBoundSameIdDifferentDPT(msg: String) extends BindingsVerifierError
