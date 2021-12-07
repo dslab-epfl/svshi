@@ -24,16 +24,19 @@ def test_app_stop():
 
 
 def test_app_get_apps():
-    apps = get_apps(
-        "tests/fake_app_library", "smartinfra.runtime.tests.verification_file"
+    apps = sorted(
+        get_apps(
+            "tests/fake_app_library", "smartinfra.runtime.tests.verification_file"
+        ),
+        key=lambda a: a.name,
     )
 
     first_app = apps[0]
     second_app = apps[1]
 
-    assert first_app.name == "app"
+    assert first_app.name == "another_app"
     assert first_app.code is not None
-    assert second_app.name == "another_app"
+    assert second_app.name == "app"
     assert second_app.code is not None
 
 
