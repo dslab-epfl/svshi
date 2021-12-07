@@ -60,14 +60,14 @@ To run the tests of all the modules at once, execute `./run_tests.sh`.
 ## Structure
 
 ```
-├── app_library - Contains installed apps and their bindings
+┌── app_library - Contains installed apps and their bindings
 ├── assignments - Contains group address assignments for KNX communication objects
 ├── core - ETS project parser, bindings generator and apps compiler/verifier (Scala sbt project)
 ├── generated - Contains generated but not yet installed apps and their bindings
 ├── generator - Python app generator (Python module)
 ├── runtime - Runs the installed apps and keeps the system in sync with KNX (Python module)
 ├── verification - Manipulates the apps' source code to generate a file useful for the verification and for the runtime (Python module)
-├── ...
+└── ...
 ```
 
 ## App generator
