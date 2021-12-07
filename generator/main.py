@@ -31,7 +31,7 @@ if __name__ == "__main__":
     generator.generate_multiton_class()
     generator.generate_device_instances()
     generator.generate_init_files()
-    generator.copy_skeleton_to_generated_app()
+    generator.copy_skeleton_to_generated_app("generator/skeleton")
     generator.move_devices_json_to_generated_app()
     generator.add_device_instances_imports_to_main()
 

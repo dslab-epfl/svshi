@@ -1,0 +1,26 @@
+{
+  "permissionLevel": "notPrivileged",
+  "addresses": [
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.BinarySensorAddressJson",
+      "name": "binary_sensor_instance_name",
+      "address": "0/0/1"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.SwitchAddressJson",
+      "name": "switch_instance_name",
+      "writeAddress": "0/0/2",
+      "readAddress": "0/0/2"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.TemperatureSensorAddressJson",
+      "name": "temperature_sensor_instance_name",
+      "address": "0/0/3"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.HumiditySensorAddressJson",
+      "name": "humidity_sensor_instance_name",
+      "address": "0/0/4"
+    }
+  ]
+}

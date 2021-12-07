@@ -1,58 +1,17 @@
-from typing import List
 from xknx.telegram.telegram import Telegram
-from runtime.generation import generate_conditions_file, reset_conditions_file
-from verification_file import PhysicalState
-from runtime.verifier.verifier import Verifier
-from runtime.verifier.tracker import StompWritesTracker
+from runtime.app import get_addresses_listeners, get_apps
+from runtime.generator import ConditionsGenerator
+from runtime.state import State
 from xknx import XKNX
-from xknx.core.value_reader import ValueReader
-from xknx.telegram import GroupAddress
-import argparse
-import time
-import json
 import asyncio
 
-GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
+APP_LIBRARY_DIR = "app_library"
+CONDITIONS_FILE_PATH = "runtime/conditions.py"
+VERIFICATION_FILE_PATH = "runtime/verification_file.py"
+VERIFICATION_MODULE_PATH = "verification"
 
 
-def parse_args() -> List[str]:
-    """
-    Parses the arguments, returning the list of apps process ids.
-    """
-    parser = argparse.ArgumentParser(description="Runtime verifier.")
-    parser.add_argument(
-        "-l", "--list", nargs="+", help="A list of '<app_name>/<pid>'", required=True
-    )
-    args = parser.parse_args()
-    return args.list
-
-
-async def initialize_state(xknx: XKNX) -> PhysicalState:
-    """
-    Initializes the system state by reading it from the KNX bus.
-    """
-    # There are 6 __something__ values in the dict that we do not care about
-    nb_fields = len(PhysicalState.__dict__) - 6
-    n = nb_fields * [None]
-    # Default value is None for each field/address
-    state = PhysicalState(*n)
-    with open(GROUP_ADDRESSES_FILE_PATH) as addresses_file:
-        addresses_dict = json.load(addresses_file)
-        for address_and_type in addresses_dict["addresses"]:
-            # Read from KNX the current value
-            address = address_and_type[0]
-            value_reader = ValueReader(
-                xknx, GroupAddress(address), timeout_in_seconds=5
-            )
-            telegram = await value_reader.read()
-            if telegram and telegram.payload.value:
-                setattr(
-                    state,
-                    f"GA_{address.replace('/', '_')}",
-                    telegram.payload.value.value,
-                )
-
-    return state
+state: State
 
 
 async def telegram_received_cb(telegram: Telegram):
@@ -61,44 +20,42 @@ async def telegram_received_cb(telegram: Telegram):
     """
     v = telegram.payload.value
     if v:
-        setattr(
-            state, f"GA_{str(telegram.destination_address).replace('/', '_')}", v.value
-        )
+        await state.update(str(telegram.destination_address), v.value)
 
 
-state: PhysicalState
+async def cleanup(xknx: XKNX, generator: ConditionsGenerator):
+    print("Exiting... ", end="")
+    generator.reset_verification_file()
+    generator.reset_conditions_file()
+    await xknx.stop()
+    print("bye!")
 
 
 async def main():
-    apps_pids = parse_args()
-    print("Welcome to the Pistis runtime verifier!")
     xknx = XKNX(daemon_mode=True)
+    conditions_generator = ConditionsGenerator(
+        APP_LIBRARY_DIR, CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH
+    )
     try:
         print("Connecting to KNX... ", end="")
         xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
         await xknx.start()
         print("done!")
-        apps = {s.split("/")[0]: s.split("/")[1] for s in apps_pids}
-        print("Connecting to the tracker... ", end="")
-        with StompWritesTracker() as tracker:
-            print("done!")
-            print("Initializing verifier... ", end="")
-            generate_conditions_file()
-            state = await initialize_state(xknx)
-            verifier = Verifier(apps, state)
-            print("done!")
+        print("Initializing state and listeners... ", end="")
+        conditions_generator.copy_verification_file_from_verification_module(
+            VERIFICATION_MODULE_PATH
+        )
+        conditions_generator.generate_conditions_file()
+        apps = get_apps(APP_LIBRARY_DIR, "verification_file")
+        addresses_listeners = get_addresses_listeners(apps)
+        [app.install_requirements() for app in apps]
+        state = await State.create(xknx, addresses_listeners)
+        print("done!")
 
-            # Register on message callback to verify writes
-            tracker.on_message(verifier.verify_write)
-
-            # Infinite loop for listening to messages
-            while True:
-                time.sleep(1)
+        await cleanup(xknx, conditions_generator)
 
     except KeyboardInterrupt:
-        print("Exiting...")
-        reset_conditions_file()
-        await xknx.stop()
+        await cleanup(xknx, conditions_generator)
 
 
 if __name__ == "__main__":

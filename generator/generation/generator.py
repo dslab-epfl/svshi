@@ -1,4 +1,4 @@
-from generator.parsing.device import Device
+from ..parsing.device import Device
 from typing import List
 import os
 import subprocess
@@ -14,11 +14,11 @@ class Generator:
         self.__devices = devices
         self.__devices_json_filename = devices_json_filename
 
-    def copy_skeleton_to_generated_app(self):
+    def copy_skeleton_to_generated_app(self, skeleton_path: str):
         """
-        Copies the skeleton to the newly generated app.
+        Copies the skeleton to the newly generated app. The skeleton path should have the form "generator/skeleton".
         """
-        subprocess.run(f"cp -r generator/skeleton/* {self.__app_name}", shell=True)
+        subprocess.run(f"cp -r {skeleton_path}/* {self.__app_name}", shell=True)
 
     def move_devices_json_to_generated_app(self):
         """
@@ -88,8 +88,8 @@ def multiton(cls):
             nb_devices = len(self.__devices)
             for i, device in enumerate(self.__devices):
                 prefix = "from devices import " if i == 0 else ", "
-                suffix = "\n" if i == nb_devices - 1 else ""
-                lines.insert(i + 1, f"{prefix}{device.name.upper()}{suffix}")
+                suffix = "\n\n" if i == nb_devices - 1 else ""
+                lines.insert(i, f"{prefix}{device.name.upper()}{suffix}")
             fp.seek(0)
             fp.writelines(lines)
 
