@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.groupAddressAssigner
+package ch.epfl.core.compiler.bindings.groupAddressAssigner
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical.{GroupAddress, GroupAddresses, PhysicalStructure}
