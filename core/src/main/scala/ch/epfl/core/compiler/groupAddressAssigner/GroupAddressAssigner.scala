@@ -1,8 +1,8 @@
 package ch.epfl.core.compiler.groupAddressAssigner
 
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.physical.{GroupAddress, GroupAddresses, PhysicalStructure}
-import ch.epfl.core.models.prototypical.{AppLibraryBindings, AppPrototypicalStructure}
+import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical.{GroupAddress, GroupAddresses, PhysicalStructure}
+import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypicalStructure}
 
 import scala.collection.mutable
 

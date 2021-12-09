@@ -1,12 +1,12 @@
 package ch.epfl.core.verifier.bindings
 
-import ch.epfl.core.models.application.ApplicationLibrary
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.physical._
-import ch.epfl.core.models.prototypical.{SupportedDeviceBinding, _}
-import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
-import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.parsers.json.prototype.AppInputJsonParser
+import ch.epfl.core.model.application.ApplicationLibrary
+import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical.{SupportedDeviceBinding, _}
+import ch.epfl.core.parser.json.bindings.BindingsJsonParser
+import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
+import ch.epfl.core.parser.json.prototype.AppInputJsonParser
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.bindings.exceptions._

@@ -1,9 +1,9 @@
 package ch.epfl.core.compiler.binding
 
-import ch.epfl.core.models.application.{Application, ApplicationLibrary}
-import ch.epfl.core.models.physical.PhysicalStructure
-import ch.epfl.core.models.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, DeviceInstanceBinding, HumiditySensor, SupportedDevice, Switch, TemperatureSensor}
-import ch.epfl.core.parsers.json.bindings.BindingsJsonParser
+import ch.epfl.core.model.application.{Application, ApplicationLibrary}
+import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, DeviceInstanceBinding, HumiditySensor, SupportedDevice, Switch, TemperatureSensor}
+import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.utils.Constants
 
 import java.nio.file.Path

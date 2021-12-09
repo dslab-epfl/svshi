@@ -3,11 +3,11 @@ package ch.epfl.core.compiler
 import ch.epfl.core.compiler.binding._
 import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
 import ch.epfl.core.compiler.programming.Programmer
-import ch.epfl.core.models.application.ApplicationLibrary
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.physical._
-import ch.epfl.core.parsers.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
-import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
+import ch.epfl.core.model.application.ApplicationLibrary
+import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical._
+import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
+import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH_STRING, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
 

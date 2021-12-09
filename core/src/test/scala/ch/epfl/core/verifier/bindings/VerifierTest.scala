@@ -1,10 +1,10 @@
 package ch.epfl.core.verifier.bindings
 
-import ch.epfl.core.models.application.NotPrivileged
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.physical._
-import ch.epfl.core.models.prototypical._
-import ch.epfl.core.models.python.{PythonBool, PythonFloat}
+import ch.epfl.core.model.application.NotPrivileged
+import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical._
+import ch.epfl.core.model.python.{PythonBool, PythonFloat}
 import ch.epfl.core.verifier.bindings.Verifier._
 import ch.epfl.core.verifier.bindings.exceptions._
 import org.scalatest.flatspec.AnyFlatSpec

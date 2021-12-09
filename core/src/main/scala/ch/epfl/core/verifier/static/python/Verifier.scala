@@ -1,7 +1,7 @@
 package ch.epfl.core.verifier.static.python
 
-import ch.epfl.core.models.application.ApplicationLibrary
-import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.model.application.ApplicationLibrary
+import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.utils.Constants.{VERIFICATION_PYTHON_MODULE, CROSSHAIR_TIMEOUT_SECONDS}
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.static.python.exceptions.{PythonVerifierError, PythonVerifierInfo, PythonVerifierMessage}

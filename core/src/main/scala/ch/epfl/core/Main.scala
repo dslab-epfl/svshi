@@ -1,8 +1,8 @@
 package ch.epfl.core
 
-import ch.epfl.core.models.physical.PhysicalStructure
-import ch.epfl.core.parsers.ets.EtsParser
-import ch.epfl.core.parsers.json.physical.PhysicalStructureJsonParser
+import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.parser.ets.EtsParser
+import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.{Constants, FileUtils}
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary

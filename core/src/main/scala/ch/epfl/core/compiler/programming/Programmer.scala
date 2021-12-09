@@ -1,9 +1,9 @@
 package ch.epfl.core.compiler.programming
 
-import ch.epfl.core.models.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
-import ch.epfl.core.models.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
+import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
-import ch.epfl.core.models.prototypical._
+import ch.epfl.core.model.prototypical._
 
 private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress)
 
