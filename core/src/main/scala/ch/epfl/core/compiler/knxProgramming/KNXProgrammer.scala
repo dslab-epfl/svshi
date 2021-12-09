@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.programming
+package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
 import ch.epfl.core.model.bindings.GroupAddressAssignment
