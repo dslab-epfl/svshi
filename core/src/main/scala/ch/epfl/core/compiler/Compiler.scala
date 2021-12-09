@@ -1,6 +1,6 @@
 package ch.epfl.core.compiler
 
-import ch.epfl.core.compiler.binding._
+import ch.epfl.core.compiler.bindings._
 import ch.epfl.core.compiler.groupAddressAssigner.GroupAddressAssigner
 import ch.epfl.core.compiler.programming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
@@ -37,7 +37,7 @@ object Compiler {
       Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
       newPhysStruct
     )
-    val appLibraryBindings = Binding.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)
+    val appLibraryBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)
     BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 

@@ -1,4 +1,4 @@
-package ch.epfl.core.compiler.binding
+package ch.epfl.core.compiler.bindings
 
 import ch.epfl.core.model.application.{Application, ApplicationLibrary}
 import ch.epfl.core.model.physical.PhysicalStructure
@@ -8,7 +8,7 @@ import ch.epfl.core.utils.Constants
 
 import java.nio.file.Path
 
-object Binding {
+object Bindings {
   def appLibraryBindingsFromLibrary(newAppLibrary: ApplicationLibrary, existingAppLibrary: ApplicationLibrary, newAppPhysStruct: PhysicalStructure, existingPhysStruct: PhysicalStructure): AppLibraryBindings = {
     def appToAppBinding(app: Application): AppPrototypeBindings = {
       AppPrototypeBindings(app.name, app.appProtoStructure.deviceInstances.map(inst => DeviceInstanceBinding(inst.name, SupportedDevice.getDeviceBinding(inst.deviceType))))
