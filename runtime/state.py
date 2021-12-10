@@ -2,6 +2,7 @@ import json
 import dataclasses
 from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
+from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 from xknx.devices import RawValue
@@ -17,14 +18,17 @@ class State:
     __create_key = object()
 
     @classmethod
-    async def create(cls, xknx: XKNX, addresses_listeners: Dict[str, List[App]]):
+    async def create(cls, addresses_listeners: Dict[str, List[App]]):
         """
         Creates the state, initializing it through XKNX as well. It uses its own connection to KNX
         that is closed after initialization.
         """
         self = State(cls.__create_key)
         self.__physical_state = await self.__initialize()
-        self.__xknx = xknx
+        self.__xknx = XKNX(daemon_mode=True)
+        self.__xknx.telegram_queue.register_telegram_received_cb(
+            self.__telegram_received_cb
+        )
         self.__addresses_listeners = addresses_listeners
         return self
 
@@ -38,6 +42,22 @@ class State:
         self.__physical_state: PhysicalState
         self.__xknx: XKNX
         self.__addresses_listeners: Dict[str, List[App]]
+
+    async def __telegram_received_cb(self, telegram: Telegram):
+        """
+        Updates the state once a telegram is received.
+        """
+        v = telegram.payload.value
+        if v:
+            address = str(telegram.destination_address)
+            setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", v.value)
+            await self.__notify_listeners(address)
+
+    async def listen(self):
+        await self.__xknx.start()
+
+    async def stop(self):
+        await self.__xknx.stop()
 
     async def __initialize(self):
         """
@@ -110,10 +130,3 @@ class State:
 
                 # Notify the listeners of the change
                 await self.__notify_listeners(address)
-
-    async def update(self, address: str, value: Union[bool, float]):
-        """
-        Updates the state at the given address with the given value, then notifies the listeners.
-        """
-        setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
-        await self.__notify_listeners(address)
