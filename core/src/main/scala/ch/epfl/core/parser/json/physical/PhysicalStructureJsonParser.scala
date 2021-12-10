@@ -14,7 +14,7 @@ import scala.util.Using
  */
 object PhysicalStructureJsonParser {
   /**
-   * Parse a JSON file to produces a physical structure instance
+   * Parse a JSON file to produce a physical structure instance
    * @param filePath
    * @return
    */
