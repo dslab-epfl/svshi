@@ -32,6 +32,10 @@ class Generator:
         """
         allowed_names = list(map(lambda d: d.name, self.__devices))
         file = f"""
+###
+### DO NOT TOUCH THIS FILE!!!
+###
+
 def multiton(cls):
     instances = {{}}
     allowed_names = {allowed_names}
@@ -70,6 +74,10 @@ def multiton(cls):
             )
 
         file = f"""
+###
+### DO NOT TOUCH THIS FILE!!!
+###
+
 {imports}
 {devices_code}
         """.strip()

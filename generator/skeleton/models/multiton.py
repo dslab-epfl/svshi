@@ -1,10 +1,8 @@
-###
-### DO NOT TOUCH THIS FILE!!!
-###
+# Default file, will be overwritten while running
 
 def multiton(cls):
     instances = {}
-    allowed_names = ['binary_sensor_instance_name', 'switch_instance_name', 'temperature_sensor_instance_name', 'humidity_sensor_instance_name']
+    allowed_names = []
     def getinstance(name):
         if name not in allowed_names:
             raise ValueError(f"Name '{name}' not allowed")

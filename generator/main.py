@@ -28,10 +28,10 @@ if __name__ == "__main__":
     generator = Generator(
         f"{GENERATED_APPS_FOLDER_NAME}/{app_name}", devices, DEVICES_JSON_FILENAME
     )
-    generator.generate_multiton_class()
     generator.generate_device_instances()
     generator.generate_init_files()
     generator.copy_skeleton_to_generated_app("generator/skeleton")
+    generator.generate_multiton_class()
     generator.move_devices_json_to_generated_app()
     generator.add_device_instances_imports_to_main()
 
