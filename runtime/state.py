@@ -1,7 +1,8 @@
 import json
 import dataclasses
-from typing import Dict, List, Tuple, Union, Set
+from typing import Dict, List, Tuple, Union
 from xknx.core.value_reader import ValueReader
+from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 from xknx.devices import RawValue
@@ -14,57 +15,66 @@ class State:
 
     __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
 
-    __create_key = object()
-
-    @classmethod
-    async def create(cls, xknx: XKNX, addresses_listeners: Dict[str, List[App]]):
-        """
-        Creates the state, initializing it through XKNX as well.
-        """
-        self = State(cls.__create_key)
-        self.__physical_state = await self.__initialize()
-        self.__xknx = xknx
-        self.__addresses_listeners = addresses_listeners
-        return self
-
-    def __init__(self, create_key: object):
-        """
-        This constructor is only meant to be used internally.
-        """
-        assert (
-            create_key == State.__create_key
-        ), "State objects must be created using State.create"
+    def __init__(self, addresses_listeners: Dict[str, List[App]]):
         self.__physical_state: PhysicalState
-        self.__xknx: XKNX
-        self.__addresses_listeners: Dict[str, List[App]]
+        self.__xknx = XKNX(daemon_mode=True)
+        self.__xknx.telegram_queue.register_telegram_received_cb(
+            self.__telegram_received_cb
+        )
+        self.__addresses_listeners = addresses_listeners
 
-    async def __initialize(self):
+    async def __telegram_received_cb(self, telegram: Telegram):
         """
-        Initializes the system state by reading it from the KNX bus.
+        Updates the state once a telegram is received.
+        """
+        v = telegram.payload.value
+        if v:
+            address = str(telegram.destination_address)
+            setattr(
+                self.__physical_state, self.__group_addr_to_field_name(address), v.value
+            )
+            await self.__notify_listeners(address)
+
+    async def listen(self):
+        """
+        Connects to KNX and listens infinitely for telegrams.
+        """
+        await self.__xknx.start()
+
+    async def stop(self):
+        """
+        Stops listening for telegrams and disconnects.
+        """
+        await self.__xknx.stop()
+
+    async def initialize(self):
+        """
+        Initializes the system state by reading it from the KNX bus through an ephimeral connection.
         """
         # There are 6 __something__ values in the dict that we do not care about
         nb_fields = len(PhysicalState.__dict__) - 6
         n = nb_fields * [None]
         # Default value is None for each field/address
         state = PhysicalState(*n)
-        with open(self.__GROUP_ADDRESSES_FILE_PATH) as addresses_file:
-            addresses_dict = json.load(addresses_file)
-            for address_and_type in addresses_dict["addresses"]:
-                # Read from KNX the current value
-                address = address_and_type[0]
-                value_reader = ValueReader(
-                    self.__xknx, GroupAddress(address), timeout_in_seconds=5
-                )
-                telegram = await value_reader.read()
-                if telegram and telegram.payload.value:
-                    setattr(
-                        state,
-                        f"GA_{address.replace('/', '_')}",
-                        telegram.payload.value.value,
+        async with XKNX() as xknx:
+            with open(self.__GROUP_ADDRESSES_FILE_PATH) as addresses_file:
+                addresses_dict = json.load(addresses_file)
+                for address_and_type in addresses_dict["addresses"]:
+                    # Read from KNX the current value
+                    address = address_and_type[0]
+                    value_reader = ValueReader(
+                        xknx, GroupAddress(address), timeout_in_seconds=5
                     )
+                    telegram = await value_reader.read()
+                    if telegram and telegram.payload.value:
+                        setattr(
+                            state,
+                            self.__group_addr_to_field_name(address),
+                            telegram.payload.value.value,
+                        )
 
-        return state
-    
+        self.__physical_state = state
+
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         return "GA_" + group_addr.replace("/", "_")
 
@@ -87,25 +97,24 @@ class State:
 
         return updated_fields
 
-    def __get_modified_fields(self, original_state: PhysicalState, other_states: List[PhysicalState]) -> Set[str]:
-        res: Set = {}
-        for other_state in other_states:
-            modified_fields = [field for field, value in self.__compare(original_state, other_state)]
-            res.add(modified_fields)
-
-        return res
-
-
-    def __merge_states(self, old_state: PhysicalState, new_states: Dict[App, PhysicalState]) -> PhysicalState:
+    def __merge_states(
+        self, old_state: PhysicalState, new_states: Dict[App, PhysicalState]
+    ) -> PhysicalState:
         # Merge all the new states with the old one.
         # First all the non-privileged apps are run in alphabetical order, then the privileged ones in alphabetical order
         # In this way the privileged apps can override the behavior of the non-privileged ones
-        sorted_new_states_by_priority = {k: v for k, v in sorted(new_states.items(), key=lambda item: (item[0].is_privileged, item[0].name))} 
+        sorted_new_states_by_priority = {
+            k: v
+            for k, v in sorted(
+                new_states.items(),
+                key=lambda item: (item[0].is_privileged, item[0].name),
+            )
+        }
 
         res = dataclasses.replace(old_state)
-        for _, state in sorted_new_states_by_priority:
+        for state in sorted_new_states_by_priority.values():
             updated_fields = self.__compare(old_state, state)
-            for addr, value in updated_fields:  
+            for addr, value in updated_fields:
                 setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
 
@@ -121,11 +130,11 @@ class State:
                     # If conditions are not preserved, we prevent the app from running again
                     app.stop()
                 else:
-                    # If conditions are preserved, we keep the state to later propagate
+                    # If conditions are preserved, we keep the state to later propagate
                     new_states[app] = per_app_state
 
         merged_state = self.__merge_states(old_state, new_states)
-        
+
         # Update the physical_state with the merged one
         self.__physical_state = merged_state
 
@@ -142,7 +151,3 @@ class State:
 
                 # Notify the listeners of the change
                 await self.__notify_listeners(address)
-
-    async def update(self, address: str, value: Union[bool, float]):
-        setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
-        await self.__notify_listeners(address)
