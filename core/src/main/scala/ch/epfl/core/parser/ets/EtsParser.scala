@@ -321,7 +321,7 @@ object EtsParser {
   }
 
   /**
-   * Compute the Path of the temporary location where the project is unizipped
+   * Compute the Path of the temporary location where the project is unzipped
     * @param etsProjectPathString
    * @tparam B
    * @return
