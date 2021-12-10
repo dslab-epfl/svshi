@@ -13,8 +13,17 @@ import ch.epfl.core.verifier.bindings.exceptions._
 
 import java.nio.file.Path
 
+/**
+ * Verifier that verifies properties about the bindings between prototypical devices and physical devices' communication objects
+ */
 object Verifier extends VerifierTr{
-
+  /**
+   * Executes all verification on the libraries and outputs a list of messages
+   * @param newAppLibrary
+   * @param existingAppsLibrary
+   * @param groupAddressAssignment
+   * @return
+   */
   def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierMessage] = {
     val combinedApps = newAppLibrary.apps ++ existingAppsLibrary.apps
     val physicalStructure = groupAddressAssignment.physStruct
@@ -29,6 +38,11 @@ object Verifier extends VerifierTr{
     returnValues
   }
 
+  /**
+   * Verifies that no group address is bound to channels with different datatypes in python
+   * @param groupAddressAssignment
+   * @return
+   */
   def verifyBindingsPythonType(groupAddressAssignment: GroupAddressAssignment): List[BindingsVerifierMessage] = {
     groupAddressAssignment.getPythonTypesMap.toList.map{case (ga, pythonTypes) => (ga, pythonTypes.toSet)}.flatMap{
       case (_, pythonTypesSet) if pythonTypesSet.size == 1 => Nil
@@ -36,6 +50,14 @@ object Verifier extends VerifierTr{
     }
   }
 
+  /**
+   * Verifies that the KNX datatypes of the communication objects corresponds to what is intended for each type of
+   * prototypical device
+   * @param physicalStructure
+   * @param bindings
+   * @param appPrototypicalStructures
+   * @return
+   */
   def verifyBindingsKNXDatatypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
@@ -60,6 +82,15 @@ object Verifier extends VerifierTr{
     })
   }
 
+  /**
+   * Verifies that IO types (i.e., in, out, in/out, unknown) of the physical communication objects are compatible
+   * with intended types for each type of prototypical devices bound to them. Outputs WARNING for "unknown" types.
+   *
+   * @param physicalStructure
+   * @param bindings
+   * @param appPrototypicalStructures
+   * @return
+   */
   def verifyBindingsIoTypes(physicalStructure: PhysicalStructure, bindings: AppLibraryBindings, appPrototypicalStructures: Map[String, AppPrototypicalStructure]): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       val appName = binding.name
@@ -84,6 +115,11 @@ object Verifier extends VerifierTr{
     })
   }
 
+  /**
+   *
+   * @param bindings
+   * @return
+   */
   def verifyBindingsMutualDPT(bindings: AppLibraryBindings): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       binding.bindings.flatMap(deviceInstBinding => {
@@ -105,6 +141,14 @@ object Verifier extends VerifierTr{
     })
   }
 
+  /**
+   * Verifies that no prototypical devices with different datatypes in python are bound to the same physical id
+   * @param physicalStructure
+   * @param deviceInstBinding
+   * @param protoDevice
+   * @param physDeviceId
+   * @return
+   */
   private def checkPhysIdKNXDptCompatibility(physicalStructure: PhysicalStructure, deviceInstBinding: DeviceInstanceBinding, protoDevice: AppPrototypicalDeviceInstance, physDeviceId: Int): List[BindingsVerifierMessage] = {
     val knxDpt = deviceInstBinding.binding.getKNXDpt(physDeviceId)
     val physicalDeviceOpt: Option[PhysicalDevice] = getPhysicalDeviceByBoundId(physicalStructure, physDeviceId)

@@ -6,8 +6,20 @@ import ch.epfl.core.utils.Constants.{VERIFICATION_PYTHON_MODULE, CROSSHAIR_TIMEO
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.static.python.exceptions.{PythonVerifierError, PythonVerifierInfo, PythonVerifierMessage}
 
+/**
+ * Verifier that verifies the correctness of the python applications
+ */
 object Verifier extends VerifierTr{
   val CONFIRMED_ALL_PATHS_MSG: String = "Confirmed over all paths".toLowerCase
+
+  /**
+   * First generates the python code file for verification by calling the python module 'verification.main'
+   * and then calls Crosshair on that file and returns messages
+   * @param newAppLibrary
+   * @param existingAppsLibrary
+   * @param groupAddressAssignment
+   * @return
+   */
   override def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[PythonVerifierMessage] = {
     val (_, stdOutLines) = ProcRunner.callPython(VERIFICATION_PYTHON_MODULE)
     if(stdOutLines.length != 1) {
