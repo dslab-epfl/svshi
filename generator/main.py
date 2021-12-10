@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument("app_name", type=str, help="the name of the app")
     args = parser.parse_args()
 
-    name_regex = re.compile(r"^_*[a-z_]+_*$")
+    name_regex = re.compile(r"^_*[a-z]+[a-z_]*_*$")
     app_name = args.app_name
     if not name_regex.match(app_name):
         raise ValueError(
