@@ -13,7 +13,7 @@ object Verifier extends VerifierTr{
   val CONFIRMED_ALL_PATHS_MSG: String = "Confirmed over all paths".toLowerCase
 
   /**
-   * First generates the python code file for verification by calling the python module 'verification.main'
+   * First generate the python code file for verification by calling the python module 'verification.main'
    * and then calls Crosshair on that file and returns messages
    * @param newAppLibrary
    * @param existingAppsLibrary
