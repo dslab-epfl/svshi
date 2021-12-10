@@ -19,7 +19,8 @@ class State:
     @classmethod
     async def create(cls, xknx: XKNX, addresses_listeners: Dict[str, List[App]]):
         """
-        Creates the state, initializing it through XKNX as well.
+        Creates the state, initializing it through XKNX as well. It uses its own connection to KNX
+        that is closed after initialization.
         """
         self = State(cls.__create_key)
         self.__physical_state = await self.__initialize()
@@ -47,21 +48,22 @@ class State:
         n = nb_fields * [None]
         # Default value is None for each field/address
         state = PhysicalState(*n)
-        with open(self.__GROUP_ADDRESSES_FILE_PATH) as addresses_file:
-            addresses_dict = json.load(addresses_file)
-            for address_and_type in addresses_dict["addresses"]:
-                # Read from KNX the current value
-                address = address_and_type[0]
-                value_reader = ValueReader(
-                    self.__xknx, GroupAddress(address), timeout_in_seconds=5
-                )
-                telegram = await value_reader.read()
-                if telegram and telegram.payload.value:
-                    setattr(
-                        state,
-                        f"GA_{address.replace('/', '_')}",
-                        telegram.payload.value.value,
+        async with XKNX() as xknx:
+            with open(self.__GROUP_ADDRESSES_FILE_PATH) as addresses_file:
+                addresses_dict = json.load(addresses_file)
+                for address_and_type in addresses_dict["addresses"]:
+                    # Read from KNX the current value
+                    address = address_and_type[0]
+                    value_reader = ValueReader(
+                        xknx, GroupAddress(address), timeout_in_seconds=5
                     )
+                    telegram = await value_reader.read()
+                    if telegram and telegram.payload.value:
+                        setattr(
+                            state,
+                            f"GA_{address.replace('/', '_')}",
+                            telegram.payload.value.value,
+                        )
 
         return state
 
@@ -110,5 +112,8 @@ class State:
                 await self.__notify_listeners(address)
 
     async def update(self, address: str, value: Union[bool, float]):
+        """
+        Updates the state at the given address with the given value, then notifies the listeners.
+        """
         setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", value)
         await self.__notify_listeners(address)

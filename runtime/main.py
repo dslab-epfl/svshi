@@ -24,6 +24,9 @@ async def telegram_received_cb(telegram: Telegram):
 
 
 async def cleanup(xknx: XKNX, generator: ConditionsGenerator):
+    """
+    Resets the verification and the conditions files, and stops XKNX.
+    """
     print("Exiting... ", end="")
     generator.reset_verification_file()
     generator.reset_conditions_file()
@@ -39,7 +42,6 @@ async def main():
     try:
         print("Connecting to KNX... ", end="")
         xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
-        await xknx.start()
         print("done!")
         print("Initializing state and listeners... ", end="")
         conditions_generator.copy_verification_file_from_verification_module(
@@ -49,8 +51,11 @@ async def main():
         apps = get_apps(APP_LIBRARY_DIR, "verification_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
-        state = await State.create(xknx, addresses_listeners)
+        await State.create(xknx, addresses_listeners)
         print("done!")
+
+        print("Listening to KNX telegrams...")
+        await xknx.start()
 
         await cleanup(xknx, conditions_generator)
 
