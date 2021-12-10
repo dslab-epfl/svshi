@@ -64,6 +64,12 @@ class State:
                     )
 
         return state
+    
+    def __group_addr_to_field_name(self, group_addr: str) -> str:
+        return "GA_" + group_addr.replace("/", "_")
+
+    def __field_name_to_group_addr(self, field: str) -> str:
+        return field.replace("_", "/")
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
@@ -76,7 +82,7 @@ class State:
         updated_fields = []
         for field, value in new_state_fields.items():
             if value != old_state_fields[field]:
-                address = field.replace("GA_", "").replace("_", "/")
+                address = self.__field_name_to_group_addr(field)
                 updated_fields.append((address, value))
 
         return updated_fields
@@ -99,8 +105,8 @@ class State:
         res = dataclasses.replace(old_state)
         for _, state in sorted_new_states_by_priority:
             updated_fields = self.__compare(old_state, state)
-            for field, value in updated_fields:  
-                setattr(res, field, value)
+            for addr, value in updated_fields:  
+                setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
 
     async def __notify_listeners(self, address: str):
