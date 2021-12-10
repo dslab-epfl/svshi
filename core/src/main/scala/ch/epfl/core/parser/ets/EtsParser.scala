@@ -59,7 +59,7 @@ object EtsParser {
 
 
   /**
-   * Parse an ETS project and produces a PhysicalStructure instance
+   * Parse an ETS project and produce a PhysicalStructure instance
    * @param etsProjectPathString
    * @return
    */
