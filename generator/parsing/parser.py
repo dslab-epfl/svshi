@@ -28,7 +28,7 @@ class Parser:
         Reads the devices from the JSON file, returning a list.
         """
 
-        name_regex = re.compile(r"^_*[a-zA-Z_]+_*$")
+        name_regex = re.compile(r"^_*[a-zA-Z]+[a-zA-Z_]*_*$")
 
         def to_device(d: dict) -> Device:
             name = d["name"]
