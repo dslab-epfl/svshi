@@ -316,7 +316,7 @@ object EtsParser {
   }
 
   def computeExtractedPath[B](etsProjectPathString: String): Path = {
-    Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toUri.toString.appendedAll(unzippedSuffix))
+    Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toString.appendedAll(unzippedSuffix))
   }
 
   private def deleteUnzippedFiles(etsProjectPathString: String): Unit = {
