@@ -2,7 +2,7 @@ package ch.epfl.core.model.prototypical
 
 /**
  * Represents a device supported by the platform, i.e., that can be used in a PrototypicalStructure.
- * new classes are intended to be added here to extend the prototypical devices offering
+ * New classes are intended to be added here to extend the prototypical devices offering
  */
 sealed trait SupportedDevice
 
