@@ -1,4 +1,5 @@
 import argparse
+import re
 from generator.parsing.parser import Parser
 from generator.generation.generator import Generator
 
@@ -13,7 +14,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description="App generator.")
     parser.add_argument("app_name", type=str, help="the name of the app")
     args = parser.parse_args()
-    return args.app_name
+
+    name_regex = re.compile(r"^_*[a-z_]+_*$")
+    app_name = args.app_name
+    if not name_regex.match(app_name):
+        raise ValueError(
+            f"Wrong app name '{app_name}': it has to contain only lowercased letters and underscores"
+        )
+
+    return app_name
 
 
 if __name__ == "__main__":
