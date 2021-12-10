@@ -14,7 +14,7 @@ import upickle.default.write
  */
 object PythonAddressJsonParser {
   /**
-   * Write to a JSON file the bindings in a form used by the runtime python code
+   * Write to a JSON file the bindings in a form used by the runtime python module
    * @param filePath
    * @param pythonAddress
    */
