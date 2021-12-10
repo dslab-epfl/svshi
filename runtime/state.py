@@ -30,7 +30,9 @@ class State:
         v = telegram.payload.value
         if v:
             address = str(telegram.destination_address)
-            setattr(self.__physical_state, f"GA_{address.replace('/', '_')}", v.value)
+            setattr(
+                self.__physical_state, self.__group_addr_to_field_name(address), v.value
+            )
             await self.__notify_listeners(address)
 
     async def listen(self):
@@ -67,11 +69,17 @@ class State:
                     if telegram and telegram.payload.value:
                         setattr(
                             state,
-                            f"GA_{address.replace('/', '_')}",
+                            self.__group_addr_to_field_name(address),
                             telegram.payload.value.value,
                         )
 
         self.__physical_state = state
+
+    def __group_addr_to_field_name(self, group_addr: str) -> str:
+        return "GA_" + group_addr.replace("/", "_")
+
+    def __field_name_to_group_addr(self, field: str) -> str:
+        return field.replace("GA_", "").replace("_", "/")
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
@@ -84,27 +92,54 @@ class State:
         updated_fields = []
         for field, value in new_state_fields.items():
             if value != old_state_fields[field]:
-                address = field.replace("GA_", "").replace("_", "/")
+                address = self.__field_name_to_group_addr(field)
                 updated_fields.append((address, value))
 
         return updated_fields
 
+    def __merge_states(
+        self, old_state: PhysicalState, new_states: Dict[App, PhysicalState]
+    ) -> PhysicalState:
+        # Merge all the new states with the old one.
+        # First all the non-privileged apps are run in alphabetical order, then the privileged ones in alphabetical order
+        # In this way the privileged apps can override the behavior of the non-privileged ones
+        sorted_new_states_by_priority = {
+            k: v
+            for k, v in sorted(
+                new_states.items(),
+                key=lambda item: (item[0].is_privileged, item[0].name),
+            )
+        }
+
+        res = dataclasses.replace(old_state)
+        for state in sorted_new_states_by_priority.values():
+            updated_fields = self.__compare(old_state, state)
+            for addr, value in updated_fields:
+                setattr(res, self.__group_addr_to_field_name(addr), value)
+        return res
+
     async def __notify_listeners(self, address: str):
         # We first execute all the listeners
         old_state = dataclasses.replace(self.__physical_state)
+        new_states = {}
         for app in self.__addresses_listeners[address]:
-            # First all the non-privileged apps are run in alphabetical order, then the privileged ones in alphabetical order
-            # In this way the privileged apps can override the behavior of the non-privileged ones
             if app.should_run:
-                old_state_before_app = dataclasses.replace(self.__physical_state)
-                app.notify(self.__physical_state)
-                if not check_conditions(self.__physical_state):
-                    # If conditions are not preserved, we revert to the previous state and prevent the app from running again
-                    self.__physical_state = old_state_before_app
+                per_app_state = dataclasses.replace(old_state)
+                app.notify(per_app_state)
+                if not check_conditions(per_app_state):
+                    # If conditions are not preserved, we prevent the app from running again
                     app.stop()
+                else:
+                    # If conditions are preserved, we keep the state to later propagate
+                    new_states[app] = per_app_state
+
+        merged_state = self.__merge_states(old_state, new_states)
+
+        # Update the physical_state with the merged one
+        self.__physical_state = merged_state
 
         # Then we write to KNX for just the final values given to the updated fields
-        updated_fields = self.__compare(self.__physical_state, old_state)
+        updated_fields = self.__compare(old_state, merged_state)
         if updated_fields:
             for address, value in updated_fields:
                 if isinstance(value, bool):
