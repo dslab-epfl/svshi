@@ -15,33 +15,13 @@ class State:
 
     __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
 
-    __create_key = object()
-
-    @classmethod
-    async def create(cls, addresses_listeners: Dict[str, List[App]]):
-        """
-        Creates the state, initializing it through XKNX as well. It uses its own connection to KNX
-        that is closed after initialization.
-        """
-        self = State(cls.__create_key)
-        self.__physical_state = await self.__initialize()
+    def __init__(self, addresses_listeners: Dict[str, List[App]]):
+        self.__physical_state: PhysicalState
         self.__xknx = XKNX(daemon_mode=True)
         self.__xknx.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
         self.__addresses_listeners = addresses_listeners
-        return self
-
-    def __init__(self, create_key: object):
-        """
-        This constructor is only meant to be used internally.
-        """
-        assert (
-            create_key == State.__create_key
-        ), "State objects must be created using State.create"
-        self.__physical_state: PhysicalState
-        self.__xknx: XKNX
-        self.__addresses_listeners: Dict[str, List[App]]
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -65,9 +45,9 @@ class State:
         """
         await self.__xknx.stop()
 
-    async def __initialize(self):
+    async def initialize(self):
         """
-        Initializes the system state by reading it from the KNX bus.
+        Initializes the system state by reading it from the KNX bus through an ephimeral connection.
         """
         # There are 6 __something__ values in the dict that we do not care about
         nb_fields = len(PhysicalState.__dict__) - 6
@@ -91,7 +71,7 @@ class State:
                             telegram.payload.value.value,
                         )
 
-        return state
+        self.__physical_state = state
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState

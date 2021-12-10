@@ -32,7 +32,8 @@ async def main():
         apps = get_apps(APP_LIBRARY_DIR, "verification_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
-        state = await State.create(addresses_listeners)
+        state = State(addresses_listeners)
+        await state.initialize()
         print("done!")
 
         print("Connecting to KNX and listening to telegrams...")
