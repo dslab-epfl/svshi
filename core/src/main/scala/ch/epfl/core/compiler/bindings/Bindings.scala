@@ -19,7 +19,7 @@ object Bindings {
    * @param existingAppLibrary
    * @param newAppPhysStruct
    * @param existingPhysStruct
-   * @return
+   * @return The AppLibraryBindings instance produced
    */
   def appLibraryBindingsFromLibrary(newAppLibrary: ApplicationLibrary, existingAppLibrary: ApplicationLibrary, newAppPhysStruct: PhysicalStructure, existingPhysStruct: PhysicalStructure): AppLibraryBindings = {
     def appToAppBinding(app: Application): AppPrototypeBindings = {
