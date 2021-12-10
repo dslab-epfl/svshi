@@ -15,6 +15,13 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
 
 object Compiler {
+  /**
+   * Compile applications given the applications to be added, the existing ones and the physical structure
+   * @param newAppsLibrary
+   * @param existingAppsLibrary
+   * @param physicalStructure
+   * @return
+   */
   def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
