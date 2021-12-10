@@ -17,7 +17,7 @@ object ProcRunner {
 
   /**
    * Executes Crosshair check on the given python (i.e., .py) file from the given working directoy and with the given timeout in seconds.
-   * Returns the exit code and the stout's AND stderr's lines concatenated (first stdout's then stderr's)
+   * Returns the exit code, the stdout's AND stderr's lines concatenated (first stdout's then stderr's)
    * @param filePath
    * @param wd
    * @param perConditionTimeoutSeconds
