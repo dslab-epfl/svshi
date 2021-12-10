@@ -11,7 +11,7 @@ VERIFICATION_MODULE_PATH = "verification"
 
 async def cleanup(generator: ConditionsGenerator):
     """
-    Resets the verification and the conditions files, and stops XKNX.
+    Resets the verification and the conditions files.
     """
     print("Exiting... ", end="")
     generator.reset_verification_file()
