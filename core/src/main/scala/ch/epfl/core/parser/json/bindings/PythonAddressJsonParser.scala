@@ -9,13 +9,27 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import upickle.default.write
 
+/**
+ * Parser used to produces a JSON file containing group addresses bindings for the runtime module
+ */
 object PythonAddressJsonParser {
+  /**
+   * Write to a JSON file the bindings in a form used by the runtime python code
+   * @param filePath
+   * @param pythonAddress
+   */
   def writeToFile(filePath: String, pythonAddress: AppPythonAddressesJson): Unit = {
   val f = Paths.get(filePath).toFile
   if (f.exists()) f.delete() // So that we get a fresh copy
   Files.write(Paths.get(filePath), write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
 }
 
+  /**
+   * Produces the group addresses for the python runtime
+   * @param app
+   * @param assignment
+   * @return
+   */
   def assignmentToPythonAddressJson(app: Application, assignment: GroupAddressAssignment): AppPythonAddressesJson = {
     def createAddressJsonFromBinding(instBinding: DeviceInstanceBinding, physIdToGA: Map[Int, GroupAddress]): DeviceAddressJson = {
       instBinding.binding match {

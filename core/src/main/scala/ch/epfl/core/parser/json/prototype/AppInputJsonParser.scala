@@ -7,9 +7,17 @@ import ch.epfl.core.model.prototypical._
 import scala.io.Source
 import scala.util.Using
 
+/**
+ * Parser used to read JSON file containing the structure of applications (i.e., the prototypical devices they use)
+ */
 object AppInputJsonParser {
   val APP_PROTO_JSON_RELATIVE_PATH = "app_prototypical_structure.json"
 
+  /**
+   * Parse the JSON file and produces an AppPrototypicalStructure instance
+   * @param filePath
+   * @return
+   */
   def parse(filePath: String): AppPrototypicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       constructPrototypicalStructure(
@@ -18,6 +26,11 @@ object AppInputJsonParser {
     }.get
   }
 
+  /**
+   * Produces an instance of AppPrototypicalStructure from an instance of PrototypicalStructureJson produced by upickle
+   * @param parsedStructure
+   * @return
+   */
   def constructPrototypicalStructure(parsedStructure: PrototypicalStructureJson): AppPrototypicalStructure = {
     def convertDeviceInstance(deviceInstanceJson: DeviceInstanceJson): AppPrototypicalDeviceInstance = {
       val deviceType = SupportedDevice.fromString(deviceInstanceJson.deviceType)
@@ -27,6 +40,12 @@ object AppInputJsonParser {
     if(permissionLevel.isEmpty) throw new JsonParsingException(s"The permission level '${parsedStructure.permissionLevel}' is unknown. PermissionLevel must be '${NotPrivileged.toString}' or '${Privileged.toString}'!")
     AppPrototypicalStructure(permissionLevel = permissionLevel.get, deviceInstances = parsedStructure.devices.map(convertDeviceInstance))
   }
+
+  /**
+   * Produces an instance of PrototypicalStructureJson from JSON file content using upickle
+   * @param jsonContent
+   * @return
+   */
   def parseJson(jsonContent: String): PrototypicalStructureJson = try {
     upickle.default.read[PrototypicalStructureJson](jsonContent)
   } catch {

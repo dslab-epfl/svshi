@@ -2,6 +2,10 @@ package ch.epfl.core.parser.json.bindings
 
 import upickle.default.{ReadWriter, macroRW}
 
+/**
+ * Classes used by Upickle to parse Application Bindings and Python Addresses
+ */
+
 case class AppPythonAddressesJson(permissionLevel: String, addresses: List[DeviceAddressJson])
 object AppPythonAddressesJson {
   implicit val rw: ReadWriter[AppPythonAddressesJson] =

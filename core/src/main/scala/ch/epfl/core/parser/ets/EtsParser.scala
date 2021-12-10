@@ -58,6 +58,11 @@ object EtsParser {
   private val defaultNodeName = "Default"
 
 
+  /**
+   * Parse an ETS project and produces a PhysicalStructure instance
+   * @param etsProjectPathString
+   * @return
+   */
   def parseEtsProjectFile(etsProjectPathString: String) : PhysicalStructure = extractIfNotExist(etsProjectPathString, _ =>{
     val deviceAddresses = explore0xmlFindListAddresses(etsProjectPathString)
     val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPathString,  _))
@@ -147,7 +152,7 @@ object EtsParser {
     applicationProgram
   }
 
-  def getDeviceCommObjectsInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
+  private def getDeviceCommObjectsInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(etsProjectPathString, projectRootPath => {
     def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
       val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
       val catalogEntry = XML.loadFile(xmlPath.toFile)
@@ -295,7 +300,7 @@ object EtsParser {
    * @param etsProjectFilePathString : the path to the file of etsProject as String
    * @return
    */
-  def explore0xmlFindListAddresses(etsProjectFilePathString: String): List[(String, String, String)] = extractIfNotExist(etsProjectFilePathString, projectRootPath => {
+  private def explore0xmlFindListAddresses(etsProjectFilePathString: String): List[(String, String, String)] = extractIfNotExist(etsProjectFilePathString, projectRootPath => {
     val file0XmlPath = recursiveListFiles(projectRootPath.toFile).find(file => file.getName == FILE_0_XML_NAME)
     if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
     val doc0xml = XML.loadFile(file0XmlPath.get)
@@ -315,6 +320,12 @@ object EtsParser {
     }
   }
 
+  /**
+   * Compute the Path of the temporary location where the project is unizipped
+    * @param etsProjectPathString
+   * @tparam B
+   * @return
+   */
   def computeExtractedPath[B](etsProjectPathString: String): Path = {
     Path.of(tempFolderPath.resolve(Path.of(etsProjectPathString).getFileName).toString.appendedAll(unzippedSuffix))
   }

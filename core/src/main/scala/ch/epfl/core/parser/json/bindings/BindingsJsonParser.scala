@@ -9,14 +9,26 @@ import java.nio.file.{Files, Paths}
 import scala.io.Source
 import scala.util.Using
 
+/**
+ * Parser used to store/retrieve AppLibraryBindings through JSON Files
+ */
 object BindingsJsonParser {
+  /**
+   * Produces a AppLibraryBindings from a JSON File
+   * @param filePath
+   * @return
+   */
   def parse(filePath: String): AppLibraryBindings = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       parseJson(fileBuff.getLines().mkString)
     }.get
   }
 
-
+  /**
+   * Produces a AppLibraryBindings from a JSON File content
+   * @param jsonContent
+   * @return
+   */
   def parseJson(jsonContent: String): AppLibraryBindings = {
     try {
       upickle.default.read[AppLibraryBindings](jsonContent)
@@ -26,6 +38,11 @@ object BindingsJsonParser {
     }
   }
 
+  /**
+   * Write an AppLibraryBindings instance content to a JSON File at the given path
+   * @param filePath
+   * @param appLibraryBindings
+   */
   def writeToFile(filePath: String, appLibraryBindings: AppLibraryBindings): Unit = {
     val f = Paths.get(filePath).toFile
     if (f.exists()) f.delete() // So that we get a fresh copy

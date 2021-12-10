@@ -9,7 +9,15 @@ import java.nio.file.{Files, Paths}
 import scala.io.Source
 import scala.util.Using
 
+/**
+ * Parser used to store and retrieve a PhysicalStructure through JSON
+ */
 object PhysicalStructureJsonParser {
+  /**
+   * Parse a JSON file to produces a physical structure instance
+   * @param filePath
+   * @return
+   */
   def parse(filePath: String): PhysicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       constructPhysicalStructure(parseJson(fileBuff.getLines().toList.mkString))
