@@ -39,6 +39,15 @@ object Compiler {
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
 
+  /**
+   * Generate bindings files for the two passed libraries using physical structure.
+   * If the physical structure didn't change (i.e., new and existing physical structures are identical), the bindings from
+   * the existing libraries are reused and added to the new bindings (set to default values).
+   * @param newAppsLibrary
+   * @param existingAppsLibrary
+   * @param newPhysStruct
+   * @param existingPhysStruct
+   */
   def generateBindingsFiles(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, newPhysStruct: PhysicalStructure, existingPhysStruct: PhysicalStructure): Unit = {
     PhysicalStructureJsonParser.writeToFile(
       Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
@@ -48,6 +57,11 @@ object Compiler {
     BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 
+  /**
+   * Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python
+   * @param groupAddressAssignment
+   * @param filePath
+   */
   def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: Path): Unit = {
     val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min)}
     val groupAddresses = GroupAddressesList(list)
