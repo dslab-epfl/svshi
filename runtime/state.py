@@ -82,12 +82,12 @@ class State:
         return updated_fields
 
     def __get_modified_fields(self, original_state: PhysicalState, other_states: List[PhysicalState]) -> Set[str]:
-        res = []
+        res: Set = {}
         for other_state in other_states:
             modified_fields = [field for field, value in self.__compare(original_state, other_state)]
-            res.append(modified_fields)
+            res.add(modified_fields)
 
-        return Set(res)
+        return res
 
 
     def __merge_states(self, old_state: PhysicalState, new_states: Dict[App, PhysicalState]) -> PhysicalState:
