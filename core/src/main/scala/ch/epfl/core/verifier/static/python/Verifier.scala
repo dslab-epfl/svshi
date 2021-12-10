@@ -14,7 +14,7 @@ object Verifier extends VerifierTr{
 
   /**
    * First generate the python code file for verification by calling the python module 'verification.main'
-   * and then calls Crosshair on that file and returns messages
+   * and then call Crosshair on that file and return messages
    * @param newAppLibrary
    * @param existingAppsLibrary
    * @param groupAddressAssignment
