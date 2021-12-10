@@ -124,8 +124,12 @@ class State:
                     # If conditions are preserved, we keep the state to later propagate
                     new_states[app] = per_app_state
 
-        # Then we write to KNX for just the final values given to the updated fields
         merged_state = self.__merge_states(old_state, new_states)
+        
+        # Update the physical_state with the merged one
+        self.__physical_state = merged_state
+
+        # Then we write to KNX for just the final values given to the updated fields
         updated_fields = self.__compare(old_state, merged_state)
         if updated_fields:
             for address, value in updated_fields:
