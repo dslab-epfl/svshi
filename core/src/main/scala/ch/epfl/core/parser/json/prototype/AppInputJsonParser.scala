@@ -42,7 +42,7 @@ object AppInputJsonParser {
   }
 
   /**
-   * Produces an instance of PrototypicalStructureJson from JSON file content using upickle
+   * Produce an instance of PrototypicalStructureJson from JSON file content using upickle
    * @param jsonContent
    * @return
    */
