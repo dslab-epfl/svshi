@@ -2,6 +2,9 @@ package ch.epfl.core.model.physical
 
 import scala.util.matching.Regex
 
+/**
+ * Represents the type of I/O provided by communication objects in a physical KNX installation
+ */
 sealed trait IOType
 
 object IOType {

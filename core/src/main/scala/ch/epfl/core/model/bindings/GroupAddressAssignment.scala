@@ -4,6 +4,12 @@ import ch.epfl.core.model.physical.{GroupAddress, PhysicalStructure}
 import ch.epfl.core.model.prototypical.{AppLibraryBindings, DeviceInstanceBinding}
 import ch.epfl.core.model.python.PythonType
 
+/**
+ * Represents a assignment of group address to physical communication objects and to prototypical devices (in Application)
+ * @param physStruct
+ * @param appLibraryBindings
+ * @param physIdToGA
+ */
 case class GroupAddressAssignment(physStruct: PhysicalStructure, appLibraryBindings: AppLibraryBindings, physIdToGA: Map[Int, GroupAddress]) {
   def getPythonTypesMap: Map[GroupAddress, List[PythonType]] = {
     val physIdsToPythonTypes = appLibraryBindings.appBindings.flatMap(appProtoBinding => appProtoBinding.bindings.flatMap(devInstBinding => devInstBinding.binding.getPythonTypes.toList))

@@ -1,5 +1,11 @@
 package ch.epfl.core.model.physical
 
+/**
+ * Represents a group address from KNX
+ * @param mainGroup
+ * @param middleGroup
+ * @param groupAddressN
+ */
 case class GroupAddress(mainGroup: Int, middleGroup: Int, groupAddressN: Int) {
   override def toString: String = s"$mainGroup/$middleGroup/$groupAddressN"
 }

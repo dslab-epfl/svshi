@@ -1,5 +1,8 @@
 package ch.epfl.core.model.python
 
+/**
+ * Represents a datatype in Python
+ */
 sealed trait PythonType
 
 case object PythonBool extends PythonType {

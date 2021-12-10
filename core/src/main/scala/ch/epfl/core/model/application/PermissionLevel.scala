@@ -1,5 +1,8 @@
 package ch.epfl.core.model.application
 
+/**
+ * Represents the permission level of applications written for the platform
+ */
 sealed trait PermissionLevel
 object PermissionLevel {
   def fromString(s: String): Option[PermissionLevel] = s.toLowerCase match {

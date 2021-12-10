@@ -5,6 +5,8 @@ import ch.epfl.core.model.python.{PythonBool, PythonFloat, PythonInt, PythonType
 import scala.util.matching.Regex
 
 /**
+ * The datatypes used in the KNX protocol
+ *
  * Structure:
     data type: format + encoding
     size: value range + unit

@@ -8,6 +8,11 @@ import upickle.default.{ReadWriter, macroRW}
 // WARNING!!!!!!
 // argument names must be different for all types for uPickle to be able to discriminate them
 
+/**
+ * Represents a binding between a prototypical device of an application and a physical device's communication object from
+ * the physical KNX installation.
+ * When adding a new Object extending `SupportedDevice`, a new corresponding binding must be added here
+ */
 sealed trait SupportedDeviceBinding {
   def getBoundIds: List[Int]
   def getIOTypes: Map[Int, IOType]

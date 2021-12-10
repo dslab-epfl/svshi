@@ -2,6 +2,10 @@ package ch.epfl.core.model.physical
 
 import scala.util.hashing.MurmurHash3
 
+/**
+ * Represents the physical structure of a physical KNX installation
+ * @param deviceInstances
+ */
 case class PhysicalStructure(deviceInstances: List[PhysicalDevice])
 case class PhysicalDevice(name: String, address: (String, String, String), nodes: List[PhysicalDeviceNode])
 case class PhysicalDeviceNode(name: String, comObjects: List[PhysicalDeviceCommObject])
