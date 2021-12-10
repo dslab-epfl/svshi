@@ -14,7 +14,7 @@ object AppInputJsonParser {
   val APP_PROTO_JSON_RELATIVE_PATH = "app_prototypical_structure.json"
 
   /**
-   * Parse the JSON file and produces an AppPrototypicalStructure instance
+   * Parse the JSON file and produce an AppPrototypicalStructure instance
    * @param filePath
    * @return
    */
