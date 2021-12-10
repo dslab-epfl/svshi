@@ -13,7 +13,7 @@ object Verifier extends VerifierTr{
    * @param newAppLibrary
    * @param existingAppsLibrary
    * @param groupAddressAssignment
-   * @return
+   * @return List of messages produces by the various verifiers
    */
   def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[VerifierMessage] = {
     val physicalStructure = groupAddressAssignment.physStruct
