@@ -1,3 +1,7 @@
+###
+### DO NOT TOUCH THIS FILE!!!
+###
+
 def multiton(cls):
     instances = {}
     allowed_names = ['binary_sensor_instance_name', 'switch_instance_name', 'temperature_sensor_instance_name', 'humidity_sensor_instance_name']

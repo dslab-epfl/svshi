@@ -1,3 +1,7 @@
+###
+### DO NOT TOUCH THIS FILE!!!
+###
+
 from models.binary import BinarySensor
 from models.switch import Switch
 from models.temperature import TemperatureSensor
