@@ -1,4 +1,5 @@
 import json
+import re
 from typing import List
 
 from .device import Device
@@ -27,8 +28,15 @@ class Parser:
         Reads the devices from the JSON file, returning a list.
         """
 
+        name_regex = re.compile(r"^_*[a-zA-Z]+[a-zA-Z_]*_*$")
+
         def to_device(d: dict) -> Device:
             name = d["name"]
+            if not name_regex.match(name):
+                raise ParserException(
+                    f"Wrong device name '{name}': it has to contain only letters and underscores"
+                )
+
             type = d["deviceType"]
             import_module_name = type
             if type == "binary":
