@@ -20,7 +20,8 @@ object Compiler {
    * @param newAppsLibrary
    * @param existingAppsLibrary
    * @param physicalStructure
-   * @return
+   * @return a tuple containing the (newApplicationsLibrary, existingApplicationsLibrary, groupAddressAssignment) produced.
+   *         Libraries are unchanged from the inputs
    */
   def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
