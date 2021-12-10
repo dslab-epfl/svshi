@@ -69,7 +69,7 @@ class State:
         return "GA_" + group_addr.replace("/", "_")
 
     def __field_name_to_group_addr(self, field: str) -> str:
-        return field.replace("_", "/")
+        return field.replace("GA_", "").replace("_", "/")
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
