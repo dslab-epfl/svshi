@@ -54,9 +54,15 @@ class State:
             await self.__notify_listeners(address)
 
     async def listen(self):
+        """
+        Connects to KNX and listens infinitely for telegrams.
+        """
         await self.__xknx.start()
 
     async def stop(self):
+        """
+        Stops listening for telegrams and disconnects.
+        """
         await self.__xknx.stop()
 
     async def __initialize(self):
