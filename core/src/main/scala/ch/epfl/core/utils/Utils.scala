@@ -6,6 +6,9 @@ import ch.epfl.core.utils.FileUtils.getListOfFolders
 
 import java.nio.file.Path
 
+/**
+ * Utility functions for the compiler and the verifier
+ */
 object Utils {
   def loadApplicationsLibrary(path: String): ApplicationLibrary = {
     ApplicationLibrary(

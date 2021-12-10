@@ -7,6 +7,9 @@ import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
 
+/**
+ * Utility functions to manipulate files in the file system
+ */
 object FileUtils {
 
   /** The suffix appended to the end of a ETS project file name when unzipped
