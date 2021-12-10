@@ -98,7 +98,7 @@ class State:
 
         res = dataclasses.replace(old_state)
         for _, state in sorted_new_states_by_priority:
-            updated_fields = self.__compare(old_state, merged_state)
+            updated_fields = self.__compare(old_state, state)
             for field, value in updated_fields:  
                 setattr(res, field, value)
         return res
