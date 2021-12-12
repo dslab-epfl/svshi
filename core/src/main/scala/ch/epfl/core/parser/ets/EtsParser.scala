@@ -103,7 +103,7 @@ object EtsParser {
     )
   }
 
-  /** Reads one device from the ETS xml project
+  /** Read one device from the ETS xml project
     *
     * It assumes that the project contains only one installation
     *
