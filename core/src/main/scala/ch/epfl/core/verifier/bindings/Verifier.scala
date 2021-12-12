@@ -37,7 +37,7 @@ object Verifier extends VerifierTr {
     returnValues
   }
 
-  /** Verifies that no group address is bound to channels with different datatypes in python
+  /** Verify that no group address is bound to channels with different datatypes in python
     * @param groupAddressAssignment
     * @return
     */
