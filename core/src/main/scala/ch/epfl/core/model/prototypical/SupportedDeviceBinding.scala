@@ -1,23 +1,21 @@
 package ch.epfl.core.model.prototypical
 
-import ch.epfl.core.model.physical.{DPT1, DPT9, IOType, In, InOut, KNXDatatype, Out}
-import ch.epfl.core.model.python.{PythonBool, PythonFloat, PythonType}
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.python.PythonType
 import upickle.default.{ReadWriter, macroRW}
-
 
 // WARNING!!!!!!
 // argument names must be different for all types for uPickle to be able to discriminate them
 
-/**
- * Represents a binding between a prototypical device of an application and a physical device's communication object from
- * the physical KNX installation.
- * When adding a new Object extending `SupportedDevice`, a new corresponding binding must be added here
- */
+/** Represents a binding between a prototypical device of an application and a physical device's communication object from
+  * the physical KNX installation.
+  * When adding a new Object extending `SupportedDevice`, a new corresponding binding must be added here
+  */
 sealed trait SupportedDeviceBinding {
   def getBoundIds: List[Int]
   def getIOTypes: Map[Int, IOType]
   def getKNXDpt: Map[Int, KNXDatatype]
-  def getPythonTypes: Map[Int, PythonType] = getKNXDpt.toList.map{case (id, typ) => (id, typ.toPythonType)}.toMap
+  def getPythonTypes: Map[Int, PythonType] = getKNXDpt.toList.map { case (id, typ) => (id, typ.toPythonType) }.toMap
 }
 object SupportedDeviceBinding {
   implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)

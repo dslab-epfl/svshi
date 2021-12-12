@@ -2,9 +2,8 @@ package ch.epfl.core.parser.json.physical
 
 import upickle.default.{ReadWriter, macroRW}
 
-/**
- * Classes used by upickle in the PhysicalStructure parser
- */
+/** Classes used by upickle in the PhysicalStructure parser
+  */
 
 case class PhysicalStructureJson(deviceInstances: List[PhysicalDeviceJson])
 object PhysicalStructureJson {

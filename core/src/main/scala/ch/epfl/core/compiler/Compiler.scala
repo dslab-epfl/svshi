@@ -15,15 +15,19 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
 
 object Compiler {
-  /**
-   * Compile applications given the applications to be added, the existing ones and the physical structure
-   * @param newAppsLibrary
-   * @param existingAppsLibrary
-   * @param physicalStructure
-   * @return a tuple containing the (newApplicationsLibrary, existingApplicationsLibrary, groupAddressAssignment) produced.
-   *         Libraries are unchanged from the inputs
-   */
-  def compile(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, physicalStructure: PhysicalStructure): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
+
+  /** Compile applications given the applications to be added, the existing ones and the physical structure
+    * @param newAppsLibrary
+    * @param existingAppsLibrary
+    * @param physicalStructure
+    * @return a tuple containing the (newApplicationsLibrary, existingApplicationsLibrary, groupAddressAssignment) produced.
+    *         Libraries are unchanged from the inputs
+    */
+  def compile(
+      newAppsLibrary: ApplicationLibrary,
+      existingAppsLibrary: ApplicationLibrary,
+      physicalStructure: PhysicalStructure
+  ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
@@ -40,16 +44,20 @@ object Compiler {
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
 
-  /**
-   * Generate bindings files for the two passed libraries using physical structure.
-   * If the physical structure didn't change (i.e., new and existing physical structures are identical), the bindings from
-   * the existing libraries are reused and added to the new bindings (set to default values).
-   * @param newAppsLibrary
-   * @param existingAppsLibrary
-   * @param newPhysStruct
-   * @param existingPhysStruct
-   */
-  def generateBindingsFiles(newAppsLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, newPhysStruct: PhysicalStructure, existingPhysStruct: PhysicalStructure): Unit = {
+  /** Generate bindings files for the two passed libraries using physical structure.
+    * If the physical structure didn't change (i.e., new and existing physical structures are identical), the bindings from
+    * the existing libraries are reused and added to the new bindings (set to default values).
+    * @param newAppsLibrary
+    * @param existingAppsLibrary
+    * @param newPhysStruct
+    * @param existingPhysStruct
+    */
+  def generateBindingsFiles(
+      newAppsLibrary: ApplicationLibrary,
+      existingAppsLibrary: ApplicationLibrary,
+      newPhysStruct: PhysicalStructure,
+      existingPhysStruct: PhysicalStructure
+  ): Unit = {
     PhysicalStructureJsonParser.writeToFile(
       Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
       newPhysStruct
@@ -58,13 +66,12 @@ object Compiler {
     BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 
-  /**
-   * Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python
-   * @param groupAddressAssignment
-   * @param filePath
-   */
+  /** Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python
+    * @param groupAddressAssignment
+    * @param filePath
+    */
   def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: Path): Unit = {
-    val list = groupAddressAssignment.getPythonTypesMap.toList.map{case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min)}
+    val list = groupAddressAssignment.getPythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min) }
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
     val file = filePath.toFile

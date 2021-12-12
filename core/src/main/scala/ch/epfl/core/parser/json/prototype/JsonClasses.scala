@@ -2,10 +2,8 @@ package ch.epfl.core.parser.json.prototype
 
 import upickle.default.{ReadWriter, macroRW}
 
-/**
- * Classes used by upickle in the AppInputJsonParser
- */
-
+/** Classes used by upickle in the AppInputJsonParser
+  */
 
 case class DeviceInstanceJson(name: String, deviceType: String)
 object DeviceInstanceJson {

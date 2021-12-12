@@ -1,7 +1,7 @@
 package ch.epfl.core.parser.json.physical
 
-import ch.epfl.core.parser.json.{JsonParsingException, SystemStructureException}
 import ch.epfl.core.model.physical._
+import ch.epfl.core.parser.json.{JsonParsingException, SystemStructureException}
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
@@ -9,15 +9,14 @@ import java.nio.file.{Files, Paths}
 import scala.io.Source
 import scala.util.Using
 
-/**
- * Parser used to store and retrieve a PhysicalStructure through JSON
- */
+/** Parser used to store and retrieve a PhysicalStructure through JSON
+  */
 object PhysicalStructureJsonParser {
-  /**
-   * Parse a JSON file to produce a physical structure instance
-   * @param filePath
-   * @return
-   */
+
+  /** Parse a JSON file to produce a physical structure instance
+    * @param filePath
+    * @return
+    */
   def parse(filePath: String): PhysicalStructure = {
     Using(Source.fromFile(filePath)) { fileBuff =>
       constructPhysicalStructure(parseJson(fileBuff.getLines().toList.mkString))

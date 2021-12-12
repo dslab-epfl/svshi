@@ -4,6 +4,5 @@ import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMe
 
 sealed trait PythonVerifierMessage extends VerifierMessage
 
-
 case class PythonVerifierError(msg: String) extends VerifierError with PythonVerifierMessage
 case class PythonVerifierInfo(msg: String) extends VerifierInfo with PythonVerifierMessage

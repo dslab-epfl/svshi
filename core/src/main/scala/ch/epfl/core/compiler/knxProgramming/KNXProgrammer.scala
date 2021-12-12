@@ -1,9 +1,8 @@
 package ch.epfl.core.compiler.knxProgramming
 
-import ch.epfl.core.model.physical.{PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, GroupAddress}
 import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical.{GroupAddress, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode}
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
-import ch.epfl.core.model.prototypical._
 
 private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress)
 
@@ -34,7 +33,7 @@ object Programmer {
     }
     val text = tree.mkString("\n")
     val directoryPath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME
-    if(!os.exists(directoryPath)) os.makeDir(directoryPath)
+    if (!os.exists(directoryPath)) os.makeDir(directoryPath)
     val filePath = directoryPath / filename
 
     if (os.exists(filePath)) os.remove(filePath)
