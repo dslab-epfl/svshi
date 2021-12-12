@@ -83,7 +83,7 @@ object Verifier extends VerifierTr {
     })
   }
 
-  /** Verifies that IO types (i.e., in, out, in/out, unknown) of the physical communication objects are compatible
+  /** Verify that IO types (i.e., in, out, in/out, unknown) of the physical communication objects are compatible
     * with intended types for each type of prototypical devices bound to them. Outputs WARNING for "unknown" types.
     *
     * @param physicalStructure
