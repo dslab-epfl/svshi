@@ -15,7 +15,7 @@ import java.nio.file.Path
   */
 object Verifier extends VerifierTr {
 
-  /** Executes all verification on the libraries and outputs a list of messages
+  /** Execute all verification on the libraries and output a list of messages
     * @param newAppLibrary
     * @param existingAppsLibrary
     * @param groupAddressAssignment
