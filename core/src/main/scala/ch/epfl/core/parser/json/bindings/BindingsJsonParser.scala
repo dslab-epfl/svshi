@@ -13,7 +13,7 @@ import scala.util.Using
   */
 object BindingsJsonParser {
 
-  /** Produces a AppLibraryBindings from a JSON File
+  /** Produce a AppLibraryBindings from a JSON File
     * @param filePath
     * @return
     */
