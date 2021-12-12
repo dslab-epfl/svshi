@@ -121,7 +121,7 @@ object Verifier extends VerifierTr {
 
   /** Verify that all devices bound the same physicalID have the same KNX datatype
     * @param bindings
-    * @return List of messagesg
+    * @return List of messages
     */
   def verifyBindingsMutualDPT(bindings: AppLibraryBindings): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
