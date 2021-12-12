@@ -23,7 +23,7 @@ object BindingsJsonParser {
     }.get
   }
 
-  /** Produces a AppLibraryBindings from a JSON File content
+  /** Produce a AppLibraryBindings from a JSON File content
     * @param jsonContent
     * @return
     */
