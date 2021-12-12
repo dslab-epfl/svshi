@@ -15,9 +15,17 @@ def test_parser_reads_devices():
     assert devices[3] == Device(
         "humidity_sensor_instance_name", "HumiditySensor", "humidity"
     )
+    assert devices[4] == Device(
+        "A_switch", "Switch", "switch"
+    )
 
 
-def test_parser_on_read_devices_throws_exceptions():
-    parser = Parser("tests/devices_wrong.json")
+def test_parser_on_read_devices_throws_exceptions_on_wrong_type():
+    parser = Parser("tests/devices_wrong_type.json")
+    with pytest.raises(ParserException):
+        parser.read_devices()
+
+def test_parser_on_read_devices_throws_exceptions_on_wrong_name():
+    parser = Parser("tests/devices_wrong_name.json")
     with pytest.raises(ParserException):
         parser.read_devices()

@@ -1,0 +1,8 @@
+{
+  "devices": [
+    {
+      "name": "binary123",
+      "deviceType": "binary"
+    }
+  ]
+}
