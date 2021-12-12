@@ -119,7 +119,7 @@ object Verifier extends VerifierTr {
     })
   }
 
-  /** Verifies that all devices bound the same physicalID have the same KNX datatype
+  /** Verify that all devices bound the same physicalID have the same KNX datatype
     * @param bindings
     * @return List of messagesg
     */
