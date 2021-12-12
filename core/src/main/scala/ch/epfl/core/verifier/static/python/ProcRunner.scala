@@ -14,7 +14,7 @@ object ProcRunner {
     (invoked.exitCode, invoked.out.lines.toList)
   }
 
-  /** Executes Crosshair check on the given python (i.e., .py) file from the given working directoy and with the given timeout in seconds.
+  /** Execute CrossHair check on the given python (i.e., .py) file from the given working directoy and with the given timeout in seconds.
     * Returns the exit code, the stdout's AND stderr's lines concatenated (first stdout's then stderr's)
     * @param filePath
     * @param wd
