@@ -144,7 +144,7 @@ object Verifier extends VerifierTr {
     })
   }
 
-  /** Verifies that no prototypical devices with different datatypes in python are bound to the same physical id
+  /** Verify that no prototypical devices with different datatypes in python are bound to the same physical id
     * @param physicalStructure
     * @param deviceInstBinding
     * @param protoDevice
