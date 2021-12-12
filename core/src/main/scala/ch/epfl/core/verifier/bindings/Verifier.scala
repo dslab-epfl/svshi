@@ -48,7 +48,7 @@ object Verifier extends VerifierTr {
     }
   }
 
-  /** Verifies that the KNX datatypes of the communication objects corresponds to what is intended for each type of
+  /** Verify that the KNX datatypes of the communication objects corresponds to what is intended for each type of
     * prototypical device
     * @param physicalStructure
     * @param bindings
