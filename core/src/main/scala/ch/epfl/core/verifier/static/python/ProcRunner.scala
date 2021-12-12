@@ -4,7 +4,7 @@ package ch.epfl.core.verifier.static.python
   */
 object ProcRunner {
 
-  /** Executes the given python module as a new process and returns the exit code along with the stdout lines
+  /** Execute the given python module as a new process and return the exit code along with the stdout lines
     * @param pythonModule
     * @return
     */
