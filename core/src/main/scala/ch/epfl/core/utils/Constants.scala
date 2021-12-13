@@ -11,5 +11,7 @@ object Constants {
   val GENERATED_FOLDER_PATH_STRING = s"../$GENERATED_FOLDER_NAME"
   val APP_LIBRARY_FOLDER_PATH_STRING = s"../app_library"
   val VERIFICATION_PYTHON_MODULE = "verification.main"
+  val APP_GENERATOR_PYTHON_MODULE = "generator.main"
+  val RUNTIME_PYTHON_MODULE = "runtime.main"
   val CROSSHAIR_TIMEOUT_SECONDS = 600
 }

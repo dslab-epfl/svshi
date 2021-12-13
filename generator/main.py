@@ -19,7 +19,7 @@ def parse_args():
     app_name = args.app_name
     if not name_regex.match(app_name):
         raise ValueError(
-            f"Wrong app name '{app_name}': it has to contain only lowercased letters and underscores"
+            f"Wrong app name '{app_name}': it has to contain only lowercase letters and underscores"
         )
 
     return app_name
