@@ -1,7 +1,7 @@
 package ch.epfl.core.utils
 
 import java.io.File
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
@@ -38,17 +38,14 @@ object FileUtils {
     * @param f a directory
     * @return
     */
-  def recursiveListFiles(f: os.Path): Array[os.Path] = {
-    val fNio = f.toNIO
-    val these = fNio.toFile.listFiles
-    if(these == null) {
-      Array.empty
+  def recursiveListFiles(f: os.Path): List[os.Path] = {
+    if(os.isDir(f)){
+      val these = os.list(f).toList
+      these ++ these.flatMap(recursiveListFiles)
     } else {
-      these.map(a => {
-        println(a.toPath)
-        os.Path(a.toPath.toString, f)
-      }) ++ these.filter(_.isDirectory).flatMap(a => recursiveListFiles(os.Path(a.toPath.toString, f)))
+      Nil
     }
+
 
   }
 
@@ -82,8 +79,6 @@ object FileUtils {
   }
 
   def getPathFromSvshiHome(pathString: String): os.Path = {
-    println(Constants.SVSHI_HOME)
-    println(os.Path(Constants.SVSHI_HOME, os.pwd))
     os.Path(pathString, os.Path(Constants.SVSHI_HOME, os.pwd))
   }
 

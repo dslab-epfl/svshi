@@ -5,7 +5,6 @@ import ch.epfl.core.model.physical._
 import ch.epfl.core.utils.FileUtils._
 
 import java.io.FileNotFoundException
-import java.nio.file.{Files, Path}
 import scala.util.matching.Regex
 import scala.xml.{Elem, Node, XML}
 
