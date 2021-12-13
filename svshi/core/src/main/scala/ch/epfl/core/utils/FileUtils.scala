@@ -16,13 +16,13 @@ object FileUtils {
   def unzippedSuffix: String = "_unzip_temp"
 
   /** Unzip the archive at the given path
-    * @param zipPathString
+    * @param zipPath
     * @return outputPath
     */
-  def unzip(zipPathString: String, outputFolderPathString: String): Option[Path] = {
-    Using(new ZipFile(Path.of(zipPathString).toFile)) { zipFile =>
+  def unzip(zipPath: os.Path, outputFolderPath: os.Path): Option[os.Path] = {
+    Using(new ZipFile(zipPath.toNIO.toFile)) { zipFile =>
       for (entry <- zipFile.entries.asScala) {
-        val path = Path.of(outputFolderPathString).resolve(entry.getName)
+        val path = outputFolderPath.toNIO.resolve(entry.getName)
         if (entry.isDirectory) {
           Files.createDirectories(path)
         } else {
@@ -30,7 +30,7 @@ object FileUtils {
           Files.copy(zipFile.getInputStream(entry), path)
         }
       }
-      Some(Path.of(outputFolderPathString))
+      Some(outputFolderPath)
     }.getOrElse(None)
   }
 
@@ -38,9 +38,18 @@ object FileUtils {
     * @param f a directory
     * @return
     */
-  def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+  def recursiveListFiles(f: os.Path): Array[os.Path] = {
+    val fNio = f.toNIO
+    val these = fNio.toFile.listFiles
+    if(these == null) {
+      Array.empty
+    } else {
+      these.map(a => {
+        println(a.toPath)
+        os.Path(a.toPath.toString, f)
+      }) ++ these.filter(_.isDirectory).flatMap(a => recursiveListFiles(os.Path(a.toPath.toString, f)))
+    }
+
   }
 
   /** explore the given directory and outputs the list of folders contained in this directory
@@ -70,6 +79,12 @@ object FileUtils {
     os.copy(fromOsPath, toOsPath, mergeFolders = true, replaceExisting = true)
     os.remove.all(fromOsPath)
     os.makeDir(fromOsPath)
+  }
+
+  def getPathFromSvshiHome(pathString: String): os.Path = {
+    println(Constants.SVSHI_HOME)
+    println(os.Path(Constants.SVSHI_HOME, os.pwd))
+    os.Path(pathString, os.Path(Constants.SVSHI_HOME, os.pwd))
   }
 
 }

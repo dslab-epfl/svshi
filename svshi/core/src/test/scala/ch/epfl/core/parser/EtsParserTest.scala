@@ -2,14 +2,19 @@ package ch.epfl.core.parser
 
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.model.physical._
+import ch.epfl.core.utils.Constants
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.nio.file.Path
 import scala.util.hashing.MurmurHash3
 
-class EtsParserTest extends AnyFlatSpec with Matchers {
-  val testFilePathString = "res/ets_project_test.knxproj"
+class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
+  override def beforeEach(): Unit = {
+    Constants.setSvshiHome("../..")
+  }
+  val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
   "parseEtsProjectFile" should "return the correct structure on the test file" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePathString)
     val device1 = PhysicalDevice(
@@ -230,6 +235,6 @@ class EtsParserTest extends AnyFlatSpec with Matchers {
 
   "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {
     EtsParser.parseEtsProjectFile(testFilePathString)
-    EtsParser.computeExtractedPath(testFilePathString).toFile.exists() shouldBe false
+    os.exists(EtsParser.computeExtractedPath(testFilePathString)) shouldBe false
   }
 }

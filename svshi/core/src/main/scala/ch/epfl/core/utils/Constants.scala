@@ -1,8 +1,12 @@
 package ch.epfl.core.utils
 
 object Constants {
-  private val SVSHI_HOME = sys.env("SVSHI_HOME")
+  val DEFAULT_SVISHI_HOME = "../.."
+  var SVSHI_HOME: String = if(sys.env.contains("SVSHI_HOME")) sys.env("SVSHI_HOME") else DEFAULT_SVISHI_HOME
 
+  def setSvshiHome(v: String) : Unit = {
+    SVSHI_HOME = v
+  }
   val SVSHI_FOLDER = s"$SVSHI_HOME/svshi"
   val ASSIGNMENTS_DIRECTORY_NAME = s"$SVSHI_HOME/assignments"
   val PHYSICAL_STRUCTURE_JSON_FILE_NAME = "physical_structure.json"
