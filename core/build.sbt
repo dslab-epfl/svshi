@@ -9,7 +9,7 @@ Test / parallelExecution := false
 
 enablePlugins(PackPlugin)
 
-val appName = "core"
+val appName = "svshi"
 
 lazy val root = (project in file("."))
   .settings(
