@@ -112,7 +112,7 @@ object Main {
   }
 
   private def runPythonModule(module: String, args: Seq[String], errorMessageBuilder: Int => String)(implicit style: Style): Unit = {
-    val (exitCode, stdOut) = ProcRunner.callPython(module, args: _*)
+    val (exitCode, _) = ProcRunner.callPython(module, os.Path(PYTHON_MODULES_WD_PATH_STRING, os.pwd), args: _*)
     if (exitCode != SUCCESS_CODE) printErrorAndExit(errorMessageBuilder(exitCode))
   }
 }

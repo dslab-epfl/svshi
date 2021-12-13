@@ -12,7 +12,7 @@ object ProcRunner {
     * @param pythonModule
     * @return
     */
-  def callPython(pythonModule: String, wd: os.Pathargs: String*): (Int, List[String]) = {
+  def callPython(pythonModule: String, wd: os.Path, args: String*): (Int, List[String]) = {
     val invoked = Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd))
     invoked match {
       case Failure(exception: os.SubprocessException) =>
