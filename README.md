@@ -1,6 +1,7 @@
 # Formal Verification for Smart Infrastructure
 
-!![](logo.png)
+<img src="logo.png" alt="logo" width="200"/>
+
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
 
 - [Formal Verification for Smart Infrastructure](#formal-verification-for-smart-infrastructure)
