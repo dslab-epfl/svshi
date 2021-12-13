@@ -378,15 +378,13 @@ object EtsParser {
   }
 
   private def deleteRecursive(filePath: os.Path): Unit = {
-    val filePathNio = filePath.toNIO
-    val f = filePathNio.toFile
-    if (f.isDirectory) {
-      if (f.listFiles().length > 0) {
-        f.listFiles.foreach(file => deleteRecursive(os.Path(file.toPath, os.pwd)))
+    if (os.isDir(filePath)) {
+      if (os.list(filePath).toList.nonEmpty) {
+        os.list(filePath).toList.foreach(file => deleteRecursive(file))
       }
-      f.delete()
+      os.remove.all(filePath)
     } else {
-      f.delete()
+      os.remove.all(filePath)
     }
   }
 
