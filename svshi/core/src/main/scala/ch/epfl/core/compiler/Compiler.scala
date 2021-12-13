@@ -31,7 +31,7 @@ object Compiler {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
-    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_NAME, base = os.pwd) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
+    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_NAME) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
 
     generateGroupAddressesList(gaAssignment, filePath)
 
