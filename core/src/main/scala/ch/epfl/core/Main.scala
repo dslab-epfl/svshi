@@ -7,6 +7,7 @@ import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.FileUtils
 import ch.epfl.core.utils.Cli._
+import ch.epfl.core.utils.Printer._
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
 import ch.epfl.core.verifier.static.python.ProcRunner
@@ -33,12 +34,12 @@ object Main {
 
     config.task match {
       case Run =>
-        println(style.info("Running the apps..."))
+        info("Running the apps...")
         runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
         printErrorAndExit("The ETS project file needs to be specified for compiling or generating the bindings")
       case Compile =>
-        println(style.info("Compiling the apps..."))
+        info("Compiling the apps...")
         val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
@@ -46,38 +47,38 @@ object Main {
           // Copy new app + all files in app_library
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH_STRING, existingAppsLibrary.path)
           printTrace(verifierMessages)
-          println(style.success(s"The apps have been successfully compiled!"))
+          success(s"The apps have been successfully compiled!")
         } else {
           // New app is rejected
           printTrace(verifierMessages)
           printErrorAndExit("Compilation failed, see messages above")
         }
       case GenerateBindings =>
-        println(style.info("Generating the bindings..."))
+        info("Generating the bindings...")
         val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
         compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
-        println(style.success(s"The bindings have been successfully created!"))
+        success(s"The bindings have been successfully created!")
       case GenerateApp =>
-        println(style.info("Generating the app..."))
+        info("Generating the app...")
         config.appName match {
           case Some(name) =>
             val nameRegex = "^_*[a-z]+[a-z_]*_*$".r
             if (nameRegex.matches(name)) runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
             else printErrorAndExit("The app name has to contain only lowercase letters and underscores")
-            println(style.success(s"The app '$name' has been successfully created!"))
+            success(s"The app '$name' has been successfully created!")
           case None =>
             printErrorAndExit("The app name has to be provided for generating a new app")
         }
       case ListApps =>
-        println(style.info("Listing the apps..."))
+        info("Listing the apps...")
         val appNames = existingAppsLibrary.apps.map(_.name)
-        if (appNames.isEmpty) println(style.warning("There are no apps installed!"))
-        else println(style.success(s"The installed apps are: ${appNames.mkString(",")}"))
+        if (appNames.isEmpty) warning("There are no apps installed!")
+        else success(s"The installed apps are: ${appNames.mkString(",")}")
     }
   }
 
   @tailrec
-  def validateProgram(messages: List[VerifierMessage]): Boolean = {
+  private def validateProgram(messages: List[VerifierMessage]): Boolean = {
     messages match {
       case head :: tl =>
         head match {
@@ -90,14 +91,14 @@ object Main {
   }
 
   @tailrec
-  def printTrace(messages: List[VerifierMessage])(implicit style: Style): Unit = {
+  private def printTrace(messages: List[VerifierMessage])(implicit style: Style): Unit = {
     messages match {
       case head :: tl => {
         head match {
-          case error: VerifierError     => printErrorAndExit(error.msg)
-          case warning: VerifierWarning => println(style.warning(s"WARNING: ${warning.msg}"))
-          case info: VerifierInfo       => println(style.info(s"INFO: ${info.msg}"))
-          case _                        => ()
+          case verifierError: VerifierError     => printErrorAndExit(verifierError.msg)
+          case verifierWarning: VerifierWarning => warning(s"WARNING: ${verifierWarning.msg}")
+          case verifierInfo: VerifierInfo       => info(s"INFO: ${verifierInfo.msg}")
+          case _                                => ()
         }
         printTrace(tl)
       }
@@ -106,7 +107,7 @@ object Main {
   }
 
   private def printErrorAndExit(errorMessage: String)(implicit style: Style): Unit = {
-    println(style.error(s"ERROR: $errorMessage"))
+    error(s"ERROR: $errorMessage")
     sys.exit(ERROR_CODE)
   }
 
