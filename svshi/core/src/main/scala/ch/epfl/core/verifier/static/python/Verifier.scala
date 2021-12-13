@@ -2,7 +2,7 @@ package ch.epfl.core.verifier.static.python
 
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.bindings.GroupAddressAssignment
-import ch.epfl.core.utils.Constants.{CROSSHAIR_TIMEOUT_SECONDS, VERIFICATION_PYTHON_MODULE}
+import ch.epfl.core.utils.Constants.{CROSSHAIR_TIMEOUT_SECONDS, PYTHON_MODULES_WD_PATH_STRING, VERIFICATION_PYTHON_MODULE}
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.static.python.exceptions.{PythonVerifierError, PythonVerifierInfo, PythonVerifierMessage}
 
@@ -19,7 +19,7 @@ object Verifier extends VerifierTr {
     * @return
     */
   override def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[PythonVerifierMessage] = {
-    val (_, stdOutLines) = ProcRunner.callPython(VERIFICATION_PYTHON_MODULE)
+    val (_, stdOutLines) = ProcRunner.callPython(VERIFICATION_PYTHON_MODULE, os.Path(PYTHON_MODULES_WD_PATH_STRING, os.pwd))
     if (stdOutLines.length != 1) {
       // Error while creating the verification file, output
       if (stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))

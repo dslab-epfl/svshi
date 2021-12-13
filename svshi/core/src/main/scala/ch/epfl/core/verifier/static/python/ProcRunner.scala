@@ -8,8 +8,7 @@ object ProcRunner {
     * @param pythonModule
     * @return
     */
-  def callPython(pythonModule: String): (Int, List[String]) = {
-    val wd = os.pwd / os.up
+  def callPython(pythonModule: String, wd: os.Path): (Int, List[String]) = {
     val invoked = os.proc("python3", "-m", pythonModule).call(cwd = wd)
     (invoked.exitCode, invoked.out.lines.toList)
   }

@@ -31,7 +31,7 @@ object Compiler {
     val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
-    val filePath: Path = (os.pwd / os.up / Constants.GENERATED_FOLDER_NAME / Constants.GROUP_ADDRESSES_LIST_FILE_NAME).toNIO
+    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_PATH_STRING, base = os.pwd) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
 
     generateGroupAddressesList(gaAssignment, filePath)
 
@@ -70,13 +70,14 @@ object Compiler {
     * @param groupAddressAssignment
     * @param filePath
     */
-  def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: Path): Unit = {
+  def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: os.Path): Unit = {
     val list = groupAddressAssignment.getPythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min) }
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
-    val file = filePath.toFile
+    val filePathNio = filePath.toNIO
+    val file = filePathNio.toFile
     if (file.exists()) file.delete()
-    Files.write(filePath, json getBytes StandardCharsets.UTF_8)
+    Files.write(filePathNio, json getBytes StandardCharsets.UTF_8)
   }
 
 }

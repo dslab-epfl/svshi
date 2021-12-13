@@ -3,8 +3,8 @@ import re
 from generator.parsing.parser import Parser
 from generator.generation.generator import Generator
 
-DEVICES_JSON_FILENAME = "app_prototypical_structure.json"
-GENERATED_APPS_FOLDER_NAME = "generated"
+DEVICES_JSON_FILENAME = "../input/app_prototypical_structure.json"
+GENERATED_APPS_FOLDER_NAME = "../generated"
 
 
 def parse_args():

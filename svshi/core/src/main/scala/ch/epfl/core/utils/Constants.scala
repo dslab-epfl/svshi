@@ -8,8 +8,10 @@ object Constants {
   val GROUP_ADDRESSES_LIST_FILE_NAME = "group_addresses.json"
   val APP_PROTO_STRUCT_FILE_NAME = "app_prototypical_structure.json"
   val GENERATED_FOLDER_NAME = "generated"
-  val GENERATED_FOLDER_PATH_STRING = s"../$GENERATED_FOLDER_NAME"
-  val APP_LIBRARY_FOLDER_PATH_STRING = s"../app_library"
+  val GENERATED_FOLDER_PATH_STRING = s"../../$GENERATED_FOLDER_NAME"
+  val APP_LIBRARY_FOLDER_NAME = "app_library"
+  val APP_LIBRARY_FOLDER_PATH_STRING = s"../$APP_LIBRARY_FOLDER_NAME"
   val VERIFICATION_PYTHON_MODULE = "verification.main"
+  val PYTHON_MODULES_WD_PATH_STRING = "../"
   val CROSSHAIR_TIMEOUT_SECONDS = 600
 }

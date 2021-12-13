@@ -13,7 +13,7 @@ from .conditions import check_conditions
 
 class State:
 
-    __GROUP_ADDRESSES_FILE_PATH = "app_library/group_addresses.json"
+    __GROUP_ADDRESSES_FILE_PATH = "../app_library/group_addresses.json"
 
     def __init__(self, addresses_listeners: Dict[str, List[App]]):
         self.__physical_state: PhysicalState
