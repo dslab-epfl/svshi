@@ -32,7 +32,7 @@ object Programmer {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val directoryPath = os.pwd / os.up / ASSIGNMENTS_DIRECTORY_NAME
+    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
     if (!os.exists(directoryPath)) os.makeDir(directoryPath)
     val filePath = directoryPath / filename
 

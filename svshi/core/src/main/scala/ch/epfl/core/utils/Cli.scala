@@ -44,7 +44,7 @@ object Cli {
           }
       )
 
-  @main(name = "svshi", doc = "A platform for developing and running formally verified smart infrastructures")
+  @main(name = "svshi", doc = "Secure and Verified Smart Home Infrastructure")
   /** The CLI configuration
     *
     * @param task the task to run

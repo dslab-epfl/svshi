@@ -2,11 +2,15 @@ from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
 import asyncio
+import os
 
-APP_LIBRARY_DIR = "app_library"
-CONDITIONS_FILE_PATH = "runtime/conditions.py"
-VERIFICATION_FILE_PATH = "runtime/verification_file.py"
-VERIFICATION_MODULE_PATH = "verification"
+SVSHI_HOME = os.environ["SVSHI_HOME"]
+SVSHI_FOLDER = f"{SVSHI_HOME}/svshi"
+
+APP_LIBRARY_DIR = f"{SVSHI_FOLDER}/app_library"
+CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
+VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
+VERIFICATION_MODULE_PATH = f"{SVSHI_FOLDER}/verification"
 
 
 async def cleanup(generator: ConditionsGenerator):
