@@ -71,8 +71,8 @@ object Main {
       case ListApps =>
         println(style.info("Listing the apps..."))
         val appNames = existingAppsLibrary.apps.map(_.name)
-        if (appNames.isEmpty) println("There are no apps installed!")
-        else println(s"The installed apps are: ${appNames.mkString(",")}")
+        if (appNames.isEmpty) println(style.warning("There are no apps installed!"))
+        else println(style.success(s"The installed apps are: ${appNames.mkString(",")}"))
     }
   }
 
