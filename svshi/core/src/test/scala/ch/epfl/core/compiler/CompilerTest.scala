@@ -33,9 +33,9 @@ class CompilerTest extends AnyFlatSpec with Matchers {
     ).toMap
 
     val assignment = GroupAddressAssignment(physStruct, appLibraryBindings, physIdToGA)
-    val outputPath = Path.of("res/test_group_address_list_write.json")
+    val outputPath = os.Path("res/test_group_address_list_write.json", os.pwd)
     Compiler.generateGroupAddressesList(assignment, outputPath)
-    val parsed = Using(Source.fromFile(outputPath.toFile)) { fileBuff =>
+    val parsed = Using(Source.fromFile(outputPath.toIO)) { fileBuff =>
       try {
         upickle.default.read[GroupAddressesList](fileBuff.getLines().mkString)
       } catch {
@@ -77,9 +77,9 @@ class CompilerTest extends AnyFlatSpec with Matchers {
     ).toMap
 
     val assignment = GroupAddressAssignment(physStruct, appLibraryBindings, physIdToGA)
-    val outputPath = Path.of("res/test_group_address_list_write.json")
+    val outputPath = os.Path("res/test_group_address_list_write.json", os.pwd)
     Compiler.generateGroupAddressesList(assignment, outputPath)
-    val parsed = Using(Source.fromFile(outputPath.toFile)) { fileBuff =>
+    val parsed = Using(Source.fromFile(outputPath.toIO)) { fileBuff =>
       try {
         upickle.default.read[GroupAddressesList](fileBuff.getLines().mkString)
       } catch {

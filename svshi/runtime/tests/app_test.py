@@ -27,7 +27,7 @@ def test_app_get_apps():
     apps = sorted(
         get_apps(
             "tests/fake_app_library",
-            "smartinfra.runtime.tests.expected.expected_default_verification_file",
+            "smartinfra.svshi.runtime.tests.expected.expected_default_verification_file",
         ),
         key=lambda a: a.name,
     )
