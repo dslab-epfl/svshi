@@ -9,7 +9,7 @@ Test / parallelExecution := false
 
 enablePlugins(PackPlugin)
 
-val appName = "core"
+val appName = "svshi"
 
 lazy val root = (project in file("."))
   .settings(
@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.8",
     libraryDependencies += "com.lihaoyi" %% "upickle" % "1.4.2",
     libraryDependencies += "com.lihaoyi" %% "mainargs" % "0.2.2",
+    libraryDependencies += "com.lihaoyi" %% "fansi" % "0.3.0",
     libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1"
   )
 

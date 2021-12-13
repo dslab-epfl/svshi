@@ -13,5 +13,7 @@ object Constants {
   val APP_LIBRARY_FOLDER_PATH_STRING = s"../$APP_LIBRARY_FOLDER_NAME"
   val VERIFICATION_PYTHON_MODULE = "verification.main"
   val PYTHON_MODULES_WD_PATH_STRING = "../"
+  val APP_GENERATOR_PYTHON_MODULE = "generator.main"
+  val RUNTIME_PYTHON_MODULE = "runtime.main"
   val CROSSHAIR_TIMEOUT_SECONDS = 600
 }

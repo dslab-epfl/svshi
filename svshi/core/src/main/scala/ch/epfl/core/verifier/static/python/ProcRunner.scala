@@ -1,5 +1,9 @@
 package ch.epfl.core.verifier.static.python
 
+import scala.util.Try
+import scala.util.Failure
+import scala.util.Success
+
 /** Object containing functions to call external processes
   */
 object ProcRunner {
@@ -8,12 +12,18 @@ object ProcRunner {
     * @param pythonModule
     * @return
     */
-  def callPython(pythonModule: String, wd: os.Path): (Int, List[String]) = {
-    val invoked = os.proc("python3", "-m", pythonModule).call(cwd = wd)
-    (invoked.exitCode, invoked.out.lines.toList)
+  def callPython(pythonModule: String, wd: os.Pathargs: String*): (Int, List[String]) = {
+    val invoked = Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd))
+    invoked match {
+      case Failure(exception: os.SubprocessException) =>
+        val result = exception.result
+        (result.exitCode, result.out.lines.toList)
+      case Success(result)    => (result.exitCode, result.out.lines.toList)
+      case Failure(exception) => throw exception
+    }
   }
 
-  /** Execute CrossHair check on the given python (i.e., .py) file from the given working directoy and with the given timeout in seconds.
+  /** Execute CrossHair check on the given python (i.e., .py) file from the given working directory and with the given timeout in seconds.
     * Returns the exit code, the stdout's AND stderr's lines concatenated (first stdout's then stderr's)
     * @param filePath
     * @param wd

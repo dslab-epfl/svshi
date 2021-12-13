@@ -5,69 +5,80 @@ import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
-import ch.epfl.core.utils.{Constants, FileUtils}
+import ch.epfl.core.utils.FileUtils
+import ch.epfl.core.utils.Cli._
+import ch.epfl.core.utils.Printer._
+import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
+import ch.epfl.core.verifier.static.python.ProcRunner
 
 import java.nio.file.Path
 import scala.annotation.tailrec
-import mainargs.{main, arg, ParserForClass, Flag, TokensReader}
+import mainargs.ParserForClass
+import ch.epfl.core.utils.Style
 
 object Main {
 
-  sealed trait Task
-  case object Compile extends Task
-  case object GenerateBindings extends Task
+  private val SUCCESS_CODE = 0
+  private val ERROR_CODE = 1
 
-  implicit object TaskRead
-      extends TokensReader[Task](
-        "command",
-        strs =>
-          strs.head match {
-            case "compile"          => Right(Compile)
-            case "generateBindings" => Right(GenerateBindings)
-            case token: String      => Left(token)
-          }
-      )
-
-  @main
-  case class Config(
-      @arg(name = "task", short = 't', doc = "The task to run", positional = true)
-      task: Task,
-      @arg(name = "etsProjectFile", short = 'f', doc = "The ETS project file to use", positional = true)
-      etsProjectFile: String
-  )
-
-  /** args = [compile | generateBindings] ets_proj_file.knxproj
-    */
   def main(args: Array[String]): Unit = {
     val config = ParserForClass[Config].constructOrExit(args)
+    implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
     val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH_STRING)
     val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH_STRING)
 
-    val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile)
-    val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME))
+    val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME))
     val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
 
     config.task match {
+      case Run =>
+        info("Running the apps...")
+        runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
+      case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
+        printErrorAndExit("The ETS project file needs to be specified for compiling or generating the bindings")
       case Compile =>
+        info("Compiling the apps...")
+        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
           // Copy new app + all files in app_library
-          FileUtils.moveAllFileToOtherDirectory(Constants.GENERATED_FOLDER_PATH_STRING, existingAppsLibrary.path)
+          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH_STRING, existingAppsLibrary.path)
           printTrace(verifierMessages)
+          success(s"The apps have been successfully compiled!")
         } else {
-          // New App is rejected
+          // New app is rejected
           printTrace(verifierMessages)
+          printErrorAndExit("Compilation failed, see messages above")
         }
       case GenerateBindings =>
+        info("Generating the bindings...")
+        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
         compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
+        success(s"The bindings have been successfully created!")
+      case GenerateApp =>
+        info("Generating the app...")
+        config.appName match {
+          case Some(name) =>
+            val nameRegex = "^_*[a-z]+[a-z_]*_*$".r
+            if (nameRegex.matches(name)) runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
+            else printErrorAndExit("The app name has to contain only lowercase letters and underscores")
+            success(s"The app '$name' has been successfully created!")
+          case None =>
+            printErrorAndExit("The app name has to be provided for generating a new app")
+        }
+      case ListApps =>
+        info("Listing the apps...")
+        val appNames = existingAppsLibrary.apps.map(_.name)
+        if (appNames.isEmpty) warning("There are no apps installed!")
+        else success(s"The installed apps are: ${appNames.mkString(",")}")
     }
   }
 
   @tailrec
-  def validateProgram(messages: List[VerifierMessage]): Boolean = {
+  private def validateProgram(messages: List[VerifierMessage]): Boolean = {
     messages match {
       case head :: tl =>
         head match {
@@ -80,18 +91,28 @@ object Main {
   }
 
   @tailrec
-  def printTrace(messages: List[VerifierMessage]): Unit = {
+  private def printTrace(messages: List[VerifierMessage])(implicit style: Style): Unit = {
     messages match {
       case head :: tl => {
         head match {
-          case error: VerifierError     => println(s"ERROR: ${error.msg}")
-          case warning: VerifierWarning => println(s"WARNING: ${warning.msg}")
-          case info: VerifierInfo       => println(s"INFO: ${info.msg}")
-          case _                        => ()
+          case verifierError: VerifierError     => printErrorAndExit(verifierError.msg)
+          case verifierWarning: VerifierWarning => warning(s"WARNING: ${verifierWarning.msg}")
+          case verifierInfo: VerifierInfo       => info(s"INFO: ${verifierInfo.msg}")
+          case _                                => ()
         }
         printTrace(tl)
       }
       case Nil => ()
     }
+  }
+
+  private def printErrorAndExit(errorMessage: String)(implicit style: Style): Unit = {
+    error(s"ERROR: $errorMessage")
+    sys.exit(ERROR_CODE)
+  }
+
+  private def runPythonModule(module: String, args: Seq[String], errorMessageBuilder: Int => String)(implicit style: Style): Unit = {
+    val (exitCode, stdOut) = ProcRunner.callPython(module, args: _*)
+    if (exitCode != SUCCESS_CODE) printErrorAndExit(errorMessageBuilder(exitCode))
   }
 }
