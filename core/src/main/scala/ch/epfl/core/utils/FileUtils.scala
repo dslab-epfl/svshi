@@ -1,12 +1,13 @@
 package ch.epfl.core.utils
 
-
 import java.io.File
-import java.nio.file.{Files, Path, StandardCopyOption}
+import java.nio.file.{Files, Path}
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
 
+/** Utility functions to manipulate files in the file system
+  */
 object FileUtils {
 
   /** The suffix appended to the end of a ETS project file name when unzipped
@@ -55,16 +56,15 @@ object FileUtils {
     }
   }
 
-  /**
-   * Move all the files and directories contained in dir into destinationDir
-   * @param dir parent directory that contains all files and directories that have to be moved
-   * @param destinationDir the directory in which all files and directories are moved
-   */
+  /** Move all the files and directories contained in dir into destinationDir
+    * @param dir parent directory that contains all files and directories that have to be moved
+    * @param destinationDir the directory in which all files and directories are moved
+    */
   def moveAllFileToOtherDirectory(dir: String, destinationDir: String): Unit = {
     val from = new File(dir)
-    if(!from.isDirectory) throw new IllegalArgumentException("dir must be a path to a directory!")
+    if (!from.isDirectory) throw new IllegalArgumentException("dir must be a path to a directory!")
     val to = new File(dir)
-    if(!to.isDirectory) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+    if (!to.isDirectory) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
     val fromOsPath = os.Path(dir, base = os.pwd)
     val toOsPath = os.Path(destinationDir, base = os.pwd)
     os.copy(fromOsPath, toOsPath, mergeFolders = true, replaceExisting = true)

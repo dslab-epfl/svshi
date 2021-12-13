@@ -6,7 +6,7 @@
         {
           "name": "device1",
           "binding": {
-            "$type": "ch.epfl.core.models.prototypical.BinarySensorBinding",
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
             "typeString": "binary",
             "physDeviceId": 42
           }
@@ -14,7 +14,7 @@
         {
           "name": "device2",
           "binding": {
-            "$type": "ch.epfl.core.models.prototypical.SwitchBinding",
+            "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
             "typeString": "switch",
             "physDeviceId": 41
           }
@@ -22,7 +22,7 @@
         {
           "name": "device3",
           "binding": {
-            "$type": "ch.epfl.core.models.prototypical.TemperatureSensorBinding",
+            "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
             "typeString": "temperature",
             "physDeviceId": 39
           }
@@ -30,7 +30,7 @@
         {
           "name": "device4",
           "binding": {
-            "$type": "ch.epfl.core.models.prototypical.HumiditySensorBinding",
+            "$type": "ch.epfl.core.model.prototypical.HumiditySensorBinding",
             "typeString": "humidity",
             "physDeviceId": 38
           }

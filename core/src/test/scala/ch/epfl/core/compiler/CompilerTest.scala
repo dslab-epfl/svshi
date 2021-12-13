@@ -1,10 +1,10 @@
 package ch.epfl.core.compiler
 
-import ch.epfl.core.models.bindings.GroupAddressAssignment
-import ch.epfl.core.models.physical.{GroupAddress, GroupAddressesList, PhysicalStructure}
-import ch.epfl.core.models.prototypical._
-import ch.epfl.core.models.python.{PythonBool, PythonFloat}
-import ch.epfl.core.parsers.json.JsonParsingException
+import ch.epfl.core.model.bindings.GroupAddressAssignment
+import ch.epfl.core.model.physical.{GroupAddress, GroupAddressesList, PhysicalStructure}
+import ch.epfl.core.model.prototypical._
+import ch.epfl.core.model.python.{PythonBool, PythonFloat}
+import ch.epfl.core.parser.json.JsonParsingException
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

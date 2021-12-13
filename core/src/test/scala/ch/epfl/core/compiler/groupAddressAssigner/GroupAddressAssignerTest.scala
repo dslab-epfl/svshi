@@ -1,7 +1,8 @@
 package ch.epfl.core.compiler.groupAddressAssigner
 
-import ch.epfl.core.models.physical.{DPT1, DPT12, DPT2, DPT5, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
-import ch.epfl.core.models.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
+import ch.epfl.core.compiler.bindings.groupAddressAssigner.GroupAddressAssigner
+import ch.epfl.core.model.physical.{DPT1, DPT12, DPT2, DPT5, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
+import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
