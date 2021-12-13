@@ -16,7 +16,7 @@ class Generator:
 
     def copy_skeleton_to_generated_app(self, skeleton_path: str):
         """
-        Copies the skeleton to the newly generated app. The skeleton path should have the form "generator/skeleton".
+        Copies the skeleton to the newly generated app. The skeleton path should have the form "$SVSHI_HOME/generator/skeleton".
         """
         subprocess.run(f"cp -r {skeleton_path}/* {self.__app_name}", shell=True)
 

@@ -9,7 +9,7 @@ import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
-import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH_STRING, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
+import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_NAME, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
@@ -28,10 +28,10 @@ object Compiler {
       existingAppsLibrary: ApplicationLibrary,
       physicalStructure: PhysicalStructure
   ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
-    val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
+    val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
-    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_PATH_STRING, base = os.pwd) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
+    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_NAME) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
 
     generateGroupAddressesList(gaAssignment, filePath)
 
@@ -59,11 +59,11 @@ object Compiler {
       existingPhysStruct: PhysicalStructure
   ): Unit = {
     PhysicalStructureJsonParser.writeToFile(
-      Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
+      Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
       newPhysStruct
     )
     val appLibraryBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)
-    BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_PATH_STRING).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
+    BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
   }
 
   /** Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python

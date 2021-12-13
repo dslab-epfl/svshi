@@ -1,10 +1,13 @@
 import argparse
 import re
+import os
 from generator.parsing.parser import Parser
 from generator.generation.generator import Generator
 
-DEVICES_JSON_FILENAME = "../input/app_prototypical_structure.json"
-GENERATED_APPS_FOLDER_NAME = "../generated"
+SVSHI_HOME = os.environ["SVSHI_HOME"]
+
+DEVICES_JSON_FILENAME = f"{SVSHI_HOME}/input/app_prototypical_structure.json"
+GENERATED_APPS_FOLDER_NAME = f"{SVSHI_HOME}/generated"
 
 
 def parse_args():
@@ -39,7 +42,7 @@ if __name__ == "__main__":
     )
     generator.generate_device_instances()
     generator.generate_init_files()
-    generator.copy_skeleton_to_generated_app("generator/skeleton")
+    generator.copy_skeleton_to_generated_app(f"{SVSHI_HOME}/svshi/generator/skeleton")
     generator.generate_multiton_class()
     generator.move_devices_json_to_generated_app()
     generator.add_device_instances_imports_to_main()
