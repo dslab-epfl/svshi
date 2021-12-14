@@ -24,7 +24,7 @@ class Generator:
         """
         Moves the devices json to the newly generated app.
         """
-        subprocess.run(f"mv {self.__devices_json_filename} {self.__app_name}", shell=True)
+        subprocess.run(f"mv {self.__devices_json_filename} {self.__app_name}/app_prototypical_structure.json", shell=True)
 
     def generate_multiton_class(self):
         """

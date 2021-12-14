@@ -6,7 +6,6 @@ from generator.generation.generator import Generator
 
 SVSHI_HOME = os.environ["SVSHI_HOME"]
 
-DEVICES_JSON_FILENAME = f"{SVSHI_HOME}/input/app_prototypical_structure.json"
 GENERATED_APPS_FOLDER_NAME = f"{SVSHI_HOME}/generated"
 
 
@@ -16,6 +15,11 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="App generator.")
     parser.add_argument("app_name", type=str, help="the name of the app")
+    parser.add_argument(
+        "devices_json",
+        type=str,
+        help="the devices prototypical structure JSON file of the app",
+    )
     args = parser.parse_args()
 
     name_regex = re.compile(r"^_*[a-z]+[a-z_]*_*$")
@@ -25,20 +29,20 @@ def parse_args():
             f"Wrong app name '{app_name}': it has to contain only lowercase letters and underscores"
         )
 
-    return app_name
+    return app_name, args.devices_json
 
 
 if __name__ == "__main__":
-    app_name = parse_args()
+    app_name, devices_json = parse_args()
     print("Welcome to the app generator!")
 
-    print(f"Parsing the JSON file '{DEVICES_JSON_FILENAME}'...")
-    parser = Parser(DEVICES_JSON_FILENAME)
+    print(f"Parsing the JSON file '{devices_json}'...")
+    parser = Parser(devices_json)
     devices = parser.read_devices()
 
     print(f"Generating the app '{app_name}'...")
     generator = Generator(
-        f"{GENERATED_APPS_FOLDER_NAME}/{app_name}", devices, DEVICES_JSON_FILENAME
+        f"{GENERATED_APPS_FOLDER_NAME}/{app_name}", devices, devices_json
     )
     generator.generate_device_instances()
     generator.generate_init_files()
