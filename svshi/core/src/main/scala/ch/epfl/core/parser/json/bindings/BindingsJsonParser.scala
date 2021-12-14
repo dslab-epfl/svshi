@@ -2,6 +2,7 @@ package ch.epfl.core.parser.json.bindings
 
 import ch.epfl.core.model.prototypical.AppLibraryBindings
 import ch.epfl.core.parser.json.JsonParsingException
+import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
@@ -16,10 +17,8 @@ object BindingsJsonParser {
     * @param filePath
     * @return
     */
-  def parse(filePath: String): AppLibraryBindings = {
-    Using(Source.fromFile(filePath)) { fileBuff =>
-      parseJson(fileBuff.getLines().mkString)
-    }.get
+  def parse(filePath: os.Path): AppLibraryBindings = {
+      parseJson(FileUtils.readFileContentAsString(filePath))
   }
 
   /** Produce a AppLibraryBindings from a JSON File content
@@ -40,8 +39,8 @@ object BindingsJsonParser {
     * @param appLibraryBindings
     */
   def writeToFile(filePath: os.Path, appLibraryBindings: AppLibraryBindings): Unit = {
-    if (os.exists(filePath)) os.remove.all(filePath) // So that we get a fresh copy
-    os.write(filePath, write(appLibraryBindings, indent = 2) getBytes StandardCharsets.UTF_8)
+    FileUtils.deleteIfExists(filePath)
+    FileUtils.writeToFile(filePath, write(appLibraryBindings, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
 }

@@ -28,7 +28,7 @@ object Compiler {
       existingAppsLibrary: ApplicationLibrary,
       physicalStructure: PhysicalStructure
   ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
-    val appLibraryBindings = BindingsJsonParser.parse((GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME).toString)
+    val appLibraryBindings = BindingsJsonParser.parse(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
     val filePath: os.Path = Constants.GENERATED_FOLDER_PATH / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
@@ -60,7 +60,7 @@ object Compiler {
       existingPhysStruct: PhysicalStructure
   ): Unit = {
     PhysicalStructureJsonParser.writeToFile(
-      (GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME).toString,
+      GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME,
       newPhysStruct
     )
     val appLibraryBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)

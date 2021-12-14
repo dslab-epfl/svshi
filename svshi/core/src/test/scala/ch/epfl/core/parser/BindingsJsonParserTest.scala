@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 
 class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
   "parse" should "return the right structure given a valid file" in {
-    val res = BindingsJsonParser.parse("res/test_bindings_json_parser.json")
+    val res = BindingsJsonParser.parse(os.Path("res/test_bindings_json_parser.json", os.pwd))
 
     val expected = AppLibraryBindings(List(
       AppPrototypeBindings("app1", List(
@@ -31,7 +31,7 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
       ))
     ))
     BindingsJsonParser.writeToFile(os.Path("res/test_bindings_json_parser_write.json", os.pwd), expected)
-    val res = BindingsJsonParser.parse("res/test_bindings_json_parser_write.json")
+    val res = BindingsJsonParser.parse(os.Path("res/test_bindings_json_parser_write.json", os.pwd))
     res shouldEqual expected
   }
 }

@@ -3,6 +3,7 @@ package ch.epfl.core.parser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser.{constructPhysicalStructure, parseJson}
 import ch.epfl.core.parser.json.physical._
 import ch.epfl.core.model.physical._
+import ch.epfl.core.utils.FileUtils
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -399,11 +400,9 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       )
     )
     val physicalStructure = PhysicalStructure(List(device1After, device2After, device3After))
-    val filePath = "res/test_physicalJson.json"
+    val filePath = os.Path("res/test_physicalJson.json", os.pwd)
     PhysicalStructureJsonParser.writeToFile(filePath, physicalStructure)
-    Using(Source.fromFile(filePath)) { fileBuff =>
-      parseJson(fileBuff.mkString) shouldEqual app
-    }
+    parseJson(FileUtils.readFileContentAsString(filePath)) shouldEqual app
   }
 
   "writeToFile" should "write the correct content to the given file with DPT-Unknown" in {
@@ -503,10 +502,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       )
     )
     val physicalStructure = PhysicalStructure(List(device1After, device2After, device3After))
-    val filePath = "res/test_physicalJson.json"
+    val filePath = os.Path("res/test_physicalJson.json", os.pwd)
     PhysicalStructureJsonParser.writeToFile(filePath, physicalStructure)
-    Using(Source.fromFile(filePath)) { fileBuff =>
-      parseJson(fileBuff.mkString) shouldEqual app
-    }
+    parseJson(FileUtils.readFileContentAsString(filePath)) shouldEqual app
   }
 }

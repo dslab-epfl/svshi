@@ -4,6 +4,7 @@ import ch.epfl.core.model.application.Application
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical.GroupAddress
 import ch.epfl.core.model.prototypical._
+import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
@@ -17,8 +18,8 @@ object PythonAddressJsonParser {
     * @param pythonAddress
     */
   def writeToFile(filePath: os.Path, pythonAddress: AppPythonAddressesJson): Unit = {
-    if(os.exists(filePath)) os.remove.all(filePath) // So that we get a fresh copy
-    os.write(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
+    FileUtils.deleteIfExists(filePath)
+    FileUtils.writeToFile(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   /** Produce the group addresses for the python runtime

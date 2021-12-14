@@ -2,6 +2,7 @@ package ch.epfl.core.parser.json.physical
 
 import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.json.{JsonParsingException, SystemStructureException}
+import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
@@ -17,10 +18,8 @@ object PhysicalStructureJsonParser {
     * @param filePath
     * @return
     */
-  def parse(filePath: String): PhysicalStructure = {
-    Using(Source.fromFile(filePath)) { fileBuff =>
-      constructPhysicalStructure(parseJson(fileBuff.getLines().toList.mkString))
-    }.get
+  def parse(filePath: os.Path): PhysicalStructure = {
+    constructPhysicalStructure(parseJson(FileUtils.readFileContentAsString(filePath)))
   }
   def constructPhysicalStructure(parsed: PhysicalStructureJson): PhysicalStructure = {
     def convertPhysDeviceCommObject(parsed: PhysicalDeviceCommObjectJson): PhysicalDeviceCommObject =
@@ -48,10 +47,9 @@ object PhysicalStructureJsonParser {
     }
   }
 
-  def writeToFile(filePath: String, physicalStructure: PhysicalStructure): Unit = {
-    val f = Paths.get(filePath).toFile
-    if (f.exists()) f.delete() // So that we get a fresh copy
-    Files.write(Paths.get(filePath), write(physicalStructureToJson(physicalStructure), indent = 2) getBytes StandardCharsets.UTF_8)
+  def writeToFile(filePath: os.Path, physicalStructure: PhysicalStructure): Unit = {
+    FileUtils.deleteIfExists(filePath)
+    FileUtils.writeToFile(filePath, write(physicalStructureToJson(physicalStructure), indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   def physicalStructureToJson(struct: PhysicalStructure): PhysicalStructureJson = {

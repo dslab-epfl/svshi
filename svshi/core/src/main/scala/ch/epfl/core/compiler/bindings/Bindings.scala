@@ -34,7 +34,7 @@ object Bindings {
       // We want to keep the old bindings so we append the new app's to the existing file
       val existingBindingsPath = existingAppLibrary.path / Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME
       if (os.exists(existingBindingsPath)) {
-        BindingsJsonParser.parse(existingBindingsPath.toString).appBindings
+        BindingsJsonParser.parse(existingBindingsPath).appBindings
       } else {
         existingAppLibrary.apps.map(appToAppBinding)
       }

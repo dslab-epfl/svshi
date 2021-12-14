@@ -1,6 +1,9 @@
 package ch.epfl.core.utils
 
+import upickle.default.write
+
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
@@ -73,8 +76,36 @@ object FileUtils {
     os.makeDir(dir)
   }
 
+  /**
+   * Return a os.Path instance from the pathString passed that must be relation to $SVSHI_HOME
+   * @param pathString
+   * @return
+   */
   def getPathFromSvshiHome(pathString: String): os.Path = {
     os.Path(pathString, os.Path(Constants.SVSHI_HOME, os.pwd))
+  }
+
+  /**
+   * Read the file and returns the content
+   */
+  def readFileContentAsString(path: os.Path): String = {
+    os.read(path)
+  }
+  /**
+   * Remove the file pointed by the path if it exists
+   * @param path
+   */
+  def deleteIfExists(path: os.Path): Unit = {
+    if (os.exists(path)) os.remove.all(path)
+  }
+
+  /**
+   * Write the content to the file pointed by the path
+   * @param path
+   * @param data
+   */
+  def writeToFile(path: os.Path, data: Array[Byte]): Unit = {
+    os.write(path, data)
   }
 
 }

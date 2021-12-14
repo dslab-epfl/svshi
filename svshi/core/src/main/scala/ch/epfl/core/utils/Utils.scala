@@ -11,7 +11,7 @@ object Utils {
     ApplicationLibrary(
       getListOfFolders(path).map(f => {
         val protoStructPath = f / Constants.APP_PROTO_STRUCT_FILE_NAME
-        val protoStruct = AppInputJsonParser.parse(protoStructPath.toString)
+        val protoStruct = AppInputJsonParser.parse(protoStructPath)
         Application(f.segments.toList.last, f, protoStruct)
       }),
       path
