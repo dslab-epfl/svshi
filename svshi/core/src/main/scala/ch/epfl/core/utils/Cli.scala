@@ -30,6 +30,10 @@ object Cli {
     */
   case object ListApps extends Task
 
+  /** Task that outputs the current CLI version
+    */
+  case object GetVersion extends Task
+
   implicit object TaskRead
       extends TokensReader[Task](
         "command",
@@ -40,6 +44,7 @@ object Cli {
             case "generateBindings" | "generatebindings" | "gb" => Right(GenerateBindings)
             case "generateApp" | "generateapp" | "ga"           => Right(GenerateApp)
             case "listApps" | "listapps" | "la"                 => Right(ListApps)
+            case "version" | "v"                                => Right(GetVersion)
             case token: String                                  => Left(token)
           }
       )
@@ -56,7 +61,7 @@ object Cli {
       @arg(
         name = "task",
         short = 't',
-        doc = "The task to run. Can be passed without the flag. Possible options are 'run', 'compile', 'generateBindings', 'generateApp' and 'listApps'",
+        doc = "The task to run. Can be passed without the flag. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'",
         positional = true
       )
       task: Task,

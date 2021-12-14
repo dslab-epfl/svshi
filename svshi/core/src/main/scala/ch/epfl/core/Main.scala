@@ -23,7 +23,7 @@ object Main {
   private val ERROR_CODE = 1
 
   def main(args: Array[String]): Unit = {
-    val config = ParserForClass[Config].constructOrExit(args)
+    val config = ParserForClass[Config].constructOrExit(args, totalWidth = 200)
     implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
     val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_NAME)
@@ -33,6 +33,10 @@ object Main {
     val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
 
     config.task match {
+      case GetVersion =>
+        val version = getClass().getPackage().getImplementationVersion()
+        success(s"svshi v$version")
+        sys.exit()
       case Run =>
         info("Running the apps...")
         runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
