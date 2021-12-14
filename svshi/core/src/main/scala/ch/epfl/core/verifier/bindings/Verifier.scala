@@ -26,9 +26,9 @@ object Verifier extends VerifierTr {
     val physicalStructure = groupAddressAssignment.physStruct
     val bindings = groupAddressAssignment.appLibraryBindings
     val existingAppPrototypicalStructures =
-      existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+      existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse((app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
     val newAppPrototypicalStructures =
-      newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+      newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse((app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
     val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++

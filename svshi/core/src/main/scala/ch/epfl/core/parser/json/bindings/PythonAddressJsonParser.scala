@@ -7,7 +7,6 @@ import ch.epfl.core.model.prototypical._
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 
 /** Parser used to produces a JSON file containing group addresses bindings for the runtime module
   */
@@ -17,10 +16,9 @@ object PythonAddressJsonParser {
     * @param filePath
     * @param pythonAddress
     */
-  def writeToFile(filePath: String, pythonAddress: AppPythonAddressesJson): Unit = {
-    val f = Paths.get(filePath).toFile
-    if (f.exists()) f.delete() // So that we get a fresh copy
-    Files.write(Paths.get(filePath), write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
+  def writeToFile(filePath: os.Path, pythonAddress: AppPythonAddressesJson): Unit = {
+    if(os.exists(filePath)) os.remove.all(filePath) // So that we get a fresh copy
+    os.write(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   /** Produce the group addresses for the python runtime

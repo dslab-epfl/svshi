@@ -1,7 +1,6 @@
 package ch.epfl.core.utils
 
 import java.io.File
-import java.nio.file.Files
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
@@ -20,14 +19,15 @@ object FileUtils {
     * @return outputPath
     */
   def unzip(zipPath: os.Path, outputFolderPath: os.Path): Option[os.Path] = {
-    Using(new ZipFile(zipPath.toNIO.toFile)) { zipFile =>
+    Using(new ZipFile(zipPath.toIO)) { zipFile =>
       for (entry <- zipFile.entries.asScala) {
-        val path = outputFolderPath.toNIO.resolve(entry.getName)
+        val path = os.Path(entry.getName, outputFolderPath)
         if (entry.isDirectory) {
-          Files.createDirectories(path)
+          os.makeDir.all(path)
         } else {
-          Files.createDirectories(path.getParent)
-          Files.copy(zipFile.getInputStream(entry), path)
+          val parentPath = os.Path("/" + path.segments.toList.reverse.tail.reverse.mkString("/"))
+          os.makeDir.all(parentPath)
+          os.write(path, zipFile.getInputStream(entry))
         }
       }
       Some(outputFolderPath)
@@ -53,10 +53,9 @@ object FileUtils {
     * @param dir the path to the directory to explore
     * @return
     */
-  def getListOfFolders(dir: String): List[File] = {
-    val d = new File(dir)
-    if (d.exists && d.isDirectory) {
-      d.listFiles.filter(_.isDirectory).toList
+  def getListOfFolders(dir: os.Path): List[os.Path] = {
+    if (os.exists(dir) && os.isDir(dir)) {
+      os.list(dir).filter(a => os.isDir(a)).toList
     } else {
       Nil
     }

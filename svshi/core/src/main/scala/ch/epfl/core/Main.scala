@@ -26,8 +26,8 @@ object Main {
     val config = ParserForClass[Config].constructOrExit(args)
     implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
-    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_NAME)
-    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_NAME)
+    val existingAppsLibrary = loadApplicationsLibrary(os.Path(APP_LIBRARY_FOLDER_PATH))
+    val newAppsLibrary = loadApplicationsLibrary(os.Path(GENERATED_FOLDER_PATH))
 
     val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME))
     val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
@@ -45,7 +45,7 @@ object Main {
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
           // Copy new app + all files in app_library
-          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_NAME, existingAppsLibrary.path)
+          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, existingAppsLibrary.path)
           printTrace(verifierMessages)
           success(s"The apps have been successfully compiled!")
         } else {
