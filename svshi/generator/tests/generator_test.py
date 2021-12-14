@@ -37,12 +37,12 @@ def run_before_and_after_tests():
 def test_generator_move_devices_json_to_generated_app():
     generator.move_devices_json_to_generated_app()
 
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/devices.json") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/app_prototypical_structure.json") == True
     assert os.path.exists("tests/devices.json") == False
 
     # More cleanup
     subprocess.run(
-        f"mv {GENERATED_APP_DIRECTORY}/devices.json {TESTS_DIRECTORY}", shell=True
+        f"mv {GENERATED_APP_DIRECTORY}/app_prototypical_structure.json {TESTS_DIRECTORY}/devices.json", shell=True
     )
 
 
