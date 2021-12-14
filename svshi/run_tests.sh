@@ -1,4 +1,5 @@
-echo "\nRunning Python tests in 'generator'... \n"
+#!/bin/sh
+echo "Running Python tests in 'generator'... \n"
 cd generator
 pytest
 

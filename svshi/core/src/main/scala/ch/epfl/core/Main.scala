@@ -23,7 +23,7 @@ object Main {
   private val ERROR_CODE = 1
 
   def main(args: Array[String]): Unit = {
-    val config = ParserForClass[Config].constructOrExit(args)
+    val config = ParserForClass[Config].constructOrExit(args, totalWidth = 200)
     implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
     val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_NAME)
@@ -33,11 +33,15 @@ object Main {
     val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
 
     config.task match {
+      case GetVersion =>
+        val version = getClass().getPackage().getImplementationVersion()
+        success(s"svshi v$version")
+        sys.exit()
       case Run =>
         info("Running the apps...")
         runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
-        printErrorAndExit("The ETS project file needs to be specified for compiling or generating the bindings")
+        printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
         info("Compiling the apps...")
         val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
@@ -60,19 +64,24 @@ object Main {
         success(s"The bindings have been successfully created!")
       case GenerateApp =>
         info("Generating the app...")
-        config.appName match {
-          case Some(name) =>
+        (config.appName, config.devicesPrototypicalStructureFile) match {
+          case (Some(name), Some(devicesJson)) =>
             val nameRegex = "^_*[a-z]+[a-z_]*_*$".r
-            if (nameRegex.matches(name)) runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
+            if (nameRegex.matches(name))
+              runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name, devicesJson), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
             else printErrorAndExit("The app name has to contain only lowercase letters and underscores")
             success(s"The app '$name' has been successfully created!")
-          case None =>
-            printErrorAndExit("The app name has to be provided for generating a new app")
+          case (None, Some(_)) =>
+            printErrorAndExit("The app name has to be provided to generate a new app")
+          case (Some(_), None) =>
+            printErrorAndExit("The devices prototypical structure JSON file has to be provided to generate a new app")
+          case _ =>
+            printErrorAndExit("The devices prototypical structure JSON file and the app name have to be provided to generate a new app")
         }
       case ListApps =>
         info("Listing the apps...")
         val appNames = existingAppsLibrary.apps.map(_.name)
-        if (appNames.isEmpty) warning("There are no apps installed!")
+        if (appNames.isEmpty) warning("WARNING: There are no apps installed!")
         else success(s"The installed apps are: ${appNames.mkString(",")}")
     }
   }
