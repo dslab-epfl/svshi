@@ -59,5 +59,5 @@ We use [GitHub Actions](https://github.com/dslab-epfl/smartinfra/actions) to run
 
 To build a new release:
 
-1. Run `./build_release.sh` inside `svshi/`
-2. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the `tar.gz` archive as an attachment. Make sure the release version and the svshi version are the same.
+1. Run `./build_release.sh` inside `svshi/` to build the archive.
+2. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `tar.gz` archive as an attachment. Make sure the release version and the svshi version are the same.
