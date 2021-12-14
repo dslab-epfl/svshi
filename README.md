@@ -21,7 +21,7 @@
   - [Contributing](#contributing)
   - [License](#license)
 
-The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
