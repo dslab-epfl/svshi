@@ -19,7 +19,7 @@
 
 ## Setup
 
-To install all the Python dependencies, run `pip install -r requirements.txt` inside `svshi/`.
+Install SVSHI from sources as explained in the [README](/README.md), then install all the Python dependencies with `pip install -r requirements.txt` inside `svshi/`.
 
 ## Python
 
@@ -43,7 +43,6 @@ For formatting and code style, we use [scalafmt](https://github.com/scalameta/sc
     ├── runtime - Runs the installed apps and keeps the system in sync with KNX (Python module)
     ├── verification - Manipulates the apps' source code to generate a file useful for the verification and for the runtime (Python module)
     └── ...
-├── input - Contains the [prototypical structure](#prototypical-structure) JSON to be added by the app developer when generating a new app
 └── ...
 ```
 

@@ -36,7 +36,6 @@ object Main {
       case GetVersion =>
         val version = getClass().getPackage().getImplementationVersion()
         success(s"svshi v$version")
-        sys.exit()
       case Run =>
         info("Running the apps...")
         runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")

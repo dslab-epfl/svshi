@@ -6,6 +6,8 @@
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
+    - [From archive](#from-archive)
+    - [From sources](#from-sources)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
   - [Running the applications](#running-the-applications)
@@ -13,6 +15,9 @@
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
   - [CLI](#cli)
+  - [Verification](#verification)
+    - [Static](#static)
+    - [Runtime](#runtime)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -20,20 +25,33 @@ The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) pr
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
-With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are formally verified at both compile- and run-time against a set of provided invariants.
+With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
 
 ## Installation
 
-To work, SVSHI needs Python 3.8 or newer and Java 11 or newer.
+To work, SVSHI needs Python 3.8 (or newer) and Java 11 (or newer). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
 
-To install:
+To check if the installation was successful, run `svshi version` in your terminal.
 
-1. Clone the repo
-2. Run `./install.sh`
+### From archive
+
+To install SVSHI:
+
+1. Download the latest version `tar.gz` archive from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
+2. Unzip it, then run `make install`
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
 
-To check if the installation was successful, run `svshi version` in your terminal.
+To update SVSHI, you just need to do the first two steps.
+
+### From sources
+
+To build from sources:
+
+1. Clone the repo
+2. Run `./build.sh`
+3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
+4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
 
 ## Supported devices
 
@@ -51,11 +69,11 @@ To develop an app for SVSHI:
 3. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
 4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 5. Write your app.
-6. Run `svshi` again to compile and verify the app with `svshi compile -f ets.knxproj`.
+6. Run `svshi` again to compile and [verify](#verification) the app with `svshi compile -f ets.knxproj`.
 
 ## Running the applications
 
-To run all the installed apps (with runtime verification enabled):
+To run all the installed apps (with [runtime verification](#runtime) enabled):
 
 1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
 2. Execute `svshi run`.
@@ -108,17 +126,27 @@ Secure and Verified Smart Home Infrastructure
 
 Available commands are:
 
-- `svshi run` to run all the apps with runtime verification
+- `svshi run` to run all the apps with [runtime verification](#runtime)
 - `svshi compile -f ets.knxproj` to compile all the apps
 - `svshi generateBindings -f ets.knxproj` to generate the bindings for all the apps
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
 
+## Verification
+
+### Static
+
+When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages.
+
+### Runtime
+
+Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
+
 ## Contributing
 
-See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how to get started with our project.
+See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how to get started with the project.
 
 ## License
 
-The project is licensed under the [MIT license](/LICENSE).
+SVSHI is licensed under the [MIT license](/LICENSE).
