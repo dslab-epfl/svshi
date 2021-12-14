@@ -14,6 +14,8 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG username=maki
+
 # Installing basic packages 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
@@ -31,21 +33,26 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install sbt
 
-RUN useradd -rm -d /home/pistis -s /bin/bash -g root -G sudo -u 1001 pistis
-USER pistis
-WORKDIR /home/pistis
+RUN useradd -rm -d /home/$username -s /bin/bash -g root -G sudo -u 1001 $username
+USER $username
+WORKDIR /home/$username
 
 RUN pip3 install -U pip
 
-RUN echo 'PATH="/home/pistis/.local/lib/python3.9/site-packages:$PATH"' >> ~/.bashrc 
-RUN echo 'PATH="/home/pistis/.local/bin:$PATH"' >> ~/.bashrc 
+RUN echo 'PATH="/home/$username/.local/lib/python3.9/site-packages:$PATH"' >> ~/.bashrc 
+RUN echo 'PATH="/home/$username/.local/bin:$PATH"' >> ~/.bashrc 
+RUN echo 'PATH="/home/$username/local/bin:$PATH"' >> ~/.bashrc 
+RUN echo 'export PATH' >> ~/.bashrc 
 
+RUN echo 'export SVSHI_HOME="/home/$username/"'
 
 
 # Copy Smartinfra folder
-RUN mkdir /home/pistis/smartinfra
-COPY . /home/pistis/smartinfra/
+RUN mkdir /home/$username/smartinfra/
+COPY .. /home/$username/smartinfra/
 
-RUN cd /home/pistis/smartinfra && pip3 install -r requirements.txt && \
+RUN cd /home/$username/smartinfra && pip3 install -r requirements.txt && \
     cd generator && pip3 install -r requirements.txt && cd .. && \
-    cd core_python && pip3 install -r requirements.txt
+    cd core_python && pip3 install -r requirements.txt 
+
+RUN cd /home/${username}/smartinfra
