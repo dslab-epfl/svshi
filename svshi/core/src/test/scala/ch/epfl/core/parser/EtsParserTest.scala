@@ -1,14 +1,11 @@
 package ch.epfl.core.parser
 
-import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.model.physical._
+import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.utils.Constants
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-
-import java.nio.file.Path
-import scala.util.hashing.MurmurHash3
 
 class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
