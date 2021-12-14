@@ -17,6 +17,8 @@ import scala.annotation.tailrec
 import mainargs.ParserForClass
 import ch.epfl.core.utils.Style
 
+import scala.util.{Failure, Success, Try}
+
 object Main {
 
   private val SUCCESS_CODE = 0
@@ -40,7 +42,14 @@ object Main {
         printErrorAndExit("The ETS project file needs to be specified for compiling or generating the bindings")
       case Compile =>
         info("Compiling the apps...")
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
+        val etsProjPath = Try(os.Path(config.etsProjectFile.get)) match {
+          case Failure(exception) => {
+            printErrorAndExit(exception.getLocalizedMessage)
+            return
+          }
+          case Success(value) => value
+        }
+        val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
@@ -55,7 +64,14 @@ object Main {
         }
       case GenerateBindings =>
         info("Generating the bindings...")
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
+        val etsProjPath = Try(os.Path(config.etsProjectFile.get)) match {
+          case Failure(exception) => {
+            printErrorAndExit(exception.getLocalizedMessage)
+            return
+          }
+          case Success(value) => value
+        }
+        val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
         compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
         success(s"The bindings have been successfully created!")
       case GenerateApp =>

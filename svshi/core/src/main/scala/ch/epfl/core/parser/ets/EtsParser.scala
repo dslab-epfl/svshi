@@ -57,16 +57,16 @@ object EtsParser {
   private val defaultNodeName = "Default"
 
   /** Parse an ETS project and produce a PhysicalStructure instance
-    * @param etsProjectPathString
+    * @param etsProjectPath
     * @return
     */
-  def parseEtsProjectFile(etsProjectPathString: String): PhysicalStructure = extractIfNotExist(
-    etsProjectPathString,
+  def parseEtsProjectFile(etsProjectPath: os.Path): PhysicalStructure = extractIfNotExist(
+    etsProjectPath,
     _ => {
-      val deviceAddresses = explore0xmlFindListAddresses(etsProjectPathString)
-      val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPathString, _))
+      val deviceAddresses = explore0xmlFindListAddresses(etsProjectPath)
+      val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPath, _))
       val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
-      deleteUnzippedFiles(etsProjectPathString)
+      deleteUnzippedFiles(etsProjectPath)
       res
     }
   )
@@ -106,22 +106,22 @@ object EtsParser {
     *
     * It assumes that the project contains only one installation
     *
-    * @param etsProjectPathString the path to the etsProject file as String
+    * @param etsProjectPath the path to the etsProject file as String
     * @param deviceAddress  the address of the device in topology of the project e.g., 1.1.1
     */
-  private def readDeviceFromEtsFile(etsProjectPathString: String, deviceAddress: (String, String, String)): ParsedDevice = extractIfNotExist(
-    etsProjectPathString,
+  private def readDeviceFromEtsFile(etsProjectPath: os.Path, deviceAddress: (String, String, String)): ParsedDevice = extractIfNotExist(
+    etsProjectPath,
     projectRootPath => {
       val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
       deviceInstanceXMLOpt match {
         case Some(deviceInstanceXML) => {
           val productRefId = deviceInstanceXML \@ PRODUCTREFID_PARAM
           val hardware2ProgramRefId = deviceInstanceXML \@ HARDWARE2PROGRAMREFID_PARAM
-          val deviceName = getDeviceNameInCatalog(etsProjectPathString, productRefId, hardware2ProgramRefId)
-          val inOut = getDeviceCommObjectsInCatalog(etsProjectPathString, deviceAddress)
+          val deviceName = getDeviceNameInCatalog(etsProjectPath, productRefId, hardware2ProgramRefId)
+          val inOut = getDeviceCommObjectsInCatalog(etsProjectPath, deviceAddress)
           ParsedDevice(deviceAddress, deviceName, inOut)
         }
-        case None => throw new MalformedXMLException(s"Cannot find the XML specific to $deviceAddress in $etsProjectPathString")
+        case None => throw new MalformedXMLException(s"Cannot find the XML specific to $deviceAddress in $etsProjectPath")
       }
     }
   )
@@ -139,14 +139,14 @@ object EtsParser {
 
   /** Get the name of the device in the catalog entry xml file (ApplicationProgram object)
     *
-    * @param etsProjectPathString the path to the etsProject file as String
+    * @param etsProjectPath the path to the etsProject file as String
     * @param productRefId   the productRefId of the device
     * @return
     */
-  private def getDeviceNameInCatalog(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(
-    etsProjectPathString,
+  private def getDeviceNameInCatalog(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(
+    etsProjectPath,
     projectRootPath => {
-      val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+      val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
       val catalogEntry = XML.loadFile(xmlPath.toIO)
       val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
       val originalName = applicationProgram \@ NAME_PARAM
@@ -169,11 +169,11 @@ object EtsParser {
     applicationProgram
   }
 
-  private def getDeviceCommObjectsInCatalog(etsProjectPathString: String, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(
-    etsProjectPathString,
+  private def getDeviceCommObjectsInCatalog(etsProjectPath: os.Path, deviceAddress: (String, String, String)): List[ChannelNode] = extractIfNotExist(
+    etsProjectPath,
     projectRootPath => {
       def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
-        val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+        val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
         val catalogEntry = XML.loadFile(xmlPath.toIO)
         val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
         val appProgramId = applicationProgram \@ ID_PARAM
@@ -198,7 +198,7 @@ object EtsParser {
               defaultNodeName,
               (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM)
                 .split(' ')
-                .flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId))
+                .flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId))
                 .toList
             ) :: Nil
           } else {
@@ -206,7 +206,7 @@ object EtsParser {
               .map(n =>
                 ChannelNode(
                   constructChannelNodeName(n, productRefId, hardware2programRefId),
-                  (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPathString, _, productRefId, hardware2programRefId)).toList
+                  (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId)).toList
                 )
               )
               .toList
@@ -243,13 +243,13 @@ object EtsParser {
     }
   }
 
-  private def getCommObjectsFromString(etsProjectPathString: String, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] =
+  private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] =
     extractIfNotExist(
-      etsProjectPathString,
+      etsProjectPath,
       projectRootPath => {
         if (groupObjectInstanceId.nonEmpty) {
           // Get IOPort info in xmls
-          val xmlPath = productCatalogXMLFile(etsProjectPathString, productRefId, hardware2ProgramRefId)
+          val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
           val catalogEntry = XML.loadFile(xmlPath.toIO)
           val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(groupObjectInstanceId))
           comObjectRef match {
@@ -310,8 +310,8 @@ object EtsParser {
     }
   }
 
-  private def productCatalogXMLFile(etsProjectPathString: String, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(
-    etsProjectPathString,
+  private def productCatalogXMLFile(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(
+    etsProjectPath,
     projectRootPath => {
       val catalogId = productRefId.split('_').apply(0) // e.g., "M-0002"
       val productIdPattern = "HP-[0-9A-Z]{4}-[0-9A-Z]{2}-[0-9A-Z]{4}".r
@@ -338,8 +338,8 @@ object EtsParser {
     * @param etsProjectFilePathString : the path to the file of etsProject as String
     * @return
     */
-  private def explore0xmlFindListAddresses(etsProjectFilePathString: String): List[(String, String, String)] = extractIfNotExist(
-    etsProjectFilePathString,
+  private def explore0xmlFindListAddresses(etsProjectPath: os.Path): List[(String, String, String)] = extractIfNotExist(
+    etsProjectPath,
     projectRootPath => {
       val file0XmlPath = recursiveListFiles(projectRootPath).find(file => file.toIO.getName == FILE_0_XML_NAME)
       if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
@@ -353,9 +353,9 @@ object EtsParser {
     }
   )
 
-  private def extractIfNotExist[B](etsProjectPathString: String, operation: os.Path => B): B = {
-    val extractedPath = computeExtractedPath(etsProjectPathString)
-    val unzippedPath = if (!os.exists(extractedPath)) unzip(getPathFromSvshiHome(etsProjectPathString), extractedPath) else Some(extractedPath)
+  private def extractIfNotExist[B](etsProjectPath: os.Path, operation: os.Path => B): B = {
+    val extractedPath = computeExtractedPath(etsProjectPath)
+    val unzippedPath = if (!os.exists(extractedPath)) unzip(etsProjectPath, extractedPath) else Some(extractedPath)
     unzippedPath match {
       case Some(projectRootPath) => operation(projectRootPath)
       case None                  => throw new FileNotFoundException()
@@ -363,16 +363,16 @@ object EtsParser {
   }
 
   /** Compute the Path of the temporary location where the project is unzipped
-    * @param etsProjectPathString
+    * @param etsProjectPath
     * @tparam B
     * @return
     */
-  def computeExtractedPath[B](etsProjectPathString: String): os.Path = {
-    tempFolderPath / getPathFromSvshiHome(etsProjectPathString).toNIO.getFileName.toString.appendedAll(unzippedSuffix)
+  def computeExtractedPath[B](etsProjectPath: os.Path): os.Path = {
+    tempFolderPath / etsProjectPath.segments.toList.last.appendedAll(unzippedSuffix)
   }
 
-  private def deleteUnzippedFiles(etsProjectPathString: String): Unit = {
-    val extractedPath = computeExtractedPath(etsProjectPathString)
+  private def deleteUnzippedFiles(etsProjectPath: os.Path): Unit = {
+    val extractedPath = computeExtractedPath(etsProjectPath)
     deleteRecursive(extractedPath)
   }
 
