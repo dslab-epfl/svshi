@@ -25,7 +25,7 @@ The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
-With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
+With SVSHI, a user can develop and run Python applications that are [formally verified](#verification) at both compile and run-time against a set of provided invariants, interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems.
 
 ## Installation
 
