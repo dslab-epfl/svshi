@@ -1,12 +1,12 @@
-# Docker container to run Pistis, a platform for formally verified smart buildings
+# Docker container to run SVSHI, the Secured and Verified Smart Home Infrastructure
 
 # COMMANDS:
 
 # BUILD:
-## docker build -t pistis:ubuntu22.04 .
+## docker build -t svshi:ubuntu22.04 .
 
 # START AND RUN (execute from `smartinfra` folder):
-## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name pistis -i pistis:ubuntu22.04 && docker exec -it pistis /bin/bash'
+## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name svshi -i svshi:ubuntu22.04 && docker exec -it svshi /bin/bash'
 
 
 
@@ -51,8 +51,6 @@ RUN echo 'export SVSHI_HOME="/home/$username/"'
 RUN mkdir /home/$username/smartinfra/
 COPY .. /home/$username/smartinfra/
 
-RUN cd /home/$username/smartinfra && pip3 install -r requirements.txt && \
-    cd generator && pip3 install -r requirements.txt && cd .. && \
-    cd core_python && pip3 install -r requirements.txt 
+RUN cd /home/${username}/smartinfra && [ -f requirements.txt  ] && pip3 install -r requirements.txt
 
-RUN cd /home/${username}/smartinfra
+RUN cd /home/${username}/smartinfra && ./build.sh
