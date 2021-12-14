@@ -21,11 +21,11 @@
   - [Contributing](#contributing)
   - [License](#license)
 
-The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
-With SVSHI, a user can develop and run Python applications that are [formally verified](#verification) at both compile and run-time against a set of provided invariants, interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems.
+With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
 
 ## Installation
 
@@ -132,6 +132,18 @@ Available commands are:
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
+
+## Compilation
+
+The compiler combines all applications already installed (in `app-library`) with new applications (in `generated`). It generates the bindings between physical and prototypical devices communication objects, assign group addresses to used physical communication objects and produces useful files for the runtime.
+
+When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app-library` to become *installed* applications.
+
+### Generate bindings
+
+The compiler generates bindings file to let the developer map physical device communication objects (from the ETS project) to prototypical devices from applications.
+
+Bindings for the installed applications are stored and when `svshi generateBindings -f ets.knxproj` is called, the new bindings reuse current bindings **if the physical structure did not change** since last application installation. Then, only bindings for new applications are empty and must be filled. If the physical structure changed, the bindings file is a fresh one and all bindings must be enter again.
 
 ## Verification
 
