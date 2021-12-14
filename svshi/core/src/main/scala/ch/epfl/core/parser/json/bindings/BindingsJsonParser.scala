@@ -5,7 +5,6 @@ import ch.epfl.core.parser.json.JsonParsingException
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 import scala.io.Source
 import scala.util.Using
 
@@ -40,10 +39,9 @@ object BindingsJsonParser {
     * @param filePath
     * @param appLibraryBindings
     */
-  def writeToFile(filePath: String, appLibraryBindings: AppLibraryBindings): Unit = {
-    val f = Paths.get(filePath).toFile
-    if (f.exists()) f.delete() // So that we get a fresh copy
-    Files.write(Paths.get(filePath), write(appLibraryBindings, indent = 2) getBytes StandardCharsets.UTF_8)
+  def writeToFile(filePath: os.Path, appLibraryBindings: AppLibraryBindings): Unit = {
+    if (os.exists(filePath)) os.remove.all(filePath) // So that we get a fresh copy
+    os.write(filePath, write(appLibraryBindings, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
 }

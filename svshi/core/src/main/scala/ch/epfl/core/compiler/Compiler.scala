@@ -64,7 +64,7 @@ object Compiler {
       newPhysStruct
     )
     val appLibraryBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)
-    BindingsJsonParser.writeToFile((GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME).toString, appLibraryBindings)
+    BindingsJsonParser.writeToFile(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
   }
 
   /** Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python

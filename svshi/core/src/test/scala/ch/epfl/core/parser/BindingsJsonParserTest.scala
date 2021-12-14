@@ -30,7 +30,7 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
         DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 38))
       ))
     ))
-    BindingsJsonParser.writeToFile("res/test_bindings_json_parser_write.json", expected)
+    BindingsJsonParser.writeToFile(os.Path("res/test_bindings_json_parser_write.json", os.pwd), expected)
     val res = BindingsJsonParser.parse("res/test_bindings_json_parser_write.json")
     res shouldEqual expected
   }
