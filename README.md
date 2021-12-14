@@ -1,10 +1,10 @@
-# SVHSI - Secure and Verified Smart Home Infrastructure
+# SVSHI - Secure and Verified Smart Home Infrastructure
 
 <img src="logo.png" alt="logo" width="200"/>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
 
-- [SVHSI - Secure and Verified Smart Home Infrastructure](#svhsi---secure-and-verified-smart-home-infrastructure)
+- [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
@@ -16,15 +16,17 @@
   - [Contributing](#contributing)
   - [License](#license)
 
-The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
-It provides a CLI to interact easily with the platform.
+It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
-With SVHSI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are formally verified at both compile- and run-time against a set of provided invariants.
+With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are formally verified at both compile- and run-time against a set of provided invariants.
 
 ## Installation
 
-To work, SVHSI needs Python 3.8 or newer and Java 11 or newer.
+To work, SVSHI needs Python 3.8 or newer and Java 11 or newer.
+
+To install:
 
 1. Clone the repo
 2. Run `./install.sh`
@@ -42,14 +44,14 @@ To check if the installation was successful, run `svshi version` in your termina
 
 ## Developing an application
 
-To develop an app for Pistis:
+To develop an app for SVSHI:
 
 1. Create the devices prototypical structure file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
-3. Run svshi to generate the bindings with `svshi generateBindings -f ets.knxproj"`, where the argument is the _absolute_ path to the ETS project file.
+3. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
 4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 5. Write your app.
-6. Run svshi again to compile and verify the app with `svshi compile -f ets.knxproj"`.
+6. Run `svshi` again to compile and verify the app with `svshi compile -f ets.knxproj`.
 
 ## Running the applications
 
