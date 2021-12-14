@@ -8,6 +8,7 @@
   - [Project structure](#project-structure)
   - [Tests](#tests)
   - [CI](#ci)
+  - [Releases](#releases)
 
 ## Requirements
 
@@ -53,3 +54,10 @@ To run the tests of all the modules at once, execute `./run_tests.sh` inside `sv
 ## CI
 
 We use [GitHub Actions](https://github.com/dslab-epfl/smartinfra/actions) to run the whole test suite on every push and pull request. The workflows are defined in `.github/workflows/ci.yml`.
+
+## Releases
+
+To build a new release:
+
+1. Run `./build_release.sh` inside `svshi/` to build the archive.
+2. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `tar.gz` archive as an attachment. Make sure the release version and the svshi version are the same.

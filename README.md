@@ -133,6 +133,18 @@ Available commands are:
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
 
+## Compilation
+
+The compiler combines all applications already installed (in `app_library`) with new applications (in `generated`). It generates the bindings between physical and prototypical devices communication objects, assigns group addresses to used physical communication objects and produces useful files for the runtime.
+
+When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app_library` to become *installed* applications.
+
+### Generate bindings
+
+The compiler generates the bindings file to let the developer map physical device communication objects (from the ETS project) to prototypical devices from applications.
+
+Bindings for the installed applications are stored and when `svshi generateBindings -f ets.knxproj` is called, the new bindings reuse current bindings **if the physical structure did not change** since last application installation. Therefore, only bindings for new applications are empty and must be filled. If the physical structure changed, the bindings file is a fresh one and all bindings must be entered again.
+
 ## Verification
 
 ### Static
