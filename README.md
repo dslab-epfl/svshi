@@ -137,7 +137,7 @@ Available commands are:
 
 The compiler combines all applications already installed (in `app_library`) with new applications (in `generated`). It generates the bindings between physical and prototypical devices communication objects, assigns group addresses to used physical communication objects and produces useful files for the runtime.
 
-When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app-library` to become *installed* applications.
+When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app_library` to become *installed* applications.
 
 ### Generate bindings
 
