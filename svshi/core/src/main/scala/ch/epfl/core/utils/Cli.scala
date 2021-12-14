@@ -10,7 +10,7 @@ object Cli {
     */
   sealed trait Task
 
-  /** Task that runs all the apps and the runtime verification
+  /** Task that runs all the apps with runtime verification
     */
   case object Run extends Task
 
@@ -67,6 +67,8 @@ object Cli {
       task: Task,
       @arg(name = "ets-file", short = 'f', doc = "The ETS project file to use for the tasks 'compile' and 'generateBindings'")
       etsProjectFile: Option[String] = None,
+      @arg(name = "devices-json", short = 'd', doc = "The devices prototypical structure JSON file to use for the task 'generateApp'")
+      devicesPrototypicalStructureFile: Option[String] = None,
       @arg(name = "app-name", short = 'n', doc = "The app name to use for the task 'generateApp'")
       appName: Option[String] = None,
       @arg(name = "no-colors", doc = "The flag to disable output coloring")

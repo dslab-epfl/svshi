@@ -14,6 +14,7 @@
     - [Usage](#usage)
   - [CLI](#cli)
   - [Contributing](#contributing)
+  - [License](#license)
 
 The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is about developing a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
@@ -43,7 +44,7 @@ To check if the installation was successful, run `svshi version` in your termina
 
 To develop an app for Pistis:
 
-1. Create, inside `input/` the `app_prototypical_structure.json` file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
+1. Create the devices prototypical structure file containing the list of the devices the app should use, as explained in the [app prototypical structure](#prototypical-structure) section.
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. Run svshi to generate the bindings with `svshi generateBindings -f ets.knxproj"`, where the argument is the _absolute_ path to the ETS project file.
 4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
@@ -61,7 +62,7 @@ To run all the installed apps (with runtime verification enabled):
 
 ### Prototypical structure
 
-This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types. It also specifies whether the app is _privileged_ or not (`"permissionLevel": "notPrivileged"`). A privileged app can override the behavior of the non-privileged ones.
+This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types. It also specifies whether the app is _privileged_ or not (`"permissionLevel": "privileged" | "notPrivileged"`). A privileged app can override the behavior of the non-privileged ones.
 
 Once the app is generated, it is moved to the `generated` folder.
 
@@ -88,7 +89,7 @@ The app generator takes as input the devices JSON file and the name of the app.
 
 Before executing it, you need to create the file containing the list of the devices the app should use, as explained [above](#prototypical-structure).
 
-To execute the generator, run `svshi generateApp -d prototypical.json -n app_name`, where the first argument is the _absolute_ path to the prototypical structure file and the second one (`app_name` in the example) is the name of the app to be used. The name has to follow the same rules as for Python modules: short, all-lowercase names. Underscores can be used if it improves readability.
+To execute the generator, run `svshi generateApp -d devices.json -n app_name`, where the first argument is the _absolute_ path to the prototypical structure file and the second one (`app_name` in the example) is the name of the app to be used. The name has to follow the same rules as for Python modules: short, all-lowercase names. Underscores can be used if it improves readability.
 
 ## CLI
 
@@ -103,6 +104,19 @@ Secure and Verified Smart Home Infrastructure
   --no-colors          The flag to disable output coloring
 ```
 
+Available commands are:
+
+- `svshi run` to run all the apps with runtime verification
+- `svshi compile -f ets.knxproj` to compile all the apps
+- `svshi generateBindings -f ets.knxproj` to generate the bindings for all the apps
+- `svshi generateApp -d devices.json -n app_name` to generate a new Python app
+- `svshi listApps` to list all the installed apps
+- `svshi version` to display the CLI version
+
 ## Contributing
 
 See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how to get started with our project.
+
+## License
+
+The project is licensed under the [MIT license](/LICENSE).
