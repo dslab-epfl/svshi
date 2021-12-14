@@ -65,16 +65,12 @@ object FileUtils {
     * @param dir parent directory that contains all files and directories that have to be moved
     * @param destinationDir the directory in which all files and directories are moved
     */
-  def moveAllFileToOtherDirectory(dir: String, destinationDir: String): Unit = {
-    val from = new File(dir)
-    if (!from.isDirectory) throw new IllegalArgumentException("dir must be a path to a directory!")
-    val to = new File(dir)
-    if (!to.isDirectory) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
-    val fromOsPath = os.Path(dir, base = os.pwd)
-    val toOsPath = os.Path(destinationDir, base = os.pwd)
-    os.copy(fromOsPath, toOsPath, mergeFolders = true, replaceExisting = true)
-    os.remove.all(fromOsPath)
-    os.makeDir(fromOsPath)
+  def moveAllFileToOtherDirectory(dir: os.Path, destinationDir: os.Path): Unit = {
+    if (!os.isDir(dir)) throw new IllegalArgumentException("dir must be a path to a directory!")
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+    os.copy(dir, destinationDir, mergeFolders = true, replaceExisting = true)
+    os.remove.all(dir)
+    os.makeDir(dir)
   }
 
   def getPathFromSvshiHome(pathString: String): os.Path = {

@@ -26,11 +26,11 @@ object Main {
     val config = ParserForClass[Config].constructOrExit(args)
     implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
-    val existingAppsLibrary = loadApplicationsLibrary(os.Path(APP_LIBRARY_FOLDER_PATH))
-    val newAppsLibrary = loadApplicationsLibrary(os.Path(GENERATED_FOLDER_PATH))
+    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
+    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
 
-    val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME))
-    val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
+    val existingPhysStructPath = existingAppsLibrary.path / PHYSICAL_STRUCTURE_JSON_FILE_NAME
+    val existingPhysicalStructure = if (os.exists(existingPhysStructPath)) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
 
     config.task match {
       case Run =>

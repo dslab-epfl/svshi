@@ -4,4 +4,4 @@ package ch.epfl.core.model.application
   * @param apps
   * @param path
   */
-case class ApplicationLibrary(apps: List[Application], path: String)
+case class ApplicationLibrary(apps: List[Application], path: os.Path)

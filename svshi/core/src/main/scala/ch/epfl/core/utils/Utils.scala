@@ -14,7 +14,7 @@ object Utils {
         val protoStruct = AppInputJsonParser.parse(protoStructPath.toString)
         Application(f.segments.toList.last, f, protoStruct)
       }),
-      path.toString
+      path
     )
   }
 }
