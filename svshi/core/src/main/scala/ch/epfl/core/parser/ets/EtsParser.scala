@@ -106,7 +106,7 @@ object EtsParser {
     *
     * It assumes that the project contains only one installation
     *
-    * @param etsProjectPath the path to the etsProject file as String
+    * @param etsProjectPath the path to the etsProject file as os.Path
     * @param deviceAddress  the address of the device in topology of the project e.g., 1.1.1
     */
   private def readDeviceFromEtsFile(etsProjectPath: os.Path, deviceAddress: (String, String, String)): ParsedDevice = extractIfNotExist(
@@ -139,7 +139,7 @@ object EtsParser {
 
   /** Get the name of the device in the catalog entry xml file (ApplicationProgram object)
     *
-    * @param etsProjectPath the path to the etsProject file as String
+    * @param etsProjectPath the path to the etsProject file as os.Path
     * @param productRefId   the productRefId of the device
     * @return
     */
@@ -335,7 +335,7 @@ object EtsParser {
   /** Explore the 0.xml file and returns the list of devices addresses as tuples
     * e.g., (1, 1, 1), (areaN, lineN, deviceN)
     *
-    * @param etsProjectFilePathString : the path to the file of etsProject as String
+    * @param etsProjectFilePath : the path to the file of etsProject as os.Path
     * @return
     */
   private def explore0xmlFindListAddresses(etsProjectPath: os.Path): List[(String, String, String)] = extractIfNotExist(

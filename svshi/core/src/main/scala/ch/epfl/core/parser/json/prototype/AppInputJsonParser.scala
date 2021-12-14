@@ -5,9 +5,6 @@ import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.JsonParsingException
 import ch.epfl.core.utils.FileUtils
 
-import scala.io.Source
-import scala.util.Using
-
 /** Parser used to read JSON file containing the structure of applications (i.e., the prototypical devices they use)
   */
 object AppInputJsonParser {

@@ -1,8 +1,6 @@
 package ch.epfl.core.verifier.static.python
 
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
+import scala.util.{Failure, Success, Try}
 
 /** Object containing functions to call external processes
   */

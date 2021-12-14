@@ -1,7 +1,5 @@
 package ch.epfl.core.utils
 
-import ch.epfl.core.utils.Style
-
 /** Message printer
   */
 object Printer {

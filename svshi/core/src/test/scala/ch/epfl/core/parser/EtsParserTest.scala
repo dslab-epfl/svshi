@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 
 class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
-    Constants.setSvshiHome("../..")
+    Constants.setSvshiHome(os.Path("../..", os.pwd).toString)
   }
   val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
   val testFilePath: os.Path = os.Path(testFilePathString, os.pwd / os.up / os.up)

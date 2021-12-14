@@ -3,20 +3,17 @@ package ch.epfl.core
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.utils.Constants._
-import ch.epfl.core.utils.Utils.loadApplicationsLibrary
-import ch.epfl.core.utils.FileUtils
 import ch.epfl.core.utils.Cli._
+import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
+import ch.epfl.core.utils.{FileUtils, Style}
+import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
 import ch.epfl.core.verifier.static.python.ProcRunner
-
-import java.nio.file.Path
-import scala.annotation.tailrec
 import mainargs.ParserForClass
-import ch.epfl.core.utils.Style
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 object Main {

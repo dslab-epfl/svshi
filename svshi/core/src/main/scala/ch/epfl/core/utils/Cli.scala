@@ -1,6 +1,6 @@
 package ch.epfl.core.utils
 
-import mainargs.{main, arg, TokensReader, Flag}
+import mainargs.{Flag, TokensReader, arg, main}
 
 /** Provide CLI helpers
   */

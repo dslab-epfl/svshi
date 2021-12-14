@@ -6,8 +6,6 @@ import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import scala.io.Source
-import scala.util.Using
 
 /** Parser used to store/retrieve AppLibraryBindings through JSON Files
   */

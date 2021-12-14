@@ -9,8 +9,6 @@ import ch.epfl.core.utils.Constants
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.bindings.exceptions._
 
-import java.nio.file.Path
-
 /** Verifier that verifies properties about the bindings between prototypical devices and physical devices' communication objects
   */
 object Verifier extends VerifierTr {

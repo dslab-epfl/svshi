@@ -1,9 +1,5 @@
 package ch.epfl.core.utils
 
-import upickle.default.write
-
-import java.io.File
-import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using

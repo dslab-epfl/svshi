@@ -6,9 +6,6 @@ import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-import scala.io.Source
-import scala.util.Using
 
 /** Parser used to store and retrieve a PhysicalStructure through JSON
   */

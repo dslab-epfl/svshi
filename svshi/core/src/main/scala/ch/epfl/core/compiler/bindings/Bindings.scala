@@ -6,8 +6,6 @@ import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.utils.Constants
 
-import java.nio.file.Path
-
 object Bindings {
 
   /** Generate bindings files for a library of existing applications and a folder of new applications to be added.

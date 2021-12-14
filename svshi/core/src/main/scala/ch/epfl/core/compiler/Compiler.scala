@@ -12,7 +12,7 @@ import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 
 object Compiler {
 
