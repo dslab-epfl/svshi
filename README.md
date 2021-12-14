@@ -141,7 +141,7 @@ When compiling applications, if the verification passed all checks, applications
 
 ### Generate bindings
 
-The compiler generates bindings file to let the developer map physical device communication objects (from the ETS project) to prototypical devices from applications.
+The compiler generates the bindings file to let the developer map physical device communication objects (from the ETS project) to prototypical devices from applications.
 
 Bindings for the installed applications are stored and when `svshi generateBindings -f ets.knxproj` is called, the new bindings reuse current bindings **if the physical structure did not change** since last application installation. Then, only bindings for new applications are empty and must be filled. If the physical structure changed, the bindings file is a fresh one and all bindings must be enter again.
 
