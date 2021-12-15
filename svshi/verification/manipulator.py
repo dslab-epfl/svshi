@@ -37,10 +37,15 @@ class Manipulator:
             "unchecked_func_name" -> "doc_string"
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            return [
+            dicts_list = [
                 self.__get_unchecked_functions(v)
                 for v in list(op)
             ]
+            res = {} 
+            for d in dicts_list:
+                for k in d.keys():
+                    res[k] = d[k]
+            return res
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             return self.__get_unchecked_functions(op.elts)
         elif isinstance(op, ast.FunctionDef) and (
@@ -48,7 +53,7 @@ class Manipulator:
         ):
             doc_string = ast.get_docstring(op)
             doc_string = "" if doc_string == None else doc_string
-            return (op.name, doc_string)
+            return {op.name: doc_string}
 
     def __rename_instances_add_state(
         self,
@@ -156,7 +161,13 @@ class Manipulator:
             # TODO
             pass
 
-    def __construct_contracts(self, app_names: List[str]) -> str:
+    def __construct_contracts(self, app_names: List[str], unchecked_apps_dict: Dict[str, str]) -> str:
+        pre_str = "pre: "
+        post_str = "post: "
+        precond_name_str = "precond"
+        return_value_name_str = "__return__"
+        physical_state_name_str = "physical_state"
+
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
             res = func_name + "("
             for i in range(len(arg_names)):
@@ -165,12 +176,15 @@ class Manipulator:
                 res = res[:-2]
             res += ")"
             return res
+        def construct_pre_unchecked_func(unchecked_func_name: str, doc_string: str) -> List[str]:
+            list_post_conds = []
+            post_str_no_space = "post:"
+            for l in doc_string.splitlines():
+                if post_str_no_space in l:
+                    cond = pre_str + l.replace(post_str_no_space, "").replace(return_value_name_str, unchecked_func_name)
+                    list_post_conds.append(cond)
+            return list_post_conds
 
-        pre_str = "pre: "
-        post_str = "post: "
-        precond_name_str = "precond"
-        return_value_name_str = "__return__"
-        physical_state_name_str = "physical_state"
 
         conditions = []
         sorted_app_names = sorted(app_names)
@@ -180,6 +194,10 @@ class Manipulator:
                 app_name + "_" + precond_name_str, [physical_state_name_str]
             )
             conditions.append(precond)
+        
+        for unchecked_app_name in unchecked_apps_dict.keys():
+            conditions.extend(construct_pre_unchecked_func(unchecked_app_name, unchecked_apps_dict.get(unchecked_app_name)))
+            
         for app_name in sorted_app_names:
             postcond = post_str
             postcond += construct_func_call(
