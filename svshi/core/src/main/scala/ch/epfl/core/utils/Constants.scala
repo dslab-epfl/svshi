@@ -3,7 +3,7 @@ package ch.epfl.core.utils
 import os.Path
 
 object Constants {
-  val DEFAULT_SVISHI_HOME = "/"
+private  val DEFAULT_SVSHI_HOME = s"${sys.env("HOME")}/smartinfra"
   var SVSHI_HOME: String = if(sys.env.contains("SVSHI_HOME")) sys.env("SVSHI_HOME") else DEFAULT_SVISHI_HOME
 
   def setSvshiHome(v: String) : Unit = {
