@@ -45,7 +45,7 @@ object Main {
 
     config.task match {
       case GetVersion =>
-        val version = getClass().getPackage().getImplementationVersion()
+        val version = getClass.getPackage.getImplementationVersion
         success(s"svshi v$version")
       case Run =>
         info("Running the apps...")
