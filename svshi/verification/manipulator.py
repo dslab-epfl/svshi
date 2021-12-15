@@ -3,7 +3,7 @@ import astor
 from typing import Dict, List, Set, Tuple, Union, cast
 
 
-class InvalidUncheckedFunctionCall(Exception):
+class InvalidUncheckedFunctionCallException(Exception):
     """
     An invalid unchecked function call exception.
     """
@@ -378,7 +378,7 @@ class Manipulator:
             ) = extract_functions_and_imports(module_body)
 
             # Check if a precondition function contains a call to an unchecked function
-            unchecked_func_names = set(self.__get_unchecked_functions(module_body))
+            unchecked_func_names = set(self.__get_unchecked_functions(module_body).keys())
             valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
                 list(
                     filter(
@@ -389,7 +389,7 @@ class Manipulator:
                 unchecked_func_names,
             )
             if not valid:
-                raise InvalidUncheckedFunctionCall(
+                raise InvalidUncheckedFunctionCallException(
                     f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function."
                 )
 
