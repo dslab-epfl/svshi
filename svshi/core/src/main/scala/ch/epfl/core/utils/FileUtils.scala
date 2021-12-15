@@ -38,7 +38,7 @@ object FileUtils {
     * @return
     */
   def recursiveListFiles(f: os.Path): List[os.Path] = {
-    if(os.isDir(f)){
+    if (os.isDir(f)) {
       val these = os.list(f).toList
       these ++ these.flatMap(recursiveListFiles)
     } else {
