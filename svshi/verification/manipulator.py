@@ -3,6 +3,12 @@ import astor
 from typing import Dict, List, Set, Tuple, Union, cast
 
 
+class InvalidUncheckedFunctionCall(Exception):
+    """
+    An invalid unchecked function call exception.
+    """
+
+
 class Manipulator:
     """
     Python AST manipulator.
@@ -21,29 +27,6 @@ class Manipulator:
         self.__instances_names_per_app = instances_names_per_app
 
     def __get_unchecked_functions(
-            self,
-            op: Union[
-                ast.stmt,
-                ast.expr,
-                ast.comprehension,
-                List[ast.stmt],
-                List[ast.expr],
-                List[ast.comprehension],
-            ],
-        ) -> List[str]:
-            if isinstance(op, list) or isinstance(op, tuple):
-                return [
-                    self.__get_unchecked_functions(v)
-                    for v in list(op)
-                ]
-            elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
-                return self.__get_unchecked_functions(op.elts)
-            elif isinstance(op, ast.FunctionDef) and (
-                op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
-            ):
-                return op.name
-
-    def __rename_instances_add_state(
         self,
         op: Union[
             ast.stmt,
@@ -52,6 +35,28 @@ class Manipulator:
             List[ast.stmt],
             List[ast.expr],
             List[ast.comprehension],
+        ],
+    ) -> List[str]:
+        if isinstance(op, list) or isinstance(op, tuple):
+            return [self.__get_unchecked_functions(v) for v in list(op)]
+        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+            return self.__get_unchecked_functions(op.elts)
+        elif isinstance(op, ast.FunctionDef) and (
+            op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
+        ):
+            return op.name
+
+    def __rename_instances_add_state(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
         ],
         app_name: str,
         accepted_names: Set[str],
@@ -114,6 +119,7 @@ class Manipulator:
                 self.__rename_instances_add_state(op.value, app_name, accepted_names)
         elif isinstance(op, ast.Call):
             self.__rename_instances_add_state(op.args, app_name, accepted_names)
+            self.__rename_instances_add_state(op.keywords, app_name, accepted_names)
             f_name = ""
             if isinstance(op.func, ast.Attribute):
                 # op.func.value is a ast.Name in this case
@@ -133,7 +139,8 @@ class Manipulator:
                     op.func.value.id = new_name
                 elif isinstance(op.func, ast.Name):
                     op.func.id = new_name
-
+        elif isinstance(op, ast.keyword):
+            self.__rename_instances_add_state(op.value, app_name, accepted_names)
         elif isinstance(op, ast.FunctionDef) and (
             op.name == self.__PRECOND_FUNC_NAME or op.name == self.__ITERATION_FUNC_NAME
         ):
@@ -217,6 +224,93 @@ class Manipulator:
         # Keep only non-empty imports
         return [imp.replace("\n", "") for imp in imports if imp], functions
 
+    def __check_no_unchecked_calls_in_precond(
+        self, functions: List[ast.FunctionDef], unchecked_func_names: Set[str]
+    ) -> Tuple[bool, str]:
+        def check(
+            op: Union[
+                ast.stmt,
+                ast.expr,
+                ast.comprehension,
+                ast.keyword,
+                List[ast.stmt],
+                List[ast.expr],
+                List[ast.comprehension],
+                List[ast.keyword],
+            ]
+        ) -> bool:
+            if isinstance(op, list) or isinstance(op, tuple):
+                for o in [check(v) for v in list(op)]:
+                    if not o:
+                        return False
+                return True
+            elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+                return check(op.elts)
+            elif isinstance(op, ast.BoolOp):
+                return check(op.values)
+            elif isinstance(op, ast.UnaryOp):
+                return check(op.operand)
+            elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
+                return check(op.value)
+            elif isinstance(op, ast.Lambda):
+                return check(op.body)
+            elif isinstance(op, ast.Assign):
+                return check(op.value)
+            elif isinstance(op, ast.Return):
+                return check(op.value) if op.value else True
+            elif isinstance(op, ast.Compare):
+                return check(op.left) and check(op.comparators)
+            elif isinstance(op, ast.BinOp):
+                return check(op.left) and check(op.right)
+            elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+                return check(op.test) and check(op.body) and check(op.orelse)
+            elif isinstance(op, ast.Dict):
+                return check(op.values)
+            elif isinstance(op, ast.Set):
+                return check(op.elts)
+            elif isinstance(op, ast.comprehension):
+                return check(op.iter) and check(op.ifs)
+            elif (
+                isinstance(op, ast.ListComp)
+                or isinstance(op, ast.SetComp)
+                or isinstance(op, ast.GeneratorExp)
+            ):
+                return check(op.generators)
+            elif isinstance(op, ast.DictComp):
+                return check(op.value) and check(op.generators)
+            elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+                return check(op.value) if op.value else True
+            elif isinstance(op, ast.FormattedValue):
+                return check(op.value)
+            elif isinstance(op, ast.JoinedStr):
+                return check(op.values)
+            elif isinstance(op, ast.Return):
+                return check(op.value) if op.value else True
+            elif isinstance(op, ast.Call):
+                f_name = ""
+                if isinstance(op.func, ast.Attribute):
+                    # op.func.value is a ast.Name in this case
+                    f_name = op.func.value.id
+                elif isinstance(op.func, ast.Name):
+                    f_name = op.func.id
+
+                if f_name in unchecked_func_names:
+                    return False
+                else:
+                    return check(op.args) and check(op.keywords)
+            elif isinstance(op, ast.keyword):
+                return check(op.value)
+            elif isinstance(op, ast.FunctionDef):
+                return check(op.body) and (check(op.returns) if op.returns else True)
+            else:
+                return True
+
+        for function in functions:
+            if not check(function):
+                return False, function.name
+
+        return True, ""
+
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
@@ -262,26 +356,47 @@ class Manipulator:
         with open(f"{directory}/{app_name}/main.py", "r") as file:
             module = ast.parse(file.read())
             module_body = module.body
+
+            # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(module_body, app_name, accepted_names)
+
+            # Extract imports, precond/iteration functions and add the contracts to them
             (
                 functions_ast,
                 imports_ast,
                 from_imports_ast,
             ) = extract_functions_and_imports(module_body)
+
+            # Check if a precondition function contains a call to an unchecked function
+            unchecked_func_names = set(self.__get_unchecked_functions(module_body))
+            valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
+                list(
+                    filter(
+                        lambda f: f.name.endswith(f"_{self.__PRECOND_FUNC_NAME}"),
+                        functions_ast,
+                    )
+                ),
+                unchecked_func_names,
+            )
+            if not valid:
+                raise InvalidUncheckedFunctionCall(
+                    f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function."
+                )
+
+            # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))
             imports = astor.to_source(ast.Module(imports_ast))
             from_imports = astor.to_source(ast.Module(from_imports_ast))
             return [imports, from_imports], functions
 
 
-
 # TODOs
 
-if op.name == self.__PRECOND_FUNC_NAME:
-    # Check that there are no function calls to the unchecked ones
-    pass
-else:
-    # Replace all calls to the unchecked by a variable with the same name
-    # Add to the arguments of the function the unchecked functions names
-    # Add postconditions of the unchecked functions to the preconditions of the iteration function
-    pass 
+# if op.name == self.__PRECOND_FUNC_NAME:
+#     # Check that there are no function calls to the unchecked ones
+#     pass
+# else:
+#     # Replace all calls to the unchecked by a variable with the same name
+#     # Add to the arguments of the function the unchecked functions names
+#     # Add postconditions of the unchecked functions to the preconditions of the iteration function
+#     pass
