@@ -8,6 +8,7 @@
   - [Installation](#installation)
     - [From archive](#from-archive)
     - [From sources](#from-sources)
+    - [Docker](#docker)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
   - [Running the applications](#running-the-applications)
@@ -15,14 +16,16 @@
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
   - [CLI](#cli)
-  - [Compilation](#compilation)
-  - [Verification](#verification)
-    - [Static](#static)
-    - [Runtime](#runtime)
+  - [How SVSHI works](#how-svshi-works)
+    - [Compilation](#compilation)
+      - [Bindings](#bindings)
+    - [Verification](#verification)
+      - [Static](#static)
+      - [Runtime](#runtime)
   - [Contributing](#contributing)
   - [License](#license)
 
-The SVSHI (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
@@ -57,6 +60,7 @@ To build from sources:
 ### Docker
 
 We also provide a docker image with all requirements and SVSHI installed. To use it:
+
 1. Run `./build_docker.sh` to build the image
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
 
@@ -135,32 +139,34 @@ Secure and Verified Smart Home Infrastructure
 
 Available commands are:
 
-- `svshi run` to run all the apps with [runtime verification](#runtime)
+- `svshi run -a 1.1.1.1:5555` to run all the apps with [runtime verification](#runtime)
 - `svshi compile -f ets.knxproj` to compile all the apps
 - `svshi generateBindings -f ets.knxproj` to generate the bindings for all the apps
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
 
-## Compilation
+## How SVSHI works
+
+### Compilation
 
 The compiler combines all applications already installed (in `app_library`) with new applications (in `generated`). It generates the bindings between physical and prototypical devices communication objects, assigns group addresses to used physical communication objects and produces useful files for the runtime.
 
 When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app_library` to become _installed_ applications.
 
-### Generate bindings
+#### Bindings
 
 The compiler generates the bindings file to let the developer map physical device communication objects (from the ETS project) to prototypical devices from applications.
 
 Bindings for the installed applications are stored and when `svshi generateBindings -f ets.knxproj` is called, the new bindings reuse current bindings **if the physical structure did not change** since last application installation. Therefore, only bindings for new applications are empty and must be filled. If the physical structure changed, the bindings file is a fresh one and all bindings must be entered again.
 
-## Verification
+### Verification
 
-### Static
+#### Static
 
 When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages.
 
-### Runtime
+#### Runtime
 
 Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
 
