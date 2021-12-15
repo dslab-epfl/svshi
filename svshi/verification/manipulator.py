@@ -10,6 +10,7 @@ class Manipulator:
 
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
+    __UNCHECKED_FUNC_PREFIX = "unchecked_"
 
     def __init__(
         self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
@@ -117,6 +118,10 @@ class Manipulator:
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
+        elif isinstance(op, ast.FunctionDef) and (
+            op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
+        ):
+            # TODO
 
     def __construct_contracts(self, app_names: List[str]) -> str:
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
