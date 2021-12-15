@@ -9,8 +9,6 @@ import ch.epfl.core.utils.Constants
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.bindings.exceptions._
 
-import java.nio.file.Path
-
 /** Verifier that verifies properties about the bindings between prototypical devices and physical devices' communication objects
   */
 object Verifier extends VerifierTr {
@@ -26,9 +24,9 @@ object Verifier extends VerifierTr {
     val physicalStructure = groupAddressAssignment.physStruct
     val bindings = groupAddressAssignment.appLibraryBindings
     val existingAppPrototypicalStructures =
-      existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+      existingAppsLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME))).toMap
     val newAppPrototypicalStructures =
-      newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(Path.of(app.appFolderPath).resolve(Constants.APP_PROTO_STRUCT_FILE_NAME).toString))).toMap
+      newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME))).toMap
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
     val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++

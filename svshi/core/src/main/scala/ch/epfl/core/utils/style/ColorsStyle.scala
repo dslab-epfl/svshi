@@ -1,7 +1,7 @@
 package ch.epfl.core.utils.style
 
 import ch.epfl.core.utils.Style
-import fansi.{Str, Color}
+import fansi.Str
 
 /** A style with colors
   */

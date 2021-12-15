@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <Baggages>
+        <Baggage TargetPath="" Name="empty.txt" Id="M-0002_BG--empty.2Etxt">
+          <FileInfo TimeInfo="2017-10-30T11:51:50.6124382Z" />
+        </Baggage>
+      </Baggages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

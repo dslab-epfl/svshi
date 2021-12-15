@@ -15,7 +15,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor)
     ))
-    val app = Application("app1", "app1Path", appPrototypicalStructure)
+    val app = Application("app1", os.Path("/app1Path"), appPrototypicalStructure)
 
 
     val device1Physical = PhysicalDevice(
@@ -93,7 +93,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       AppPrototypicalDeviceInstance("device2", Switch),
       AppPrototypicalDeviceInstance("device3", TemperatureSensor)
     ))
-    val app = Application("app1", "app1Path", appPrototypicalStructure)
+    val app = Application("app1", os.Path("/app1Path"), appPrototypicalStructure)
 
 
     val device1Physical = PhysicalDevice(

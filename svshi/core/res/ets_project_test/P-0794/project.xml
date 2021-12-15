@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <Project Id="P-0794">
+    <ProjectInformation Name="workflow_planifier" GroupAddressStyle="ThreeLevel" LastModified="2021-11-02T16:11:52.8650638Z" ProjectStart="2021-10-19T13:39:01.568359Z" Comment="" LastUsedPuid="16" Guid="15e5df92-86dd-44b3-a661-b2b2785873e0" ProjectType="Family House" />
+  </Project>
+</KNX>

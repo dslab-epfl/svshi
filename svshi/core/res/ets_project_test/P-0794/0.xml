@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <Project Id="P-0794">
+    <Installations>
+      <Installation Name="" BCUKey="4294967295" DefaultLine="P-0794-0_L-3" IPRoutingLatencyTolerance="2000">
+        <Topology>
+          <Area Id="P-0794-0_A-1" Address="0" Puid="1">
+            <Line Id="P-0794-0_L-1" Address="0" Puid="2">
+              <Segment Id="P-0794-0_S-1" Number="0" MediumTypeRefId="MT-5" Puid="3" />
+            </Line>
+          </Area>
+          <Area Id="P-0794-0_A-2" Address="1" Puid="4">
+            <Line Id="P-0794-0_L-2" Address="0" Puid="5">
+              <Segment Id="P-0794-0_S-2" Number="0" MediumTypeRefId="MT-5" Puid="6" />
+            </Line>
+            <Line Id="P-0794-0_L-3" Address="1" Puid="7">
+              <Segment Id="P-0794-0_S-3" Number="0" MediumTypeRefId="MT-0" Puid="8">
+                <DeviceInstance Id="P-0794-0_DI-1" Address="1" Name="" ProductRefId="M-0002_H-2CDG.20110.20261.20R0011-1_P-2CDG.20110.20261.20R0011" Hardware2ProgramRefId="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A" Comment="" Description="" IsActivityCalculated="true" LastModified="2021-11-02T13:47:00.9862677Z" Puid="10">
+                  <ParameterInstanceRefs>
+                    <ParameterInstanceRef RefId="M-0002_A-A0DA-10-E56E_P-927_R-1344" Value="1" />
+                    <ParameterInstanceRef RefId="M-0002_A-A0DA-10-E56E_P-924_R-1340" Value="0" />
+                    <ParameterInstanceRef RefId="M-0002_A-A0DA-10-E56E_P-921_R-1337" Value="1" />
+                  </ParameterInstanceRefs>
+                  <GroupObjectTree>
+                    <Nodes>
+                      <Node Type="Channel" RefId="CH-1" Text="Device settings" />
+                      <Node Type="Channel" RefId="CH-2" Text="Safety" />
+                      <Node Type="Channel" RefId="CH-3" Text="Logic/threshold" />
+                      <Node Type="Channel" RefId="CH-4" Text="Switch actuator template" />
+                      <Node Type="Channel" RefId="CH-5" Text="Switch actuator A" GroupObjectInstances="O-107_R-467" />
+                      <Node Type="Channel" RefId="CH-6" Text="Switch actuator B" GroupObjectInstances="O-122_R-484" />
+                    </Nodes>
+                  </GroupObjectTree>
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-0794-0_DI-2" Address="2" Name="" ProductRefId="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_P-440x.2DB.2Exxx" Hardware2ProgramRefId="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_HP-4404-11-8680" Comment="" Description="" IsActivityCalculated="true" LastModified="2021-10-19T13:47:15.0144119Z" Puid="11">
+                  <GroupObjectTree GroupObjectInstances="O-0_R-520" />
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-0794-0_DI-4" Address="3" Name="" ProductRefId="M-0002_H-SBR.2FU6.2E0-0-O0007_P-SBR.2FU6.2E0" Hardware2ProgramRefId="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007" Comment="" Description="" IsActivityCalculated="true" LastModified="2021-10-20T12:13:48.6417786Z" Puid="15">
+                  <GroupObjectTree>
+                    <Nodes>
+                      <Node Type="Channel" RefId="CH-1" Text="Device settings" />
+                      <Node Type="Channel" RefId="CH-2" Text="Primary function" />
+                      <Node Type="Channel" RefId="CH-3" Text="RTC" GroupObjectInstances="O-17_R-22 O-28_R-47 O-29_R-50 O-22_R-37 O-27_R-46" />
+                      <Node Type="Channel" RefId="CH-4" Text="Function block 1" GroupObjectInstances="O-86_R-143" />
+                      <Node Type="Channel" RefId="CH-5" Text="Function block 2" GroupObjectInstances="O-102_R-392" />
+                      <Node Type="Channel" RefId="CH-6" Text="Function block 3" GroupObjectInstances="O-118_R-641" />
+                      <Node Type="Channel" RefId="CH-7" Text="Common functions" />
+                    </Nodes>
+                  </GroupObjectTree>
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-0794-0_DI-5" Address="4" Name="" ProductRefId="M-0002_H-2CDG110206R0011-1_P-2CDG.20110.20206.20R0011" Hardware2ProgramRefId="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE" Comment="" Description="" IsActivityCalculated="true" LastModified="2021-11-02T16:11:52.0080688Z" Puid="16">
+                  <GroupObjectTree>
+                    <Nodes>
+                      <Node Type="Channel" RefId="CH-1" Text="Device clock" GroupObjectInstances="O-2001_R-8 O-2002_R-9 O-2003_R-10 O-2004_R-11" />
+                    </Nodes>
+                  </GroupObjectTree>
+                  <Security />
+                </DeviceInstance>
+              </Segment>
+            </Line>
+            <Line Id="P-0794-0_L-4" Address="2" Puid="12">
+              <Segment Id="P-0794-0_S-4" Number="0" MediumTypeRefId="MT-0" Puid="13">
+                <DeviceInstance Id="P-0794-0_DI-3" Address="1" Name="" ProductRefId="M-0009_H-9.20.2F.2F.20TX501-1-O0048_P-TX501" Hardware2ProgramRefId="M-0009_H-9.20.2F.2F.20TX501-1-O0048_HP-2053-11-E3A4-O0048" Comment="" Description="" IsActivityCalculated="true" LastModified="2021-10-19T13:44:33.6156343Z" Puid="14">
+                  <GroupObjectTree GroupObjectInstances="O-0_R-1 O-1_R-2 O-2_R-3 O-5_R-9 O-6_R-8 O-9_R-14" />
+                  <Security />
+                </DeviceInstance>
+              </Segment>
+            </Line>
+          </Area>
+        </Topology>
+        <Locations>
+          <Space Type="Building" Id="P-0794-0_BP-1" Name="workflow_planifier" Puid="9" />
+        </Locations>
+      </Installation>
+    </Installations>
+  </Project>
+</KNX>

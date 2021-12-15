@@ -3,19 +3,18 @@ package ch.epfl.core
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.utils.Constants._
-import ch.epfl.core.utils.Utils.loadApplicationsLibrary
-import ch.epfl.core.utils.FileUtils
 import ch.epfl.core.utils.Cli._
+import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
+import ch.epfl.core.utils.{FileUtils, Style}
+import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
 import ch.epfl.core.verifier.static.python.ProcRunner
-
-import java.nio.file.Path
-import scala.annotation.tailrec
 import mainargs.ParserForClass
-import ch.epfl.core.utils.Style
+
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 object Main {
 
@@ -26,11 +25,23 @@ object Main {
     val config = ParserForClass[Config].constructOrExit(args, totalWidth = 200)
     implicit val style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
-    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_NAME)
-    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_NAME)
+    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
+    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
 
-    val existingPhysStructPath = Path.of(existingAppsLibrary.path).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME))
-    val existingPhysicalStructure = if (existingPhysStructPath.toFile.exists()) PhysicalStructureJsonParser.parse(existingPhysStructPath.toString) else PhysicalStructure(Nil)
+    val existingPhysStructPath = existingAppsLibrary.path / PHYSICAL_STRUCTURE_JSON_FILE_NAME
+    val existingPhysicalStructure = if (os.exists(existingPhysStructPath)) PhysicalStructureJsonParser.parse(existingPhysStructPath) else PhysicalStructure(Nil)
+
+    def extractPhysicalStructure(etsProjPathString: String): PhysicalStructure = {
+      val etsProjPath = Try(os.Path(etsProjPathString)) match {
+        case Failure(exception) => {
+          printErrorAndExit(exception.getLocalizedMessage)
+          return PhysicalStructure(Nil) // Does not matter as the previous call will exit the program
+        }
+        case Success(value) => value
+      }
+      val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
+      newPhysicalStructure
+    }
 
     config.task match {
       case GetVersion =>
@@ -43,12 +54,13 @@ object Main {
         printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
         info("Compiling the apps...")
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
+        val etsProjPathString = config.etsProjectFile.get
+        val newPhysicalStructure: PhysicalStructure = extractPhysicalStructure(etsProjPathString)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
           // Copy new app + all files in app_library
-          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_NAME, existingAppsLibrary.path)
+          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, existingAppsLibrary.path)
           printTrace(verifierMessages)
           success(s"The apps have been successfully compiled!")
         } else {
@@ -58,7 +70,8 @@ object Main {
         }
       case GenerateBindings =>
         info("Generating the bindings...")
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(config.etsProjectFile.get)
+        val etsProjPathString = config.etsProjectFile.get
+        val newPhysicalStructure: PhysicalStructure = extractPhysicalStructure(etsProjPathString)
         compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
         success(s"The bindings have been successfully created!")
       case GenerateApp =>

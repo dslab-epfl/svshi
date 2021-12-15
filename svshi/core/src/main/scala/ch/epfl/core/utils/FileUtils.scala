@@ -1,7 +1,5 @@
 package ch.epfl.core.utils
 
-import java.io.File
-import java.nio.file.{Files, Path}
 import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters._
 import scala.util.Using
@@ -16,21 +14,22 @@ object FileUtils {
   def unzippedSuffix: String = "_unzip_temp"
 
   /** Unzip the archive at the given path
-    * @param zipPathString
+    * @param zipPath
     * @return outputPath
     */
-  def unzip(zipPathString: String, outputFolderPathString: String): Option[Path] = {
-    Using(new ZipFile(Path.of(zipPathString).toFile)) { zipFile =>
+  def unzip(zipPath: os.Path, outputFolderPath: os.Path): Option[os.Path] = {
+    Using(new ZipFile(zipPath.toIO)) { zipFile =>
       for (entry <- zipFile.entries.asScala) {
-        val path = Path.of(outputFolderPathString).resolve(entry.getName)
+        val path = os.Path(entry.getName, outputFolderPath)
         if (entry.isDirectory) {
-          Files.createDirectories(path)
+          os.makeDir.all(path)
         } else {
-          Files.createDirectories(path.getParent)
-          Files.copy(zipFile.getInputStream(entry), path)
+          val parentPath = os.Path("/" + path.segments.toList.reverse.tail.reverse.mkString("/"))
+          os.makeDir.all(parentPath)
+          os.write(path, zipFile.getInputStream(entry))
         }
       }
-      Some(Path.of(outputFolderPathString))
+      Some(outputFolderPath)
     }.getOrElse(None)
   }
 
@@ -38,19 +37,24 @@ object FileUtils {
     * @param f a directory
     * @return
     */
-  def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+  def recursiveListFiles(f: os.Path): List[os.Path] = {
+    if (os.isDir(f)) {
+      val these = os.list(f).toList
+      these ++ these.flatMap(recursiveListFiles)
+    } else {
+      Nil
+    }
+
+
   }
 
-  /** explore the given directory and outputs the list of folders contained in this directory
+  /** Explore the given directory and output the list of folders contained in this directory
     * @param dir the path to the directory to explore
     * @return
     */
-  def getListOfFolders(dir: String): List[File] = {
-    val d = new File(dir)
-    if (d.exists && d.isDirectory) {
-      d.listFiles.filter(_.isDirectory).toList
+  def getListOfFolders(dir: os.Path): List[os.Path] = {
+    if (os.exists(dir) && os.isDir(dir)) {
+      os.list(dir).filter(a => os.isDir(a)).toList
     } else {
       Nil
     }
@@ -60,16 +64,44 @@ object FileUtils {
     * @param dir parent directory that contains all files and directories that have to be moved
     * @param destinationDir the directory in which all files and directories are moved
     */
-  def moveAllFileToOtherDirectory(dir: String, destinationDir: String): Unit = {
-    val from = new File(dir)
-    if (!from.isDirectory) throw new IllegalArgumentException("dir must be a path to a directory!")
-    val to = new File(dir)
-    if (!to.isDirectory) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
-    val fromOsPath = os.Path(dir, base = os.pwd)
-    val toOsPath = os.Path(destinationDir, base = os.pwd)
-    os.copy(fromOsPath, toOsPath, mergeFolders = true, replaceExisting = true)
-    os.remove.all(fromOsPath)
-    os.makeDir(fromOsPath)
+  def moveAllFileToOtherDirectory(dir: os.Path, destinationDir: os.Path): Unit = {
+    if (!os.isDir(dir)) throw new IllegalArgumentException("dir must be a path to a directory!")
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+    os.copy(dir, destinationDir, mergeFolders = true, replaceExisting = true)
+    os.remove.all(dir)
+    os.makeDir(dir)
+  }
+
+  /**
+   * Return a os.Path instance from the pathString passed that must be relation to $SVSHI_HOME
+   * @param pathString
+   * @return
+   */
+  def getPathFromSvshiHome(pathString: String): os.Path = {
+    os.Path(pathString, os.Path(Constants.SVSHI_HOME, os.pwd))
+  }
+
+  /**
+   * Read the file and returns the content
+   */
+  def readFileContentAsString(path: os.Path): String = {
+    os.read(path)
+  }
+  /**
+   * Remove the file pointed by the path if it exists
+   * @param path
+   */
+  def deleteIfExists(path: os.Path): Unit = {
+    if (os.exists(path)) os.remove.all(path)
+  }
+
+  /**
+   * Write the content to the file pointed by the path
+   * @param path
+   * @param data
+   */
+  def writeToFile(path: os.Path, data: Array[Byte]): Unit = {
+    os.write(path, data)
   }
 
 }

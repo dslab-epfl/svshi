@@ -4,10 +4,10 @@ import ch.epfl.core.model.application.Application
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical.GroupAddress
 import ch.epfl.core.model.prototypical._
+import ch.epfl.core.utils.FileUtils
 import upickle.default.write
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 
 /** Parser used to produces a JSON file containing group addresses bindings for the runtime module
   */
@@ -17,10 +17,9 @@ object PythonAddressJsonParser {
     * @param filePath
     * @param pythonAddress
     */
-  def writeToFile(filePath: String, pythonAddress: AppPythonAddressesJson): Unit = {
-    val f = Paths.get(filePath).toFile
-    if (f.exists()) f.delete() // So that we get a fresh copy
-    Files.write(Paths.get(filePath), write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
+  def writeToFile(filePath: os.Path, pythonAddress: AppPythonAddressesJson): Unit = {
+    FileUtils.deleteIfExists(filePath)
+    FileUtils.writeToFile(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   /** Produce the group addresses for the python runtime

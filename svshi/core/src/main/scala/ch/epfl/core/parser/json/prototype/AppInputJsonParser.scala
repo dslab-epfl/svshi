@@ -3,9 +3,7 @@ package ch.epfl.core.parser.json.prototype
 import ch.epfl.core.model.application.{NotPrivileged, PermissionLevel, Privileged}
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.JsonParsingException
-
-import scala.io.Source
-import scala.util.Using
+import ch.epfl.core.utils.FileUtils
 
 /** Parser used to read JSON file containing the structure of applications (i.e., the prototypical devices they use)
   */
@@ -16,12 +14,11 @@ object AppInputJsonParser {
     * @param filePath
     * @return
     */
-  def parse(filePath: String): AppPrototypicalStructure = {
-    Using(Source.fromFile(filePath)) { fileBuff =>
-      constructPrototypicalStructure(
-        parseJson(fileBuff.getLines().toList.mkString)
-      )
-    }.get
+  def parse(filePath: os.Path): AppPrototypicalStructure = {
+    constructPrototypicalStructure(
+      parseJson(FileUtils.readFileContentAsString(filePath))
+    )
+
   }
 
   /** Produce an instance of AppPrototypicalStructure from an instance of PrototypicalStructureJson produced by upickle

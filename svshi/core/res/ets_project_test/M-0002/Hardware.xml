@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <Hardware>
+        <Hardware Id="M-0002_H-2CDG.20110.20261.20R0011-1" Name="SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC" SerialNumber="2CDG 110 261 R0011" VersionNumber="1" BusCurrent="10" HasIndividualAddress="true" HasApplicationProgram="true" HasApplicationProgram2="true">
+          <Products>
+            <Product Id="M-0002_H-2CDG.20110.20261.20R0011-1_P-2CDG.20110.20261.20R0011" Text="SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC" OrderNumber="2CDG 110 261 R0011" IsRailMounted="true" WidthInMillimeter="36" DefaultLanguage="en-US" Hash="AAvlKjBCT0a8gKGB0CK5QV7rM6c=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationDate="2019-12-19" RegistrationSignature="tQzFO923hROR34W7Un8ZMS2z9h7wAyLwZHjlzOfCjLePO2aBOjxIbwV5d4BOSLs1Do/wlM0MZ1HlBnwmanYSrtKv7gAEkpLU8AIsHFIqYRqTp+3GRYDapppyigr4iBRUS/ZtmAdJfnfpfXtjB1I5KD8nbpk41wkXokmPhxHWl4A=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A" MediumTypes="MT-0" Hash="A9Ce751FxxGHJxs3kWyy+qpqnkk=">
+              <ApplicationProgramRef RefId="M-0002_A-A0DA-10-E56E" />
+              <ApplicationProgramRef RefId="M-0002_A-A0DA-20-5F9A" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2019/16327" RegistrationDate="2019-12-19" RegistrationSignature="m9vTYNaBR6SRGAFy5w0g8Y68RH7nY9dZSPywdk7kNjSWBcIorpwVwH3DSmQ5bN8YpoA6+nmHhsPQ6+DvjF2a+pNDhvc3PkWMGTd31Wt0D9PSOttqca8hTBkh8y9RR4uBfGA6FvLL3G9qy4MWFMwfIpI25QF0fW2AXHar4hp++c8=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+        <Hardware Id="M-0002_H-SBR.2FU6.2E0-0-O0007" Name="SBR/U6.0 HVAC-Gerät, 6fach BE" SerialNumber="SBR/U6.0" VersionNumber="0" BusCurrent="12" HasIndividualAddress="true" HasApplicationProgram="true" HasApplicationProgram2="true" OriginalManufacturer="M-0007">
+          <Products>
+            <Product Id="M-0002_H-SBR.2FU6.2E0-0-O0007_P-SBR.2FU6.2E0" Text="SBR/U6.0 HVAC-Gerät, 6fach BE" OrderNumber="SBR/U6.0" IsRailMounted="false" DefaultLanguage="de-DE" Hash="7LMg+iW1F5FmIsNACkFWOpXedrk=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationDate="2018-10-12" RegistrationSignature="kaxiVHb6re9o+u84hjNzpW8NISQBjFh36zyqNq8dSkykeqNUZhtb35beF0snE+h2XPGdTxRFuD7JVYNdrOm8SFw8wr3OOQJHgolwkD9+Z+AHZvSVUgzb3CwluFnYTGRsxlpjRmA/dNFDZqIUxSGR6MZKg71j4TMrCVnJIZ2Mlyo=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007" MediumTypes="MT-0" Hash="7Y2sLqQFkHacBHd617O2OOH1sxs=">
+              <ApplicationProgramRef RefId="M-0002_A-4306-12-A725-O0007" />
+              <ApplicationProgramRef RefId="M-0002_A-4306-22-273D-O0007" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2019/15536" RegistrationDate="2019-03-13" RegistrationSignature="WVWBDAwcRgRrHxGvdo3gWo//hap0ZljGgVp5r5kDtd1QqoDHWVJPpvUUQ0VYlTnVFDF1Os0X/3xzhyyFFSexhEedgTvqjly5xZHpDdcNJP7vzXHKV3vVH4C9rleqfGUCqURyJme7SlbU9tDY5LsEU9M3HpDP1MZkBOL46TV4sE0=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+        <Hardware Id="M-0002_H-2CDG110206R0011-1" Name="AC/S1.2.1 Application Controller, BACnet" SerialNumber="2CDG110206R0011" VersionNumber="1" BusCurrent="5" HasIndividualAddress="true" HasApplicationProgram="true" IsIPEnabled="true" NonRegRelevantDataVersion="1">
+          <Products>
+            <Product Id="M-0002_H-2CDG110206R0011-1_P-2CDG.20110.20206.20R0011" Text="AC/S1.2.1 Application Controller, BACnet" OrderNumber="2CDG 110 206 R0011" IsRailMounted="true" WidthInMillimeter="72" DefaultLanguage="en-US" Hash="fIvlIAB9kTy3IA+9HPC58hmjDHc=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationDate="2018-09-19" RegistrationSignature="lYrB5lYti3cTa858FPyMbeRRX9pbWmHAMHoW2rwSOaqXa+5O8mW2VPE4q6RMRtvpjCFfX4Wedd7yA0sU+CTzwHGIDxspve3sOklOK4RdYzO+f8MwlLlxVxNaxySpSGWMFN/GFuEgjO+Mqqy/+DsVCGfeFOSLgziIr53PJGFlVUE=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE" MediumTypes="MT-0" Hash="CNDYnTwYebOTWa5ufnGn6wD+BF0=">
+              <ApplicationProgramRef RefId="M-0002_A-A0AF-10-0DEE" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2018/15222" RegistrationDate="2018-09-19" RegistrationSignature="K8aG0wun1HDCfyYrSCD73b8mNj98j5/QYRlwPs7Z/GfhH2aO5R9bcdvuDMUHoWm7qGSicMDSadswdc+G5vYJEXq2I3HtZszuct+qvTqX4jUd/fXXj8IEsPfZ/xv2Kw/38NBmRW886DrrJootAgTXjlYTvwud1IDBRAnqBogpNL0=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0002_H-2CDG.20110.20261.20R0011-1_P-2CDG.20110.20261.20R0011">
+            <TranslationElement RefId="M-0002_H-2CDG.20110.20261.20R0011-1_P-2CDG.20110.20261.20R0011">
+              <Translation AttributeName="Text" Text="SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_H-SBR.2FU6.2E0-0-O0007_P-SBR.2FU6.2E0">
+            <TranslationElement RefId="M-0002_H-SBR.2FU6.2E0-0-O0007_P-SBR.2FU6.2E0">
+              <Translation AttributeName="Text" Text="SBR/U6.0 HVAC device, 6gang BE" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_H-2CDG110206R0011-1_P-2CDG.20110.20206.20R0011">
+            <TranslationElement RefId="M-0002_H-2CDG110206R0011-1_P-2CDG.20110.20206.20R0011">
+              <Translation AttributeName="Text" Text="AC/S1.2.1 Application Controller,BACnet" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

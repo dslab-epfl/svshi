@@ -9,10 +9,10 @@ import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
-import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_NAME, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
+import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 
 object Compiler {
 
@@ -28,16 +28,17 @@ object Compiler {
       existingAppsLibrary: ApplicationLibrary,
       physicalStructure: PhysicalStructure
   ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
-    val appLibraryBindings = BindingsJsonParser.parse(Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString)
+    val appLibraryBindings = BindingsJsonParser.parse(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
-    val filePath: os.Path = os.Path(Constants.GENERATED_FOLDER_NAME) / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
+    val filePath: os.Path = Constants.GENERATED_FOLDER_PATH / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
 
     generateGroupAddressesList(gaAssignment, filePath)
 
     for (app <- existingAppsLibrary.apps.appendedAll(newAppsLibrary.apps)) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
-      PythonAddressJsonParser.writeToFile(Path.of(app.appFolderPath).resolve(Path.of(Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME)).toString, pythonAddr)
+
+      PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
     Programmer.outputProgrammingFile(gaAssignment)
 
@@ -59,11 +60,11 @@ object Compiler {
       existingPhysStruct: PhysicalStructure
   ): Unit = {
     PhysicalStructureJsonParser.writeToFile(
-      Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(PHYSICAL_STRUCTURE_JSON_FILE_NAME)).toString,
+      GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME,
       newPhysStruct
     )
     val appLibraryBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, newPhysStruct, existingPhysStruct)
-    BindingsJsonParser.writeToFile(Path.of(GENERATED_FOLDER_NAME).resolve(Path.of(APP_PROTO_BINDINGS_JSON_FILE_NAME)).toString, appLibraryBindings)
+    BindingsJsonParser.writeToFile(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME, appLibraryBindings)
   }
 
   /** Write the JSON file containing mapping between used group addresses and their corresponding datatype in Python

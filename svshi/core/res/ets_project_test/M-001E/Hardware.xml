@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-001E">
+      <Hardware>
+        <Hardware Id="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1" Name="STANDARDdue Taster 1-4fach RGB" SerialNumber="30 // 440x-B.xxx" VersionNumber="1" BusCurrent="22" HasIndividualAddress="true" HasApplicationProgram="true">
+          <Products>
+            <Product Id="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_P-440x.2DB.2Exxx" Text="STANDARDdue Taster 1-4fach Feuchtigkeitsschutz" OrderNumber="440x-B.xxx" IsRailMounted="false" DefaultLanguage="de-DE" Hash="9jp34KRDoe5qJmtmPz2Uc2q5ZN4=">
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationDate="2015-09-18" RegistrationSignature="ChdB3Zyb+HK8tQHR7ptDgszuPEZHjgd2YxWtnJQw0uny9Qq/zIwimR++lFPVPFeI8BLaShTw/p4093dLUko7djmLV6ARVLo/FN/83XXkNbo95quMRSbJGmtKiKgmDYDfrXmY2ivXRbR0qGvALO0sntjD6BM5OTk/Vhzv39eGZmg=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_HP-4404-11-8680" MediumTypes="MT-0" Hash="un+Fq/4Q5TLFZuFIphgTm532NxE=">
+              <ApplicationProgramRef RefId="M-001E_A-4404-11-8680" />
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationNumber="2018/15215" RegistrationDate="2018-09-17" RegistrationSignature="CnbGliPn4sI1LUXuzd/RBIh4AvMZijk30Yzad05lPplqfI6ulbSWj4CbEqiVd9fzZv3xg1ple8TWx+rXMKy9LrxQnAf0YB/rN7qIVdjuIfbiBDMOmFb8WGmFqG6vy0SZA1sRnUCLhGokPrgPlRlS7cVKhnoCpiUnmXlaA5JndXE=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_P-440x.2DB.2Exxx">
+            <TranslationElement RefId="M-001E_H-30.20.2F.2F.20440x.2DB.2Exxx-1_P-440x.2DB.2Exxx">
+              <Translation AttributeName="Text" Text="STANDARDdue Push-button moisture protection" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>
