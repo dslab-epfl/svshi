@@ -67,7 +67,7 @@ def check_conditions(state: PhysicalState) -> bool:
         file = f"""
 # Default file, will be overwritten while running
         
-from verification_file import PhysicalState
+from .verification_file import PhysicalState
 
 def check_conditions(state: PhysicalState) -> bool:
     return True    
@@ -81,10 +81,12 @@ def check_conditions(state: PhysicalState) -> bool:
         """
         file = f"""
 # Default file, will be overwritten while running
+import dataclasses
 
+
+@dataclasses.dataclass
 class PhysicalState:
-  def __init__(self, arg):
-      pass   
+    arg: str 
 """.strip()
 
         with open(self.__verification_file_path, "w") as output_file:

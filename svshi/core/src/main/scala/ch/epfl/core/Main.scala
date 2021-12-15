@@ -48,8 +48,15 @@ object Main {
         val version = getClass().getPackage().getImplementationVersion()
         success(s"svshi v$version")
       case Run =>
-        info("Running the apps...")
-        runPythonModule(RUNTIME_PYTHON_MODULE, Seq(), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
+        config.knxAddress match {
+          case Some(address) =>
+            val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
+            if (addressRegex.matches(address)) {
+              info("Running the apps...")
+              runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
+            } else printErrorAndExit("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
+          case None => printErrorAndExit("The KNX address and port need to be specified to run the apps")
+        }
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
         printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>

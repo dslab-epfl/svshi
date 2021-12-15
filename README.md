@@ -15,6 +15,7 @@
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
   - [CLI](#cli)
+  - [Compilation](#compilation)
   - [Verification](#verification)
     - [Static](#static)
     - [Runtime](#runtime)
@@ -76,7 +77,7 @@ To develop an app for SVSHI:
 To run all the installed apps (with [runtime verification](#runtime) enabled):
 
 1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
-2. Execute `svshi run`.
+2. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
 
 ## App generator
 
@@ -118,10 +119,12 @@ You can run `svshi --help` to display the following:
 ```
 svshi
 Secure and Verified Smart Home Infrastructure
-  -t task <command>    The task to run. Can be passed without the flag. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'
-  -f --ets-file <str>  The ETS project file to use for the tasks 'compile' and 'generateBindings'
-  -n --app-name <str>  The app name to use for the task 'generateApp'
-  --no-colors          The flag to disable output coloring
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'
+  -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
+  -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
+  -n --app-name <str>      The app name to use for the task 'generateApp'
+  -a --address <str>       The KNX address to use for the task 'run'. The correct format is 'address:port' (ex: 192.168.1.1:5555)
+  --no-colors              The flag to disable output coloring
 ```
 
 Available commands are:
@@ -137,7 +140,7 @@ Available commands are:
 
 The compiler combines all applications already installed (in `app_library`) with new applications (in `generated`). It generates the bindings between physical and prototypical devices communication objects, assigns group addresses to used physical communication objects and produces useful files for the runtime.
 
-When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app_library` to become *installed* applications.
+When compiling applications, if the verification passed all checks, applications from `generated` are moved into `app_library` to become _installed_ applications.
 
 ### Generate bindings
 

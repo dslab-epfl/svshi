@@ -1,7 +1,9 @@
 import json
 import dataclasses
 from typing import Dict, List, Tuple, Union
+from collections import defaultdict
 from xknx.core.value_reader import ValueReader
+from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
@@ -12,12 +14,23 @@ from .conditions import check_conditions
 
 
 class State:
-
-    __GROUP_ADDRESSES_FILE_PATH = "../app_library/group_addresses.json"
-
-    def __init__(self, addresses_listeners: Dict[str, List[App]]):
+    def __init__(
+        self,
+        group_addresses_file_path: str,
+        addresses_listeners: Dict[str, List[App]],
+        knx_address: str,
+        knx_port: int,
+    ):
         self.__physical_state: PhysicalState
-        self.__xknx = XKNX(daemon_mode=True)
+        self.__group_addresses_file_path = group_addresses_file_path
+        self.__xknx_connection_config = ConnectionConfig(
+            connection_type=ConnectionType.TUNNELING,
+            gateway_ip=knx_address,
+            gateway_port=knx_port,
+        )
+        self.__xknx = XKNX(
+            daemon_mode=True, connection_config=self.__xknx_connection_config
+        )
         self.__xknx.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
@@ -51,13 +64,10 @@ class State:
         """
         Initializes the system state by reading it from the KNX bus through an ephimeral connection.
         """
-        # There are 6 __something__ values in the dict that we do not care about
-        nb_fields = len(PhysicalState.__dict__) - 6
-        n = nb_fields * [None]
         # Default value is None for each field/address
-        state = PhysicalState(*n)
-        async with XKNX() as xknx:
-            with open(self.__GROUP_ADDRESSES_FILE_PATH) as addresses_file:
+        fields = defaultdict()
+        async with XKNX(connection_config=self.__xknx_connection_config) as xknx:
+            with open(self.__group_addresses_file_path) as addresses_file:
                 addresses_dict = json.load(addresses_file)
                 for address_and_type in addresses_dict["addresses"]:
                     # Read from KNX the current value
@@ -67,13 +77,11 @@ class State:
                     )
                     telegram = await value_reader.read()
                     if telegram and telegram.payload.value:
-                        setattr(
-                            state,
-                            self.__group_addr_to_field_name(address),
-                            telegram.payload.value.value,
-                        )
+                        fields[
+                            self.__group_addr_to_field_name(address)
+                        ] = telegram.payload.value.value
 
-        self.__physical_state = state
+        self.__physical_state = PhysicalState(**fields)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         return "GA_" + group_addr.replace("/", "_")

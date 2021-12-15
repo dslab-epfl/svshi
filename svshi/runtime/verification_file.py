@@ -1,5 +1,7 @@
 # Default file, will be overwritten while running
+import dataclasses
 
+
+@dataclasses.dataclass
 class PhysicalState:
-  def __init__(self, arg):
-      pass
+    arg: str

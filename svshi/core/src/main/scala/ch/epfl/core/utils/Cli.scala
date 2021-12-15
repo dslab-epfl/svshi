@@ -60,8 +60,7 @@ object Cli {
   case class Config(
       @arg(
         name = "task",
-        short = 't',
-        doc = "The task to run. Can be passed without the flag. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'",
+        doc = "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'",
         positional = true
       )
       task: Task,
@@ -71,6 +70,8 @@ object Cli {
       devicesPrototypicalStructureFile: Option[String] = None,
       @arg(name = "app-name", short = 'n', doc = "The app name to use for the task 'generateApp'")
       appName: Option[String] = None,
+      @arg(name = "address", short = 'a', doc = "The KNX address to use for the task 'run'. The correct format is 'address:port' (ex: 192.168.1.1:5555)")
+      knxAddress: Option[String] = None,
       @arg(name = "no-colors", doc = "The flag to disable output coloring")
       noColors: Flag
   )

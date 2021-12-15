@@ -7,7 +7,6 @@ CONDITIONS_FILE = "tests/conditions.py"
 VERIFICATION_FILE = "tests/verification_file.py"
 EXPECTED_CONDITIONS_FILE = "tests/expected/expected_conditions.py"
 EXPECTED_DEFAULT_CONDITIONS_FILE = "tests/expected/expected_default_conditions.py"
-EXPECTED_VERIFICATION_FILE = "tests/expected/expected_verification_file.py"
 EXPECTED_DEFAULT_VERIFICATION_FILE = (
     "tests/expected/expected_default_verification_file.py"
 )
@@ -66,7 +65,7 @@ def test_generator_reset_verification_file():
     assert (
         filecmp.cmp(
             VERIFICATION_FILE,
-            EXPECTED_VERIFICATION_FILE,
+            EXPECTED_DEFAULT_VERIFICATION_FILE,
             shallow=False,
         )
         == True
