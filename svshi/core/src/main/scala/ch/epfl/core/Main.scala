@@ -6,9 +6,9 @@ import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Cli._
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
-import ch.epfl.core.utils.{FileUtils, Style}
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
+import ch.epfl.core.utils.{FileUtils, Style}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
 import ch.epfl.core.verifier.static.python.ProcRunner
 import mainargs.ParserForClass

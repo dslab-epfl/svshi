@@ -45,7 +45,7 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
 
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {
-    an [MatchError] should be thrownBy  SupportedDevice.fromString("switchhhh")
+    an[MatchError] should be thrownBy SupportedDevice.fromString("switchhhh")
   }
 
   "getDeviceBinding" should "return the correct binding for BinarySensor" in {
