@@ -43,7 +43,7 @@ object Main {
             if (addressRegex.matches(address)) {
               info("Running the apps...")
               runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
-            } else printErrorAndExit("The KNX address and port need to have the format 'address:port' where address is a valid IP address and port a valid port")
+            } else printErrorAndExit("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
           case None => printErrorAndExit("The KNX address and port need to be specified to run the apps")
         }
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
