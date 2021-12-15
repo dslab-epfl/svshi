@@ -11,6 +11,8 @@ class Manipulator:
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
     __UNCHECKED_FUNC_PREFIX = "unchecked_"
+    __PRECOND_FUNC_NAME = "precond"
+    __ITERATION_FUNC_NAME = "iteration"
 
     def __init__(
         self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
@@ -110,7 +112,7 @@ class Manipulator:
                     op.func.id = new_name
 
         elif isinstance(op, ast.FunctionDef) and (
-            op.name == "precond" or op.name == "iteration"
+            op.name == self.__PRECOND_FUNC_NAME or op.name == self.__ITERATION_FUNC_NAME
         ):
             annotation = ast.Name(self.__STATE_TYPE, ast.Load)
             op.args.args.append(ast.arg(self.__STATE_ARGUMENT, annotation))
@@ -122,6 +124,7 @@ class Manipulator:
             op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
         ):
             # TODO
+            pass
 
     def __construct_contracts(self, app_names: List[str]) -> str:
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
