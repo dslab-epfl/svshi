@@ -1,5 +1,5 @@
-from ..manipulator import Manipulator
-
+from ..manipulator import InvalidUncheckedFunctionCallException, Manipulator
+import pytest
 
 TESTS_DIRECTORY = "tests"
 
@@ -42,3 +42,21 @@ def test_manipulator_manipulate_mains():
         'def first_app_precond(physical_state: PhysicalState) ->bool:\n    return FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state\n        ) and FIRST_APP_TEMPERATURE_SENSOR_INSTANCE_NAME.read(physical_state\n        ) > 18\n\n\ndef first_app_iteration(physical_state: PhysicalState):\n    """\npre: first_app_precond(physical_state)\npre: second_app_precond(physical_state)\npre: third_app_precond(physical_state)\npost: first_app_precond(__return__)\npost: second_app_precond(__return__)\npost: third_app_precond(__return__)\n"""\n    print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))\n    return physical_state\n',
         'def second_app_precond(physical_state: PhysicalState) ->bool:\n    return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state\n        ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)\n\n\ndef second_app_iteration(physical_state: PhysicalState):\n    """\npre: first_app_precond(physical_state)\npre: second_app_precond(physical_state)\npre: third_app_precond(physical_state)\npost: first_app_precond(__return__)\npost: second_app_precond(__return__)\npost: third_app_precond(__return__)\n"""\n    print(SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))\n    time.sleep(2)\n    return physical_state\n',
     ]
+
+
+def test_manipulator_manipulate_mains_raises_exception():
+    manipulator = Manipulator(
+        {
+            (f"{TESTS_DIRECTORY}/fake_wrong_app_library", "fourth_app"): set(
+                [
+                    "BINARY_SENSOR_INSTANCE_NAME",
+                    "SWITCH_INSTANCE_NAME",
+                    "TEMPERATURE_SENSOR_INSTANCE_NAME",
+                    "HUMIDITY_SENSOR_INSTANCE_NAME",
+                ]
+            ),
+        }
+    )
+
+    with pytest.raises(InvalidUncheckedFunctionCallException):
+        manipulator.manipulate_mains()

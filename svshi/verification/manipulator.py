@@ -3,7 +3,7 @@ import astor
 from typing import Dict, List, Set, Tuple, Union, cast
 
 
-class InvalidUncheckedFunctionCall(Exception):
+class InvalidUncheckedFunctionCallException(Exception):
     """
     An invalid unchecked function call exception.
     """
@@ -26,28 +26,24 @@ class Manipulator:
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
-    
     def __get_unchecked_functions(
-            self,
-            op: Union[
-                ast.stmt,
-                ast.expr,
-                ast.comprehension,
-                List[ast.stmt],
-                List[ast.expr],
-                List[ast.comprehension],
-            ],
-        ) -> Dict[str, str]:
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+        ],
+    ) -> Dict[str, str]:
         """
-            Go through the AST and return a Dict containing
-            "unchecked_func_name" -> "doc_string"
+        Go through the AST and return a Dict containing
+        "unchecked_func_name" -> "doc_string"
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            dicts_list = [
-                self.__get_unchecked_functions(v)
-                for v in list(op)
-            ]
-            res = {} 
+            dicts_list = [self.__get_unchecked_functions(v) for v in list(op)]
+            res = {}
             for d in dicts_list:
                 for k in d.keys():
                     res[k] = d[k]
@@ -60,6 +56,8 @@ class Manipulator:
             doc_string = ast.get_docstring(op)
             doc_string = "" if doc_string == None else doc_string
             return {op.name: doc_string}
+        else:
+            return {}
 
     def __rename_instances_add_state(
         self,
@@ -171,7 +169,9 @@ class Manipulator:
             # TODO
             pass
 
-    def __construct_contracts(self, app_names: List[str], unchecked_apps_dict: Dict[str, str]) -> str:
+    def __construct_contracts(
+        self, app_names: List[str], unchecked_apps_dict: Dict[str, str]
+    ) -> str:
         pre_str = "pre: "
         post_str = "post: "
         precond_name_str = "precond"
@@ -186,15 +186,19 @@ class Manipulator:
                 res = res[:-2]
             res += ")"
             return res
-        def construct_pre_unchecked_func(unchecked_func_name: str, doc_string: str) -> List[str]:
+
+        def construct_pre_unchecked_func(
+            unchecked_func_name: str, doc_string: str
+        ) -> List[str]:
             list_post_conds = []
             post_str_no_space = "post:"
             for l in doc_string.splitlines():
                 if post_str_no_space in l:
-                    cond = pre_str + l.replace(post_str_no_space, "").replace(return_value_name_str, unchecked_func_name)
+                    cond = pre_str + l.replace(post_str_no_space, "").replace(
+                        return_value_name_str, unchecked_func_name
+                    )
                     list_post_conds.append(cond)
             return list_post_conds
-
 
         conditions = []
         sorted_app_names = sorted(app_names)
@@ -204,10 +208,12 @@ class Manipulator:
                 app_name + "_" + precond_name_str, [physical_state_name_str]
             )
             conditions.append(precond)
-        
+
         for unchecked_app_name, doc_string in unchecked_apps_dict.items():
-            conditions.extend(construct_pre_unchecked_func(unchecked_app_name, doc_string))
-            
+            conditions.extend(
+                construct_pre_unchecked_func(unchecked_app_name, doc_string)
+            )
+
         for app_name in sorted_app_names:
             postcond = post_str
             postcond += construct_func_call(
@@ -349,13 +355,18 @@ class Manipulator:
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
-        def extract_functions_and_imports(module_body: List[ast.stmt]):
+        def extract_functions_and_imports(
+            module_body: List[ast.stmt], unchecked_apps_dict: Dict[str, str]
+        ):
             # We only keep precond and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
                 map(
                     lambda f: self.__add_return_state(
                         self.__add_doc_string(
-                            f, self.__construct_contracts(self.__app_names)
+                            f,
+                            self.__construct_contracts(
+                                self.__app_names, unchecked_apps_dict
+                            ),
                         )
                     )
                     if f.name == f"{app_name}_iteration"
@@ -395,15 +406,16 @@ class Manipulator:
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(module_body, app_name, accepted_names)
 
+            unchecked_apps_dict = self.__get_unchecked_functions(module_body)
+
             # Extract imports, precond/iteration functions and add the contracts to them
             (
                 functions_ast,
                 imports_ast,
                 from_imports_ast,
-            ) = extract_functions_and_imports(module_body)
+            ) = extract_functions_and_imports(module_body, unchecked_apps_dict)
 
             # Check if a precondition function contains a call to an unchecked function
-            unchecked_func_names = set(self.__get_unchecked_functions(module_body))
             valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
                 list(
                     filter(
@@ -411,10 +423,10 @@ class Manipulator:
                         functions_ast,
                     )
                 ),
-                unchecked_func_names,
+                set(unchecked_apps_dict.keys()),
             )
             if not valid:
-                raise InvalidUncheckedFunctionCall(
+                raise InvalidUncheckedFunctionCallException(
                     f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function."
                 )
 
