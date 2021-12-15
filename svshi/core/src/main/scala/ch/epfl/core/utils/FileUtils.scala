@@ -48,7 +48,7 @@ object FileUtils {
 
   }
 
-  /** explore the given directory and outputs the list of folders contained in this directory
+  /** Explore the given directory and output the list of folders contained in this directory
     * @param dir the path to the directory to explore
     * @return
     */
