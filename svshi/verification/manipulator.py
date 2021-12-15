@@ -20,6 +20,29 @@ class Manipulator:
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
+    def __get_unchecked_functions(
+            self,
+            op: Union[
+                ast.stmt,
+                ast.expr,
+                ast.comprehension,
+                List[ast.stmt],
+                List[ast.expr],
+                List[ast.comprehension],
+            ],
+        ) -> List[str]:
+            if isinstance(op, list) or isinstance(op, tuple):
+                return [
+                    self.__get_unchecked_functions(v)
+                    for v in list(op)
+                ]
+            elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+                return self.__get_unchecked_functions(op.elts)
+            elif isinstance(op, ast.FunctionDef) and (
+                op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
+            ):
+                return op.name
+
     def __rename_instances_add_state(
         self,
         op: Union[
@@ -249,3 +272,16 @@ class Manipulator:
             imports = astor.to_source(ast.Module(imports_ast))
             from_imports = astor.to_source(ast.Module(from_imports_ast))
             return [imports, from_imports], functions
+
+
+
+# TODOs
+
+if op.name == self.__PRECOND_FUNC_NAME:
+    # Check that there are no function calls to the unchecked ones
+    pass
+else:
+    # Replace all calls to the unchecked by a variable with the same name
+    # Add to the arguments of the function the unchecked functions names
+    # Add postconditions of the unchecked functions to the preconditions of the iteration function
+    pass 
