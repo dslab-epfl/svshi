@@ -53,6 +53,12 @@ To build from sources:
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
 
+### Docker
+
+We also provide a docker image with all requirements and SVSHI installed. To use it:
+1. Run `./build_docker.sh` to build the image
+2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
+
 ## Supported devices
 
 - **Binary sensors** (deviceType = "binary")
