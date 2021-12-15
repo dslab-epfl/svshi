@@ -1,7 +1,7 @@
 package ch.epfl.core.model.bindings
 
 import ch.epfl.core.model.physical.{GroupAddress, PhysicalStructure}
-import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
+import ch.epfl.core.model.prototypical._
 import ch.epfl.core.model.python.{PythonBool, PythonFloat}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -9,20 +9,21 @@ import org.scalatest.matchers.should.Matchers
 class GroupAddressAssignmentTest extends AnyFlatSpec with Matchers {
   "getPythonTypes" should "return the correct list for correct input" in {
     val physStruct = PhysicalStructure(Nil)
-    val appLibraryBindings = AppLibraryBindings(List(
-      AppPrototypeBindings("app1", List(
-        DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
-        DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-        DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321)),
-        DeviceInstanceBinding("device5", BinarySensorBinding(BinarySensor.toString, 321))
-      ))
-    ))
-    val physIdToGA = List(
-      (311, GroupAddress(3, 1, 1)),
-      (212, GroupAddress(2, 1, 2)),
-      (322, GroupAddress(3, 2, 2)),
-      (321, GroupAddress(3, 2, 1))).toMap
+    val appLibraryBindings = AppLibraryBindings(
+      List(
+        AppPrototypeBindings(
+          "app1",
+          List(
+            DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
+            DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
+            DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321)),
+            DeviceInstanceBinding("device5", BinarySensorBinding(BinarySensor.toString, 321))
+          )
+        )
+      )
+    )
+    val physIdToGA = List((311, GroupAddress(3, 1, 1)), (212, GroupAddress(2, 1, 2)), (322, GroupAddress(3, 2, 2)), (321, GroupAddress(3, 2, 1))).toMap
 
     val assignment = GroupAddressAssignment(physStruct, appLibraryBindings, physIdToGA)
     val res = assignment.getPythonTypesMap

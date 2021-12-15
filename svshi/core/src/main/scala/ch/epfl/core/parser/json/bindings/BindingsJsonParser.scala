@@ -16,7 +16,7 @@ object BindingsJsonParser {
     * @return
     */
   def parse(filePath: os.Path): AppLibraryBindings = {
-      parseJson(FileUtils.readFileContentAsString(filePath))
+    parseJson(FileUtils.readFileContentAsString(filePath))
   }
 
   /** Produce a AppLibraryBindings from a JSON File content

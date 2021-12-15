@@ -1,14 +1,11 @@
 package ch.epfl.core.parser
 
-import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser.{constructPhysicalStructure, parseJson}
-import ch.epfl.core.parser.json.physical._
 import ch.epfl.core.model.physical._
+import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser.parseJson
+import ch.epfl.core.parser.json.physical._
 import ch.epfl.core.utils.FileUtils
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-
-import scala.io.Source
-import scala.util.Using
 
 class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
   "parseJson" should "return the correct PhysicalStructureJson with correct input" in {

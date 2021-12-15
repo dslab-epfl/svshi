@@ -1,10 +1,9 @@
 package ch.epfl.core.parser
 
 import ch.epfl.core.model.application.{NotPrivileged, Privileged}
-import ch.epfl.core.parser.json.prototype.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.JsonParsingException
-import ch.epfl.core.parser.json.prototype.AppInputJsonParser.constructPrototypicalStructure
+import ch.epfl.core.parser.json.prototype.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -195,7 +194,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
     val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), permissionLevel = Privileged)
 
-   an [JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
+    an[JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
     )
   }

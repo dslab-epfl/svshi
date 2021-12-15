@@ -92,7 +92,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               DPT9,
               Out,
               ("1", "1", "3")
-          ),
+            ),
             PhysicalDeviceCommObject.from(
               "Output - Obj_AktuellerSollwert - RTC: actual setpoint",
               DPT9,
@@ -120,7 +120,6 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               DPT14,
               InOut,
               ("1", "1", "3")
-
             )
           )
         ),
@@ -174,8 +173,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               InOut,
               ("1", "2", "1")
             ),
-            PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut,
-            ("1", "2", "1")),
+            PhysicalDeviceCommObject.from("Stop - Vanne - Valve", DPT1, InOut, ("1", "2", "1")),
             PhysicalDeviceCommObject.from(
               "Valve position % - Indication d'état - Status indication",
               DPTUnknown,
@@ -199,36 +197,16 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
       )
     )
 
-    structure.deviceInstances.exists(p =>
-      p.address == device1.address
-    ) shouldEqual true
-    structure.deviceInstances.find(p =>
-      p.address == device1.address
-    ) shouldEqual Some(device1)
-    structure.deviceInstances.exists(p =>
-      p.address == device2.address
-    ) shouldEqual true
-    structure.deviceInstances.find(p =>
-      p.address == device2.address
-    ) shouldEqual Some(device2)
-    structure.deviceInstances.exists(p =>
-      p.address == device3.address
-    ) shouldEqual true
-    structure.deviceInstances.find(p =>
-      p.address == device3.address
-    ) shouldEqual Some(device3)
-    structure.deviceInstances.exists(p =>
-      p.address == device4.address
-    ) shouldEqual true
-    structure.deviceInstances.find(p =>
-      p.address == device4.address
-    ) shouldEqual Some(device4)
-    structure.deviceInstances.exists(p =>
-      p.address == device5.address
-    ) shouldEqual true
-    structure.deviceInstances.find(p =>
-      p.address == device5.address
-    ) shouldEqual Some(device5)
+    structure.deviceInstances.exists(p => p.address == device1.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device1.address) shouldEqual Some(device1)
+    structure.deviceInstances.exists(p => p.address == device2.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device2.address) shouldEqual Some(device2)
+    structure.deviceInstances.exists(p => p.address == device3.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device3.address) shouldEqual Some(device3)
+    structure.deviceInstances.exists(p => p.address == device4.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device4.address) shouldEqual Some(device4)
+    structure.deviceInstances.exists(p => p.address == device5.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device5.address) shouldEqual Some(device5)
   }
 
   "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {

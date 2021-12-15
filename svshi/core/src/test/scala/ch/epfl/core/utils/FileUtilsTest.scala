@@ -25,10 +25,10 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     val refPath = os.Path(testFilePathUnzippedString, wd)
     val lRef = FileUtils.recursiveListFiles(refPath)
     l.size shouldEqual lRef.size
-    for(e <- l){
+    for (e <- l) {
       lRef.map(f => f.relativeTo(inputPath)).contains(e.relativeTo(outputPath))
     }
-    for(e <- lRef){
+    for (e <- lRef) {
       l.map(f => f.relativeTo(outputPath)).contains(e.relativeTo(inputPath))
     }
     os.remove.all(outputPath)

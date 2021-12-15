@@ -53,6 +53,4 @@ class KNXDatatypeTest extends AnyFlatSpec with Matchers {
     KNXDatatype.fromString("DPT-000101") shouldEqual None
   }
 
-
-
 }

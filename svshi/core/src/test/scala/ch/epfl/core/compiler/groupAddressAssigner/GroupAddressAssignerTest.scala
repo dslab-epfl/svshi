@@ -1,8 +1,8 @@
 package ch.epfl.core.compiler.groupAddressAssigner
 
 import ch.epfl.core.compiler.bindings.groupAddressAssigner.GroupAddressAssigner
-import ch.epfl.core.model.physical.{DPT1, DPT12, DPT2, DPT5, In, InOut, Out, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, PhysicalStructure}
-import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings, BinarySensor, BinarySensorBinding, DeviceInstanceBinding, HumiditySensor, HumiditySensorBinding, Switch, SwitchBinding, TemperatureSensor, TemperatureSensorBinding}
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -53,14 +53,19 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
     )
     val physicalStructure = PhysicalStructure(List(device1Physical, device2Physical, device3Physical))
 
-    val appLibraryBindings = AppLibraryBindings(List(
-      AppPrototypeBindings("app1", List(
-        DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
-        DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
-        DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-        DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321))
-      ))
-    ))
+    val appLibraryBindings = AppLibraryBindings(
+      List(
+        AppPrototypeBindings(
+          "app1",
+          List(
+            DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
+            DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
+            DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321))
+          )
+        )
+      )
+    )
 
     val result = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
 
@@ -74,7 +79,6 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
 
     val ga = List(result.physIdToGA(311), result.physIdToGA(212), result.physIdToGA(321), result.physIdToGA(322))
     ga.length shouldEqual ga.toSet.size
-
 
   }
 }
