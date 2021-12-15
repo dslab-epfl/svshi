@@ -29,7 +29,7 @@ def parse_args() -> Tuple[str, int]:
     address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
     address = args.ip_address
     if not address_regex.match(address):
-        raise ValueError(f"Wrong IP address '{address}': it has to be a valid address")
+        raise ValueError(f"Wrong IP address '{address}': it has to be a valid IPv4 address")
 
     port = args.port
     if port <= 0:
