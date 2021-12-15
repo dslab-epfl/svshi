@@ -231,6 +231,13 @@ class Manipulator:
         f.body.append(ast.Return(ast.Name("physical_state", ast.Load)))
         return f
 
+    def __change_unchecked_func_in_iteration(self, iteration_func: ast.FunctionDef, unchecked_function_names: Set[str]) -> ast.FunctionDef:
+        """
+        Manipulates the iteration function to replace all calls to unchecked functions by a variable with the same name. It also adds
+        this variables as arguments
+        """
+        pass
+
     def manipulate_mains(self) -> Tuple[List[str], List[str]]:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
