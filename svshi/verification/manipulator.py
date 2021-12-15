@@ -209,11 +209,9 @@ class Manipulator:
             )
             conditions.append(precond)
 
-        for unchecked_app_name in unchecked_apps_dict.keys():
+        for unchecked_app_name, doc_string in unchecked_apps_dict.items():
             conditions.extend(
-                construct_pre_unchecked_func(
-                    unchecked_app_name, unchecked_apps_dict.get(unchecked_app_name)
-                )
+                construct_pre_unchecked_func(unchecked_app_name, doc_string)
             )
 
         for app_name in sorted_app_names:
