@@ -31,6 +31,18 @@ object Main {
     val existingPhysStructPath = existingAppsLibrary.path / PHYSICAL_STRUCTURE_JSON_FILE_NAME
     val existingPhysicalStructure = if (os.exists(existingPhysStructPath)) PhysicalStructureJsonParser.parse(existingPhysStructPath) else PhysicalStructure(Nil)
 
+    def extractPhysicalStructure(etsProjPathString: String): PhysicalStructure = {
+      val etsProjPath = Try(os.Path(etsProjPathString)) match {
+        case Failure(exception) => {
+          printErrorAndExit(exception.getLocalizedMessage)
+          return PhysicalStructure(Nil) // Does not matter as the previous call will exit the program
+        }
+        case Success(value) => value
+      }
+      val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
+      newPhysicalStructure
+    }
+
     config.task match {
       case Run =>
         info("Running the apps...")
@@ -39,14 +51,8 @@ object Main {
         printErrorAndExit("The ETS project file needs to be specified for compiling or generating the bindings")
       case Compile =>
         info("Compiling the apps...")
-        val etsProjPath = Try(os.Path(config.etsProjectFile.get)) match {
-          case Failure(exception) => {
-            printErrorAndExit(exception.getLocalizedMessage)
-            return
-          }
-          case Success(value) => value
-        }
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
+        val etsProjPathString = config.etsProjectFile.get
+        val newPhysicalStructure: PhysicalStructure = extractPhysicalStructure(etsProjPathString)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
@@ -61,14 +67,8 @@ object Main {
         }
       case GenerateBindings =>
         info("Generating the bindings...")
-        val etsProjPath = Try(os.Path(config.etsProjectFile.get)) match {
-          case Failure(exception) => {
-            printErrorAndExit(exception.getLocalizedMessage)
-            return
-          }
-          case Success(value) => value
-        }
-        val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
+        val etsProjPathString = config.etsProjectFile.get
+        val newPhysicalStructure: PhysicalStructure = extractPhysicalStructure(etsProjPathString)
         compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
         success(s"The bindings have been successfully created!")
       case GenerateApp =>
