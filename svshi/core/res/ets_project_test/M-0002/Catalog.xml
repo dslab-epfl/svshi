@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <Catalog>
+        <CatalogSection Id="M-0002_CS-STOU" Name="Standard Outputs" Number="STOU" DefaultLanguage="en-US" NonRegRelevantDataVersion="1">
+          <CatalogSection Id="M-0002_CS-STOU-STOU.2D016" Name="Switch Actuators 16 A" Number="STOU-016" DefaultLanguage="en-US" NonRegRelevantDataVersion="1">
+            <CatalogItem Id="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A_CI-2CDG.20110.20261.20R0011-1" Name="SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC" Number="1" ProductRefId="M-0002_H-2CDG.20110.20261.20R0011-1_P-2CDG.20110.20261.20R0011" Hardware2ProgramRefId="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A" DefaultLanguage="en-US" />
+          </CatalogSection>
+        </CatalogSection>
+        <CatalogSection Id="M-0002_CS-CECE" Name="User Operation ClimaECO/Tenton" Number="CECE" DefaultLanguage="en-US">
+          <CatalogSection Id="M-0002_CS-CECE-CECE.2D06f" Name="6 fold " Number="CECE-06f" DefaultLanguage="en-US">
+            <CatalogItem Id="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007_CI-SBR.2FU6.2E0-1" Name="SBR/U6.0 HVAC device, 6gang BE" Number="1" ProductRefId="M-0002_H-SBR.2FU6.2E0-0-O0007_P-SBR.2FU6.2E0" Hardware2ProgramRefId="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007" DefaultLanguage="en-US" />
+          </CatalogSection>
+        </CatalogSection>
+        <CatalogSection Id="M-0002_CS-HVAC" Name="Heating, Ventilation and Air Conditioning" Number="HVAC" DefaultLanguage="en-US" NonRegRelevantDataVersion="1">
+          <CatalogSection Id="M-0002_CS-HVAC-HVAC.2Dapc" Name="Application Controllers" Number="HVAC-apc" DefaultLanguage="en-US" NonRegRelevantDataVersion="1">
+            <CatalogItem Id="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE_CI-2CDG.20110.20206.20R0011-1" Name="AC/S1.2.1 Application Controller,BACnet" Number="1" ProductRefId="M-0002_H-2CDG110206R0011-1_P-2CDG.20110.20206.20R0011" Hardware2ProgramRefId="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE" DefaultLanguage="en-US" NonRegRelevantDataVersion="1" />
+          </CatalogSection>
+        </CatalogSection>
+      </Catalog>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0002_CS-STOU">
+            <TranslationElement RefId="M-0002_CS-STOU">
+              <Translation AttributeName="Name" Text="Standard Outputs" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_CS-STOU-STOU.2D016">
+            <TranslationElement RefId="M-0002_CS-STOU-STOU.2D016">
+              <Translation AttributeName="Name" Text="Switch Actuators 16 A" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A_CI-2CDG.20110.20261.20R0011-1">
+            <TranslationElement RefId="M-0002_H-2CDG.20110.20261.20R0011-1_HP-A0DA-10-E56E-A0DA-20-5F9A_CI-2CDG.20110.20261.20R0011-1">
+              <Translation AttributeName="Name" Text="SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_CS-CECE">
+            <TranslationElement RefId="M-0002_CS-CECE">
+              <Translation AttributeName="Name" Text="User Operation ClimaECO/Tenton" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_CS-CECE-CECE.2D06f">
+            <TranslationElement RefId="M-0002_CS-CECE-CECE.2D06f">
+              <Translation AttributeName="Name" Text="6 fold " />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007_CI-SBR.2FU6.2E0-1">
+            <TranslationElement RefId="M-0002_H-SBR.2FU6.2E0-0-O0007_HP-4306-12-A725-O0007-4306-22-273D-O0007_CI-SBR.2FU6.2E0-1">
+              <Translation AttributeName="Name" Text="SBR/U6.0 HVAC device, 6gang BE" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_CS-HVAC">
+            <TranslationElement RefId="M-0002_CS-HVAC">
+              <Translation AttributeName="Name" Text="Heating, Ventilation and Air Conditioning" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_CS-HVAC-HVAC.2Dapc">
+            <TranslationElement RefId="M-0002_CS-HVAC-HVAC.2Dapc">
+              <Translation AttributeName="Name" Text="Application Controllers" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE_CI-2CDG.20110.20206.20R0011-1">
+            <TranslationElement RefId="M-0002_H-2CDG110206R0011-1_HP-A0AF-10-0DEE_CI-2CDG.20110.20206.20R0011-1">
+              <Translation AttributeName="Name" Text="AC/S1.2.1 Application Controller,BACnet" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

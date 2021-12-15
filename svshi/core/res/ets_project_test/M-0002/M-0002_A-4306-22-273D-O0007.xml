@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <ApplicationPrograms>
+        <ApplicationProgram Id="M-0002_A-4306-22-273D-O0007" ApplicationNumber="17158" ApplicationVersion="34" ProgramType="PeiProgram" MaskVersion="MV-07B0" Name="HVAC-Gerät, 6fach BE/1" LoadProcedureStyle="MergedProcedure" PeiType="0" DefaultLanguage="de-DE" DynamicTableManagement="false" Linkable="false" MinEtsVersion="4.0" OriginalManufacturer="M-0007" Hash="J06Uwm3BcwXce0XCCiBrPQ==">
+          <Static>
+            <Code>
+              <RelativeSegment Id="M-0002_A-4306-22-273D-O0007_RS-05-00000" Offset="0" Size="34" LoadStateMachine="5">
+                <Data>AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA=</Data>
+              </RelativeSegment>
+            </Code>
+            <LoadProcedures>
+              <LoadProcedure MergeId="3">
+                <LdCtrlRelSegment LsmIdx="5" Size="34" Mode="1" Fill="0" AppliesTo="full" />
+                <LdCtrlRelSegment LsmIdx="5" Size="34" Mode="0" Fill="0" AppliesTo="par" />
+                <LdCtrlWriteProp ObjIdx="5" PropId="16" Verify="false" InlineData="FF" />
+                <LdCtrlWriteProp ObjIdx="5" PropId="13" Verify="false" InlineData="0007430621" />
+              </LoadProcedure>
+              <LoadProcedure MergeId="5">
+                <LdCtrlWriteRelMem ObjIdx="5" Offset="0" Size="34" Verify="true" AppliesTo="full,par" />
+              </LoadProcedure>
+              <LoadProcedure MergeId="7">
+                <LdCtrlLoadImageProp ObjIdx="5" PropId="27" />
+              </LoadProcedure>
+            </LoadProcedures>
+            <Options DownloadInvisibleParameters="Background" />
+          </Static>
+        </ApplicationProgram>
+      </ApplicationPrograms>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0002_A-4306-22-273D-O0007">
+            <TranslationElement RefId="M-0002_A-4306-22-273D-O0007">
+              <Translation AttributeName="Name" Text="HVAC device, 6gang BE/1" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0009">
+      <Hardware>
+        <Hardware Id="M-0009_H-9.20.2F.2F.20TX501-1-O0048" Name="TX501 Vanne motorisée" SerialNumber="9 // TX501" VersionNumber="1" HasIndividualAddress="true" HasApplicationProgram="true" OriginalManufacturer="M-0048">
+          <Products>
+            <Product Id="M-0009_H-9.20.2F.2F.20TX501-1-O0048_P-TX501" Text="Vanne motorisée" OrderNumber="TX501" IsRailMounted="false" DefaultLanguage="fr-FR" Hash="zIXNXMXfJ9yoa5My/NQQEwXeJEg=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationSignature="iQAjJ31q2VqO0dCPz8LTwWBuEmBR3uGwWViR874fOEdggibn/TUT3/053+dJ+IGvBWROKqm/kQaBnvTjMGzw15jir2bppoyKDan2zwEj6yv4VzRAG0tkdKPLWLwoY4PjGnaFXSxg1U2VSlI+cXT4M4rY8xGWsC4JhPjSFaG39YI=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0009_H-9.20.2F.2F.20TX501-1-O0048_HP-2053-11-E3A4-O0048" MediumTypes="MT-0" Hash="uEJSwHgdI12U4HVG6P549ym/Qmg=">
+              <ApplicationProgramRef RefId="M-0009_A-2053-11-E3A4-O0048" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2006/7757" OriginalRegistrationNumber="1900/0" RegistrationSignature="oEg09hYH8Qq2SYj+Q+3VgJCasiOTer7KmZtggLEznYBWc1MKC2mjtqiQPsp6BzOiPVlH/gVgc+TRP8NBF5eP5lSHteztMhxSoAWcIyiX0EnV+VbLmezKyp0KR3/HaLrT+zD9mgH+e0xjpWhvAeFQMTPAzK8RwrUgekpPjIIsxS0=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0009_H-9.20.2F.2F.20TX501-1-O0048_P-TX501">
+            <TranslationElement RefId="M-0009_H-9.20.2F.2F.20TX501-1-O0048_P-TX501">
+              <Translation AttributeName="Text" Text="Valve actuator" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

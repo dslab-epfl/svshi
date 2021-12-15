@@ -1,0 +1,1124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.3998.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0009">
+      <ApplicationPrograms>
+        <ApplicationProgram Id="M-0009_A-2053-11-E3A4-O0048" Name="TL501A V1.1" ApplicationNumber="8275" ApplicationVersion="17" ProgramType="ApplicationProgram" MaskVersion="MV-0701" LoadProcedureStyle="ProductProcedure" PeiType="1" DefaultLanguage="fr-FR" DynamicTableManagement="1" Linkable="1" OriginalManufacturer="M-0048" PreEts4Style="1" NonRegRelevantDataVersion="0" Hash="4zNcJOW36VIG1qG4oSQppA==" ConvertedFromPreEts4Data="1" Broken="0" IPConfig="Tool" AdditionalAddressesCount="0" DownloadInfoIncomplete="0" CreatedFromLegacySchemaVersion="0">
+          <Static>
+            <Code>
+              <AbsoluteSegment Id="M-0009_A-2053-11-E3A4-O0048_AS-0700" Address="1792" Size="20" UserMemory="0">
+                <Data>AAAAAAAAAAAAAAAAAAAAAAAAAAA=</Data>
+                <Mask>AAAAAAAAAAAAAAAAAAAAAAAAAAA=</Mask>
+              </AbsoluteSegment>
+              <AbsoluteSegment Id="M-0009_A-2053-11-E3A4-O0048_AS-0714" Address="1812" Size="1" UserMemory="0">
+                <Data>AA==</Data>
+                <Mask>AA==</Mask>
+              </AbsoluteSegment>
+              <AbsoluteSegment Id="M-0009_A-2053-11-E3A4-O0048_AS-4000" Address="16384" Size="511" UserMemory="0">
+                <Data>AwAAOAE4AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</Data>
+                <Mask>/wAA/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w==</Mask>
+              </AbsoluteSegment>
+              <AbsoluteSegment Id="M-0009_A-2053-11-E3A4-O0048_AS-41FF" Address="16895" Size="511" UserMemory="0">
+                <Data>AgEDAgQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</Data>
+              </AbsoluteSegment>
+              <AbsoluteSegment Id="M-0009_A-2053-11-E3A4-O0048_AS-43FE" Address="17406" Size="80" UserMemory="0">
+                <Data>CgcABwqfBwcLnwAHDJ8ABw2fAAcO3wcHD88HBxDfBwcRzwAHEs8ABxPPAAAKAAYMEhgeJCowN3oKUAFAAAAAAEAAAP8AAAAAAAAAAAAAAAA=</Data>
+              </AbsoluteSegment>
+            </Code>
+            <ParameterTypes>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv" Name="aktiv/ inaktiv" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv_EN-0" DisplayOrder="0" Text="Inactif" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv_EN-1" DisplayOrder="1" Text="Actif" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert" Name="Delta Senden Istwert" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-0" DisplayOrder="0" Text="Pas en cas de modification" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-1" DisplayOrder="1" Text="0,2 K" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-2" DisplayOrder="2" Text="0,3 K" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-3" DisplayOrder="3" Text="0,5 K" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-4" DisplayOrder="4" Text="0,7 K" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-5" DisplayOrder="5" Text="1 K" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-6" DisplayOrder="6" Text="1,5 K" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-7" DisplayOrder="7" Text="2 K" Value="7" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie" Name="Entartung der Kennlinie" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-0" DisplayOrder="0" Text="Linéaire" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-1" DisplayOrder="3" Text="Personnalisé" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-2" DisplayOrder="4" Text="Standard" Value="2" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung" Name="Entlastung der Gummidichtung" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="8">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-10" DisplayOrder="0" Text="Vanne avec joint standard" Value="10" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-0" DisplayOrder="1" Text="Vanne avec joint dur" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-20" DisplayOrder="2" Text="Vanne avec joint souple" Value="20" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-15" DisplayOrder="3" Text="Vanne avec joint semi-souple" Value="15" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle" Name="externe Schnittstelle" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-0" DisplayOrder="0" Text="Aucune" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-1" DisplayOrder="1" Text="E1 : contact feuillure, E2 : aucune" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-2" DisplayOrder="2" Text="E1 : contact feuillure, E2 : contact de présence" Value="2" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition" Name="Korrektur der Ventilposition" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-0" DisplayOrder="0" Text="Toujours positionner avec précision" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-1" DisplayOrder="1" Text="1%" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-2" DisplayOrder="2" Text="2%" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-3" DisplayOrder="3" Text="3%" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-4" DisplayOrder="4" Text="5%" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-5" DisplayOrder="5" Text="7%" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-6" DisplayOrder="6" Text="10%" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-7" DisplayOrder="7" Text="15%" Value="7" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV" Name="MAXAV" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="3">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-0" DisplayOrder="0" Text="60%" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-1" DisplayOrder="1" Text="70%" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-2" DisplayOrder="2" Text="75%" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-3" DisplayOrder="3" Text="80%" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-4" DisplayOrder="4" Text="85%" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-5" DisplayOrder="5" Text="90%" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-6" DisplayOrder="6" Text="95%" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-7" DisplayOrder="7" Text="100%" Value="7" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment" Name="maximales Drehmoment" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-0" DisplayOrder="0" Text="Faible" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-1" DisplayOrder="1" Text="Standard" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-2" DisplayOrder="2" Text="Elevé" Value="2" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV" Name="MINAV" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="3">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-0" DisplayOrder="0" Text="0%" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-1" DisplayOrder="1" Text="5%" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-2" DisplayOrder="2" Text="10%" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-3" DisplayOrder="3" Text="15%" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-4" DisplayOrder="4" Text="20%" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-5" DisplayOrder="5" Text="25%" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-6" DisplayOrder="6" Text="30%" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-7" DisplayOrder="7" Text="40%" Value="7" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Name="Seite" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Seite_EN-0" DisplayOrder="0" Text="Page" Value="0" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang" Name="Senden ext Eingang" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-0" DisplayOrder="0" Text="Pas d'émission" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-1" DisplayOrder="1" Text="En cas de modification" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-2" DisplayOrder="2" Text="En cas de modification" Value="2" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E" Name="Senden max. Stellgr." Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-0" DisplayOrder="0" Text="Si la valeur appliquée est la plus élevée" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-1" DisplayOrder="1" Text="2 min" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-2" DisplayOrder="2" Text="3 min" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-3" DisplayOrder="3" Text="5 min" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-4" DisplayOrder="4" Text="10 min" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-5" DisplayOrder="5" Text="15 min" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-6" DisplayOrder="6" Text="20 min" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-7" DisplayOrder="7" Text="30 min" Value="7" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-8" DisplayOrder="8" Text="45 min" Value="8" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-9" DisplayOrder="9" Text="60 min" Value="9" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm" Name="Senden Objekt Notprogramm" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm_EN-0" DisplayOrder="0" Text="A la fin de chaque cycle de surveillance" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm_EN-1" DisplayOrder="1" Text="Uniquement en cas d'absence de commande" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition" Name="Senden Ventilposition" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-0" DisplayOrder="0" Text="Pas d'émission" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-1" DisplayOrder="1" Text="1%" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-2" DisplayOrder="2" Text="2%" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-3" DisplayOrder="3" Text="3%" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-4" DisplayOrder="4" Text="5%" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-5" DisplayOrder="5" Text="7%" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-6" DisplayOrder="6" Text="10%" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-7" DisplayOrder="7" Text="15%" Value="7" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar" Name="Sichtbar" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar_EN-0" DisplayOrder="0" Text="Invisible" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar_EN-1" DisplayOrder="1" Text="Visible" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-standard" Name="standard" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-standard_EN-0" DisplayOrder="0" Text="Standard" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-standard_EN-1" DisplayOrder="1" Text="Paramètres personnalisés" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung" Name="Stellung" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-0" DisplayOrder="0" Text="0%" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-1" DisplayOrder="1" Text="10%" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-2" DisplayOrder="2" Text="20%" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-3" DisplayOrder="3" Text="30%" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-4" DisplayOrder="4" Text="40%" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-5" DisplayOrder="5" Text="50%" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-6" DisplayOrder="6" Text="60%" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-7" DisplayOrder="7" Text="70%" Value="7" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-8" DisplayOrder="8" Text="80%" Value="8" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-9" DisplayOrder="9" Text="90%" Value="9" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-10" DisplayOrder="10" Text="100%" Value="10" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen" Name="Überwachen" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-0" DisplayOrder="0" Text="Pas de surveillance" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-3" DisplayOrder="3" Text="5 min" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-4" DisplayOrder="4" Text="10 min" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-5" DisplayOrder="5" Text="15 min" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-6" DisplayOrder="6" Text="20 min" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-7" DisplayOrder="7" Text="30 min" Value="7" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-8" DisplayOrder="8" Text="45 min" Value="8" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-9" DisplayOrder="9" Text="60 min" Value="9" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MAXAV" Name="Verhalten bei MAXAV" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MAXAV_EN-0" DisplayOrder="0" Text="100%" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MAXAV_EN-1" DisplayOrder="1" Text="Limitation de la valeur de commande max." Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV" Name="Verhalten bei MINAV" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV_EN-0" DisplayOrder="0" Text="0%" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV_EN-1" DisplayOrder="1" Text="Valeur minimale (sauf 0%=0%)" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn" Name="Wirksinn" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn_EN-0" DisplayOrder="0" Text="Standard, pointeau enfoncé = vanne fermée" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn_EN-1" DisplayOrder="1" Text="Non standard, pointeau enfoncé = vanne ouverte" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt" Name="Wirksinn Fensterkontakt" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt_EN-0" DisplayOrder="0" Text="Fenêtre ouverte = contact fermé" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt_EN-1" DisplayOrder="1" Text="Fenêtre ouverte = contact ouvert" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt" Name="Wirksinn Präsenzkontakt" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt_EN-0" DisplayOrder="0" Text="présence = contact fermé" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt_EN-1" DisplayOrder="1" Text="présence = contact ouvert" Value="1" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden" Name="zyklisch senden" Plugin="">
+                <TypeRestriction Base="Value" SizeInBit="4">
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-0" DisplayOrder="0" Text="Pas d'émission" Value="0" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-1" DisplayOrder="1" Text="2 min" Value="1" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-2" DisplayOrder="2" Text="3 min" Value="2" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-3" DisplayOrder="3" Text="5 min" Value="3" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-4" DisplayOrder="4" Text="10 min" Value="4" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-5" DisplayOrder="5" Text="15 min" Value="5" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-6" DisplayOrder="6" Text="20 min" Value="6" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-7" DisplayOrder="7" Text="30 min" Value="7" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-8" DisplayOrder="8" Text="45 min" Value="8" />
+                  <Enumeration Id="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-9" DisplayOrder="9" Text="60 min" Value="9" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Reserve.20für.20sicheres.20Schließen" Name="Reserve für sicheres Schließen" Plugin="">
+                <TypeNumber maxInclusive="100" minInclusive="0" SizeInBit="8" Type="unsignedInt" />
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Abgleichwert" Name="Abgleichwert" Plugin="">
+                <TypeNumber maxInclusive="63" minInclusive="-64" SizeInBit="7" Type="signedInt" />
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Name="Prozentwert" Plugin="">
+                <TypeNumber maxInclusive="100" minInclusive="0" SizeInBit="8" Type="unsignedInt" />
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-t.5FUI.5FtestParam" Name="t_UI_testParam" Plugin="">
+                <TypeNumber maxInclusive="255" minInclusive="0" SizeInBit="8" Type="unsignedInt" />
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-t.5FUI.5Fpriv.5Fparam.5Fretract.5Fub" Name="t_UI_priv_param_retract_ub" Plugin="">
+                <TypeNumber maxInclusive="255" minInclusive="0" SizeInBit="8" Type="unsignedInt" />
+              </ParameterType>
+              <ParameterType Id="M-0009_A-2053-11-E3A4-O0048_PT-Type.5FVersion" Name="Type_Version" Plugin="">
+                <TypeText SizeInBit="160" />
+              </ParameterType>
+            </ParameterTypes>
+            <Parameters>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-10" Name="Korrektur der Ventilposition" Text="Application de la nouvelle valeur de commande &#xD;&#xA;si variation supérieure à : " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition" Access="ReadWrite" Value="2">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="64" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-108" Name="Sende Präsenzkontakt" Text="Emission de l'objet Indication d'état &#xD;&#xA;Contact de présence toutes les : " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="62" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-11" Name="Senden der Ventilposition" Text="Emission de l'objet Indication d'état &#xD;&#xA;Position vanne % si variation de : " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="59" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-110" Name="Art des angeschlossenen Fensterkontakts" Text="Caractéristiques du contact feuillure" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="3" Offset="61" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-111" Name="Senden Fensterkontakt" Text="Emission de l'objet Indication d'état &#xD;&#xA;Contact feuillure toutes les : " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="61" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-114" Name="Senden Maximale Stellgöße" Text="Emission de l'objet Indication d'état&#xD;&#xA;Valeur commande la plus élevée" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="60" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-116" Name="Weg bei 90% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;90% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="90">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="54" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-117" Name="Weg bei 80% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;80% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="80">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="53" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-118" Name="Weg bei 70% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;70% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="70">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="52" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-119" Name="Weg bei 60% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;60% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="60">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="51" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-12" Name="zykl. Senden der Ventilposition" Text="Emission de l'objet Indication d'état &#xD;&#xA;Position vanne % toutes les : " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="59" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-120" Name="Weg bei 50% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;50% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="50">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="50" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-121" Name="Weg bei 40% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;40% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="40">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="49" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-122" Name="Weg bei 30% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;30% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="30">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="48" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-123" Name="Weg bei 20% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;20% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="20">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="47" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-124" Name="Weg bei 10% Volumenstrom" Text="Position de la vanne en % pour&#xD;&#xA;10% de débit (1..99)" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Prozentwert" Access="Read" Value="10">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="46" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-13" Name="Überwachen der Stellgröße" Text="Surveillance cyclique" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="56" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-131" Name="Reserve für sicheres Schließen" Text="Pression supplémentaire à appliquer sur le joint de la vanne " ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Reserve.20für.20sicheres.20Schließen" Access="ReadWrite" Value="20" LegacyPatchAlways="1">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="45" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-14" Name="Stellung bei Ausfall der Stellgröße" Text="Valeur à appliquer en mode absence de commande" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Stellung" Access="ReadWrite" Value="5">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="57" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-142" Name="Entlastung der Gummidichtung" Text="Type de joint mis sur la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung" Access="ReadWrite" Value="10">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="44" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-15" Name="Senden bei Stellgrößenausfalls" Text="Emission de l'objet Indication d'état &#xD;&#xA;Présence / Absence de commande" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm" Access="ReadWrite" Value="1">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="56" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-16" Name="Stellung bei Zwangsobjekt" Text="Valeur à appliquer en mode forçage" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Stellung" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="57" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-17" Name="Ventilschutz" Text="Dégrippage" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv" Access="ReadWrite" Value="1">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="6" Offset="56" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-18" Name="Funktion der ext. Schnittstelle" Text="Fonctions des entrées" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="6" Offset="60" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-4" Name="Wirksinn" Text="Fonctionnement de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="7" Offset="56" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-5" Name="Entartung der Ventilkennlinie" Text="Caractéristiques de la course de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie" Access="ReadWrite" Value="2">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="6" Offset="58" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-66" Name="Art des angeschlossenen Präsenzkontakts" Text="Caractéristiques du contact de présence" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="0" Offset="62" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-7" Name="Minimale Stellgröße" Text="Valeur minimale de commande de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-MINAV" Access="ReadWrite" Value="0">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="5" Offset="55" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-8" Name="Verhalten bei Unterschreiten MINAV" Text="Valeur à appliquer lorsque la commande est&#xD;&#xA;inférieure à la valeur minimale" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV" Access="ReadWrite" Value="1">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="4" Offset="55" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-9" Name="Maximale Stellgröße" Text="Valeur maximale de commande de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV" Access="ReadWrite" Value="7">
+                <Memory CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" BitOffset="1" Offset="55" />
+              </Parameter>
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-115" Name="lineare Ventilkennlinie" Text="Course linéaire" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-132" Name="eigene Ventilkennlinie" Text="Course personnalisée" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-143" Name="benutzerdefinierte Ventileigenschaften" Text="Caractéristiques personalisées de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-145" Name="Information" Text="Informations" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-125" Name="Ventileinstellungen" Text="Caractéristiques de la vanne" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-standard" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-126" Name="Einstellungen" Text="Réglages sécurité" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-standard" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-144" Name="Easy objects" Text="Objets Easy" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar" Access="None" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-146" Name="Version" Text="Version" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Type.5FVersion" Access="Read" Value="1.1.2" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-6" Name="maximales Drehmoment" Text="Couple de serrage maximum" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment" Access="None" Value="1" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-3" Name="Sicherheit und Zwangsbetrieb" Text="Sécurité et forçage" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-2" Name="externe Schnittstelle" Text="Entrées extérieures" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+              <Parameter Id="M-0009_A-2053-11-E3A4-O0048_P-1" Name="Ventileigenschaften" Text="Généralités" ParameterType="M-0009_A-2053-11-E3A4-O0048_PT-Seite" Access="ReadWrite" Value="0" />
+            </Parameters>
+            <ParameterRefs>
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-1_R-1" DisplayOrder="100" RefId="M-0009_A-2053-11-E3A4-O0048_P-1" Tag="1" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-125_R-125" DisplayOrder="105" RefId="M-0009_A-2053-11-E3A4-O0048_P-125" Tag="125" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-11_R-11" DisplayOrder="180" RefId="M-0009_A-2053-11-E3A4-O0048_P-11" Tag="11" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-12_R-12" DisplayOrder="190" RefId="M-0009_A-2053-11-E3A4-O0048_P-12" Tag="12" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-144_R-144" DisplayOrder="199" RefId="M-0009_A-2053-11-E3A4-O0048_P-144" Tag="144" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-3_R-3" DisplayOrder="200" RefId="M-0009_A-2053-11-E3A4-O0048_P-3" Tag="3" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-126_R-126" DisplayOrder="205" RefId="M-0009_A-2053-11-E3A4-O0048_P-126" Tag="126" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-13_R-13" DisplayOrder="210" RefId="M-0009_A-2053-11-E3A4-O0048_P-13" Tag="13" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-14_R-14" DisplayOrder="220" RefId="M-0009_A-2053-11-E3A4-O0048_P-14" Tag="14" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-15_R-15" DisplayOrder="230" RefId="M-0009_A-2053-11-E3A4-O0048_P-15" Tag="15" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-16_R-16" DisplayOrder="240" RefId="M-0009_A-2053-11-E3A4-O0048_P-16" Tag="16" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-17_R-17" DisplayOrder="250" RefId="M-0009_A-2053-11-E3A4-O0048_P-17" Tag="17" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-114_R-114" DisplayOrder="260" RefId="M-0009_A-2053-11-E3A4-O0048_P-114" Tag="114" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-2_R-2" DisplayOrder="300" RefId="M-0009_A-2053-11-E3A4-O0048_P-2" Tag="2" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-18_R-18" DisplayOrder="310" RefId="M-0009_A-2053-11-E3A4-O0048_P-18" Tag="18" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-110_R-110" DisplayOrder="320" RefId="M-0009_A-2053-11-E3A4-O0048_P-110" Tag="110" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-110_R-112" DisplayOrder="321" RefId="M-0009_A-2053-11-E3A4-O0048_P-110" Tag="112" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-111_R-111" DisplayOrder="330" RefId="M-0009_A-2053-11-E3A4-O0048_P-111" Tag="111" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-111_R-113" DisplayOrder="331" RefId="M-0009_A-2053-11-E3A4-O0048_P-111" Tag="113" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-66_R-66" DisplayOrder="340" RefId="M-0009_A-2053-11-E3A4-O0048_P-66" Tag="66" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-108_R-108" DisplayOrder="350" RefId="M-0009_A-2053-11-E3A4-O0048_P-108" Tag="108" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-143_R-143" DisplayOrder="400" RefId="M-0009_A-2053-11-E3A4-O0048_P-143" Tag="143" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-4_R-4" DisplayOrder="410" RefId="M-0009_A-2053-11-E3A4-O0048_P-4" Tag="4" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-131_R-131" DisplayOrder="415" RefId="M-0009_A-2053-11-E3A4-O0048_P-131" Tag="131" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-142_R-142" DisplayOrder="420" RefId="M-0009_A-2053-11-E3A4-O0048_P-142" Tag="142" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-5_R-5" DisplayOrder="425" RefId="M-0009_A-2053-11-E3A4-O0048_P-5" Tag="5" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-6_R-6" DisplayOrder="430" RefId="M-0009_A-2053-11-E3A4-O0048_P-6" Tag="6" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-7_R-7" DisplayOrder="440" RefId="M-0009_A-2053-11-E3A4-O0048_P-7" Tag="7" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-8_R-8" DisplayOrder="450" RefId="M-0009_A-2053-11-E3A4-O0048_P-8" Tag="8" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-9_R-9" DisplayOrder="460" RefId="M-0009_A-2053-11-E3A4-O0048_P-9" Tag="9" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-10_R-10" DisplayOrder="470" RefId="M-0009_A-2053-11-E3A4-O0048_P-10" Tag="10" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-115_R-115" DisplayOrder="1000" RefId="M-0009_A-2053-11-E3A4-O0048_P-115" Tag="115" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-132_R-132" DisplayOrder="1001" RefId="M-0009_A-2053-11-E3A4-O0048_P-132" Tag="132" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-124_R-124" DisplayOrder="1010" RefId="M-0009_A-2053-11-E3A4-O0048_P-124" Tag="124" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-124_R-135" Access="ReadWrite" DisplayOrder="1011" RefId="M-0009_A-2053-11-E3A4-O0048_P-124" Tag="135" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-123_R-123" DisplayOrder="1020" RefId="M-0009_A-2053-11-E3A4-O0048_P-123" Tag="123" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-123_R-134" Access="ReadWrite" DisplayOrder="1021" RefId="M-0009_A-2053-11-E3A4-O0048_P-123" Tag="134" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-122_R-122" DisplayOrder="1030" RefId="M-0009_A-2053-11-E3A4-O0048_P-122" Tag="122" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-122_R-133" Access="ReadWrite" DisplayOrder="1031" RefId="M-0009_A-2053-11-E3A4-O0048_P-122" Tag="133" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-121_R-121" DisplayOrder="1040" RefId="M-0009_A-2053-11-E3A4-O0048_P-121" Tag="121" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-121_R-141" Access="ReadWrite" DisplayOrder="1041" RefId="M-0009_A-2053-11-E3A4-O0048_P-121" Tag="141" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-120_R-120" DisplayOrder="1050" RefId="M-0009_A-2053-11-E3A4-O0048_P-120" Tag="120" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-120_R-140" Access="ReadWrite" DisplayOrder="1051" RefId="M-0009_A-2053-11-E3A4-O0048_P-120" Tag="140" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-119_R-119" DisplayOrder="1060" RefId="M-0009_A-2053-11-E3A4-O0048_P-119" Tag="119" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-119_R-139" Access="ReadWrite" DisplayOrder="1061" RefId="M-0009_A-2053-11-E3A4-O0048_P-119" Tag="139" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-118_R-118" DisplayOrder="1070" RefId="M-0009_A-2053-11-E3A4-O0048_P-118" Tag="118" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-118_R-138" Access="ReadWrite" DisplayOrder="1071" RefId="M-0009_A-2053-11-E3A4-O0048_P-118" Tag="138" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-117_R-117" DisplayOrder="1080" RefId="M-0009_A-2053-11-E3A4-O0048_P-117" Tag="117" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-117_R-137" Access="ReadWrite" DisplayOrder="1081" RefId="M-0009_A-2053-11-E3A4-O0048_P-117" Tag="137" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-116_R-116" DisplayOrder="1090" RefId="M-0009_A-2053-11-E3A4-O0048_P-116" Tag="116" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-116_R-136" Access="ReadWrite" DisplayOrder="1091" RefId="M-0009_A-2053-11-E3A4-O0048_P-116" Tag="136" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-145_R-145" DisplayOrder="2000" RefId="M-0009_A-2053-11-E3A4-O0048_P-145" Tag="145" />
+              <ParameterRef Id="M-0009_A-2053-11-E3A4-O0048_P-146_R-146" DisplayOrder="2010" RefId="M-0009_A-2053-11-E3A4-O0048_P-146" Tag="146" />
+            </ParameterRefs>
+            <ComObjectTable CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-43FE" Offset="0">
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-0" FunctionText="Commande %" Name="Vanne" Number="0" ObjectSize="1 Byte" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Disabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Vanne" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-1" FunctionText="Forçage %" Name="Vanne" Number="1" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Disabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Vanne" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-2" FunctionText="Arrêt" Name="Vanne" Number="2" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Disabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Vanne" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-3" FunctionText="Easy" Name="Localisation state" Number="3" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Disabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Localisation state" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-4" FunctionText="Easy" Name="Channel localisation number" Number="4" ObjectSize="1 Byte" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Channel localisation number" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-5" FunctionText="Position vanne %" Name="Indication d'état" Number="5" ObjectSize="1 Byte" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Disabled" Text="Indication d'état" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-6" FunctionText="Valeur commande la plus élevée" Name="Indication d'état" Number="6" ObjectSize="1 Byte" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Enabled" Text="Indication d'état" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-7" FunctionText="Contact feuillure" Name="Indication d'état" Number="7" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Disabled" Text="Indication d'état" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-8" FunctionText="Contact présence" Name="Indication d'état" Number="8" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Disabled" Text="Indication d'état" />
+              <ComObject Id="M-0009_A-2053-11-E3A4-O0048_O-9" FunctionText="Présence / Absence commande" Name="Indication d'état" Number="9" ObjectSize="1 Bit" Priority="Low" CommunicationFlag="Enabled" ReadFlag="Enabled" ReadOnInitFlag="Disabled" TransmitFlag="Enabled" UpdateFlag="Enabled" WriteFlag="Disabled" Text="Indication d'état" />
+            </ComObjectTable>
+            <ComObjectRefs>
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-0_R-1" RefId="M-0009_A-2053-11-E3A4-O0048_O-0" Tag="1" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-1_R-2" RefId="M-0009_A-2053-11-E3A4-O0048_O-1" Tag="2" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-2_R-3" RefId="M-0009_A-2053-11-E3A4-O0048_O-2" Tag="3" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-3_R-4" RefId="M-0009_A-2053-11-E3A4-O0048_O-3" Tag="4" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-4_R-5" RefId="M-0009_A-2053-11-E3A4-O0048_O-4" Tag="5" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-5_R-9" RefId="M-0009_A-2053-11-E3A4-O0048_O-5" Tag="9" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-6_R-8" RefId="M-0009_A-2053-11-E3A4-O0048_O-6" Tag="8" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-7_R-12" RefId="M-0009_A-2053-11-E3A4-O0048_O-7" Tag="12" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-7_R-15" RefId="M-0009_A-2053-11-E3A4-O0048_O-7" Tag="15" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-8_R-13" RefId="M-0009_A-2053-11-E3A4-O0048_O-8" Tag="13" />
+              <ComObjectRef Id="M-0009_A-2053-11-E3A4-O0048_O-9_R-14" RefId="M-0009_A-2053-11-E3A4-O0048_O-9" Tag="14" />
+            </ComObjectRefs>
+            <AddressTable CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-4000" Offset="0" MaxEntries="254" />
+            <AssociationTable CodeSegment="M-0009_A-2053-11-E3A4-O0048_AS-41FF" Offset="0" MaxEntries="254" />
+            <LoadProcedures>
+              <LoadProcedure>
+                <LdCtrlConnect />
+                <LdCtrlUnload LsmIdx="1" />
+                <LdCtrlUnload LsmIdx="2" />
+                <LdCtrlUnload LsmIdx="3" />
+                <LdCtrlLoad LsmIdx="1" />
+                <LdCtrlAbsSegment LsmIdx="1" SegType="0" Address="16384" Size="511" Access="255" MemType="3" SegFlags="128" />
+                <LdCtrlTaskSegment LsmIdx="1" Address="16384" />
+                <LdCtrlLoadCompleted LsmIdx="1" />
+                <LdCtrlLoad LsmIdx="2" />
+                <LdCtrlAbsSegment LsmIdx="2" SegType="0" Address="16895" Size="511" Access="255" MemType="3" SegFlags="128" />
+                <LdCtrlTaskSegment LsmIdx="2" Address="16895" />
+                <LdCtrlLoadCompleted LsmIdx="2" />
+                <LdCtrlLoad LsmIdx="3" />
+                <LdCtrlAbsSegment LsmIdx="3" SegType="0" Address="1792" Size="20" Access="0" MemType="2" SegFlags="0" />
+                <LdCtrlAbsSegment LsmIdx="3" SegType="1" Address="1812" Size="1" Access="0" MemType="2" SegFlags="0" />
+                <LdCtrlAbsSegment LsmIdx="3" SegType="0" Address="17406" Size="80" Access="255" MemType="3" SegFlags="128" />
+                <LdCtrlTaskSegment LsmIdx="3" Address="17406" />
+                <LdCtrlTaskSegment LsmIdx="5" Address="17406" />
+                <LdCtrlLoadCompleted LsmIdx="3" />
+                <LdCtrlRestart />
+                <LdCtrlDisconnect />
+              </LoadProcedure>
+            </LoadProcedures>
+            <Extension RequiresExternalSoftware="0" />
+            <Options PreferPartialDownloadIfApplicationLoaded="0" EasyCtrlModeModeStyleEmptyGroupComTables="0" SetObjectTableLengthAlwaysToOne="0" TextParameterZeroTerminate="0" ParameterByteOrder="BigEndian" LegacyNoPartialDownload="0" LegacyNoMemoryVerifyMode="0" LegacyNoOptimisticWrite="0" LegacyDoNotReportPropertyWriteErrors="0" LegacyNoBackgroundDownload="0" LegacyDoNotCheckManufacturerId="0" LegacyAlwaysReloadAppIfCoVisibilityChanged="0" LegacyNeverReloadAppIfCoVisibilityChanged="0" LegacyDoNotSupportUndoDelete="0" LegacyAllowPartialDownloadIfAp2Mismatch="1" LegacyKeepObjectTableGaps="0" PartialDownloadOnlyVisibleParameters="0" LegacyProxyCommunicationObjects="0" DeviceInfoIgnoreRunState="0" DeviceInfoIgnoreLoadedState="0" DeviceCompareAllowCompatibleManufacturerId="0" LineCoupler0912NewProgrammingStyle="0" TextParameterEncodingSelector="UseTextParameterEncodingCodePage" DownloadInvisibleParameters="Background" />
+          </Static>
+          <Dynamic>
+            <Channel Name="Generic" Text="" Number="0" Id="M-0009_A-2053-11-E3A4-O0048_CH-0">
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-0_R-1" />
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-1_R-2" />
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-2_R-3" />
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-5_R-9" />
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-6_R-8" />
+              <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-9_R-14" />
+              <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-1" Name="Ventileigenschaften" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-1_R-1">
+                <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-1_R-1">
+                  <when default="true">
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-125_R-125" />
+                    <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-125_R-125">
+                      <when default="true">
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-11_R-11" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-12_R-12" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-144_R-144" />
+                <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-144_R-144">
+                  <when test="1">
+                    <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-3_R-4" />
+                    <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-4_R-5" />
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-3" Name="Sicherheit und Zwangsbetrieb" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-3_R-3">
+                <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-3_R-3">
+                  <when default="true">
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-126_R-126" />
+                    <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-126_R-126">
+                      <when test="1">
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-13_R-13" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-14_R-14" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-15_R-15" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-17_R-17" />
+                      </when>
+                    </choose>
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-16_R-16" />
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-114_R-114" />
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-2" Name="externe Schnittstelle" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-2_R-2">
+                <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-2_R-2">
+                  <when default="true">
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-18_R-18" />
+                    <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-18_R-18">
+                      <when test="2">
+                        <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-7_R-12" />
+                        <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-8_R-13" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-110_R-112" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-111_R-113" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-66_R-66" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-108_R-108" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="M-0009_A-2053-11-E3A4-O0048_O-7_R-15" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-110_R-110" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-111_R-111" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-145" Name="Information" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-145_R-145">
+                <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-145_R-145">
+                  <when default="true">
+                    <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-146_R-146" />
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-1_R-1">
+                <when default="true">
+                  <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-125_R-125">
+                    <when test="1">
+                      <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-143" Name="benutzerdefinierte Ventileigenschaften" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-143_R-143">
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-4_R-4" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-131_R-131" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-142_R-142" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-5_R-5" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-6_R-6" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-7_R-7" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-8_R-8" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-9_R-9" />
+                        <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-10_R-10" />
+                      </ParameterBlock>
+                      <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-5_R-5">
+                        <when test="0">
+                          <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-115" Name="lineare Ventilkennlinie" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-115_R-115">
+                            <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-115_R-115">
+                              <when default="true">
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-124_R-124" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-123_R-123" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-122_R-122" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-121_R-121" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-120_R-120" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-119_R-119" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-118_R-118" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-117_R-117" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-116_R-116" />
+                              </when>
+                            </choose>
+                          </ParameterBlock>
+                        </when>
+                        <when test="1">
+                          <ParameterBlock Id="M-0009_A-2053-11-E3A4-O0048_PB-132" Name="eigene Ventilkennlinie" ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-132_R-132">
+                            <choose ParamRefId="M-0009_A-2053-11-E3A4-O0048_P-132_R-132">
+                              <when default="true">
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-124_R-135" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-123_R-134" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-122_R-133" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-121_R-141" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-120_R-140" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-119_R-139" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-118_R-138" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-117_R-137" />
+                                <ParameterRefRef RefId="M-0009_A-2053-11-E3A4-O0048_P-116_R-136" />
+                              </when>
+                            </choose>
+                          </ParameterBlock>
+                        </when>
+                      </choose>
+                    </when>
+                  </choose>
+                </when>
+              </choose>
+            </Channel>
+          </Dynamic>
+        </ApplicationProgram>
+      </ApplicationPrograms>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0009_A-2053-11-E3A4-O0048">
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048">
+              <Translation AttributeName="Name" Text="TL501A V1.1" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-0">
+              <Translation AttributeName="Text" Text="Valve" />
+              <Translation AttributeName="FunctionText" Text="Command %" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-1">
+              <Translation AttributeName="Text" Text="Valve" />
+              <Translation AttributeName="FunctionText" Text="Priority %" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-2">
+              <Translation AttributeName="Text" Text="Valve" />
+              <Translation AttributeName="FunctionText" Text="Stop" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-3">
+              <Translation AttributeName="Text" Text="Localisation state" />
+              <Translation AttributeName="FunctionText" Text="Easy" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-4">
+              <Translation AttributeName="Text" Text="localisation channel" />
+              <Translation AttributeName="FunctionText" Text="Easy" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-5">
+              <Translation AttributeName="Text" Text="Status indication" />
+              <Translation AttributeName="FunctionText" Text="Valve position %" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-6">
+              <Translation AttributeName="Text" Text="Status indication" />
+              <Translation AttributeName="FunctionText" Text="Highest command value" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-7">
+              <Translation AttributeName="Text" Text="Status indication" />
+              <Translation AttributeName="FunctionText" Text="Magnetic contact" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-8">
+              <Translation AttributeName="Text" Text="Status indication" />
+              <Translation AttributeName="FunctionText" Text="Presence contact" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_O-9">
+              <Translation AttributeName="Text" Text="Status indication" />
+              <Translation AttributeName="FunctionText" Text="Presence / Absence command" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-115">
+              <Translation AttributeName="Text" Text="Linear curve" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-132">
+              <Translation AttributeName="Text" Text="Customized curve" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-143">
+              <Translation AttributeName="Text" Text="Valve customized settings" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-145">
+              <Translation AttributeName="Text" Text="Data" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-125">
+              <Translation AttributeName="Text" Text="Valve characteristics" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-126">
+              <Translation AttributeName="Text" Text="Security settings" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-144">
+              <Translation AttributeName="Text" Text="Objets Easy" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-146">
+              <Translation AttributeName="Text" Text="Version" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-6">
+              <Translation AttributeName="Text" Text="Maximum torque" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-142">
+              <Translation AttributeName="Text" Text="Type of valve seal" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-131">
+              <Translation AttributeName="Text" Text="Additional pressing of rubber seal&#xD;&#xA;in 1/100 mm (0...100)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-124">
+              <Translation AttributeName="Text" Text="Valve position in % for 10 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-123">
+              <Translation AttributeName="Text" Text="Valve position in % for 20 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-122">
+              <Translation AttributeName="Text" Text="Valve position in % for 30 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-121">
+              <Translation AttributeName="Text" Text="Valve position in % for 40 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-120">
+              <Translation AttributeName="Text" Text="Valve position in % for 50 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-119">
+              <Translation AttributeName="Text" Text="Valve position in % for 60 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-118">
+              <Translation AttributeName="Text" Text="Valve position in % for 70 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-117">
+              <Translation AttributeName="Text" Text="Valve position in % for 80 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-116">
+              <Translation AttributeName="Text" Text="Valve position in % for 90 % volume flow&#xD;&#xA;(1..99)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-9">
+              <Translation AttributeName="Text" Text="Maximum valve command value" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-8">
+              <Translation AttributeName="Text" Text="Heating rate to apply when command &#xD;&#xA;below minimum value" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-7">
+              <Translation AttributeName="Text" Text="Minimum valve command value" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-13">
+              <Translation AttributeName="Text" Text="Cyclic monitoring" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-15">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Presence / Absence command :" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-17">
+              <Translation AttributeName="Text" Text="Valve protection" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-4">
+              <Translation AttributeName="Text" Text="Mode of operation of valve" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-14">
+              <Translation AttributeName="Text" Text="Valve position for command failure mode." />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-16">
+              <Translation AttributeName="Text" Text="Valve position for priority OFF" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-5">
+              <Translation AttributeName="Text" Text="Characteristic curve of valve" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-11">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Valve position if fluctuation of :" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-12">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Valve position every :" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-114">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Highest command value : " />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-3">
+              <Translation AttributeName="Text" Text="Security and priority" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-2">
+              <Translation AttributeName="Text" Text="External inputs" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-1">
+              <Translation AttributeName="Text" Text="General" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-18">
+              <Translation AttributeName="Text" Text="Inputs functions" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-110">
+              <Translation AttributeName="Text" Text="Magnetic contact characteristics" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-111">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Magnetic contact every :" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-66">
+              <Translation AttributeName="Text" Text="Presence contact characteristics" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-108">
+              <Translation AttributeName="Text" Text="Emission of Status indication object&#xD;&#xA;Presence contact every :" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_P-10">
+              <Translation AttributeName="Text" Text="Application of new heating rate  &#xD;&#xA;if fluctuation of : " />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv_EN-0">
+              <Translation AttributeName="Text" Text="Not active" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-aktiv.2F.20inaktiv_EN-1">
+              <Translation AttributeName="Text" Text="Active" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-0">
+              <Translation AttributeName="Text" Text="Not in case of change" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-1">
+              <Translation AttributeName="Text" Text="0,2 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-2">
+              <Translation AttributeName="Text" Text="0,3 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-3">
+              <Translation AttributeName="Text" Text="0,5 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-4">
+              <Translation AttributeName="Text" Text="0,7 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-5">
+              <Translation AttributeName="Text" Text="1 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-6">
+              <Translation AttributeName="Text" Text="1,5 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Delta.20Senden.20Istwert_EN-7">
+              <Translation AttributeName="Text" Text="2 K" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-0">
+              <Translation AttributeName="Text" Text="Linear" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-1">
+              <Translation AttributeName="Text" Text="Customized " />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entartung.20der.20Kennlinie_EN-2">
+              <Translation AttributeName="Text" Text="Standard" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-10">
+              <Translation AttributeName="Text" Text="Valve with standard seal" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-0">
+              <Translation AttributeName="Text" Text="Valve with hard seal" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-20">
+              <Translation AttributeName="Text" Text="Valve with soft seal" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Entlastung.20der.20Gummidichtung_EN-15">
+              <Translation AttributeName="Text" Text="Valve with medium soft seal" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-0">
+              <Translation AttributeName="Text" Text="Not used" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-1">
+              <Translation AttributeName="Text" Text="I1: magnetic contact, I2: none" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-externe.20Schnittstelle_EN-2">
+              <Translation AttributeName="Text" Text="I1: magnetic contact, I2: presence" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-0">
+              <Translation AttributeName="Text" Text="Position always accurate" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-1">
+              <Translation AttributeName="Text" Text="1%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-2">
+              <Translation AttributeName="Text" Text="2%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-3">
+              <Translation AttributeName="Text" Text="3%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-4">
+              <Translation AttributeName="Text" Text="5%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-5">
+              <Translation AttributeName="Text" Text="7%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-6">
+              <Translation AttributeName="Text" Text="10%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Korrektur.20der.20Ventilposition_EN-7">
+              <Translation AttributeName="Text" Text="15%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-0">
+              <Translation AttributeName="Text" Text="60%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-1">
+              <Translation AttributeName="Text" Text="70%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-2">
+              <Translation AttributeName="Text" Text="75%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-3">
+              <Translation AttributeName="Text" Text="80%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-4">
+              <Translation AttributeName="Text" Text="85%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-5">
+              <Translation AttributeName="Text" Text="90%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-6">
+              <Translation AttributeName="Text" Text="95%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MAXAV_EN-7">
+              <Translation AttributeName="Text" Text="100%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-0">
+              <Translation AttributeName="Text" Text="Small" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-1">
+              <Translation AttributeName="Text" Text="Standard" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-maximales.20Drehmoment_EN-2">
+              <Translation AttributeName="Text" Text="Strong" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-0">
+              <Translation AttributeName="Text" Text="0%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-1">
+              <Translation AttributeName="Text" Text="5%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-2">
+              <Translation AttributeName="Text" Text="10%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-3">
+              <Translation AttributeName="Text" Text="15%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-4">
+              <Translation AttributeName="Text" Text="20%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-5">
+              <Translation AttributeName="Text" Text="25%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-6">
+              <Translation AttributeName="Text" Text="30%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-MINAV_EN-7">
+              <Translation AttributeName="Text" Text="40%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Seite_EN-0">
+              <Translation AttributeName="Text" Text="Page" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-0">
+              <Translation AttributeName="Text" Text="No emission" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-1">
+              <Translation AttributeName="Text" Text="Only in case of change" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20ext.20Eingang_EN-2">
+              <Translation AttributeName="Text" Text="Only in case of change" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-0">
+              <Translation AttributeName="Text" Text="If heating rate applied is the higher" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-1">
+              <Translation AttributeName="Text" Text="2 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-2">
+              <Translation AttributeName="Text" Text="3 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-3">
+              <Translation AttributeName="Text" Text="5 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-4">
+              <Translation AttributeName="Text" Text="10 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-5">
+              <Translation AttributeName="Text" Text="15 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-6">
+              <Translation AttributeName="Text" Text="20 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-7">
+              <Translation AttributeName="Text" Text="30 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-8">
+              <Translation AttributeName="Text" Text="45 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20max.2E.20Stellgr.2E_EN-9">
+              <Translation AttributeName="Text" Text="60 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm_EN-0">
+              <Translation AttributeName="Text" Text="At the end of each cyclic monitoring" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Objekt.20Notprogramm_EN-1">
+              <Translation AttributeName="Text" Text="Only in case of command failure" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-0">
+              <Translation AttributeName="Text" Text="No emission" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-1">
+              <Translation AttributeName="Text" Text="1%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-2">
+              <Translation AttributeName="Text" Text="2%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-3">
+              <Translation AttributeName="Text" Text="3%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-4">
+              <Translation AttributeName="Text" Text="5%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-5">
+              <Translation AttributeName="Text" Text="7%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-6">
+              <Translation AttributeName="Text" Text="10%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Senden.20Ventilposition_EN-7">
+              <Translation AttributeName="Text" Text="15%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar_EN-0">
+              <Translation AttributeName="Text" Text="Hidden" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Sichtbar_EN-1">
+              <Translation AttributeName="Text" Text="Visible" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-standard_EN-0">
+              <Translation AttributeName="Text" Text="Standard" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-standard_EN-1">
+              <Translation AttributeName="Text" Text="Customized settings" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-0">
+              <Translation AttributeName="Text" Text="0%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-1">
+              <Translation AttributeName="Text" Text="10%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-2">
+              <Translation AttributeName="Text" Text="20%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-3">
+              <Translation AttributeName="Text" Text="30%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-4">
+              <Translation AttributeName="Text" Text="40%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-5">
+              <Translation AttributeName="Text" Text="50%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-6">
+              <Translation AttributeName="Text" Text="60%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-7">
+              <Translation AttributeName="Text" Text="70%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-8">
+              <Translation AttributeName="Text" Text="80%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-9">
+              <Translation AttributeName="Text" Text="90%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Stellung_EN-10">
+              <Translation AttributeName="Text" Text="100%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-0">
+              <Translation AttributeName="Text" Text="No monitoring" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-3">
+              <Translation AttributeName="Text" Text="5 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-4">
+              <Translation AttributeName="Text" Text="10 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-5">
+              <Translation AttributeName="Text" Text="15 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-6">
+              <Translation AttributeName="Text" Text="20 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-7">
+              <Translation AttributeName="Text" Text="30 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-8">
+              <Translation AttributeName="Text" Text="45 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Überwachen_EN-9">
+              <Translation AttributeName="Text" Text="60 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MAXAV_EN-0">
+              <Translation AttributeName="Text" Text="100%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MAXAV_EN-1">
+              <Translation AttributeName="Text" Text="Command restriction" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV_EN-0">
+              <Translation AttributeName="Text" Text="0%" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Verhalten.20bei.20MINAV_EN-1">
+              <Translation AttributeName="Text" Text="Minimum value (excepted 0%= 0%) " />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn_EN-0">
+              <Translation AttributeName="Text" Text="Standard (pushed tappet = valve closed)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn_EN-1">
+              <Translation AttributeName="Text" Text="No Standard (pushed tappet = valve open)" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt_EN-0">
+              <Translation AttributeName="Text" Text="Window open = contact closed" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Fensterkontakt_EN-1">
+              <Translation AttributeName="Text" Text="Window open = contact open" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt_EN-0">
+              <Translation AttributeName="Text" Text="Presence = contact closed" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-Wirksinn.20Präsenzkontakt_EN-1">
+              <Translation AttributeName="Text" Text="Presence = contact open" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-0">
+              <Translation AttributeName="Text" Text="No emission" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-1">
+              <Translation AttributeName="Text" Text="2 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-2">
+              <Translation AttributeName="Text" Text="3 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-3">
+              <Translation AttributeName="Text" Text="5 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-4">
+              <Translation AttributeName="Text" Text="10 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-5">
+              <Translation AttributeName="Text" Text="15 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-6">
+              <Translation AttributeName="Text" Text="20 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-7">
+              <Translation AttributeName="Text" Text="30 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-8">
+              <Translation AttributeName="Text" Text="45 min" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0009_A-2053-11-E3A4-O0048_PT-zyklisch.20senden_EN-9">
+              <Translation AttributeName="Text" Text="60 min" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>
