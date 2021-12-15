@@ -26,25 +26,35 @@ class Manipulator:
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
+    
     def __get_unchecked_functions(
-        self,
-        op: Union[
-            ast.stmt,
-            ast.expr,
-            ast.comprehension,
-            List[ast.stmt],
-            List[ast.expr],
-            List[ast.comprehension],
-        ],
-    ) -> List[str]:
+            self,
+            op: Union[
+                ast.stmt,
+                ast.expr,
+                ast.comprehension,
+                List[ast.stmt],
+                List[ast.expr],
+                List[ast.comprehension],
+            ],
+        ) -> Dict[str, str]:
+        """
+            Go through the AST and return a Dict containing
+            "unchecked_func_name" -> "doc_string"
+        """
         if isinstance(op, list) or isinstance(op, tuple):
-            return [self.__get_unchecked_functions(v) for v in list(op)]
+            return [
+                self.__get_unchecked_functions(v)
+                for v in list(op)
+            ]
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             return self.__get_unchecked_functions(op.elts)
         elif isinstance(op, ast.FunctionDef) and (
             op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
         ):
-            return op.name
+            doc_string = ast.get_docstring(op)
+            doc_string = "" if doc_string == None else doc_string
+            return (op.name, doc_string)
 
     def __rename_instances_add_state(
         self,
