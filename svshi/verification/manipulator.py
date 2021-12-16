@@ -541,11 +541,10 @@ class Manipulator:
         return True, ""
 
     def __add_unchecked_function_arguments_to_iteration(
-        self, f: ast.FunctionDef, arguments: List[Tuple[str, str]]
+        self, f: ast.FunctionDef, arguments: List[UncheckedFunction]
     ):
-        # t[0] is the name, t[1] is the type
         ast_arguments = list(
-            map(lambda t: ast.arg(t[0], ast.Name(t[1], ast.Load)), arguments)
+            map(lambda unchecked_f: ast.arg(unchecked_f.name, ast.Name(unchecked_f.return_type, ast.Load)), arguments)
         )
         f.args.args.extend(ast_arguments)
 
@@ -603,16 +602,17 @@ class Manipulator:
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(module_body, app_name, accepted_names)
 
-            unchecked_apps_dict = self.__get_unchecked_functions(module_body)
+            unchecked_func_dict = self.__get_unchecked_functions(module_body)
 
             # Extract imports, precond/iteration functions and add the contracts to them
             (
                 functions_ast,
                 imports_ast,
                 from_imports_ast,
-            ) = extract_functions_and_imports(module_body, unchecked_apps_dict)
+            ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
             # Check if a precondition function contains a call to an unchecked function
+            unchecked_func_names = set(unchecked_func_dict.keys())
             valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
                 list(
                     filter(
@@ -620,12 +620,27 @@ class Manipulator:
                         functions_ast,
                     )
                 ),
-                set(unchecked_apps_dict.keys()),
+                unchecked_func_names,
             )
             if not valid:
                 raise InvalidUncheckedFunctionCallException(
                     f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function."
                 )
+            
+            # Replace all calls to unchecked functions by variables in iteration function
+            iteration_functions = list(
+                    filter(
+                        lambda f: f.name.endswith(f"_{self.__ITERATION_FUNC_NAME}"),
+                        functions_ast,
+                    )
+                 )
+    
+            self.__change_unchecked_functions_to_var(
+                 iteration_functions, unchecked_func_names,
+            )
+
+            # Add unchecked_function_names as arguments of the iteration functions
+            map(lambda f: self.__add_unchecked_function_arguments_to_iteration(f, list(unchecked_func_dict.values())), iteration_functions)
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))
