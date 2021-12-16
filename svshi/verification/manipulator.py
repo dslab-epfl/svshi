@@ -136,7 +136,7 @@ class Manipulator:
             f_name = ""
             if isinstance(op.func, ast.Attribute):
                 # op.func.value is a ast.Name in this case
-                f_name = op.func.value.id
+                f_name = cast(ast.Name, op.func.value).id
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
             else:
@@ -149,7 +149,7 @@ class Manipulator:
                 # Rename the instance calling the function, adding the app name to it
                 new_name = f"{app_name.upper()}_{f_name}"
                 if isinstance(op.func, ast.Attribute):
-                    op.func.value.id = new_name
+                    cast(ast.Name, op.func.value).id = new_name
                 elif isinstance(op.func, ast.Name):
                     op.func.id = new_name
         elif isinstance(op, ast.keyword):
@@ -232,7 +232,9 @@ class Manipulator:
         f.body.append(ast.Return(ast.Name("physical_state", ast.Load)))
         return f
 
-    def __change_unchecked_func_in_iteration(self, iteration_func: ast.FunctionDef, unchecked_function_names: Set[str]) -> ast.FunctionDef:
+    def __change_unchecked_func_in_iteration(
+        self, iteration_func: ast.FunctionDef, unchecked_function_names: Set[str]
+    ) -> ast.FunctionDef:
         """
         Manipulates the iteration function to replace all calls to unchecked functions by a variable with the same name. It also adds
         this variables as arguments
@@ -326,7 +328,7 @@ class Manipulator:
                 f_name = ""
                 if isinstance(op.func, ast.Attribute):
                     # op.func.value is a ast.Name in this case
-                    f_name = op.func.value.id
+                    f_name = cast(ast.Name, op.func.value).id
                 elif isinstance(op.func, ast.Name):
                     f_name = op.func.id
 
@@ -346,6 +348,15 @@ class Manipulator:
                 return False, function.name
 
         return True, ""
+
+    def __add_unchecked_function_arguments_to_iteration(
+        self, f: ast.FunctionDef, arguments: List[Tuple[str, str]]
+    ):
+        # t[0] is the name, t[1] is the type
+        ast_arguments = list(
+            map(lambda t: ast.arg(t[0], ast.Name(t[1], ast.Load)), arguments)
+        )
+        f.args.args.extend(ast_arguments)
 
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
