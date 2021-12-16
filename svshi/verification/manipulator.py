@@ -744,16 +744,20 @@ class Manipulator:
                     ),
                 )
             )
-            # We only keep the imports that were added by the user
+            # We only keep the imports that were added by the user, if it is the runtime file.
+            # Otherwise, we remove them as well, so that the verification fails if the user used
+            # external libraries in iteration or precond functions
             imports_ast = list(
                 filter(
-                    lambda n: isinstance(n, ast.Import),
+                    lambda n: not verification and isinstance(n, ast.Import),
                     module_body,
                 )
             )
             from_imports_ast = list(
                 filter(
-                    lambda n: isinstance(n, ast.ImportFrom) and n.module != "devices",
+                    lambda n: not verification
+                    and isinstance(n, ast.ImportFrom)
+                    and n.module != "devices",
                     module_body,
                 )
             )

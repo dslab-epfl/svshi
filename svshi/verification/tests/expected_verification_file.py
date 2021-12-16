@@ -1,5 +1,4 @@
 import dataclasses
-import time
 
 
 @dataclasses.dataclass
@@ -229,7 +228,8 @@ def second_app_precond(physical_state: PhysicalState) ->bool:
         ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def second_app_iteration(physical_state: PhysicalState):
+def second_app_iteration(physical_state: PhysicalState,
+    second_app_unchecked_time: float):
     """
 pre: first_app_precond(physical_state)
 pre: second_app_precond(physical_state)
@@ -239,5 +239,5 @@ post: second_app_precond(__return__)
 post: third_app_precond(__return__)
 """
     print(SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
-    time.sleep(2)
+    print(second_app_unchecked_time)
     return physical_state
