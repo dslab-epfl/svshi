@@ -35,7 +35,7 @@ class Manipulator:
 
     __STATE_ARGUMENT = "physical_state"
     __STATE_TYPE = "PhysicalState"
-    __UNCHECKED_FUNC_PREFIX = "unchecked_"
+    __UNCHECKED_FUNC_PREFIX = "unchecked"
     __PRECOND_FUNC_NAME = "precond"
     __ITERATION_FUNC_NAME = "iteration"
 
