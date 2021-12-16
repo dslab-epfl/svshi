@@ -11,6 +11,7 @@
     - [Docker](#docker)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
+    - [Writing apps](#writing-apps)
   - [Running the applications](#running-the-applications)
   - [App generator](#app-generator)
     - [Prototypical structure](#prototypical-structure)
@@ -79,8 +80,35 @@ To develop an app for SVSHI:
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
 4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
-5. Write your app.
+5. [Write your app](#writing-apps).
 6. Run `svshi` again to compile and [verify](#verification) the app with `svshi compile -f ets.knxproj`.
+
+### Writing apps
+
+To write an app, you mainly have to modify the `main.py` file, optionally adding dependencies to the provided `requirements.txt`.
+
+All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
+
+There are also two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or invariants) that the app must satisfy throughout execution, while in the second you should write the app code.
+
+An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with "unchecked" and whose return type is explicitly stated, and only then they can be used in `iteration()`.
+
+In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the read properties of the devices and constants is fine. However, you cannot call external libraries here, nor unchecked functions.
+
+Unchecked functions are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. However, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
+
+Functions' post-conditions define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`.
+
+An example with multiple post-conditions could be:
+
+```python
+def unchecked_function() -> int:
+  """
+  post: __return__ > 0
+  post: __return__ != 3
+  """
+  return 2
+```
 
 ## Running the applications
 
