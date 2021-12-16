@@ -180,7 +180,7 @@ class Manipulator:
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
 
     def __construct_contracts(
-        self, app_names: List[str], unchecked_apps_dict: Dict[str, UncheckedFunction]
+        self, app_names: List[str], unchecked_func_dict: Dict[str, UncheckedFunction]
     ) -> str:
         pre_str = "pre: "
         post_str = "post: "
@@ -219,7 +219,7 @@ class Manipulator:
             )
             conditions.append(precond)
 
-        for unchecked_app_name, unchecked_func in unchecked_apps_dict.items():
+        for unchecked_app_name, unchecked_func in unchecked_func_dict.items():
             conditions.extend(
                 construct_pre_unchecked_func(unchecked_app_name, unchecked_func.doc_string)
             )
@@ -553,7 +553,7 @@ class Manipulator:
         self, directory: str, app_name: str, accepted_names: Set[str]
     ) -> Tuple[List[str], str]:
         def extract_functions_and_imports(
-            module_body: List[ast.stmt], unchecked_apps_dict: Dict[str, str]
+            module_body: List[ast.stmt], unchecked_func_dict: Dict[str, UncheckedFunction]
         ):
             # We only keep precond and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
@@ -562,7 +562,7 @@ class Manipulator:
                         self.__add_doc_string(
                             f,
                             self.__construct_contracts(
-                                self.__app_names, unchecked_apps_dict
+                                self.__app_names, unchecked_func_dict
                             ),
                         )
                     )
@@ -633,14 +633,3 @@ class Manipulator:
             from_imports = astor.to_source(ast.Module(from_imports_ast))
             return [imports, from_imports], functions
 
-
-# TODOs
-
-# if op.name == self.__PRECOND_FUNC_NAME:
-#     # Check that there are no function calls to the unchecked ones
-#     pass
-# else:
-#     # Replace all calls to the unchecked by a variable with the same name
-#     # Add to the arguments of the function the unchecked functions names
-#     # Add postconditions of the unchecked functions to the preconditions of the iteration function
-#     pass
