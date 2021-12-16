@@ -12,6 +12,7 @@
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
     - [Writing apps](#writing-apps)
+    - [App example](#app-example)
   - [Running the applications](#running-the-applications)
   - [App generator](#app-generator)
     - [Prototypical structure](#prototypical-structure)
@@ -108,6 +109,26 @@ def unchecked_function() -> int:
   post: __return__ != 3
   """
   return 2
+```
+
+### App example
+
+In `main.py`:
+
+```python
+from devices import BINARY_SENSOR, SWITCH
+
+
+def precond() -> bool:
+    # The switch should be in the same state as the binary sensor
+    return (BINARY_SENSOR.is_on() and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
+
+
+def iteration():
+    if BINARY_SENSOR.is_on():
+        SWITCH.on()
+    else:
+        SWITCH.off()
 ```
 
 ## Running the applications
