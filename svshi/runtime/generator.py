@@ -8,22 +8,35 @@ class ConditionsGenerator:
         app_library_dir: str,
         conditions_file_path: str,
         verification_file_path: str,
+        runtime_file_path: str,
     ):
         self.__app_library_dir = app_library_dir
         self.__conditions_file_path = conditions_file_path
         self.__verification_file_path = verification_file_path
+        self.__runtime_file_path = runtime_file_path
 
     def __write_conditions_file(self, data: str):
         os.makedirs(os.path.dirname(self.__conditions_file_path), exist_ok=True)
         with open(self.__conditions_file_path, "w+") as output_file:
             output_file.write(data)
 
-    def copy_verification_file_from_verification_module(self, verification_module_path: str):
+    def copy_verification_file_from_verification_module(
+        self, verification_module_path: str
+    ):
         """
         Copies the verification file from the verification module in the runtime module.
         """
         subprocess.run(
             f"cp {verification_module_path}/verification_file.py {self.__verification_file_path}",
+            shell=True,
+        )
+
+    def copy_runtime_file_from_verification_module(self, verification_module_path: str):
+        """
+        Copies the runtime file from the verification module in the runtime module.
+        """
+        subprocess.run(
+            f"cp {verification_module_path}/runtime_file.py {self.__verification_file_path}",
             shell=True,
         )
 
@@ -90,4 +103,21 @@ class PhysicalState:
 """.strip()
 
         with open(self.__verification_file_path, "w") as output_file:
+            output_file.write(file)
+
+    def reset_runtime_file(self):
+        """
+        Resets the runtime file.
+        """
+        file = f"""
+# Default file, will be overwritten while running
+import dataclasses
+
+
+@dataclasses.dataclass
+class PhysicalState:
+    arg: str 
+""".strip()
+
+        with open(self.__runtime_file_path, "w") as output_file:
             output_file.write(file)

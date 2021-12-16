@@ -54,7 +54,7 @@ def __get_apps_names(app_library_dir: str) -> List[str]:
     ]
 
 
-def get_apps(app_library_dir: str, verification_file_module: str) -> List[App]:
+def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
     """
     Gets the list of apps.
     """
@@ -62,7 +62,7 @@ def get_apps(app_library_dir: str, verification_file_module: str) -> List[App]:
     apps = []
     for app_name in apps_names:
         app_code = getattr(
-            import_module(verification_file_module), f"{app_name}_iteration"
+            import_module(runtime_file_module), f"{app_name}_iteration"
         )
         with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
