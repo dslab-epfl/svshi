@@ -203,26 +203,37 @@ def first_app_precond(physical_state: PhysicalState) ->bool:
         ) > 18
 
 
-def first_app_iteration(physical_state: PhysicalState,
-    first_app_unchecked_compute_bool: bool, first_app_unchecked_return_two: int
-    ):
+def first_app_iteration(physical_state: PhysicalState):
     """
 pre: first_app_precond(physical_state)
 pre: second_app_precond(physical_state)
 pre: third_app_precond(physical_state)
-pre: first_app_unchecked_compute_bool == False
-pre: first_app_unchecked_return_two > 0
-pre: first_app_unchecked_return_two != 3
 post: first_app_precond(__return__)
 post: second_app_precond(__return__)
 post: third_app_precond(__return__)
 """
-    if first_app_unchecked_compute_bool:
+    if first_app_unchecked_compute_bool():
         print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
     else:
-        v = first_app_unchecked_return_two
+        v = first_app_unchecked_return_two()
         print(v)
     return physical_state
+
+
+def first_app_unchecked_compute_bool() ->bool:
+    """
+    post: __return__ == False
+    """
+    return False
+
+
+def first_app_unchecked_return_two() ->int:
+    """
+    pre: True
+    post: __return__ > 0
+    post: __return__ != 3
+    """
+    return 2
 
 def second_app_precond(physical_state: PhysicalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state

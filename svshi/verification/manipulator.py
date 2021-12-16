@@ -23,6 +23,7 @@ class UncheckedFunction:
     """
 
     name: str
+    name_with_app_name: str
     doc_string: str
     return_type: str
 
@@ -54,20 +55,21 @@ class Manipulator:
             List[ast.expr],
             List[ast.comprehension],
         ],
+        app_name: str,
     ) -> Dict[str, UncheckedFunction]:
         """
         Go through the AST and return a Dict containing
         "unchecked_func_name" -> UncheckedFunction
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            dicts_list = [self.__get_unchecked_functions(v) for v in list(op)]
+            dicts_list = [self.__get_unchecked_functions(v, app_name) for v in list(op)]
             res = {}
             for d in dicts_list:
                 for k in d.keys():
                     res[k] = d[k]
             return res
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
-            return self.__get_unchecked_functions(op.elts)
+            return self.__get_unchecked_functions(op.elts, app_name)
         elif isinstance(op, ast.FunctionDef) and (
             op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
         ):
@@ -78,9 +80,11 @@ class Manipulator:
                 raise UntypedUncheckedFunctionException(
                     f"The unchecked function '{op.name}' has no return type."
                 )
+            func_name = op.name
+            new_func_name = f"{app_name}_{func_name}"
             return {
-                op.name: UncheckedFunction(
-                    op.name, doc_string, cast(ast.Name, return_type).id
+                func_name: UncheckedFunction(
+                    func_name, new_func_name, doc_string, cast(ast.Name, return_type).id
                 )
             }
         else:
@@ -100,66 +104,123 @@ class Manipulator:
         ],
         app_name: str,
         accepted_names: Set[str],
+        unchecked_functions: List[UncheckedFunction],
     ):
         if isinstance(op, list) or isinstance(op, tuple):
             [
-                self.__rename_instances_add_state(v, app_name, accepted_names)
+                self.__rename_instances_add_state(
+                    v, app_name, accepted_names, unchecked_functions
+                )
                 for v in list(op)
             ]
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
-            self.__rename_instances_add_state(op.elts, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.elts, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.BoolOp):
-            self.__rename_instances_add_state(op.values, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.values, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.UnaryOp):
-            self.__rename_instances_add_state(op.operand, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.operand, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
-            self.__rename_instances_add_state(op.value, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Lambda):
-            self.__rename_instances_add_state(op.body, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.body, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Assign):
-            self.__rename_instances_add_state(op.value, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Return):
             if op.value:
-                self.__rename_instances_add_state(op.value, app_name, accepted_names)
+                self.__rename_instances_add_state(
+                    op.value, app_name, accepted_names, unchecked_functions
+                )
         elif isinstance(op, ast.Compare):
-            self.__rename_instances_add_state(op.left, app_name, accepted_names)
-            self.__rename_instances_add_state(op.comparators, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.left, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.comparators, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.BinOp):
-            self.__rename_instances_add_state(op.left, app_name, accepted_names)
-            self.__rename_instances_add_state(op.right, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.left, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.right, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
-            self.__rename_instances_add_state(op.test, app_name, accepted_names)
-            self.__rename_instances_add_state(op.body, app_name, accepted_names)
-            self.__rename_instances_add_state(op.orelse, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.test, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.body, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.orelse, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Dict):
-            self.__rename_instances_add_state(op.values, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.values, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Set):
-            self.__rename_instances_add_state(op.elts, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.elts, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.comprehension):
-            self.__rename_instances_add_state(op.iter, app_name, accepted_names)
-            self.__rename_instances_add_state(op.ifs, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.iter, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.ifs, app_name, accepted_names, unchecked_functions
+            )
         elif (
             isinstance(op, ast.ListComp)
             or isinstance(op, ast.SetComp)
             or isinstance(op, ast.GeneratorExp)
         ):
-            self.__rename_instances_add_state(op.generators, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.generators, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.DictComp):
-            self.__rename_instances_add_state(op.value, app_name, accepted_names)
-            self.__rename_instances_add_state(op.generators, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.generators, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
             if op.value:
-                self.__rename_instances_add_state(op.value, app_name, accepted_names)
+                self.__rename_instances_add_state(
+                    op.value, app_name, accepted_names, unchecked_functions
+                )
         elif isinstance(op, ast.FormattedValue):
-            self.__rename_instances_add_state(op.value, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.JoinedStr):
-            self.__rename_instances_add_state(op.values, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.values, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.Return):
             if op.value:
-                self.__rename_instances_add_state(op.value, app_name, accepted_names)
+                self.__rename_instances_add_state(
+                    op.value, app_name, accepted_names, unchecked_functions
+                )
         elif isinstance(op, ast.Call):
-            self.__rename_instances_add_state(op.args, app_name, accepted_names)
-            self.__rename_instances_add_state(op.keywords, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.args, app_name, accepted_names, unchecked_functions
+            )
+            self.__rename_instances_add_state(
+                op.keywords, app_name, accepted_names, unchecked_functions
+            )
             f_name = ""
             if isinstance(op.func, ast.Attribute):
                 # op.func.value is a ast.Name in this case
@@ -167,7 +228,9 @@ class Manipulator:
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
             else:
-                self.__rename_instances_add_state(op.func, app_name, accepted_names)
+                self.__rename_instances_add_state(
+                    op.func, app_name, accepted_names, unchecked_functions
+                )
 
             if f_name in accepted_names:
                 # If the function name is in the list of accepted names, add the state argument to the call
@@ -179,26 +242,44 @@ class Manipulator:
                     cast(ast.Name, op.func.value).id = new_name
                 elif isinstance(op.func, ast.Name):
                     op.func.id = new_name
+            elif f_name in {uf.name for uf in unchecked_functions}:
+                # If it is a call to an unchecked function, add the app name to the call
+                new_name = f"{app_name}_{f_name}"
+
+                # It can be only a ast.Name since the function is defined
+                cast(ast.Name, op.func).id = new_name
         elif isinstance(op, ast.keyword):
-            self.__rename_instances_add_state(op.value, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions
+            )
         elif isinstance(op, ast.FunctionDef) and (
-            op.name == self.__PRECOND_FUNC_NAME or op.name == self.__ITERATION_FUNC_NAME
+            op.name == self.__PRECOND_FUNC_NAME
+            or op.name == self.__ITERATION_FUNC_NAME
+            or op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
         ):
-            annotation = ast.Name(self.__STATE_TYPE, ast.Load)
-            op.args.args.append(ast.arg(self.__STATE_ARGUMENT, annotation))
+            if (
+                op.name == self.__PRECOND_FUNC_NAME
+                or op.name == self.__ITERATION_FUNC_NAME
+            ):
+                # Add the state argument to the function
+                annotation = ast.Name(self.__STATE_TYPE, ast.Load)
+                op.args.args.append(ast.arg(self.__STATE_ARGUMENT, annotation))
 
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
-            self.__rename_instances_add_state(op.body, app_name, accepted_names)
+            self.__rename_instances_add_state(
+                op.body, app_name, accepted_names, unchecked_functions
+            )
 
     def __construct_contracts(
-        self, app_names: List[str], unchecked_func_dict: Dict[str, UncheckedFunction]
+        self,
+        app_names: List[str],
+        unchecked_functions: List[UncheckedFunction],
+        verification: bool = True,
     ) -> str:
         pre_str = "pre: "
         post_str = "post: "
-        precond_name_str = "precond"
         return_value_name_str = "__return__"
-        physical_state_name_str = "physical_state"
 
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
             res = func_name + "("
@@ -230,21 +311,22 @@ class Manipulator:
         for app_name in sorted_app_names:
             precond = pre_str
             precond += construct_func_call(
-                app_name + "_" + precond_name_str, [physical_state_name_str]
+                app_name + "_" + self.__PRECOND_FUNC_NAME, [self.__STATE_ARGUMENT]
             )
             conditions.append(precond)
 
-        for unchecked_app_name, unchecked_func in unchecked_func_dict.items():
-            conditions.extend(
-                construct_pre_unchecked_func(
-                    unchecked_app_name, unchecked_func.doc_string
+        if verification:
+            for unchecked_func in unchecked_functions:
+                conditions.extend(
+                    construct_pre_unchecked_func(
+                        unchecked_func.name_with_app_name, unchecked_func.doc_string
+                    )
                 )
-            )
 
         for app_name in sorted_app_names:
             postcond = post_str
             postcond += construct_func_call(
-                app_name + "_" + precond_name_str, [return_value_name_str]
+                app_name + "_" + self.__PRECOND_FUNC_NAME, [return_value_name_str]
             )
             conditions.append(postcond)
         res = "\n".join(conditions)
@@ -261,7 +343,7 @@ class Manipulator:
         return f
 
     def __add_return_state(self, f: ast.FunctionDef) -> ast.FunctionDef:
-        f.body.append(ast.Return(ast.Name("physical_state", ast.Load)))
+        f.body.append(ast.Return(ast.Name(self.__STATE_ARGUMENT, ast.Load)))
         return f
 
     def __check_if_func_call_and_applicable_and_replace(
@@ -276,7 +358,7 @@ class Manipulator:
             List[ast.comprehension],
             List[ast.keyword],
         ],
-        unchecked_function_names: Set[str],
+        unchecked_func_names: Set[str],
     ) -> Union[ast.Name, None]:
         """
         Checks if the given op is a Function call and if that function is the set of unchecked_function_names,
@@ -293,7 +375,7 @@ class Manipulator:
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
 
-            if f_name in unchecked_function_names:
+            if f_name in unchecked_func_names:
                 return ast.Name(id=f_name)
         return None
 
@@ -309,218 +391,193 @@ class Manipulator:
             List[ast.comprehension],
             List[ast.keyword],
         ],
-        unchecked_function_names: Set[str],
+        unchecked_functions: List[UncheckedFunction],
     ):
         """
         Manipulates the op to replace all calls to unchecked functions by a Name with id=unchecked_func_name. The replacement is
         done in place, it modifies the object.
         """
+        unchecked_func_names = {uf.name_with_app_name for uf in unchecked_functions}
         if isinstance(op, list):
             for index, v in enumerate(op):
                 temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    v, unchecked_function_names
+                    v, unchecked_func_names
                 )
                 if temp_new_ast:
                     op[index] = temp_new_ast
-                self.__change_unchecked_functions_to_var(v, unchecked_function_names)
+                self.__change_unchecked_functions_to_var(v, unchecked_functions)
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.elts, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.elts, unchecked_functions)
         elif isinstance(op, ast.BoolOp):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.values, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
         elif isinstance(op, ast.UnaryOp):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.operand, unchecked_function_names
+                op.operand, unchecked_func_names
             )
             if temp_new_ast:
                 op.operand = temp_new_ast
-            self.__change_unchecked_functions_to_var(
-                op.operand, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.operand, unchecked_functions)
         elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_function_names
+                op.value, unchecked_func_names
             )
             if temp_new_ast:
                 op.value = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.value, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Lambda):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.body, unchecked_function_names
+                op.body, unchecked_func_names
             )
             if temp_new_ast:
                 op.body = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.body, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
         elif isinstance(op, ast.Assign):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_function_names
+                op.value, unchecked_func_names
             )
             if temp_new_ast:
                 op.value = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.value, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Return):
             if op.value:
                 temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_function_names
+                    op.value, unchecked_func_names
                 )
                 if temp_new_ast:
                     op.value = temp_new_ast
-                self.__change_unchecked_functions_to_var(
-                    op.value, unchecked_function_names
-                )
+                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Compare):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.left, unchecked_function_names
+                op.left, unchecked_func_names
             )
             if temp_new_ast:
                 op.left = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.left, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(
-                op.comparators, unchecked_function_names
+                op.comparators, unchecked_functions
             )
         elif isinstance(op, ast.BinOp):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.left, unchecked_function_names
+                op.left, unchecked_func_names
             )
             if temp_new_ast:
                 op.left = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.left, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.right, unchecked_function_names
+                op.right, unchecked_func_names
             )
             if temp_new_ast:
                 op.right = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.right, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.right, unchecked_functions)
         elif isinstance(op, ast.IfExp):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.test, unchecked_function_names
+                op.test, unchecked_func_names
             )
             if temp_new_ast:
                 op.test = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.test, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.body, unchecked_function_names
+                op.body, unchecked_func_names
             )
             if temp_new_ast:
                 op.body = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.body, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.orelse, unchecked_function_names
+                op.orelse, unchecked_func_names
             )
             if temp_new_ast:
                 op.orelse = temp_new_ast
-            self.__change_unchecked_functions_to_var(
-                op.orelse, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.orelse, unchecked_functions)
         elif isinstance(op, ast.If):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.test, unchecked_function_names
+                op.test, unchecked_func_names
             )
             if temp_new_ast:
                 op.test = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.test, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.body, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.orelse, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.orelse, unchecked_functions)
         elif isinstance(op, ast.Dict):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.values, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
         elif isinstance(op, ast.Set):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.elts, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.elts, unchecked_functions)
         elif isinstance(op, ast.comprehension):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.iter, unchecked_function_names
+                op.iter, unchecked_func_names
             )
             if temp_new_ast:
                 op.iter = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.iter, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.iter, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.ifs, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.ifs, unchecked_functions)
         elif (
             isinstance(op, ast.ListComp)
             or isinstance(op, ast.SetComp)
             or isinstance(op, ast.GeneratorExp)
         ):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.generators, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
         elif isinstance(op, ast.DictComp):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_function_names
+                op.value, unchecked_func_names
             )
             if temp_new_ast:
                 op.value = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.value, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.generators, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
         elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
             if op.value:
                 temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_function_names
+                    op.value, unchecked_func_names
                 )
                 if temp_new_ast:
                     op.value = temp_new_ast
-                self.__change_unchecked_functions_to_var(
-                    op.value, unchecked_function_names
-                )
+                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.FormattedValue):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_function_names
+                op.value, unchecked_func_names
             )
             if temp_new_ast:
                 op.value = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.value, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.JoinedStr):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.values, unchecked_function_names
-            )
+            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
         elif isinstance(op, ast.Return):
             if op.value:
                 temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_function_names
+                    op.value, unchecked_func_names
                 )
                 if temp_new_ast:
                     op.value = temp_new_ast
-                self.__change_unchecked_functions_to_var(
-                    op.value, unchecked_function_names
-                )
+                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Call):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.args, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.args, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.keywords, unchecked_function_names
-            )
-
+            self.__change_unchecked_functions_to_var(op.keywords, unchecked_functions)
             # Here we cannot have a Call to replace because it would have been done in the parent
-            self.__change_unchecked_functions_to_var(op.func, unchecked_function_names)
-
+            self.__change_unchecked_functions_to_var(op.func, unchecked_functions)
         elif isinstance(op, ast.keyword):
             temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_function_names
+                op.value, unchecked_func_names
             )
             if temp_new_ast:
                 op.value = temp_new_ast
-            self.__change_unchecked_functions_to_var(op.value, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.FunctionDef):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.body, unchecked_function_names)
+            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
 
-    def manipulate_mains(self) -> Tuple[List[str], List[str]]:
+    def manipulate_mains(self, verification: bool) -> Tuple[List[str], List[str]]:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
         and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
@@ -533,7 +590,7 @@ class Manipulator:
             app_name,
         ), accepted_names in sorted(self.__instances_names_per_app.items()):
             imps, funcs = self.__manipulate_app_main(
-                directory, app_name, accepted_names
+                directory, app_name, accepted_names, verification
             )
             imports.extend(imps)
             functions.append(funcs)
@@ -634,7 +691,8 @@ class Manipulator:
         ast_arguments = list(
             map(
                 lambda unchecked_f: ast.arg(
-                    unchecked_f.name, ast.Name(unchecked_f.return_type, ast.Load)
+                    unchecked_f.name_with_app_name,
+                    ast.Name(unchecked_f.return_type, ast.Load),
                 ),
                 arguments,
             )
@@ -642,7 +700,11 @@ class Manipulator:
         f.args.args.extend(ast_arguments)
 
     def __manipulate_app_main(
-        self, directory: str, app_name: str, accepted_names: Set[str]
+        self,
+        directory: str,
+        app_name: str,
+        accepted_names: Set[str],
+        verification: bool,
     ) -> Tuple[List[str], str]:
         def extract_functions_and_imports(
             module_body: List[ast.stmt],
@@ -655,7 +717,9 @@ class Manipulator:
                         self.__add_doc_string(
                             f,
                             self.__construct_contracts(
-                                self.__app_names, unchecked_func_dict
+                                self.__app_names,
+                                list(unchecked_func_dict.values()),
+                                verification,
                             ),
                         )
                     )
@@ -666,8 +730,14 @@ class Manipulator:
                         filter(
                             lambda n: isinstance(n, ast.FunctionDef)
                             and (
-                                n.name == f"{app_name}_precond"
-                                or n.name == f"{app_name}_iteration"
+                                n.name == f"{app_name}_{self.__PRECOND_FUNC_NAME}"
+                                or n.name == f"{app_name}_{self.__ITERATION_FUNC_NAME}"
+                                or (
+                                    not verification
+                                    and n.name.startswith(
+                                        f"{app_name}_{self.__UNCHECKED_FUNC_PREFIX}"
+                                    )
+                                )
                             ),
                             module_body,
                         ),
@@ -693,10 +763,13 @@ class Manipulator:
             module = ast.parse(file.read())
             module_body = module.body
 
-            # We rename all the device instances and add the state argument to each of their calls
-            self.__rename_instances_add_state(module_body, app_name, accepted_names)
+            unchecked_func_dict = self.__get_unchecked_functions(module_body, app_name)
+            unchecked_funcs = list(unchecked_func_dict.values())
 
-            unchecked_func_dict = self.__get_unchecked_functions(module_body)
+            # We rename all the device instances and add the state argument to each of their calls
+            self.__rename_instances_add_state(
+                module_body, app_name, accepted_names, unchecked_funcs
+            )
 
             # Extract imports, precond/iteration functions and add the contracts to them
             (
@@ -706,7 +779,9 @@ class Manipulator:
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
             # Check if a precondition function contains a call to an unchecked function
-            unchecked_func_names = set(unchecked_func_dict.keys())
+            unchecked_func_names = {
+                uf.name_with_app_name for _, uf in unchecked_func_dict.items()
+            }
             valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
                 list(
                     filter(
@@ -728,16 +803,18 @@ class Manipulator:
                 )
             )
 
-            # Replace all calls to unchecked functions by variables in iteration function
-            self.__change_unchecked_functions_to_var(
-                iteration_functions,
-                unchecked_func_names,
-            )
+            if verification:
+                # Replace all calls to unchecked functions by variables in iteration function
+                self.__change_unchecked_functions_to_var(
+                    iteration_functions,
+                    unchecked_funcs,
+                )
 
-            # Add unchecked_function_names as arguments of the iteration functions
-            unchecked_funcs = list(unchecked_func_dict.values())
-            for f in iteration_functions:
-                self.__add_unchecked_function_arguments_to_iteration(f, unchecked_funcs)
+                # Add unchecked_function_names as arguments of the iteration functions
+                for f in iteration_functions:
+                    self.__add_unchecked_function_arguments_to_iteration(
+                        f, unchecked_funcs
+                    )
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))

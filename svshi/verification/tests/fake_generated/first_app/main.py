@@ -22,6 +22,8 @@ def unchecked_compute_bool() -> bool:
 
 def unchecked_return_two() -> int:
     """
+    pre: True
     post: __return__ > 0
+    post: __return__ != 3
     """
     return 2
