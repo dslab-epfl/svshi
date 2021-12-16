@@ -89,15 +89,15 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
-There are also two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or invariants) that the app must satisfy throughout execution, while in the second you should write the app code.
+There are two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the app must satisfy throughout execution, while in the second you should write the app code.
 
-An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with "unchecked" and whose return type is explicitly stated, and only then they can be used in `iteration()`.
+An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
 
-In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the read properties of the devices and constants is fine. However, you cannot call external libraries here, nor unchecked functions.
+In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you cannot perform side effects, call external libraries or unchecked functions.
 
-Unchecked functions are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. However, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
+**Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. However, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
 
-Functions' post-conditions define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`.
+Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`.
 
 An example with multiple post-conditions could be:
 
