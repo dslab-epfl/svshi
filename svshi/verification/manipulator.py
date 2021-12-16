@@ -151,7 +151,7 @@ class Manipulator:
             f_name = ""
             if isinstance(op.func, ast.Attribute):
                 # op.func.value is a ast.Name in this case
-                f_name = op.func.value.id
+                f_name = cast(ast.Name, op.func.value).id
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
             else:
@@ -164,7 +164,7 @@ class Manipulator:
                 # Rename the instance calling the function, adding the app name to it
                 new_name = f"{app_name.upper()}_{f_name}"
                 if isinstance(op.func, ast.Attribute):
-                    op.func.value.id = new_name
+                    cast(ast.Name, op.func.value).id = new_name
                 elif isinstance(op.func, ast.Name):
                     op.func.id = new_name
         elif isinstance(op, ast.keyword):
@@ -178,11 +178,6 @@ class Manipulator:
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
-        elif isinstance(op, ast.FunctionDef) and (
-            op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
-        ):
-            # TODO
-            pass
 
     def __construct_contracts(
         self, app_names: List[str], unchecked_apps_dict: Dict[str, UncheckedFunction]
@@ -524,7 +519,7 @@ class Manipulator:
                 f_name = ""
                 if isinstance(op.func, ast.Attribute):
                     # op.func.value is a ast.Name in this case
-                    f_name = op.func.value.id
+                    f_name = cast(ast.Name, op.func.value).id
                 elif isinstance(op.func, ast.Name):
                     f_name = op.func.id
 
@@ -544,6 +539,15 @@ class Manipulator:
                 return False, function.name
 
         return True, ""
+
+    def __add_unchecked_function_arguments_to_iteration(
+        self, f: ast.FunctionDef, arguments: List[Tuple[str, str]]
+    ):
+        # t[0] is the name, t[1] is the type
+        ast_arguments = list(
+            map(lambda t: ast.arg(t[0], ast.Name(t[1], ast.Load)), arguments)
+        )
+        f.args.args.extend(ast_arguments)
 
     def __manipulate_app_main(
         self, directory: str, app_name: str, accepted_names: Set[str]
