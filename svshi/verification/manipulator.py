@@ -163,11 +163,6 @@ class Manipulator:
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(op.body, app_name, accepted_names)
-        elif isinstance(op, ast.FunctionDef) and (
-            op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
-        ):
-            # TODO
-            pass
 
     def __construct_contracts(
         self, app_names: List[str], unchecked_apps_dict: Dict[str, str]
