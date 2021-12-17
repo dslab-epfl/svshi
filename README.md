@@ -111,7 +111,7 @@ def unchecked_function() -> int:
   post: __return__ > 0
   post: __return__ != 3
   """
-  return 2
+  return external_library_get_int()
 ```
 
 ### App example
