@@ -3,6 +3,8 @@
 <img src="logo/logo.png" alt="logo" width="300"/>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
+![Latest Stable Version](https://img.shields.io/github/v/release/dslab/smartinfra?label=version)
+![License](https://img.shields.io/github/license/dslab/smartinfra)
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
@@ -24,6 +26,7 @@
     - [Verification](#verification)
       - [Static](#static)
       - [Runtime](#runtime)
+    - [Execution](#execution)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -61,7 +64,7 @@ To build from sources:
 
 ### Docker
 
-We also provide a docker image with all requirements and SVSHI installed. To use it:
+We also provide a Docker image with all requirements and SVSHI installed. To use it:
 
 1. Run `./build_docker.sh` to build the image
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
@@ -178,7 +181,7 @@ You can run `svshi --help` to display the following:
 ```
 svshi
 Secure and Verified Smart Home Infrastructure
-  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'. The argument is not case sensitive.
   -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
   -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
   -n --app-name <str>      The app name to use for the task 'generateApp'
@@ -194,6 +197,15 @@ Available commands are:
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
+
+Shorter aliases are also available:
+
+- `svshi r` for `svshi run`
+- `svshi c` for `svshi compile`
+- `svshi gb` for `svshi generateBindings`
+- `svshi ga` for `svshi generateApp`
+- `svshi la` for `svshi listApps`
+- `svshi v` for `svshi version`
 
 ## How SVSHI works
 
@@ -213,11 +225,21 @@ Bindings for the installed applications are stored and when `svshi generateBindi
 
 #### Static
 
-When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages.
+When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages. Therefore, the static verification not only catches apps violating the invariants, but it also ensures compatibility between installed apps.
 
 #### Runtime
 
 Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
+
+### Execution
+
+SVSHI's runtime is **reactive** and **event-based**. Apps _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
+
+_Running an app_ concretely means that its `iteration()` function is executed on the current state of the systems.
+
+Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the priviliged ones.
+
+This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 
 ## Contributing
 
