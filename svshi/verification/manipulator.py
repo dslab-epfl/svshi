@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, cast
 
 
-class InvalidUncheckedFunctionCallException(Exception):
+class InvalidFunctionCallException(Exception):
     """
-    An invalid unchecked function call exception.
+    An invalid function call exception.
     """
 
 
@@ -38,6 +38,7 @@ class Manipulator:
     __UNCHECKED_FUNC_PREFIX = "unchecked"
     __PRECOND_FUNC_NAME = "precond"
     __ITERATION_FUNC_NAME = "iteration"
+    __PRINT_FUNC_NAME = "print"
 
     def __init__(
         self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
@@ -76,7 +77,17 @@ class Manipulator:
             doc_string = ast.get_docstring(op)
             doc_string = "" if doc_string == None else doc_string
             return_type = op.returns
-            if not return_type or not cast(ast.Name, return_type).id:
+            if not return_type:
+                raise UntypedUncheckedFunctionException(
+                    f"The unchecked function '{op.name}' has no return type."
+                )
+            # When the return type is 'None', return_type is ast.Constant
+            return_type_str = (
+                cast(ast.Name, return_type).id
+                if isinstance(return_type, ast.Name)
+                else cast(ast.Constant, return_type).value
+            )
+            if return_type_str != None and len(return_type_str) == 0:
                 raise UntypedUncheckedFunctionException(
                     f"The unchecked function '{op.name}' has no return type."
                 )
@@ -84,7 +95,7 @@ class Manipulator:
             new_func_name = f"{app_name}_{func_name}"
             return {
                 func_name: UncheckedFunction(
-                    func_name, new_func_name, doc_string, cast(ast.Name, return_type).id
+                    func_name, new_func_name, doc_string, return_type_str
                 )
             }
         else:
@@ -346,7 +357,7 @@ class Manipulator:
         f.body.append(ast.Return(ast.Name(self.__STATE_ARGUMENT, ast.Load)))
         return f
 
-    def __check_if_func_call_and_applicable_and_replace(
+    def __check_if_func_call_is_applicable_and_replace(
         self,
         op: Union[
             ast.stmt,
@@ -358,12 +369,22 @@ class Manipulator:
             List[ast.comprehension],
             List[ast.keyword],
         ],
-        unchecked_func_names: Set[str],
-    ) -> Union[ast.Name, None]:
+        unchecked_functions: List[UncheckedFunction],
+    ) -> Union[
+        ast.stmt,
+        ast.expr,
+        ast.comprehension,
+        ast.keyword,
+        List[ast.stmt],
+        List[ast.expr],
+        List[ast.comprehension],
+        List[ast.keyword],
+        None,
+    ]:
         """
-        Checks if the given op is a Function call and if that function is the set of unchecked_function_names,
-        if that's the case, it returns a new ast.Name with the function name as id
-        None otherwise
+        Checks if the given op is a Function call and if that function is in the set of unchecked_function_names.
+        If that's the case, it returns a new ast.Name with the function name as id if the function has a return type,
+        otherwise it returns a ast.Constant with None. In all either cases, it returns the op.
         """
         if isinstance(op, ast.Call):
             f_name = (
@@ -375,9 +396,17 @@ class Manipulator:
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
 
-            if f_name in unchecked_func_names:
-                return ast.Name(id=f_name)
-        return None
+            unchecked_func_names_to_return_type = {
+                uf.name_with_app_name: uf.return_type for uf in unchecked_functions
+            }
+            if f_name in unchecked_func_names_to_return_type:
+                if unchecked_func_names_to_return_type[f_name] != None:
+                    # We replace the function call by a variable only if it returns something
+                    return ast.Name(id=f_name)
+                else:
+                    # It does not return anything, we can remove it
+                    return ast.Constant(None, "None")
+        return op
 
     def __change_unchecked_functions_to_var(
         self,
@@ -397,14 +426,12 @@ class Manipulator:
         Manipulates the op to replace all calls to unchecked functions by a Name with id=unchecked_func_name. The replacement is
         done in place, it modifies the object.
         """
-        unchecked_func_names = {uf.name_with_app_name for uf in unchecked_functions}
         if isinstance(op, list):
             for index, v in enumerate(op):
-                temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    v, unchecked_func_names
+                temp_new_ast = self.__check_if_func_call_is_applicable_and_replace(
+                    v, unchecked_functions
                 )
-                if temp_new_ast:
-                    op[index] = temp_new_ast
+                op[index] = temp_new_ast
                 self.__change_unchecked_functions_to_var(v, unchecked_functions)
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             # Here we do not do the check as it cannot be a function call (due to the type)
@@ -413,90 +440,68 @@ class Manipulator:
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
         elif isinstance(op, ast.UnaryOp):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.operand, unchecked_func_names
+            op.operand = self.__check_if_func_call_is_applicable_and_replace(
+                op.operand, unchecked_functions
             )
-            if temp_new_ast:
-                op.operand = temp_new_ast
             self.__change_unchecked_functions_to_var(op.operand, unchecked_functions)
         elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_func_names
+            op.value = self.__check_if_func_call_is_applicable_and_replace(
+                op.value, unchecked_functions
             )
-            if temp_new_ast:
-                op.value = temp_new_ast
             self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Lambda):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.body, unchecked_func_names
+            op.body = self.__check_if_func_call_is_applicable_and_replace(
+                op.body, unchecked_functions
             )
-            if temp_new_ast:
-                op.body = temp_new_ast
             self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
         elif isinstance(op, ast.Assign):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_func_names
+            op.value = self.__check_if_func_call_is_applicable_and_replace(
+                op.value, unchecked_functions
             )
-            if temp_new_ast:
-                op.value = temp_new_ast
             self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Return):
             if op.value:
-                temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_func_names
+                op.value = (
+                    temp_new_ast
+                ) = self.__check_if_func_call_is_applicable_and_replace(
+                    op.value, unchecked_functions
                 )
-                if temp_new_ast:
-                    op.value = temp_new_ast
                 self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Compare):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.left, unchecked_func_names
+            op.left = self.__check_if_func_call_is_applicable_and_replace(
+                op.left, unchecked_functions
             )
-            if temp_new_ast:
-                op.left = temp_new_ast
             self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(
                 op.comparators, unchecked_functions
             )
         elif isinstance(op, ast.BinOp):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.left, unchecked_func_names
+            op.left = self.__check_if_func_call_is_applicable_and_replace(
+                op.left, unchecked_functions
             )
-            if temp_new_ast:
-                op.left = temp_new_ast
             self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.right, unchecked_func_names
+            op.right = self.__check_if_func_call_is_applicable_and_replace(
+                op.right, unchecked_functions
             )
-            if temp_new_ast:
-                op.right = temp_new_ast
             self.__change_unchecked_functions_to_var(op.right, unchecked_functions)
         elif isinstance(op, ast.IfExp):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.test, unchecked_func_names
+            op.test = self.__check_if_func_call_is_applicable_and_replace(
+                op.test, unchecked_functions
             )
-            if temp_new_ast:
-                op.test = temp_new_ast
             self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.body, unchecked_func_names
+            op.body = self.__check_if_func_call_is_applicable_and_replace(
+                op.body, unchecked_functions
             )
-            if temp_new_ast:
-                op.body = temp_new_ast
             self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.orelse, unchecked_func_names
+            op.orelse = self.__check_if_func_call_is_applicable_and_replace(
+                op.orelse, unchecked_functions
             )
-            if temp_new_ast:
-                op.orelse = temp_new_ast
             self.__change_unchecked_functions_to_var(op.orelse, unchecked_functions)
         elif isinstance(op, ast.If):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.test, unchecked_func_names
+            op.test = self.__check_if_func_call_is_applicable_and_replace(
+                op.test, unchecked_functions
             )
-            if temp_new_ast:
-                op.test = temp_new_ast
             self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
@@ -509,11 +514,9 @@ class Manipulator:
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.elts, unchecked_functions)
         elif isinstance(op, ast.comprehension):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.iter, unchecked_func_names
+            op.iter = self.__check_if_func_call_is_applicable_and_replace(
+                op.iter, unchecked_functions
             )
-            if temp_new_ast:
-                op.iter = temp_new_ast
             self.__change_unchecked_functions_to_var(op.iter, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.ifs, unchecked_functions)
@@ -525,39 +528,31 @@ class Manipulator:
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
         elif isinstance(op, ast.DictComp):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_func_names
+            op.value = self.__check_if_func_call_is_applicable_and_replace(
+                op.value, unchecked_functions
             )
-            if temp_new_ast:
-                op.value = temp_new_ast
             self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
         elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
             if op.value:
-                temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_func_names
+                op.value = self.__check_if_func_call_is_applicable_and_replace(
+                    op.value, unchecked_functions
                 )
-                if temp_new_ast:
-                    op.value = temp_new_ast
                 self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.FormattedValue):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_func_names
+            op.value = self.__check_if_func_call_is_applicable_and_replace(
+                op.value, unchecked_functions
             )
-            if temp_new_ast:
-                op.value = temp_new_ast
             self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.JoinedStr):
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
         elif isinstance(op, ast.Return):
             if op.value:
-                temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                    op.value, unchecked_func_names
+                op.value = self.__check_if_func_call_is_applicable_and_replace(
+                    op.value, unchecked_functions
                 )
-                if temp_new_ast:
-                    op.value = temp_new_ast
                 self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.Call):
             # Here we do not do the check as it cannot be a function call (due to the type)
@@ -567,11 +562,9 @@ class Manipulator:
             # Here we cannot have a Call to replace because it would have been done in the parent
             self.__change_unchecked_functions_to_var(op.func, unchecked_functions)
         elif isinstance(op, ast.keyword):
-            temp_new_ast = self.__check_if_func_call_and_applicable_and_replace(
-                op.value, unchecked_func_names
+            op.value = self.__check_if_func_call_is_applicable_and_replace(
+                op.value, unchecked_functions
             )
-            if temp_new_ast:
-                op.value = temp_new_ast
             self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
         elif isinstance(op, ast.FunctionDef):
             # Here we do not do the check as it cannot be a function call (due to the type)
@@ -598,8 +591,8 @@ class Manipulator:
         # Keep only non-empty imports
         return [imp.replace("\n", "") for imp in imports if imp], functions
 
-    def __check_no_unchecked_calls_in_precond(
-        self, functions: List[ast.FunctionDef], unchecked_func_names: Set[str]
+    def __check_no_invalid_calls_in_function(
+        self, functions: List[ast.FunctionDef], invalid_func_names: Set[str]
     ) -> Tuple[bool, str]:
         def check(
             op: Union[
@@ -668,7 +661,7 @@ class Manipulator:
                 elif isinstance(op.func, ast.Name):
                     f_name = op.func.id
 
-                if f_name in unchecked_func_names:
+                if f_name in invalid_func_names:
                     return False
                 else:
                     return check(op.args) and check(op.keywords)
@@ -694,7 +687,7 @@ class Manipulator:
                     unchecked_f.name_with_app_name,
                     ast.Name(unchecked_f.return_type, ast.Load),
                 ),
-                arguments,
+                filter(lambda uf: uf.return_type != None, arguments),
             )
         )
         f.args.args.extend(ast_arguments)
@@ -782,22 +775,24 @@ class Manipulator:
                 from_imports_ast,
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
-            # Check if a precondition function contains a call to an unchecked function
+            # Check if a precondition function contains a call to an invalid function,
+            # i.e. an unchecked function or print
             unchecked_func_names = {
                 uf.name_with_app_name for _, uf in unchecked_func_dict.items()
             }
-            valid, wrong_precond_func = self.__check_no_unchecked_calls_in_precond(
+            precond_invalid_func_names = unchecked_func_names | {self.__PRINT_FUNC_NAME}
+            valid, wrong_precond_func = self.__check_no_invalid_calls_in_function(
                 list(
                     filter(
                         lambda f: f.name.endswith(f"_{self.__PRECOND_FUNC_NAME}"),
                         functions_ast,
                     )
                 ),
-                unchecked_func_names,
+                precond_invalid_func_names,
             )
             if not valid:
-                raise InvalidUncheckedFunctionCallException(
-                    f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function."
+                raise InvalidFunctionCallException(
+                    f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function or to 'print'."
                 )
 
             iteration_functions = list(
@@ -806,6 +801,16 @@ class Manipulator:
                     functions_ast,
                 )
             )
+
+            # Check if an iteration function contains a call to print
+            valid, wrong_iteration_func = self.__check_no_invalid_calls_in_function(
+                iteration_functions,
+                {self.__PRINT_FUNC_NAME},
+            )
+            if not valid:
+                raise InvalidFunctionCallException(
+                    f"The iteration function '{wrong_iteration_func}' contains a call to 'print'."
+                )
 
             if verification:
                 # Replace all calls to unchecked functions by variables in iteration function

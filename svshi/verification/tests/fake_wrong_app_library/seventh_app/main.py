@@ -8,8 +8,7 @@ def precond() -> bool:
 
 def iteration():
     # Write your app code here
-    if BINARY_SENSOR_INSTANCE_NAME.is_on():
-        SWITCH_INSTANCE_NAME.on()
+    print(BINARY_SENSOR_INSTANCE_NAME.is_on())
 
-def unchecked_func():
+def unchecked_func() -> int:
     return 2

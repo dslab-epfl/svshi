@@ -9,8 +9,8 @@ def precond() -> bool:
 
 def iteration():
     # Write your app code here
-    print(BINARY_SENSOR_INSTANCE_NAME.is_on())
-    print(unchecked_time())
+    if BINARY_SENSOR_INSTANCE_NAME.is_on() and unchecked_time() > 2.0:
+        SWITCH_INSTANCE_NAME.on()
 
 def unchecked_time() -> float:
     return time.time()
