@@ -233,11 +233,11 @@ Whenever an app wants to update the KNX system, SVSHI verifies whether the updat
 
 ### Execution
 
-SVSHI's runtime is **reactive** and **event-based**. Apps _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
+SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
 
-_Running an app_ concretely means that its `iteration()` function is executed on the current state of the systems.
+_Running an application_ concretely means that its `iteration()` function is executed on the current state of the system.
 
-Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the priviliged ones.
+Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 
