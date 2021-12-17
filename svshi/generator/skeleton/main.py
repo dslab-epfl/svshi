@@ -7,6 +7,6 @@ def precond() -> bool:
 
 def iteration():
     # Write your app code here
-    # You CANNOT use external libraries here, put the code inside a function whose name starts
-    # with "unchecked" and use that function instead
+    # You CANNOT use external libraries here, encapsulate calls to those in functions whose names start
+    # with "unchecked" and use these functions instead
     print("Hello, world!")
