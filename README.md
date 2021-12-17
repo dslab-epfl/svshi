@@ -101,7 +101,7 @@ In addition, note that `precond()` must return a boolean value, so any kind of b
 
 **Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. However, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
 
-Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`.
+Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can add as much post-conditions as you like and need. However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
 
 An example with multiple post-conditions could be:
 
