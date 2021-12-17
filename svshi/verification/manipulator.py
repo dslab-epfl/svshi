@@ -775,12 +775,15 @@ class Manipulator:
                 from_imports_ast,
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
+            # Contains all the invalid function names: these are not allowed in precond or iteration functions
+            invalid_func_names = {self.__PRINT_FUNC_NAME}
+
             # Check if a precondition function contains a call to an invalid function,
             # i.e. an unchecked function or print
             unchecked_func_names = {
                 uf.name_with_app_name for _, uf in unchecked_func_dict.items()
             }
-            precond_invalid_func_names = unchecked_func_names | {self.__PRINT_FUNC_NAME}
+            precond_invalid_func_names = unchecked_func_names | invalid_func_names
             valid, wrong_precond_func = self.__check_no_invalid_calls_in_function(
                 list(
                     filter(
@@ -805,7 +808,7 @@ class Manipulator:
             # Check if an iteration function contains a call to print
             valid, wrong_iteration_func = self.__check_no_invalid_calls_in_function(
                 iteration_functions,
-                {self.__PRINT_FUNC_NAME},
+                invalid_func_names,
             )
             if not valid:
                 raise InvalidFunctionCallException(
