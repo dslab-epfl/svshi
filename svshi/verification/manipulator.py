@@ -404,7 +404,7 @@ class Manipulator:
                     # We replace the function call by a variable only if it returns something
                     return ast.Name(id=f_name)
                 else:
-                    # It does not return anything, we can remove it
+                    # It does not return anything, we can replace it by None
                     return ast.Constant(None, "None")
         return op
 
