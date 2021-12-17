@@ -97,7 +97,7 @@ There are two important functions in `main.py`, `precond()` and `iteration()`. I
 
 An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
 
-In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you cannot perform side effects, call external libraries or unchecked functions.
+In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you **cannot** perform operations with side effects, call external libraries nor unchecked functions.
 
 **Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. However, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
 
