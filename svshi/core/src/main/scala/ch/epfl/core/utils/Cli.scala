@@ -60,7 +60,7 @@ object Cli {
   case class Config(
       @arg(
         name = "task",
-        doc = "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'",
+        doc = "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'. This argument is not case sensitive.",
         positional = true
       )
       task: Task,

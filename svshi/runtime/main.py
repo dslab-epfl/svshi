@@ -14,6 +14,7 @@ APP_LIBRARY_DIR = f"{SVSHI_FOLDER}/app_library"
 GROUP_ADDRESSES_FILE_PATH = f"{APP_LIBRARY_DIR}/group_addresses.json"
 CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
+RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
 VERIFICATION_MODULE_PATH = f"{SVSHI_FOLDER}/verification"
 
 
@@ -29,7 +30,9 @@ def parse_args() -> Tuple[str, int]:
     address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
     address = args.ip_address
     if not address_regex.match(address):
-        raise ValueError(f"Wrong IP address '{address}': it has to be a valid IPv4 address")
+        raise ValueError(
+            f"Wrong IP address '{address}': it has to be a valid IPv4 address"
+        )
 
     port = args.port
     if port <= 0:
@@ -52,7 +55,7 @@ async def cleanup(generator: ConditionsGenerator, error: bool = False):
 async def main():
     knx_address, knx_port = parse_args()
     conditions_generator = ConditionsGenerator(
-        APP_LIBRARY_DIR, CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH
+        APP_LIBRARY_DIR, CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
     )
     try:
         print("Initializing state and listeners... ", end="")
@@ -60,7 +63,7 @@ async def main():
             VERIFICATION_MODULE_PATH
         )
         conditions_generator.generate_conditions_file()
-        apps = get_apps(APP_LIBRARY_DIR, "verification_file")
+        apps = get_apps(APP_LIBRARY_DIR, "runtime_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
         state = State(

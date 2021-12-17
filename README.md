@@ -3,6 +3,8 @@
 <img src="logo/logo.png" alt="logo" width="300"/>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
+![Latest Stable Version](https://img.shields.io/github/v/release/dslab/smartinfra?label=version)
+![License](https://img.shields.io/github/license/dslab/smartinfra)
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
@@ -11,6 +13,8 @@
     - [Docker](#docker)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
+    - [Writing apps](#writing-apps)
+    - [App example](#app-example)
   - [Running the applications](#running-the-applications)
   - [App generator](#app-generator)
     - [Prototypical structure](#prototypical-structure)
@@ -22,6 +26,7 @@
     - [Verification](#verification)
       - [Static](#static)
       - [Runtime](#runtime)
+    - [Execution](#execution)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -59,7 +64,7 @@ To build from sources:
 
 ### Docker
 
-We also provide a docker image with all requirements and SVSHI installed. To use it:
+We also provide a Docker image with all requirements and SVSHI installed. To use it:
 
 1. Run `./build_docker.sh` to build the image
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
@@ -79,8 +84,56 @@ To develop an app for SVSHI:
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
 4. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
-5. Write your app.
+5. [Write your app](#writing-apps).
 6. Run `svshi` again to compile and [verify](#verification) the app with `svshi compile -f ets.knxproj`.
+
+### Writing apps
+
+To write an app, you mainly have to modify the `main.py` file, optionally adding dependencies to the provided `requirements.txt` in the project you generated following the [app generator](#app-generator) section.
+
+All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
+
+There are two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second you should write the app code.
+
+An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
+
+In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you **cannot** perform operations with side effects, call external libraries nor unchecked functions.
+
+**Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximise code that is indeed formally verified.
+Nonetheless, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
+
+Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can add as much post-conditions as you like and need. However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
+
+An example with multiple post-conditions could be:
+
+```python
+def unchecked_function() -> int:
+  """
+  post: __return__ > 0
+  post: __return__ != 3
+  """
+  return external_library_get_int()
+```
+
+### App example
+
+In `main.py`:
+
+```python
+from devices import BINARY_SENSOR, SWITCH
+
+
+def precond() -> bool:
+    # The switch should be in the same state as the binary sensor
+    return (BINARY_SENSOR.is_on() and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
+
+
+def iteration():
+    if BINARY_SENSOR.is_on():
+        SWITCH.on()
+    else:
+        SWITCH.off()
+```
 
 ## Running the applications
 
@@ -129,7 +182,7 @@ You can run `svshi --help` to display the following:
 ```
 svshi
 Secure and Verified Smart Home Infrastructure
-  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'. The argument is not case sensitive.
   -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
   -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
   -n --app-name <str>      The app name to use for the task 'generateApp'
@@ -145,6 +198,15 @@ Available commands are:
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
+
+Shorter aliases are also available:
+
+- `svshi r` for `svshi run`
+- `svshi c` for `svshi compile`
+- `svshi gb` for `svshi generateBindings`
+- `svshi ga` for `svshi generateApp`
+- `svshi la` for `svshi listApps`
+- `svshi v` for `svshi version`
 
 ## How SVSHI works
 
@@ -164,11 +226,21 @@ Bindings for the installed applications are stored and when `svshi generateBindi
 
 #### Static
 
-When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages.
+When compiling, the apps are also verified to make sure each one of them satisfies the invariants of each app. If not, the procedure fails with helpful error messages. Therefore, the static verification not only catches apps violating the invariants, but it also ensures compatibility between installed apps.
 
 #### Runtime
 
 Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
+
+### Execution
+
+SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
+
+_Running an application_ concretely means that its `iteration()` function is executed on the current state of the system.
+
+Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
+
+This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 
 ## Contributing
 

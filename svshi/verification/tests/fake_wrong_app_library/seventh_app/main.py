@@ -1,4 +1,3 @@
-import time
 from devices import BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
 
 def precond() -> bool:
@@ -9,8 +8,7 @@ def precond() -> bool:
 
 def iteration():
     # Write your app code here
-    if BINARY_SENSOR_INSTANCE_NAME.is_on() and unchecked_time() > 2.0:
-        SWITCH_INSTANCE_NAME.on()
+    print(BINARY_SENSOR_INSTANCE_NAME.is_on())
 
-def unchecked_time() -> float:
-    return time.time()
+def unchecked_func() -> int:
+    return 2

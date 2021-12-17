@@ -76,12 +76,14 @@ class Switch_{app_name}_{instance_name}():
 
     def __init__(
         self,
-        filename: str,
+        verification_filename: str,
+        runtime_filename: str,
         group_addresses: List[GroupAddress],
         devices_instances: List[DeviceInstance],
         devices_classes: List[DeviceClass],
     ):
-        self.__filename: str = filename
+        self.__verification_filename: str = verification_filename
+        self.__runtime_filename: str = runtime_filename
         self.__group_addresses = group_addresses
         self.__devices_instances = devices_instances
         self.__devices_classes = devices_classes
@@ -157,22 +159,35 @@ class PhysicalState:
 
         self.__code.extend(devices_code)
 
-    def __generate_precond_iteration_functions(self):
+    def __generate_precond_iteration_functions(self, verification: bool):
         self.__code.append("\n")
-        imports, functions = self.__manipulator.manipulate_mains()
+        imports, functions = self.__manipulator.manipulate_mains(verification)
         self.__imports.extend(imports)
         self.__code.extend(functions)
+
+    def __generate_file(self, filename: str, verification: bool):
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, "w") as file:
+            self.__generate_physical_state_class()
+            self.__generate_device_classes()
+            self.__generate_devices_instances()
+            self.__generate_precond_iteration_functions(verification)
+            file.write("\n".join((sorted(set(self.__imports)))))
+            file.write("\n\n")
+            file.write("\n".join(self.__code))
+
+        # Clear everything to be used again
+        self.__code.clear()
+        self.__imports.clear()
 
     def generate_verification_file(self):
         """
         Generates the whole verification file.
         """
-        os.makedirs(os.path.dirname(self.__filename), exist_ok=True)
-        with open(self.__filename, "w") as file:
-            self.__generate_physical_state_class()
-            self.__generate_device_classes()
-            self.__generate_devices_instances()
-            self.__generate_precond_iteration_functions()
-            file.write("\n".join((sorted(set(self.__imports)))))
-            file.write("\n\n")
-            file.write("\n".join(self.__code))
+        self.__generate_file(self.__verification_filename, True)
+
+    def generate_runtime_file(self):
+        """
+        Generates the whole runtime file.
+        """
+        self.__generate_file(self.__runtime_filename, False)

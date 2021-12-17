@@ -8,4 +8,25 @@ def precond() -> bool:
 
 def iteration():
     # Write your app code here
-    print(BINARY_SENSOR_INSTANCE_NAME.is_on())
+    if uncheckedcompute_bool():
+        unchecked_print(BINARY_SENSOR_INSTANCE_NAME.is_on())
+    else:
+        v = unchecked_return_two()
+        unchecked_print(v)
+
+def uncheckedcompute_bool() -> bool:
+    """
+    post: __return__ == False
+    """
+    return False
+
+def unchecked_return_two() -> int:
+    """
+    pre: True
+    post: __return__ > 0
+    post: __return__ != 3
+    """
+    return 2
+
+def unchecked_print(s) -> None:
+    print(s)

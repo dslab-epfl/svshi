@@ -1,4 +1,5 @@
 import dataclasses
+import time
 
 
 @dataclasses.dataclass
@@ -202,34 +203,49 @@ def first_app_precond(physical_state: PhysicalState) ->bool:
         ) > 18
 
 
-def first_app_iteration(physical_state: PhysicalState,
-    first_app_uncheckedcompute_bool: bool, first_app_unchecked_return_two: int
-    ):
+def first_app_iteration(physical_state: PhysicalState):
     """
 pre: first_app_precond(physical_state)
 pre: second_app_precond(physical_state)
 pre: third_app_precond(physical_state)
-pre: first_app_uncheckedcompute_bool == False
-pre: first_app_unchecked_return_two > 0
-pre: first_app_unchecked_return_two != 3
 post: first_app_precond(__return__)
 post: second_app_precond(__return__)
 post: third_app_precond(__return__)
 """
-    if first_app_uncheckedcompute_bool:
-        None
+    if first_app_uncheckedcompute_bool():
+        first_app_unchecked_print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.
+            is_on(physical_state))
     else:
-        v = first_app_unchecked_return_two
-        None
+        v = first_app_unchecked_return_two()
+        first_app_unchecked_print(v)
     return physical_state
+
+
+def first_app_uncheckedcompute_bool() ->bool:
+    """
+    post: __return__ == False
+    """
+    return False
+
+
+def first_app_unchecked_return_two() ->int:
+    """
+    pre: True
+    post: __return__ > 0
+    post: __return__ != 3
+    """
+    return 2
+
+
+def first_app_unchecked_print(s) ->None:
+    print(s)
 
 def second_app_precond(physical_state: PhysicalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def second_app_iteration(physical_state: PhysicalState,
-    second_app_unchecked_time: float):
+def second_app_iteration(physical_state: PhysicalState):
     """
 pre: first_app_precond(physical_state)
 pre: second_app_precond(physical_state)
@@ -239,6 +255,10 @@ post: second_app_precond(__return__)
 post: third_app_precond(__return__)
 """
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) and second_app_unchecked_time > 2.0:
+        ) and second_app_unchecked_time() > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
     return physical_state
+
+
+def second_app_unchecked_time() ->float:
+    return time.time()

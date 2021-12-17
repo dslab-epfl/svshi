@@ -4,38 +4,61 @@ from ..generator import Generator
 from ..parser import Parser
 
 TESTS_DIRECTORY = "tests"
+VERIFICATION_FILE_PATH = f"{TESTS_DIRECTORY}/verification_file.py"
+EXPECTED_VERIFICATION_FILE_PATH = f"{TESTS_DIRECTORY}/expected_verification_file.py"
+RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/runtime_file.py"
+EXPECTED_RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/expected_runtime_file.py"
+
+parser = Parser(
+    f"{TESTS_DIRECTORY}/fake_generated", f"{TESTS_DIRECTORY}/fake_app_library"
+)
+group_addresses_with_types = parser.parse_group_addresses()
+devices_instances = parser.parse_devices_instances()
+devices_classes = parser.parse_devices_classes()
+
+
+generator = Generator(
+    VERIFICATION_FILE_PATH,
+    RUNTIME_FILE_PATH,
+    group_addresses_with_types,
+    devices_instances,
+    devices_classes,
+)
 
 
 def test_generator_generate_verification_file():
-    parser = Parser(
-        f"{TESTS_DIRECTORY}/fake_generated", f"{TESTS_DIRECTORY}/fake_app_library"
-    )
-    group_addresses_with_types = parser.parse_group_addresses()
-    devices_instances = parser.parse_devices_instances()
-    devices_classes = parser.parse_devices_classes()
-
-    verification_file_path = f"{TESTS_DIRECTORY}/verification_file.py"
-    expected_verification_file_path = f"{TESTS_DIRECTORY}/expected_verification_file.py"
-
-    generator = Generator(
-        verification_file_path,
-        group_addresses_with_types,
-        devices_instances,
-        devices_classes,
-    )
     generator.generate_verification_file()
 
-    with open(verification_file_path, "r") as v:
+    with open(VERIFICATION_FILE_PATH, "r") as v:
         print(v.read())
 
     assert (
         filecmp.cmp(
-            verification_file_path,
-            expected_verification_file_path,
+            VERIFICATION_FILE_PATH,
+            EXPECTED_VERIFICATION_FILE_PATH,
             shallow=False,
         )
         == True
     )
 
     # Cleanup
-    os.remove(verification_file_path)
+    os.remove(VERIFICATION_FILE_PATH)
+
+
+def test_generator_generate_runtime_file():
+    generator.generate_runtime_file()
+
+    with open(RUNTIME_FILE_PATH, "r") as v:
+        print(v.read())
+
+    assert (
+        filecmp.cmp(
+            RUNTIME_FILE_PATH,
+            EXPECTED_RUNTIME_FILE_PATH,
+            shallow=False,
+        )
+        == True
+    )
+
+    # Cleanup
+    os.remove(RUNTIME_FILE_PATH)
