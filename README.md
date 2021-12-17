@@ -89,7 +89,7 @@ To develop an app for SVSHI:
 
 ### Writing apps
 
-To write an app, you mainly have to modify the `main.py` file, optionally adding dependencies to the provided `requirements.txt`.
+To write an app, you mainly have to modify the `main.py` file, optionally adding dependencies to the provided `requirements.txt` in the project you generated following the [app generator](#app-generator) section.
 
 All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
