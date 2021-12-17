@@ -212,7 +212,7 @@ post: first_app_precond(__return__)
 post: second_app_precond(__return__)
 post: third_app_precond(__return__)
 """
-    if first_app_unchecked_compute_bool():
+    if first_app_uncheckedcompute_bool():
         print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
     else:
         v = first_app_unchecked_return_two()
@@ -220,7 +220,7 @@ post: third_app_precond(__return__)
     return physical_state
 
 
-def first_app_unchecked_compute_bool() ->bool:
+def first_app_uncheckedcompute_bool() ->bool:
     """
     post: __return__ == False
     """
