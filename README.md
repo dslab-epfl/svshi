@@ -93,7 +93,7 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
-There are two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the app must satisfy throughout execution, while in the second you should write the app code.
+There are two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second you should write the app code.
 
 An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
 
