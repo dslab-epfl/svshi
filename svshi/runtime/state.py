@@ -1,9 +1,7 @@
-import json
 import dataclasses
 from typing import Dict, List, Tuple, Union
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
-from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
@@ -16,25 +14,18 @@ from .conditions import check_conditions
 class State:
     def __init__(
         self,
-        group_addresses_file_path: str,
         addresses_listeners: Dict[str, List[App]],
-        knx_address: str,
-        knx_port: int,
+        xknx_for_initialization: XKNX,
+        xknx_for_listening: XKNX,
     ):
-        self.__physical_state: PhysicalState
-        self.__group_addresses_file_path = group_addresses_file_path
-        self.__xknx_connection_config = ConnectionConfig(
-            connection_type=ConnectionType.TUNNELING,
-            gateway_ip=knx_address,
-            gateway_port=knx_port,
-        )
-        self.__xknx = XKNX(
-            daemon_mode=True, connection_config=self.__xknx_connection_config
-        )
-        self.__xknx.telegram_queue.register_telegram_received_cb(
+        self._physical_state: PhysicalState
+        self.__xknx_for_initialization = xknx_for_initialization
+        self.__xknx_for_listening = xknx_for_listening
+        self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
         self.__addresses_listeners = addresses_listeners
+        self.__addresses = list(addresses_listeners.keys())
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -44,7 +35,7 @@ class State:
         if v:
             address = str(telegram.destination_address)
             setattr(
-                self.__physical_state, self.__group_addr_to_field_name(address), v.value
+                self._physical_state, self.__group_addr_to_field_name(address), v.value
             )
             await self.__notify_listeners(address)
 
@@ -52,13 +43,13 @@ class State:
         """
         Connects to KNX and listens infinitely for telegrams.
         """
-        await self.__xknx.start()
+        await self.__xknx_for_listening.start()
 
     async def stop(self):
         """
         Stops listening for telegrams and disconnects.
         """
-        await self.__xknx.stop()
+        await self.__xknx_for_listening.stop()
 
     async def initialize(self):
         """
@@ -66,22 +57,19 @@ class State:
         """
         # Default value is None for each field/address
         fields = defaultdict()
-        async with XKNX(connection_config=self.__xknx_connection_config) as xknx:
-            with open(self.__group_addresses_file_path) as addresses_file:
-                addresses_dict = json.load(addresses_file)
-                for address_and_type in addresses_dict["addresses"]:
-                    # Read from KNX the current value
-                    address = address_and_type[0]
-                    value_reader = ValueReader(
-                        xknx, GroupAddress(address), timeout_in_seconds=5
-                    )
-                    telegram = await value_reader.read()
-                    if telegram and telegram.payload.value:
-                        fields[
-                            self.__group_addr_to_field_name(address)
-                        ] = telegram.payload.value.value
+        async with self.__xknx_for_initialization as xknx:
+            for address in self.__addresses:
+                # Read from KNX the current value
+                value_reader = ValueReader(
+                    xknx, GroupAddress(address), timeout_in_seconds=5
+                )
+                telegram = await value_reader.read()
+                if telegram and telegram.payload.value:
+                    fields[
+                        self.__group_addr_to_field_name(address)
+                    ] = telegram.payload.value.value
 
-        self.__physical_state = PhysicalState(**fields)
+        self._physical_state = PhysicalState(**fields)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         return "GA_" + group_addr.replace("/", "_")
@@ -93,7 +81,7 @@ class State:
         self, new_state: PhysicalState, old_state: PhysicalState
     ) -> List[Tuple[str, Union[bool, float]]]:
         def read_fields(state: PhysicalState) -> Dict[str, str]:
-            return {k: v for k, v in state.__dict__ if k.startswith("GA_")}
+            return {k: v for k, v in state.__dict__.items() if k.startswith("GA_")}
 
         new_state_fields = read_fields(new_state)
         old_state_fields = read_fields(old_state)
@@ -118,17 +106,16 @@ class State:
                 key=lambda item: (item[0].is_privileged, item[0].name),
             )
         }
-
         res = dataclasses.replace(old_state)
         for state in sorted_new_states_by_priority.values():
-            updated_fields = self.__compare(old_state, state)
+            updated_fields = self.__compare(state, old_state)
             for addr, value in updated_fields:
                 setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
 
     async def __notify_listeners(self, address: str):
         # We first execute all the listeners
-        old_state = dataclasses.replace(self.__physical_state)
+        old_state = dataclasses.replace(self._physical_state)
         new_states = {}
         for app in self.__addresses_listeners[address]:
             if app.should_run:
@@ -144,18 +131,20 @@ class State:
         merged_state = self.__merge_states(old_state, new_states)
 
         # Update the physical_state with the merged one
-        self.__physical_state = merged_state
+        self._physical_state = merged_state
 
         # Then we write to KNX for just the final values given to the updated fields
-        updated_fields = self.__compare(old_state, merged_state)
+        updated_fields = self.__compare(merged_state, old_state)
         if updated_fields:
             for address, value in updated_fields:
                 if isinstance(value, bool):
-                    await RawValue(self.__xknx, "", 0, group_address=address).set(value)
+                    await RawValue(
+                        self.__xknx_for_listening, "", 0, group_address=address
+                    ).set(value)
                 else:
-                    await RawValue(self.__xknx, "", 1, group_address=address).set(
-                        int(value)
-                    )
+                    await RawValue(
+                        self.__xknx_for_listening, "", 1, group_address=address
+                    ).set(int(value))
 
                 # Notify the listeners of the change
                 await self.__notify_listeners(address)

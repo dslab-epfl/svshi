@@ -99,7 +99,8 @@ import dataclasses
 
 @dataclasses.dataclass
 class PhysicalState:
-    arg: str 
+    GA_1_1_1: float
+    GA_1_1_2: float
 """.strip()
 
         with open(self.__verification_file_path, "w") as output_file:
@@ -116,7 +117,8 @@ import dataclasses
 
 @dataclasses.dataclass
 class PhysicalState:
-    arg: str 
+    GA_1_1_1: float
+    GA_1_1_2: float
 """.strip()
 
         with open(self.__runtime_file_path, "w") as output_file:

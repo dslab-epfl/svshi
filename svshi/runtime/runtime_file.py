@@ -4,4 +4,5 @@ import dataclasses
 
 @dataclasses.dataclass
 class PhysicalState:
-    arg: str
+    GA_1_1_1: float
+    GA_1_1_2: float

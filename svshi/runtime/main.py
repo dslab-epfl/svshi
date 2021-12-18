@@ -1,4 +1,6 @@
 from typing import Tuple
+from xknx.io.connection import ConnectionConfig, ConnectionType
+from xknx.xknx import XKNX
 from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
@@ -11,7 +13,6 @@ SVSHI_HOME = os.environ["SVSHI_HOME"]
 SVSHI_FOLDER = f"{SVSHI_HOME}/svshi"
 
 APP_LIBRARY_DIR = f"{SVSHI_FOLDER}/app_library"
-GROUP_ADDRESSES_FILE_PATH = f"{APP_LIBRARY_DIR}/group_addresses.json"
 CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
 RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
@@ -66,8 +67,18 @@ async def main():
         apps = get_apps(APP_LIBRARY_DIR, "runtime_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
+
+        connection_config = ConnectionConfig(
+            connection_type=ConnectionType.TUNNELING,
+            gateway_ip=knx_address,
+            gateway_port=knx_port,
+        )
+        xknx_for_initialization = XKNX(connection_config=connection_config)
+        xknx_for_listening = XKNX(daemon_mode=True, connection_config=connection_config)
         state = State(
-            GROUP_ADDRESSES_FILE_PATH, addresses_listeners, knx_address, knx_port
+            addresses_listeners,
+            xknx_for_initialization,
+            xknx_for_listening,
         )
         await state.initialize()
         print("done!")
