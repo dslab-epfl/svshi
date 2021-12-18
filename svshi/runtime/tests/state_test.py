@@ -12,6 +12,10 @@ from ..verification_file import PhysicalState
 from ..app import App
 from ..state import State
 
+# TODO: 
+# - test invalid conditions and thus app stop
+# - refactor
+# - test raw value set for bool
 
 class MockTelegramQueue:
     def __init__(self):
