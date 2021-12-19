@@ -173,10 +173,38 @@ As for the IO Types, if the KNX Datatype is not known for a physical communicati
 This stage performs the KNX Datatype check just as the previous ones but between prototypical device channels that are linked to the same physical device's communication object.
 
 #### python.static.Verifier
-TODO
+
+This stage verifies that Python applications preserve the invariants.
+
+In each Python application, the developer can fill 2 functions: `iteration()` and `invariant()`. Both of these functions can access the devices.
+- `invariant` returns a `bool` and represents an invariant that the KNX system's state should always satisfy
+- `iteration` is called everytime the state of one of the devices the applications uses changes. It represents the state modification function.
+
+The static verification done at this stage verifies using [CrossHair](https://github.com/pschanely/CrossHair) that, given a valid state of the KNX installation (i.e., that satisfies the invariants of ALL applications installed or being installed), it cannot return a state that violates one of these invariants.
+
+To do so, this stage calls the `verification` module written in Python that transforms the code and prepare two versions of it: one used for the verification and one used later by the runtime module.
+
+The code modification consists, in a nutshell, to:
+- add a `PhysicalState` instance as argument of `iteration` and `invariant` functions
+- add an instance of the corresponding type as argument of `iteration` function for each `unchecked` function
+- add a CrossHair contract to `iteration` containing:
+  - one precondition for all `invariant` function of installed or being installed applications
+  - one precondition for all postconditions of the `unchecked` functions
+  - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value
+- move all used functions in one file
+- add to that file all the generated code (`PhysicalState`, devices' classes, ...)
+
+The `verifier` then calls CrossHair on that file, and retrieve `std.out`. Each counter example found by CrossHair is considered as an error and is returned by the `verifier` to be displayed.
 
 #### What to change to add new prototypical devices?
-TODO
+
+The types of device that SVSHI supports require specific code to be handled properly. To add a new device type, you need to do the following:
+
+- add a new `case object` that extends `ch.epfl.core.model.prototypical.SupportedDevice` (following comments and already present examples)
+- add a new corresponding `case class` that extends `ch.epfl.core.model.prototypical.SupportedDeviceBinding` (following comments and already present examples)
+> Once you added the new `SupportedDeviceBinding`, compiler warnings can guide you because the trait is sealed and thus match can be exhaustive.
+- update the function `assignmentToPythonAddressJson` in `ch.epfl.core.parser.json.bindings.PythonAddressJsonParser` (specially the `match`)
+- update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
 
 ## Tests
 
