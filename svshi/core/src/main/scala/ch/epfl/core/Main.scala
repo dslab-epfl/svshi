@@ -76,7 +76,7 @@ object Main {
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
           // Copy verification_file.py, runtime_file.py and conditions.py in app_library
-          FileUtils.copyFiles(List(VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH, CONDITIONS_FILE_PATH), appLibraryPath)
+          FileUtils.copyFiles(List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH), appLibraryPath)
 
           printTrace(verifierMessages)
           success(s"The apps have been successfully compiled and verified!")
