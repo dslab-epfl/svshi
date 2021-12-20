@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
 from xknx.telegram.telegram import Telegram
@@ -8,7 +8,6 @@ from xknx.xknx import XKNX
 from xknx.devices import RawValue
 from .verification_file import PhysicalState
 from .app import App
-from .conditions import check_conditions
 
 
 class State:
@@ -17,6 +16,7 @@ class State:
         addresses_listeners: Dict[str, List[App]],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
+        check_conditions_function: Callable[[PhysicalState], bool],
     ):
         self._physical_state: PhysicalState
         self.__xknx_for_initialization = xknx_for_initialization
@@ -26,6 +26,7 @@ class State:
         )
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
+        self.__check_conditions_function = check_conditions_function
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -121,7 +122,7 @@ class State:
             if app.should_run:
                 per_app_state = dataclasses.replace(old_state)
                 app.notify(per_app_state)
-                if not check_conditions(per_app_state):
+                if not self.__check_conditions_function(per_app_state):
                     # If conditions are not preserved, we prevent the app from running again
                     app.stop()
                 else:

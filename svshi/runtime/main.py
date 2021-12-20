@@ -4,6 +4,7 @@ from xknx.xknx import XKNX
 from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
+from runtime.conditions import check_conditions
 import argparse
 import asyncio
 import os
@@ -79,6 +80,7 @@ async def main():
             addresses_listeners,
             xknx_for_initialization,
             xknx_for_listening,
+            check_conditions,
         )
         await state.initialize()
         print("done!")
