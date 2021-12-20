@@ -4,7 +4,7 @@
 
 from models.device import Device
 from models.multiton import multiton
-from typing import Union
+from typing import Optional
 
 
 @multiton
@@ -16,5 +16,5 @@ class BinarySensor(Device):
     def __init__(self, name: str):
         super().__init__(name, "binary")
 
-    def is_on(self) -> Union[bool, None]:
+    def is_on(self) -> Optional[bool]:
         pass
