@@ -39,17 +39,28 @@ class Parser:
         self.__generated_dir_name = generated_dir_name
         self.__app_library_dir_name = app_library_dir_name
 
-    def __get_apps(self) -> List[App]:
-        def get_apps_from_directory(directory: str) -> List[App]:
-            return [
-                App(f.name, directory)
-                for f in os.scandir(directory)
-                if f.is_dir() and f.name != "__pycache__"
-            ]
+    def get_app_names_from_app_library(self) -> List[str]:
+        """
+        Gets all the app names from the app library.
+        """
+        return list(
+            map(
+                lambda a: a.name,
+                self.__get_apps_from_directory(self.__app_library_dir_name),
+            )
+        )
 
-        return get_apps_from_directory(
+    def __get_apps_from_directory(self, directory: str) -> List[App]:
+        return [
+            App(f.name, directory)
+            for f in os.scandir(directory)
+            if f.is_dir() and f.name != "__pycache__"
+        ]
+
+    def __get_apps(self) -> List[App]:
+        return self.__get_apps_from_directory(
             self.__generated_dir_name
-        ) + get_apps_from_directory(self.__app_library_dir_name)
+        ) + self.__get_apps_from_directory(self.__app_library_dir_name)
 
     def parse_group_addresses(self) -> List[GroupAddress]:
         """

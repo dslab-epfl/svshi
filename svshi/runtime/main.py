@@ -50,6 +50,7 @@ async def cleanup(generator: ConditionsGenerator, error: bool = False):
     error_message = "An error occurred!\n" if error else ""
     print(f"{error_message}Exiting... ", end="")
     generator.reset_verification_file()
+    generator.reset_runtime_file()
     generator.reset_conditions_file()
     print("bye!")
 
@@ -57,14 +58,10 @@ async def cleanup(generator: ConditionsGenerator, error: bool = False):
 async def main():
     knx_address, knx_port = parse_args()
     conditions_generator = ConditionsGenerator(
-        APP_LIBRARY_DIR, CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
+        CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
     )
     try:
         print("Initializing state and listeners... ", end="")
-        conditions_generator.copy_verification_file_from_verification_module(
-            VERIFICATION_MODULE_PATH
-        )
-        conditions_generator.generate_conditions_file()
         apps = get_apps(APP_LIBRARY_DIR, "runtime_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
