@@ -19,7 +19,12 @@ class App:
     should_run: bool = True
 
     def __eq__(self, other: object) -> bool:
-        return self.name == other.name and self.directory == other.directory
+        return (
+            self.name == other.name
+            and self.directory == other.directory
+            and self.is_privileged == other.is_privileged
+            and self.should_run == other.should_run
+        )
 
     def __hash__(self) -> int:
         return hash(repr(self))
