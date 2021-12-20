@@ -1,6 +1,6 @@
 import json
-from typing import Dict
-from xknx.dpt.dpt import DPTBase
+from typing import Dict, Union
+from xknx.dpt.dpt import DPTBase, DPTBinary
 from xknx.dpt.dpt_1byte_signed import DPTSignedRelativeValue
 from xknx.dpt.dpt_1byte_uint import DPTValue1ByteUnsigned
 from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
@@ -20,7 +20,8 @@ class Parser:
     JSON parser.
     """
 
-    __DPT_DICT = {
+    __DPT_DICT: Dict[int, Union[DPTBase, DPTBinary]] = {
+        1: DPTBinary(0),  # the value is not used
         5: DPTValue1ByteUnsigned(),
         6: DPTSignedRelativeValue(),
         7: DPT2ByteUnsigned(),
@@ -39,14 +40,14 @@ class Parser:
     def __init__(self, group_addresses_json_path: str):
         self.__group_addresses_json_path = group_addresses_json_path
 
-    def read_group_addresses_dpt(self) -> Dict[str, DPTBase]:
+    def read_group_addresses_dpt(self) -> Dict[str, Union[DPTBase, DPTBinary]]:
         """
         Reads the DPT class associated to each group address.
         """
         with open(self.__group_addresses_json_path, "r") as file:
             file_dict = json.load(file)
             addresses = file_dict["addresses"]
-            group_addresses_dpt: Dict[str, DPTBase] = {}
+            group_addresses_dpt: Dict[str, Union[DPTBase, DPTBinary]] = {}
             for address_pair in addresses:
                 address = address_pair[0]
                 dpt_number = int(address_pair[2].split("-")[1])

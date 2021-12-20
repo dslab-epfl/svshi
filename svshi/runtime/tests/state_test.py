@@ -1,8 +1,8 @@
 import pytest
 from pytest_mock import MockerFixture
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, Optional
-from xknx.dpt.dpt import DPTArray, DPTBase
+from typing import Any, Callable, Coroutine, Dict, Optional, Union, cast
+from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
 from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.telegram.address import GroupAddress
 from xknx.telegram.apci import GroupValueWrite
@@ -21,6 +21,7 @@ RECEIVED_RAW_VALUE = DPT2ByteFloat.to_knx(RECEIVED_VALUE)
 
 FIRST_GROUP_ADDRESS = "1/1/1"
 SECOND_GROUP_ADDRESS = "1/1/2"
+THIRD_GROUP_ADDRESS = "1/1/3"
 
 
 def always_valid_conditions(state: PhysicalState) -> bool:
@@ -67,7 +68,7 @@ class MockAPCIValue:
 
 @dataclass
 class MockGroupValueWrite(GroupValueWrite):
-    value: MockAPCIValue
+    value: Union[MockAPCIValue, DPTBinary]
 
 
 class StateHolder:
@@ -85,11 +86,13 @@ class StateHolder:
                 self.app_two,
             ],
             SECOND_GROUP_ADDRESS: [self.app_three],
+            THIRD_GROUP_ADDRESS: [self.app_three],
         }
 
-        self.group_address_to_dpt: Dict[str, DPTBase] = {
+        self.group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]] = {
             FIRST_GROUP_ADDRESS: DPT2ByteFloat(),
             SECOND_GROUP_ADDRESS: DPT2ByteFloat(),
+            THIRD_GROUP_ADDRESS: DPTBinary(0),
         }
 
         self.xknx_for_initialization = MockXKNX(MockTelegramQueue())
@@ -120,12 +123,26 @@ def run_before_and_after_tests(mocker: MockerFixture):
     # Setup
     test_state_holder.reset()
 
+    first_address_write_telegram = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(VALUE_READER_RAW_RETURN_VALUE)),
+    )
+    second_address_write_telegram = Telegram(
+        GroupAddress(SECOND_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(VALUE_READER_RAW_RETURN_VALUE)),
+    )
+    third_address_write_telegram = Telegram(
+        GroupAddress(THIRD_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(DPTBinary(0)),
+    )
+
     mocker.patch(
         "xknx.core.value_reader.ValueReader.read",
-        return_value=Telegram(
-            GroupAddress(FIRST_GROUP_ADDRESS),
-            payload=MockGroupValueWrite(MockAPCIValue(VALUE_READER_RAW_RETURN_VALUE)),
-        ),
+        side_effect=[
+            first_address_write_telegram,
+            second_address_write_telegram,
+            third_address_write_telegram,
+        ],
     )
 
     yield  # this is where the testing happens
@@ -177,6 +194,7 @@ async def test_state_initialize():
     assert state._physical_state != None
     assert state._physical_state.GA_1_1_1 == VALUE_READER_RETURN_VALUE
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == False
 
 
 @pytest.mark.asyncio
@@ -197,11 +215,19 @@ async def test_state_on_telegram_update_state_and_notify():
         )
     )
 
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(THIRD_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(DPTBinary(1)),
+        )
+    )
+
     assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == True
     assert test_state_holder.app_one_called == True
     assert test_state_holder.app_two_called == True
-    assert test_state_holder.app_three_called == False
+    assert test_state_holder.app_three_called == True
     assert test_state_holder.xknx_for_listening.telegrams.empty() == True
     assert test_state_holder.app_one.should_run == True
     assert test_state_holder.app_two.should_run == True
@@ -228,6 +254,7 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
 
     assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == False
     assert test_state_holder.app_one_called == True
     assert test_state_holder.app_two_called == True
     assert test_state_holder.app_three_called == False
@@ -239,11 +266,13 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
 
 @pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify_and_update_again_and_notify_and_send_to_knx():
-    new_value = 8.1
+    new_second_address_value = 8.1
+    new_third_address_value = True
 
     def test_two_code(state: PhysicalState):
         test_state_holder.app_two_called = True
-        state.GA_1_1_2 = new_value
+        state.GA_1_1_2 = new_second_address_value
+        state.GA_1_1_3 = new_third_address_value
 
     test_state_holder.set_app_two_code(test_two_code)
 
@@ -264,7 +293,8 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     )
 
     assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
-    assert state._physical_state.GA_1_1_2 == new_value
+    assert state._physical_state.GA_1_1_2 == new_second_address_value
+    assert state._physical_state.GA_1_1_3 == new_third_address_value
     assert test_state_holder.app_one_called == True
     assert test_state_holder.app_two_called == True
     assert test_state_holder.app_three_called == True
@@ -273,11 +303,16 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
         destination_address=GroupAddress(SECOND_GROUP_ADDRESS),
         payload=GroupValueWrite(
             DPTArray(
-                test_state_holder.group_address_to_dpt[SECOND_GROUP_ADDRESS].to_knx(
-                    new_value
-                )
+                cast(
+                    DPT2ByteFloat,
+                    test_state_holder.group_address_to_dpt[SECOND_GROUP_ADDRESS],
+                ).to_knx(new_second_address_value)
             )
         ),
+    )
+    assert await test_state_holder.xknx_for_listening.telegrams.get() == Telegram(
+        destination_address=GroupAddress(THIRD_GROUP_ADDRESS),
+        payload=GroupValueWrite(DPTBinary(1)),
     )
     assert test_state_holder.app_one.should_run == True
     assert test_state_holder.app_two.should_run == True

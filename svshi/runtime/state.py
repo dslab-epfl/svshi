@@ -3,7 +3,6 @@ from typing import Callable, Dict, List, Tuple, Union
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
-from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
@@ -13,13 +12,20 @@ from .app import App
 
 
 class State:
+
+    __TRUE = 1
+    __FALSE = 0
+    __GROUP_ADDRESS_PREFIX = "GA_"
+    __SLASH = "/"
+    __UNDERSCORE = "_"
+
     def __init__(
         self,
         addresses_listeners: Dict[str, List[App]],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
         check_conditions_function: Callable[[PhysicalState], bool],
-        group_address_to_dpt: Dict[str, DPTBase],
+        group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
     ):
         self._physical_state: PhysicalState
         self.__xknx_for_initialization = xknx_for_initialization
@@ -31,7 +37,6 @@ class State:
         self.__addresses = list(addresses_listeners.keys())
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
-        print(DPT2ByteFloat.to_knx(2.3))
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -66,7 +71,7 @@ class State:
         dpt = self.__group_address_to_dpt[address]
         write_content: Union[DPTBinary, DPTArray, None] = None
         if isinstance(dpt, DPTBinary):
-            binary_value = 1 if value else 0
+            binary_value = self.__TRUE if value else self.__FALSE
             write_content = DPTBinary(value=binary_value)
         else:
             write_content = DPTArray(dpt.to_knx(value))
@@ -82,7 +87,7 @@ class State:
     ) -> Union[bool, float, int]:
         dpt = self.__group_address_to_dpt[address]
         if isinstance(dpt, DPTBinary):
-            converted_value = True if value == 1 else False
+            converted_value = True if value == self.__TRUE else False
         else:
             converted_value = dpt.from_knx(value)
 
@@ -102,23 +107,31 @@ class State:
                 )
                 telegram = await value_reader.read()
                 if telegram and telegram.payload.value:
-                    fields[self.__group_addr_to_field_name(address)] = await self.__from_knx(
-                        address, telegram.payload.value.value
-                    )
+                    fields[
+                        self.__group_addr_to_field_name(address)
+                    ] = await self.__from_knx(address, telegram.payload.value.value)
 
         self._physical_state = PhysicalState(**fields)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
-        return "GA_" + group_addr.replace("/", "_")
+        return self.__GROUP_ADDRESS_PREFIX + group_addr.replace(
+            self.__SLASH, self.__UNDERSCORE
+        )
 
     def __field_name_to_group_addr(self, field: str) -> str:
-        return field.replace("GA_", "").replace("_", "/")
+        return field.replace(self.__GROUP_ADDRESS_PREFIX, "").replace(
+            self.__UNDERSCORE, self.__SLASH
+        )
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
     ) -> List[Tuple[str, Union[bool, float]]]:
         def read_fields(state: PhysicalState) -> Dict[str, str]:
-            return {k: v for k, v in state.__dict__.items() if k.startswith("GA_")}
+            return {
+                k: v
+                for k, v in state.__dict__.items()
+                if k.startswith(self.__GROUP_ADDRESS_PREFIX)
+            }
 
         new_state_fields = read_fields(new_state)
         old_state_fields = read_fields(old_state)
@@ -174,7 +187,7 @@ class State:
         updated_fields = self.__compare(merged_state, old_state)
         if updated_fields:
             for address, value in updated_fields:
+                # Send to KNX
                 await self.__send_value_to_knx(address, value)
-
                 # Notify the listeners of the change
                 await self.__notify_listeners(address)
