@@ -72,7 +72,11 @@ object Compiler {
     * @param filePath
     */
   def generateGroupAddressesList(groupAddressAssignment: GroupAddressAssignment, filePath: os.Path): Unit = {
-    val list = groupAddressAssignment.getPythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr.toString, pythonTypesList.map(_.toString).min) }
+    val pythonTypesMap = groupAddressAssignment.getPythonTypesMap
+    val dptMap = groupAddressAssignment.getDPTsMap
+    val pythonList = pythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr, pythonTypesList.map(_.toString).min) }
+
+    val list = pythonList.map { case (ga, pythonType) => (ga.toString, pythonType, dptMap(ga).map(_.toString).min)}
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
     val filePathNio = filePath.toNIO

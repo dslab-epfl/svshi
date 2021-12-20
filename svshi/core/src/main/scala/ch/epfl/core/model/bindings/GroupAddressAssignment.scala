@@ -1,6 +1,6 @@
 package ch.epfl.core.model.bindings
 
-import ch.epfl.core.model.physical.{GroupAddress, PhysicalStructure}
+import ch.epfl.core.model.physical.{GroupAddress, KNXDatatype, PhysicalStructure}
 import ch.epfl.core.model.prototypical.AppLibraryBindings
 import ch.epfl.core.model.python.PythonType
 
@@ -13,6 +13,12 @@ case class GroupAddressAssignment(physStruct: PhysicalStructure, appLibraryBindi
   def getPythonTypesMap: Map[GroupAddress, List[PythonType]] = {
     val physIdsToPythonTypes =
       appLibraryBindings.appBindings.flatMap(appProtoBinding => appProtoBinding.bindings.flatMap(devInstBinding => devInstBinding.binding.getPythonTypes.toList))
+    physIdsToPythonTypes.groupBy(_._1).toList.map { case (physId, typeList) => (physIdToGA(physId), typeList.map(_._2)) }.toMap
+  }
+
+  def getDPTsMap: Map[GroupAddress, List[KNXDatatype]] = {
+    val physIdsToPythonTypes =
+      appLibraryBindings.appBindings.flatMap(appProtoBinding => appProtoBinding.bindings.flatMap(devInstBinding => devInstBinding.binding.getKNXDpt.toList))
     physIdsToPythonTypes.groupBy(_._1).toList.map { case (physId, typeList) => (physIdToGA(physId), typeList.map(_._2)) }.toMap
   }
 }
