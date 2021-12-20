@@ -116,7 +116,7 @@ class State:
         self, new_state: PhysicalState, old_state: PhysicalState
     ) -> List[Tuple[str, Union[bool, float]]]:
         def read_fields(state: PhysicalState) -> Dict[str, str]:
-            return {k: v for k, v in state.__dict__ if k.startswith("GA_")}
+            return {k: v for k, v in state.__dict__.items() if k.startswith("GA_")}
 
         new_state_fields = read_fields(new_state)
         old_state_fields = read_fields(old_state)
@@ -141,17 +141,16 @@ class State:
                 key=lambda item: (item[0].is_privileged, item[0].name),
             )
         }
-
         res = dataclasses.replace(old_state)
         for state in sorted_new_states_by_priority.values():
-            updated_fields = self.__compare(old_state, state)
+            updated_fields = self.__compare(state, old_state)
             for addr, value in updated_fields:
                 setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
 
     async def __notify_listeners(self, address: str):
         # We first execute all the listeners
-        old_state = dataclasses.replace(self.__physical_state)
+        old_state = dataclasses.replace(self._physical_state)
         new_states = {}
         for app in self.__addresses_listeners[address]:
             if app.should_run:
@@ -167,10 +166,10 @@ class State:
         merged_state = self.__merge_states(old_state, new_states)
 
         # Update the physical_state with the merged one
-        self.__physical_state = merged_state
+        self._physical_state = merged_state
 
         # Then we write to KNX for just the final values given to the updated fields
-        updated_fields = self.__compare(old_state, merged_state)
+        updated_fields = self.__compare(merged_state, old_state)
         if updated_fields:
             for address, value in updated_fields:
                 await self.__send_value_to_knx(address, value)

@@ -42,7 +42,7 @@ class Manipulator:
 
     def __init__(
         self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
-    ) -> None:
+    ):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
