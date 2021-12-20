@@ -3,6 +3,7 @@ from typing import Callable, Dict, List, Tuple, Union
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
+from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
@@ -20,7 +21,7 @@ class State:
         check_conditions_function: Callable[[PhysicalState], bool],
         group_address_to_dpt: Dict[str, DPTBase],
     ):
-        self.__physical_state: PhysicalState
+        self._physical_state: PhysicalState
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
         self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
@@ -30,6 +31,7 @@ class State:
         self.__addresses = list(addresses_listeners.keys())
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
+        print(DPT2ByteFloat.to_knx(2.3))
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -40,7 +42,7 @@ class State:
             v = payload.value
             if v:
                 address = str(telegram.destination_address)
-                value = self.__from_knx(address, v.value)
+                value = await self.__from_knx(address, v.value)
                 setattr(
                     self._physical_state,
                     self.__group_addr_to_field_name(address),
@@ -100,7 +102,7 @@ class State:
                 )
                 telegram = await value_reader.read()
                 if telegram and telegram.payload.value:
-                    fields[self.__group_addr_to_field_name(address)] = self.__from_knx(
+                    fields[self.__group_addr_to_field_name(address)] = await self.__from_knx(
                         address, telegram.payload.value.value
                     )
 
