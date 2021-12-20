@@ -2,9 +2,9 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from typing import Union
 from models.device import Device
 from models.multiton import multiton
+from typing import Optional
 
 
 @multiton
@@ -16,5 +16,5 @@ class HumiditySensor(Device):
     def __init__(self, name: str):
         super().__init__(name, "humidity")
 
-    def read(self) -> Union[float, None]:
+    def read(self) -> Optional[float]:
         pass

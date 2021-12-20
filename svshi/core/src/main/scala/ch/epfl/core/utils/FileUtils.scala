@@ -71,6 +71,29 @@ object FileUtils {
     os.makeDir(dir)
   }
 
+  /** Copy the file into destinationDir
+    *
+    * @param filePath the file to copy
+    * @param destinationDir the directory in which the file is copied
+    */
+  def copyFile(filePath: os.Path, destinationDir: os.Path): Unit = {
+    if (!os.exists(filePath)) throw new IllegalArgumentException("filePath must be an existing path!")
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+
+    os.copy.into(filePath, destinationDir, replaceExisting = true)
+  }
+
+  /** Copies the files into destinationDir
+    *
+    * @param filePaths the files to copy
+    * @param destinationDir the directory in which the files are copied
+    */
+  def copyFiles(filePaths: List[os.Path], destinationDir: os.Path): Unit = {
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+
+    filePaths.foreach(path => copyFile(path, destinationDir))
+  }
+
   /** Return a os.Path instance from the pathString passed that must be relation to $SVSHI_HOME
     * @param pathString
     * @return

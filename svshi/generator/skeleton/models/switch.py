@@ -4,7 +4,7 @@
 
 from models.device import Device
 from models.multiton import multiton
-from typing import Union
+from typing import Optional
 
 
 @multiton
@@ -22,5 +22,5 @@ class Switch(Device):
     def off(self):
         pass
 
-    def is_on(self) -> Union[bool, None]:
+    def is_on(self) -> Optional[bool]:
         pass

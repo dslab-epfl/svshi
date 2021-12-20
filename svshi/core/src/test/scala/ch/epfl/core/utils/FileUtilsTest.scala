@@ -16,7 +16,6 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   val outputPath: Path = os.Path("svshi/core/res/temp", wd)
 
   "unzip" should "unzip all files" in {
-
     val outputPath = os.Path("temp", wd)
     os.remove.all(outputPath)
     val inputPath = os.Path(testFilePathString, wd)
@@ -32,6 +31,28 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
       l.map(f => f.relativeTo(outputPath)).contains(e.relativeTo(inputPath))
     }
     os.remove.all(outputPath)
+  }
+
+  "copyFiles" should "copy all given files" in {
+    val resFolder = "svshi/core/res"
+    val testFolder = s"$resFolder/test"
+    val outputPath = os.Path(testFolder, wd)
+    val firstTestFilePath = os.Path(s"$resFolder/f1.txt", wd)
+    val secondTestFilePath = os.Path(s"$resFolder/f2.txt", wd)
+    os.write(firstTestFilePath, "A test")
+    os.write(secondTestFilePath, "A test")
+    os.remove.all(outputPath)
+    os.makeDir.all(outputPath)
+    val inputPath = os.Path(testFilePathString, wd)
+    FileUtils.copyFiles(List(firstTestFilePath, secondTestFilePath), outputPath)
+    val l = FileUtils.recursiveListFiles(outputPath)
+    val refPathFirst = os.Path(s"$testFolder/f1.txt", wd)
+    val refPathSecond = os.Path(s"$testFolder/f2.txt", wd)
+    l.contains(refPathFirst) shouldEqual true
+    l.contains(refPathSecond) shouldEqual true
+    os.remove.all(outputPath)
+    os.remove.all(firstTestFilePath)
+    os.remove.all(secondTestFilePath)
   }
 
 }

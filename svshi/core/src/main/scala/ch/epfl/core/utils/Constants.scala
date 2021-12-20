@@ -20,8 +20,12 @@ object Constants {
   val APP_LIBRARY_FOLDER_PATH_STRING = s"$SVSHI_FOLDER/app_library"
   val GENERATED_FOLDER_PATH: Path = os.Path(APP_LIBRARY_FOLDER_PATH_STRING)
   val APP_LIBRARY_FOLDER_PATH: Path = os.Path(APP_LIBRARY_FOLDER_PATH_STRING)
+  val GENERATED_VERIFICATION_FILE_PATH: Path = os.Path(s"$SVSHI_FOLDER/verification/verification_file.py")
+  val GENERATED_RUNTIME_FILE_PATH: Path = os.Path(s"$SVSHI_FOLDER/verification/runtime_file.py")
+  val GENERATED_CONDITIONS_FILE_PATH: Path = os.Path(s"$SVSHI_FOLDER/verification/conditions.py")
   val VERIFICATION_PYTHON_MODULE = "verification.main"
   val APP_GENERATOR_PYTHON_MODULE = "generator.main"
   val RUNTIME_PYTHON_MODULE = "runtime.main"
+  val RUNTIME_PYTHON_MODULE_PATH: Path = os.Path(s"$SVSHI_FOLDER/runtime")
   val CROSSHAIR_TIMEOUT_SECONDS = 600
 }
