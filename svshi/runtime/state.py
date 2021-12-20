@@ -1,64 +1,90 @@
-import json
 import dataclasses
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
-from xknx.io.connection import ConnectionConfig, ConnectionType
+from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
+from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
-from xknx.devices import RawValue
 from .verification_file import PhysicalState
 from .app import App
-from .conditions import check_conditions
 
 
 class State:
     def __init__(
         self,
-        group_addresses_file_path: str,
         addresses_listeners: Dict[str, List[App]],
-        knx_address: str,
-        knx_port: int,
+        xknx_for_initialization: XKNX,
+        xknx_for_listening: XKNX,
+        check_conditions_function: Callable[[PhysicalState], bool],
+        group_address_to_dpt: Dict[str, DPTBase],
     ):
         self.__physical_state: PhysicalState
-        self.__group_addresses_file_path = group_addresses_file_path
-        self.__xknx_connection_config = ConnectionConfig(
-            connection_type=ConnectionType.TUNNELING,
-            gateway_ip=knx_address,
-            gateway_port=knx_port,
-        )
-        self.__xknx = XKNX(
-            daemon_mode=True, connection_config=self.__xknx_connection_config
-        )
-        self.__xknx.telegram_queue.register_telegram_received_cb(
+        self.__xknx_for_initialization = xknx_for_initialization
+        self.__xknx_for_listening = xknx_for_listening
+        self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
         self.__addresses_listeners = addresses_listeners
+        self.__addresses = list(addresses_listeners.keys())
+        self.__check_conditions_function = check_conditions_function
+        self.__group_address_to_dpt = group_address_to_dpt
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
         Updates the state once a telegram is received.
         """
-        v = telegram.payload.value
-        if v:
-            address = str(telegram.destination_address)
-            setattr(
-                self.__physical_state, self.__group_addr_to_field_name(address), v.value
-            )
-            await self.__notify_listeners(address)
+        payload = telegram.payload
+        if isinstance(payload, GroupValueWrite):
+            v = payload.value
+            if v:
+                address = str(telegram.destination_address)
+                value = self.__from_knx(address, v.value)
+                setattr(
+                    self._physical_state,
+                    self.__group_addr_to_field_name(address),
+                    value,
+                )
+                await self.__notify_listeners(address)
 
     async def listen(self):
         """
         Connects to KNX and listens infinitely for telegrams.
         """
-        await self.__xknx.start()
+        await self.__xknx_for_listening.start()
 
     async def stop(self):
         """
         Stops listening for telegrams and disconnects.
         """
-        await self.__xknx.stop()
+        await self.__xknx_for_listening.stop()
+
+    async def __send_value_to_knx(self, address: str, value: Union[bool, float, int]):
+        dpt = self.__group_address_to_dpt[address]
+        write_content: Union[DPTBinary, DPTArray, None] = None
+        if isinstance(dpt, DPTBinary):
+            binary_value = 1 if value else 0
+            write_content = DPTBinary(value=binary_value)
+        else:
+            write_content = DPTArray(dpt.to_knx(value))
+
+        telegram = Telegram(
+            destination_address=GroupAddress(address),
+            payload=GroupValueWrite(write_content),
+        )
+        await self.__xknx_for_listening.telegrams.put(telegram)
+
+    async def __from_knx(
+        self, address: str, value: tuple[int, ...]
+    ) -> Union[bool, float, int]:
+        dpt = self.__group_address_to_dpt[address]
+        if isinstance(dpt, DPTBinary):
+            converted_value = True if value == 1 else False
+        else:
+            converted_value = dpt.from_knx(value)
+
+        return converted_value
 
     async def initialize(self):
         """
@@ -66,22 +92,19 @@ class State:
         """
         # Default value is None for each field/address
         fields = defaultdict()
-        async with XKNX(connection_config=self.__xknx_connection_config) as xknx:
-            with open(self.__group_addresses_file_path) as addresses_file:
-                addresses_dict = json.load(addresses_file)
-                for address_and_type in addresses_dict["addresses"]:
-                    # Read from KNX the current value
-                    address = address_and_type[0]
-                    value_reader = ValueReader(
-                        xknx, GroupAddress(address), timeout_in_seconds=5
+        async with self.__xknx_for_initialization as xknx:
+            for address in self.__addresses:
+                # Read from KNX the current value
+                value_reader = ValueReader(
+                    xknx, GroupAddress(address), timeout_in_seconds=5
+                )
+                telegram = await value_reader.read()
+                if telegram and telegram.payload.value:
+                    fields[self.__group_addr_to_field_name(address)] = self.__from_knx(
+                        address, telegram.payload.value.value
                     )
-                    telegram = await value_reader.read()
-                    if telegram and telegram.payload.value:
-                        fields[
-                            self.__group_addr_to_field_name(address)
-                        ] = telegram.payload.value.value
 
-        self.__physical_state = PhysicalState(**fields)
+        self._physical_state = PhysicalState(**fields)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         return "GA_" + group_addr.replace("/", "_")
@@ -134,7 +157,7 @@ class State:
             if app.should_run:
                 per_app_state = dataclasses.replace(old_state)
                 app.notify(per_app_state)
-                if not check_conditions(per_app_state):
+                if not self.__check_conditions_function(per_app_state):
                     # If conditions are not preserved, we prevent the app from running again
                     app.stop()
                 else:
@@ -150,12 +173,7 @@ class State:
         updated_fields = self.__compare(old_state, merged_state)
         if updated_fields:
             for address, value in updated_fields:
-                if isinstance(value, bool):
-                    await RawValue(self.__xknx, "", 0, group_address=address).set(value)
-                else:
-                    await RawValue(self.__xknx, "", 1, group_address=address).set(
-                        int(value)
-                    )
+                await self.__send_value_to_knx(address, value)
 
                 # Notify the listeners of the change
                 await self.__notify_listeners(address)
