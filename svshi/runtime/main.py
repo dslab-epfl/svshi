@@ -5,7 +5,7 @@ from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
 from runtime.conditions import check_conditions
-from runtime.groupAddressesParser import GroupAddressesParser
+from runtime.parser import GroupAddressesParser
 import argparse
 import asyncio
 import os
