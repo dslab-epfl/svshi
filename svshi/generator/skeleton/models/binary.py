@@ -17,4 +17,7 @@ class BinarySensor(Device):
         super().__init__(name, "binary")
 
     def is_on(self) -> Optional[bool]:
+        """
+        Returns True if the sensor is on, False if it is off, None if KNX did not answer.
+        """
         pass
