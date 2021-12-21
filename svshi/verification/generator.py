@@ -1,6 +1,6 @@
 import os
 from itertools import groupby
-from typing import List
+from typing import Final, List
 
 from .manipulator import Manipulator
 from .parser import DeviceClass, DeviceInstance, GroupAddress
@@ -10,6 +10,10 @@ class Generator:
     """
     Code generator.
     """
+
+    __GROUP_ADDRESS_PREFIX: Final = "GA_"
+    __SLASH: Final = "/"
+    __UNDERSCORE: Final = "_"
 
     __BINARY_SENSOR_TEMPLATE = (
         lambda self, app_name, instance_name, group_address: f'''
@@ -92,22 +96,31 @@ class Switch_{app_name}_{instance_name}():
         self.__devices_classes = devices_classes
         self.__app_names = app_names
 
-        self.__instances_names_per_app = {}
+        instances_names_per_app = {}
         for key, group in groupby(self.__devices_classes, lambda d: d.app):
             names = set()
             for device in group:
                 names.add(device.name.upper())
-            self.__instances_names_per_app[(key.directory, key.name)] = names
-        self.__manipulator = Manipulator(self.__instances_names_per_app)
+            instances_names_per_app[(key.directory, key.name)] = names
+
+        self.__manipulator = Manipulator(instances_names_per_app)
+
         self.__code: List[str] = []
         self.__imports: List[str] = []
+
+    def __group_addr_to_field_name(self, group_addr: str) -> str:
+        """
+        Converts a group address to its corresponding field name in PhysicalState.
+        Example: 1/1/1 -> GA_1_1_1
+        """
+        return self.__GROUP_ADDRESS_PREFIX + group_addr.replace(
+            self.__SLASH, self.__UNDERSCORE
+        )
 
     def __generate_physical_state_class(self):
         fields = ""
         for group_address in self.__group_addresses:
-            new_field = (
-                f" GA_{group_address.address.replace('/', '_')}: {group_address.type}\n"
-            )
+            new_field = f" {self.__group_addr_to_field_name(group_address.address)}: {group_address.type}\n"
             if new_field not in fields:
                 fields += new_field
 
@@ -126,7 +139,7 @@ class PhysicalState:
             name = device.name
             type = device.type
             address = device.address
-            formatted_group_address = f"GA_{address.replace('/', '_')}"
+            formatted_group_address = self.__group_addr_to_field_name(address)
             if type == "binary":
                 code.append(
                     self.__BINARY_SENSOR_TEMPLATE(app, name, formatted_group_address)

@@ -57,8 +57,8 @@ class Manipulator:
         app_name: str,
     ) -> Dict[str, UncheckedFunction]:
         """
-        Go through the AST and return a Dict containing
-        "unchecked_func_name" -> UncheckedFunction
+        Goes through the AST and returns a Dict containing entries of the form
+        "unchecked_func_name" -> UncheckedFunction.
         """
         if isinstance(op, list) or isinstance(op, tuple):
             dicts_list = [self.__get_unchecked_functions(v, app_name) for v in list(op)]
@@ -115,6 +115,13 @@ class Manipulator:
         accepted_names: Set[str],
         unchecked_functions: List[UncheckedFunction],
     ):
+        """
+        Renames the instances calling functions with name in accepted_names
+        and unchecked_functions by adding the app_name in front of them. Additionally, it also adds the
+        "state" argument to the calls with name in accepted_names.
+        Furthermore, "precond", "iteration" and "unchecked" functions are modified with the app_name added to them
+        and with the state parameter added for the first two.
+        """
         if isinstance(op, list) or isinstance(op, tuple):
             [
                 self.__rename_instances_add_state(
@@ -286,6 +293,10 @@ class Manipulator:
         unchecked_functions: List[UncheckedFunction],
         verification: bool = True,
     ) -> str:
+        """
+        Returns the contract as a docstring using the given app names. If the verification flag is set,
+        it also adds to the pre-conditions the unchecked functions' post-conditions.
+        """
         pre_str = "pre: "
         post_str = "post: "
         return_value_name_str = "__return__"
@@ -342,6 +353,9 @@ class Manipulator:
         return res
 
     def __add_doc_string(self, f: ast.FunctionDef, doc_string: str) -> ast.FunctionDef:
+        """
+        Adds the given docstring to the given function, returning it.
+        """
         old_doc_string = ast.get_docstring(f)
         s = ast.Str("\n" + doc_string + "\n")
         new_doc_string_ast = ast.Expr(value=s)
@@ -352,6 +366,9 @@ class Manipulator:
         return f
 
     def __add_return_state(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        """
+        Adds a "return physical_state" statement to the end of the body of the given function, returning it.
+        """
         f.body.append(ast.Return(ast.Name(self.__STATE_ARGUMENT, ast.Load)))
         return f
 
@@ -592,6 +609,10 @@ class Manipulator:
     def __check_no_invalid_calls_in_function(
         self, functions: List[ast.FunctionDef], invalid_func_names: Set[str]
     ) -> Tuple[bool, str]:
+        """
+        Checks that there are no calls to the given functions in the body of the given function definitions.
+        """
+
         def check(
             op: Union[
                 ast.stmt,
@@ -676,9 +697,12 @@ class Manipulator:
 
         return True, ""
 
-    def __add_unchecked_function_arguments_to_iteration(
+    def __add_unchecked_function_arguments(
         self, f: ast.FunctionDef, arguments: List[UncheckedFunction]
     ):
+        """
+        In place, adds to the given function the given arguments.
+        """
         ast_arguments = list(
             map(
                 lambda unchecked_f: ast.arg(
@@ -822,9 +846,7 @@ class Manipulator:
 
                 # Add unchecked_function_names as arguments of the iteration functions
                 for f in iteration_functions:
-                    self.__add_unchecked_function_arguments_to_iteration(
-                        f, unchecked_funcs
-                    )
+                    self.__add_unchecked_function_arguments(f, unchecked_funcs)
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))

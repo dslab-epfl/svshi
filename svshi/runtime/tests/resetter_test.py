@@ -1,7 +1,7 @@
 import os
 import filecmp
 import pytest
-from ..generator import ConditionsGenerator
+from ..resetter import FileResetter
 
 CONDITIONS_FILE = "tests/conditions.py"
 VERIFICATION_FILE = "tests/verification_file.py"
@@ -12,7 +12,7 @@ EXPECTED_DEFAULT_VERIFICATION_FILE = (
 )
 EXPECTED_DEFAULT_RUNTIME_FILE = "tests/expected/expected_default_runtime_file.py"
 
-generator = ConditionsGenerator(CONDITIONS_FILE, VERIFICATION_FILE, RUNTIME_FILE)
+resetter = FileResetter(CONDITIONS_FILE, VERIFICATION_FILE, RUNTIME_FILE)
 
 
 @pytest.fixture(autouse=True)
@@ -31,8 +31,8 @@ def run_before_and_after_tests():
         os.remove(RUNTIME_FILE)
 
 
-def test_generator_reset_conditions_file():
-    generator.reset_conditions_file()
+def test_resetter_reset_conditions_file():
+    resetter.reset_conditions_file()
 
     assert os.path.exists(CONDITIONS_FILE) == True
     assert (
@@ -45,8 +45,8 @@ def test_generator_reset_conditions_file():
     )
 
 
-def test_generator_reset_verification_file():
-    generator.reset_verification_file()
+def test_resetter_reset_verification_file():
+    resetter.reset_verification_file()
 
     assert os.path.exists(VERIFICATION_FILE) == True
     assert (
@@ -59,8 +59,8 @@ def test_generator_reset_verification_file():
     )
 
 
-def test_generator_reset_runtime_file():
-    generator.reset_runtime_file()
+def test_resetter_reset_runtime_file():
+    resetter.reset_runtime_file()
 
     assert os.path.exists(RUNTIME_FILE) == True
     assert (
