@@ -1,7 +1,7 @@
 import ast
 import astor
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple, Union, cast
+from typing import Dict, List, Set, Tuple, Union, Final, cast
 
 
 class InvalidFunctionCallException(Exception):
@@ -33,16 +33,14 @@ class Manipulator:
     Python AST manipulator.
     """
 
-    __STATE_ARGUMENT = "physical_state"
-    __STATE_TYPE = "PhysicalState"
-    __UNCHECKED_FUNC_PREFIX = "unchecked"
-    __PRECOND_FUNC_NAME = "precond"
-    __ITERATION_FUNC_NAME = "iteration"
-    __PRINT_FUNC_NAME = "print"
+    __STATE_ARGUMENT: Final = "physical_state"
+    __STATE_TYPE: Final = "PhysicalState"
+    __UNCHECKED_FUNC_PREFIX: Final = "unchecked"
+    __PRECOND_FUNC_NAME: Final = "precond"
+    __ITERATION_FUNC_NAME: Final = "iteration"
+    __PRINT_FUNC_NAME: Final = "print"
 
-    def __init__(
-        self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
-    ):
+    def __init__(self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 

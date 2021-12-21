@@ -201,7 +201,7 @@ class PhysicalState:
         """
         Generates the conditions file given the conditions of all the apps installed in the library.
         """
-        imports = "from verification_file import "
+        imports = "from .verification_file import "
         imports_code = []
         nb_apps = len(self.__app_names)
         for i, app in enumerate(sorted(self.__app_names)):
