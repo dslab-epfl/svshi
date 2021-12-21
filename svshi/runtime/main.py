@@ -5,6 +5,7 @@ from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
 from runtime.conditions import check_conditions
+from runtime.parser import GroupAddressesParser
 import argparse
 import asyncio
 import os
@@ -14,6 +15,7 @@ SVSHI_HOME = os.environ["SVSHI_HOME"]
 SVSHI_FOLDER = f"{SVSHI_HOME}/svshi"
 
 APP_LIBRARY_DIR = f"{SVSHI_FOLDER}/app_library"
+GROUP_ADDRESSES_PATH = f"{APP_LIBRARY_DIR}/group_addresses.json"
 CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
 RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
@@ -73,11 +75,16 @@ async def main():
         )
         xknx_for_initialization = XKNX(connection_config=connection_config)
         xknx_for_listening = XKNX(daemon_mode=True, connection_config=connection_config)
+
+        parser = GroupAddressesParser(GROUP_ADDRESSES_PATH)
+        group_addresses_dpt = parser.read_group_addresses_dpt()
+
         state = State(
             addresses_listeners,
             xknx_for_initialization,
             xknx_for_listening,
             check_conditions,
+            group_addresses_dpt,
         )
         await state.initialize()
         print("done!")

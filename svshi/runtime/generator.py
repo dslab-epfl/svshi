@@ -2,6 +2,19 @@ import os
 
 
 class ConditionsGenerator:
+
+    __DEFAULT_RUNTIME_AND_VERIFICATION_FILE = f"""
+# Default file, will be overwritten while running
+import dataclasses
+
+
+@dataclasses.dataclass
+class PhysicalState:
+    GA_1_1_1: float
+    GA_1_1_2: float
+    GA_1_1_3: bool
+""".strip()
+
     def __init__(
         self,
         conditions_file_path: str,
@@ -36,34 +49,12 @@ def check_conditions(state: PhysicalState) -> bool:
         """
         Resets the verification file.
         """
-        file = f"""
-# Default file, will be overwritten while running
-import dataclasses
-
-
-@dataclasses.dataclass
-class PhysicalState:
-    GA_1_1_1: float
-    GA_1_1_2: float
-""".strip()
-
         with open(self.__verification_file_path, "w") as output_file:
-            output_file.write(file)
+            output_file.write(self.__DEFAULT_RUNTIME_AND_VERIFICATION_FILE)
 
     def reset_runtime_file(self):
         """
         Resets the runtime file.
         """
-        file = f"""
-# Default file, will be overwritten while running
-import dataclasses
-
-
-@dataclasses.dataclass
-class PhysicalState:
-    GA_1_1_1: float
-    GA_1_1_2: float
-""".strip()
-
         with open(self.__runtime_file_path, "w") as output_file:
-            output_file.write(file)
+            output_file.write(self.__DEFAULT_RUNTIME_AND_VERIFICATION_FILE)
