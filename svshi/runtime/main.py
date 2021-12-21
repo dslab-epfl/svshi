@@ -5,7 +5,7 @@ from runtime.app import get_addresses_listeners, get_apps
 from runtime.generator import ConditionsGenerator
 from runtime.state import State
 from runtime.conditions import check_conditions
-from runtime.parser import Parser
+from runtime.groupAddressesParser import GroupAddressesParser
 import argparse
 import asyncio
 import os
@@ -76,7 +76,7 @@ async def main():
         xknx_for_initialization = XKNX(connection_config=connection_config)
         xknx_for_listening = XKNX(daemon_mode=True, connection_config=connection_config)
 
-        parser = Parser(GROUP_ADDRESSES_PATH)
+        parser = GroupAddressesParser(GROUP_ADDRESSES_PATH)
         group_addresses_dpt = parser.read_group_addresses_dpt()
 
         state = State(

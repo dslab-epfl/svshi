@@ -15,9 +15,9 @@ from xknx.dpt.dpt_string import DPTString
 from xknx.dpt.dpt_time import DPTTime
 
 
-class Parser:
+class GroupAddressesParser:
     """
-    JSON parser.
+    JSON parser for group addresses file.
     """
 
     __DPT_DICT: Dict[int, Union[DPTBase, DPTBinary]] = {
