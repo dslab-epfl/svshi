@@ -3,6 +3,9 @@ assignments
 generated
 input
 svshi/app_library/**
+svshi/verification/conditions.py
+svshi/verification/runtime_file.py
+svshi/verification/verification_file.py
 
 
 # Compiled class file
