@@ -9,7 +9,9 @@ class Generator:
     A Python code generator.
     """
 
-    def __init__(self, app_name: str, devices: List[Device], devices_json_filename: str):
+    def __init__(
+        self, app_name: str, devices: List[Device], devices_json_filename: str
+    ):
         self.__app_name = app_name
         self.__devices = devices
         self.__devices_json_filename = devices_json_filename
@@ -24,19 +26,26 @@ class Generator:
         """
         Moves the devices json to the newly generated app.
         """
-        subprocess.run(f"mv {self.__devices_json_filename} {self.__app_name}/app_prototypical_structure.json", shell=True)
+        subprocess.run(
+            f"mv {self.__devices_json_filename} {self.__app_name}/app_prototypical_structure.json",
+            shell=True,
+        )
 
     def generate_multiton_class(self):
         """
         Generates the source code files for the multiton class.
         """
         allowed_names = list(map(lambda d: d.name, self.__devices))
-        file = f"""
+        file = f'''
 ###
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
 def multiton(cls):
+    """
+    Makes the given class a multiton: only a limited number of instances can exist. If an instance with
+    a given name already exists, it is returned instead of creating a new object.
+    """
     instances = {{}}
     allowed_names = {allowed_names}
     def getinstance(name):
@@ -46,7 +55,7 @@ def multiton(cls):
             instances[name] = cls(name)
         return instances[name]  
     return getinstance    
-        """.strip()
+        '''.strip()
 
         output_filename = f"{self.__app_name}/models/multiton.py"
         os.makedirs(os.path.dirname(output_filename), exist_ok=True)

@@ -46,7 +46,11 @@ class State:
         payload = telegram.payload
         address = str(telegram.destination_address)
         if address in self.__addresses:
+            # The telegram was for one of the addresses we use
             if isinstance(payload, GroupValueWrite):
+                # We react only to GroupValueWrite; since for reading we use ValueReader
+                # to send the request and receive the response at once,
+                # we do not need to listen to GroupValueResponse
                 v = payload.value
                 if v:
                     value = await self.__from_knx(address, v.value)
@@ -69,9 +73,15 @@ class State:
         """
         await self.__xknx_for_listening.stop()
 
-    async def __send_value_to_knx(self, address: str, value: Union[bool, float, int]):
+    async def __send_value_to_knx(
+        self, address: str, value: Union[bool, float, int, None]
+    ):
+        """
+        Converts the given value to a raw value that can be understood by KNX and sends it to the given address.
+        The address is also used to determine which DPT needs to be used for the conversion.
+        """
         dpt = self.__group_address_to_dpt.get(address, None)
-        if dpt != None:
+        if dpt != None and value != None:
             write_content: Union[DPTBinary, DPTArray, None] = None
             if isinstance(dpt, DPTBinary):
                 binary_value = self.__TRUE if value else self.__FALSE
@@ -88,6 +98,10 @@ class State:
     async def __from_knx(
         self, address: str, value: tuple[int, ...]
     ) -> Union[bool, float, int, None]:
+        """
+        Converts the given raw value into a Python value understandable by SVSHI.
+        The address is used to determine which DPT needs to be used for the conversion.
+        """
         dpt = self.__group_address_to_dpt.get(address, None)
         if dpt == None:
             return None
@@ -101,7 +115,7 @@ class State:
 
     async def initialize(self):
         """
-        Initializes the system state by reading it from the KNX bus through an ephimeral connection.
+        Initializes the system state by reading it from the KNX bus through an ephemeral connection.
         """
         # Default value is None for each field/address
         fields = defaultdict()
@@ -125,18 +139,30 @@ class State:
         self._physical_state = PhysicalState(**fields)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
+        """
+        Converts a group address to its corresponding field name in PhysicalState.
+        Example: 1/1/1 -> GA_1_1_1
+        """
         return self.__GROUP_ADDRESS_PREFIX + group_addr.replace(
             self.__SLASH, self.__UNDERSCORE
         )
 
     def __field_name_to_group_addr(self, field: str) -> str:
+        """
+        Converts a PhysicalState field name to its corresponding group address.
+        Example: GA_1_1_1 -> 1/1/1
+        """
         return field.replace(self.__GROUP_ADDRESS_PREFIX, "").replace(
             self.__UNDERSCORE, self.__SLASH
         )
 
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
-    ) -> List[Tuple[str, Union[bool, float]]]:
+    ) -> List[Tuple[str, Union[bool, float, int, None]]]:
+        """
+        Compares new and old state and returns a list of (address_updated, value) pairs.
+        """
+
         def read_fields(state: PhysicalState) -> Dict[str, str]:
             return {
                 k: v
@@ -157,9 +183,11 @@ class State:
     def __merge_states(
         self, old_state: PhysicalState, new_states: Dict[App, PhysicalState]
     ) -> PhysicalState:
-        # Merge all the new states with the old one.
-        # First all the non-privileged apps are run in alphabetical order, then the privileged ones in alphabetical order
-        # In this way the privileged apps can override the behavior of the non-privileged ones
+        """
+        Merges all the new states with the old one.
+        """
+        # The new states are sorted first by permission level, then by name.
+        # See __notify_listeners on why is that the case
         sorted_new_states_by_priority = {
             k: v
             for k, v in sorted(
@@ -175,10 +203,17 @@ class State:
         return res
 
     async def __notify_listeners(self, address: str):
-        # We first execute all the listeners
-        old_state = dataclasses.replace(self._physical_state)
-        new_states = {}
+        """
+        Notifies all the listeners (i.e. apps) of the given address, triggering their execution.
+        Then, the physical state is updated, and the changes propagated to KNX.
+        """
         if address in self.__addresses_listeners:
+            old_state = dataclasses.replace(self._physical_state)
+            new_states = {}
+            # We first execute all the listeners
+            # First all the non-privileged apps are run in alphabetical order,
+            # then the privileged ones in alphabetical order.
+            # In this way the privileged apps can override the behavior of the non-privileged ones
             for app in self.__addresses_listeners[address]:
                 if app.should_run:
                     per_app_state = dataclasses.replace(old_state)
