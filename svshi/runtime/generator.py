@@ -1,9 +1,10 @@
 import os
+from typing import Final
 
 
 class ConditionsGenerator:
 
-    __DEFAULT_RUNTIME_AND_VERIFICATION_FILE = f"""
+    __DEFAULT_RUNTIME_AND_VERIFICATION_FILE: Final = f"""
 # Default file, will be overwritten while running
 import dataclasses
 

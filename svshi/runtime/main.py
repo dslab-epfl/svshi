@@ -28,7 +28,7 @@ def parse_args() -> Tuple[str, int]:
     """
     parser = argparse.ArgumentParser(description="Runtime module.")
     parser.add_argument("ip_address", type=str, help="the KNX IP address to use")
-    parser.add_argument("port", type=int, help="the KNX port to use")
+    parser.add_argument("port", type=int, help="the KNX port to use", default=3671)
     args = parser.parse_args()
 
     address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
@@ -64,7 +64,7 @@ async def main():
     )
     try:
         print("Initializing state and listeners... ", end="")
-        apps = get_apps(APP_LIBRARY_DIR, "runtime_file")
+        apps = get_apps(APP_LIBRARY_DIR, "runtime.runtime_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
 
