@@ -62,7 +62,7 @@ The `compiler` and the `verifier` need parsers for some `JSON` files and ETS pro
 
 ### Compiler
 
-At a high level, the `compiler` takes the existing library of applications (i.e., applications that are already installed and run on the SVSHI installation) and new application(s) (i.e., application(s) that are currently being installed) and produces information for KNX programing (i.e., programing of the physical devices) as well as code for the runtime component and the `verifier`.
+At a high level, the `compiler` takes the existing library of applications (i.e., applications that are already installed and run on the SVSHI installation) and new application(s) (i.e., application(s) that are currently being installed) and produces information for KNX programming (i.e., programming of the physical devices) as well as code for the runtime component and the `verifier`.
 
 The `compiler` has to tasks, that are called through the CLI.
 
