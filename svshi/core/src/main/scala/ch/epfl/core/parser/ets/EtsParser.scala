@@ -191,26 +191,27 @@ object EtsParser {
           // Find groupObjectInstances id and search them in the files
           val groupObjectTreeInstance = deviceInstanceXML \\ GROUPOBJECTTREE_TAG
           val nodes = groupObjectTreeInstance \\ NODES_TAG
-          if (nodes.isEmpty) {
-            // There is no Nodes object in the xml, but only directly the GroupObjectInstances
-            ChannelNode(
-              defaultNodeName,
-              (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM)
-                .split(' ')
-                .flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId))
-                .toList
-            ) :: Nil
-          } else {
-            (nodes \\ NODE_TAG)
-              .map(n =>
-                ChannelNode(
-                  constructChannelNodeName(n, productRefId, hardware2programRefId),
-                  (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId)).toList
-                )
+          val nodesChannels = (nodes \\ NODE_TAG).map(n =>
+              ChannelNode(
+                constructChannelNodeName(n, productRefId, hardware2programRefId),
+                (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId)).toList
               )
+            )
+            .toList
+          // Now gets the channels that are not in a Node but naked at the root
+          val rootChannel = ChannelNode(
+            defaultNodeName,
+            (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM)
+              .split(' ')
+              .flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId))
               .toList
-          }
+          )
 
+          if(rootChannel.ioPorts.isEmpty) {
+            nodesChannels
+          } else {
+            nodesChannels ++ List(rootChannel)
+          }
         }
         case None => throw new MalformedXMLException("Cannot get the deviceInstance in xml")
       }
