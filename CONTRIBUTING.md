@@ -67,7 +67,7 @@ At a high level, the `compiler` takes the existing library of applications (i.e.
 The `compiler` has two main tasks, that are called through the CLI.
 
 #### GenerateBindings
-During the execution of the `generateBindings` task, the `compiler` reads all applications structures and produces a `bindings` file that the user has to fill. This `binding` file contains all applications and for each of them, the list of prototypical devices and their I/O channel. Each type of device has its own sets of I/O channel. The user then binds each one of these channels to a physical communication object in the `PhysicalStructure` (through `ids` in the `JSON` files).
+During the execution of the `generateBindings` task, the `compiler` reads all applications structures and produces a `bindings` file (named `apps_bindings.json`) that the user has to fill. This `binding` file contains all applications and for each of them, the list of prototypical devices and their I/O channels. Each device type has its own sets of I/O channels. The user then binds each one of these channels to a physical communication object in the `PhysicalStructure` (named `physical_structure.json`) through `ids` in the `JSON` files.
 
 If the `PhysicalStructure` did not change (i.e., no difference between the one produced when parsing the `.knxproj` file and the one stored in the library from the previous application(s) installation process), the `compiler` puts back the old bindings in the file, so that the user does not need to redo all the bindings but only the ones for the application(s) being installed.
 
