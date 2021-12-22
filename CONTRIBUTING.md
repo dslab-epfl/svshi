@@ -205,7 +205,11 @@ The types of device that SVSHI supports require specific code to be handled prop
 > Once you added the new `SupportedDeviceBinding`, compiler warnings can guide you because the trait is sealed and thus match can be exhaustive.
 - update the function `assignmentToPythonAddressJson` in `ch.epfl.core.parser.json.bindings.PythonAddressJsonParser` (specially the `match`)
 - update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
+- modify the `read_devices` method in `svshi/generator/parsing/parser.py`.
+- add a new Python file containing the device class in `svshi/generator/skeleton/models`
+- modify `generate_device_classes`, `generate_device_instances` and add a new device template in `svshi/verification/generator.py`
 
+Don't forget to add new tests in all the modified modules!
 ## Tests
 
 To run the tests of all the modules at once, execute `./run_tests.sh` inside `svshi/`.
