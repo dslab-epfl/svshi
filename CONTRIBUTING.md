@@ -187,7 +187,7 @@ To do so, this stage calls the `verification` module written in Python that tran
 The code modification consists, in a nutshell, to:
 - add a `PhysicalState` instance as argument of `iteration` and `invariant` functions
 - add an instance of the corresponding type as argument of `iteration` function for each `unchecked` function
-- add a CrossHair contract to `iteration` containing:
+- Adding a CrossHair contract to `iteration` containing:
   - one precondition for all `invariant` function of installed or being installed applications
   - one precondition for all postconditions of the `unchecked` functions
   - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value
