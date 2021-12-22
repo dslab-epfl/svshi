@@ -72,7 +72,7 @@ During the execution of the `generateBindings` task, the `compiler` reads all ap
 If the `PhysicalStructure` did not change (i.e., no difference between the one produced when parsing the `.knxproj` file and the one stored in the library from the previous application(s) installation process), the `compiler` puts back the old bindings in the file, so that the user does not need to redo all the bindings but only the ones for the application(s) being installed.
 
 #### Compile
-During the execution of the `compile` task, the `compiler` produces a `GroupAddressAssignment`. The idea here is to take all the bindings between prototypical devices I/O channels and physical devices communications objects and assign them group addresses. A group address must be unique to one "connection" to ensure that no interference will occur on the bus at runtime (i.e., sending a command to a device will trigger another because they are listening to the same group address).
+During the execution of the `compile` task, the `compiler` produces a `GroupAddressAssignment` (and a corresponding `assignment.txt` file in the `assignments` folder). The idea here is to take all the bindings between prototypical devices I/O channels and physical devices communications objects and assign them group addresses. A group address must be unique to one "connection" to ensure that no interference will occur on the bus at runtime (i.e., sending a command to a device will trigger another because they are listening to the same group address).
 
 One new group address (assigned incrementally) is assigned to each physical id (i.e., one per physical device's communication object).
 
