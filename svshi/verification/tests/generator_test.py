@@ -44,6 +44,9 @@ def test_generator_generate_conditions_file():
         == True
     )
 
+    # Cleanup
+    os.remove(CONDITIONS_FILE_PATH)
+
 
 def test_generator_generate_verification_file():
     generator.generate_verification_file()
