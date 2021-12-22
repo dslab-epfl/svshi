@@ -180,24 +180,24 @@ THIRD_APP_SWITCH_INSTANCE_NAME = Switch_third_app_switch_instance_name()
 THIRD_APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_third_app_temperature_sensor_instance_name()
 
 
-def third_app_precond(physical_state: PhysicalState) ->bool:
+def third_app_invariant(physical_state: PhysicalState) ->bool:
     return THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) < 82
 
 
 def third_app_iteration(physical_state: PhysicalState):
     """
-pre: first_app_precond(physical_state)
-pre: second_app_precond(physical_state)
-pre: third_app_precond(physical_state)
-post: first_app_precond(__return__)
-post: second_app_precond(__return__)
-post: third_app_precond(__return__)
+pre: first_app_invariant(physical_state)
+pre: second_app_invariant(physical_state)
+pre: third_app_invariant(physical_state)
+post: first_app_invariant(__return__)
+post: second_app_invariant(__return__)
+post: third_app_invariant(__return__)
 """
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) > 30:
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
     return physical_state
 
-def first_app_precond(physical_state: PhysicalState) ->bool:
+def first_app_invariant(physical_state: PhysicalState) ->bool:
     return FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and FIRST_APP_TEMPERATURE_SENSOR_INSTANCE_NAME.read(physical_state
         ) > 18
@@ -205,12 +205,12 @@ def first_app_precond(physical_state: PhysicalState) ->bool:
 
 def first_app_iteration(physical_state: PhysicalState):
     """
-pre: first_app_precond(physical_state)
-pre: second_app_precond(physical_state)
-pre: third_app_precond(physical_state)
-post: first_app_precond(__return__)
-post: second_app_precond(__return__)
-post: third_app_precond(__return__)
+pre: first_app_invariant(physical_state)
+pre: second_app_invariant(physical_state)
+pre: third_app_invariant(physical_state)
+post: first_app_invariant(__return__)
+post: second_app_invariant(__return__)
+post: third_app_invariant(__return__)
 """
     if first_app_uncheckedcompute_bool():
         first_app_unchecked_print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.
@@ -240,19 +240,19 @@ def first_app_unchecked_return_two() ->int:
 def first_app_unchecked_print(s) ->None:
     print(s)
 
-def second_app_precond(physical_state: PhysicalState) ->bool:
+def second_app_invariant(physical_state: PhysicalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
 def second_app_iteration(physical_state: PhysicalState):
     """
-pre: first_app_precond(physical_state)
-pre: second_app_precond(physical_state)
-pre: third_app_precond(physical_state)
-post: first_app_precond(__return__)
-post: second_app_precond(__return__)
-post: third_app_precond(__return__)
+pre: first_app_invariant(physical_state)
+pre: second_app_invariant(physical_state)
+pre: third_app_invariant(physical_state)
+post: first_app_invariant(__return__)
+post: second_app_invariant(__return__)
+post: third_app_invariant(__return__)
 """
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and second_app_unchecked_time() > 2.0:

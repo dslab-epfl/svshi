@@ -177,7 +177,7 @@ class PhysicalState:
 
         self.__code.extend(devices_code)
 
-    def __generate_precond_iteration_functions(self, verification: bool):
+    def __generate_invariant_and_iteration_functions(self, verification: bool):
         self.__code.append("\n")
         imports, functions = self.__manipulator.manipulate_mains(verification)
         self.__imports.extend(imports)
@@ -189,7 +189,7 @@ class PhysicalState:
             self.__generate_physical_state_class()
             self.__generate_device_classes()
             self.__generate_devices_instances()
-            self.__generate_precond_iteration_functions(verification)
+            self.__generate_invariant_and_iteration_functions(verification)
             file.write("\n".join((sorted(set(self.__imports)))))
             file.write("\n\n")
             file.write("\n".join(self.__code))
@@ -220,9 +220,9 @@ class PhysicalState:
         for i, app in enumerate(sorted(self.__app_names)):
             # We also need to import the PhysicalState at the end
             suffix = ", " if i < nb_apps - 1 else ", PhysicalState\n"
-            precond_function = f"{app}_precond"
-            imports += f"{precond_function}{suffix}"
-            imports_code.append(precond_function)
+            invariant_function = f"{app}_invariant"
+            imports += f"{invariant_function}{suffix}"
+            imports_code.append(invariant_function)
 
         check_conditions_body = ""
         nb_imports = len(imports_code)
