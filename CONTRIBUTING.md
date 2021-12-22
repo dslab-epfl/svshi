@@ -77,7 +77,7 @@ During the execution of the `compile` task, the `compiler` produces a `GroupAddr
 A single new group address (assigned incrementally) is assigned to each physical id (i.e., one per physical device's communication object).
 
 Once this assignment is constructed, the `compiler`:
-- produces one `JSON` file (`PythonAddress`) for each application that will then be used by the runtime module and the `verifier` and stores it in the application's folder.
+- produces one `JSON` file (`PythonAddress`, the file is named `addresses.json`) for each application that will then be used by the runtime module and the `verifier` and stores it in the application's folder.
 - passes this assignment to the KNX `programer` component.
 
 ### Verifier
