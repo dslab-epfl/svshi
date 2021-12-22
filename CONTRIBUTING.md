@@ -64,7 +64,7 @@ The `compiler` and the `verifier` need parsers for some `JSON` files and ETS pro
 
 At a high level, the `compiler` takes the existing library of applications (i.e., applications that are already installed and run on the SVSHI installation) and new application(s) (i.e., application(s) that are currently being installed) and produces information for KNX programming (i.e., programming of the physical devices) as well as code for the runtime component and the `verifier`.
 
-The `compiler` has to tasks, that are called through the CLI.
+The `compiler` has two main tasks, that are called through the CLI.
 
 #### GenerateBindings
 During the execution of the `generateBindings` task, the `compiler` reads all applications structures and produces a `bindings` file that the user has to fill. This `binding` file contains all applications and for each of them, the list of prototypical devices and their I/O channel. Each type of device has its own sets of I/O channel. The user then binds each one of these channels to a physical communication object in the `PhysicalStructure` (through `ids` in the `JSON` files).
