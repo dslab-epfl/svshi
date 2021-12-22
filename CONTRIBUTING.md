@@ -49,7 +49,7 @@ For formatting and code style, we use [scalafmt](https://github.com/scalameta/sc
 
 ## Core
 
-This part of the project contains mainly the `compiler`, the `verifier` and the KNX `programer`. Along with these two major components live some parser for `JSON` and `.knxproj` (i.e., ETS project file) and some utility functions that are used by them. This also includes everything related to the CLI.
+This module contains mainly the `compiler`, the `verifier` and the KNX `programmer`. Along with these two major components live some parsers for `.json` and `.knxproj` (i.e., ETS project file) files and some utility functions that are used by them. This also includes everything related to the CLI.
 
 ### Parsers
 The `compiler` and the `verifier` need parsers for some `JSON` files and ets-project. These parsers are:
