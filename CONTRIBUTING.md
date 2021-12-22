@@ -9,6 +9,7 @@
   - [Tests](#tests)
   - [CI](#ci)
   - [Releases](#releases)
+  - [Code of Conduct](#code-of-conduct)
 
 ## Requirements
 
@@ -61,3 +62,7 @@ To build a new release:
 
 1. Run `./build_release.sh` inside `svshi/` to build the archive.
 2. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `tar.gz` archive as an attachment. Make sure the release version and the svshi version are the same.
+
+## Code of Conduct
+
+Our Code of Conduct is [here](https://github.com/dslab-epfl/smartinfra/blob/main/CODE_OF_CONDUCT.md). By contributing to SVSHI, you implicitly accept it.
