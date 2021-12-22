@@ -187,7 +187,9 @@ class State:
         Merges all the new states with the old one.
         """
         # The new states are sorted first by permission level, then by name.
-        # See __notify_listeners on why is that the case
+        # First all the non-privileged apps are run in alphabetical order,
+        # then the privileged ones in alphabetical order.
+        # In this way the privileged apps can override the behavior of the non-privileged ones
         sorted_new_states_by_priority = {
             k: v
             for k, v in sorted(
@@ -211,9 +213,6 @@ class State:
             old_state = dataclasses.replace(self._physical_state)
             new_states = {}
             # We first execute all the listeners
-            # First all the non-privileged apps are run in alphabetical order,
-            # then the privileged ones in alphabetical order.
-            # In this way the privileged apps can override the behavior of the non-privileged ones
             for app in self.__addresses_listeners[address]:
                 if app.should_run:
                     per_app_state = dataclasses.replace(old_state)
