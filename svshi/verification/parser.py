@@ -39,6 +39,17 @@ class Parser:
         self.__generated_dir_name = generated_dir_name
         self.__app_library_dir_name = app_library_dir_name
 
+    def get_app_names(self) -> List[str]:
+        """
+        Gets all the app names.
+        """
+        return list(
+            map(
+                lambda a: a.name,
+                self.__get_apps(),
+            )
+        )
+
     def __get_apps(self) -> List[App]:
         def get_apps_from_directory(directory: str) -> List[App]:
             return [

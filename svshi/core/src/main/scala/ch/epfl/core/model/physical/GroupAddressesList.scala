@@ -5,7 +5,7 @@ import upickle.default.{ReadWriter, macroRW}
 /** Represents a list of group addresses along with their datatype in Python
   * @param addresses
   */
-final case class GroupAddressesList(addresses: List[(String, String)])
+final case class GroupAddressesList(addresses: List[(String, String, String)])
 object GroupAddressesList {
   implicit val rw: ReadWriter[GroupAddressesList] = macroRW[GroupAddressesList]
 }

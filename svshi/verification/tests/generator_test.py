@@ -8,6 +8,8 @@ VERIFICATION_FILE_PATH = f"{TESTS_DIRECTORY}/verification_file.py"
 EXPECTED_VERIFICATION_FILE_PATH = f"{TESTS_DIRECTORY}/expected_verification_file.py"
 RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/runtime_file.py"
 EXPECTED_RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/expected_runtime_file.py"
+CONDITIONS_FILE_PATH = f"{TESTS_DIRECTORY}/conditions.py"
+EXPECTED_CONDITIONS_FILE_PATH = f"{TESTS_DIRECTORY}/expected_conditions.py"
 
 parser = Parser(
     f"{TESTS_DIRECTORY}/fake_generated", f"{TESTS_DIRECTORY}/fake_app_library"
@@ -15,15 +17,35 @@ parser = Parser(
 group_addresses_with_types = parser.parse_group_addresses()
 devices_instances = parser.parse_devices_instances()
 devices_classes = parser.parse_devices_classes()
+app_names = parser.get_app_names()
 
 
 generator = Generator(
     VERIFICATION_FILE_PATH,
     RUNTIME_FILE_PATH,
+    CONDITIONS_FILE_PATH,
     group_addresses_with_types,
     devices_instances,
     devices_classes,
+    app_names,
 )
+
+
+def test_generator_generate_conditions_file():
+    generator.generate_conditions_file()
+
+    assert os.path.exists(CONDITIONS_FILE_PATH) == True
+    assert (
+        filecmp.cmp(
+            CONDITIONS_FILE_PATH,
+            EXPECTED_CONDITIONS_FILE_PATH,
+            shallow=False,
+        )
+        == True
+    )
+
+    # Cleanup
+    os.remove(CONDITIONS_FILE_PATH)
 
 
 def test_generator_generate_verification_file():

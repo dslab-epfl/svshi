@@ -53,6 +53,11 @@ object Main {
             val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
             if (addressRegex.matches(address)) {
               info("Running the apps...")
+              // Copy verification_file.py, runtime_file.py and conditions.py in runtime module
+              val appLibraryPath = existingAppsLibrary.path
+              FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), RUNTIME_PYTHON_MODULE_PATH)
+
+              // Run the runtime module
               runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
             } else printErrorAndExit("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
           case None => printErrorAndExit("The KNX address and port need to be specified to run the apps")
@@ -60,20 +65,25 @@ object Main {
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
         printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
-        info("Compiling the apps...")
+        info("Compiling and verifying the apps...")
         val etsProjPathString = config.etsProjectFile.get
         val newPhysicalStructure: PhysicalStructure = extractPhysicalStructure(etsProjPathString)
         val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
         val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
         if (validateProgram(verifierMessages)) {
           // Copy new app + all files in app_library
-          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, existingAppsLibrary.path)
+          val appLibraryPath = existingAppsLibrary.path
+          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
+
+          // Copy verification_file.py, runtime_file.py and conditions.py in app_library
+          FileUtils.copyFiles(List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH), appLibraryPath)
+
           printTrace(verifierMessages)
-          success(s"The apps have been successfully compiled!")
+          success(s"The apps have been successfully compiled and verified!")
         } else {
           // New app is rejected
           printTrace(verifierMessages)
-          printErrorAndExit("Compilation failed, see messages above")
+          printErrorAndExit("Compilation/verification failed, see messages above")
         }
       case GenerateBindings =>
         info("Generating the bindings...")

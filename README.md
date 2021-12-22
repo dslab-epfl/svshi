@@ -93,11 +93,11 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
-There are two important functions in `main.py`, `precond()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second you should write the app code.
+There are two important functions in `main.py`, `invariant()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second you should write the app code.
 
 An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
 
-In addition, note that `precond()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you **cannot** perform operations with side effects, call external libraries nor unchecked functions.
+In addition, note that `invariant()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here you **cannot** perform operations with side effects, call external libraries nor unchecked functions.
 
 **Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximise code that is indeed formally verified.
 Nonetheless, you can help the verification deal with their presence by annotating their docstring with _post-conditions_.
@@ -123,7 +123,7 @@ In `main.py`:
 from devices import BINARY_SENSOR, SWITCH
 
 
-def precond() -> bool:
+def invariant() -> bool:
     # The switch should be in the same state as the binary sensor
     return (BINARY_SENSOR.is_on() and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
 
@@ -139,7 +139,7 @@ def iteration():
 
 To run all the installed apps (with [runtime verification](#runtime) enabled):
 
-1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
+1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt` and program the devices.
 2. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
 
 ## App generator

@@ -31,9 +31,9 @@ class KNXDatatypeTest extends AnyFlatSpec with Matchers {
   "The fromString method" should "return correct datatype instance with correct String 4" in {
     KNXDatatype.fromString("DPT-013") shouldEqual Some(DPT13)
   }
-  "The fromString method" should "return correct datatype instance with correct String 5" in {
-    KNXDatatype.fromString("DPT-2") shouldEqual Some(DPT2)
-  }
+//  "The fromString method" should "return correct datatype instance with correct String 5" in {
+//    KNXDatatype.fromString("DPT-2") shouldEqual Some(DPT2)
+//  }
   "The fromString method" should "return correct datatype instance with correct String 6" in {
     KNXDatatype.fromString("DPT-000000020") shouldEqual Some(DPT20)
   }

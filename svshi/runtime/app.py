@@ -18,6 +18,20 @@ class App:
     is_privileged: bool = False
     should_run: bool = True
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, App):
+            return (
+                self.name == other.name
+                and self.directory == other.directory
+                and self.is_privileged == other.is_privileged
+                and self.should_run == other.should_run
+            )
+        else:
+            return False
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
     def notify(self, state: PhysicalState):
         """
         Notifies the app, triggering an iteration.
@@ -41,7 +55,7 @@ class App:
                 "pip",
                 "install",
                 "-r",
-                f"app_library/{self.name}/requirements.txt",
+                f"{self.directory}/{self.name}/requirements.txt",
             ]
         )
 
@@ -61,9 +75,7 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
     apps_names = __get_apps_names(app_library_dir)
     apps = []
     for app_name in apps_names:
-        app_code = getattr(
-            import_module(runtime_file_module), f"{app_name}_iteration"
-        )
+        app_code = getattr(import_module(runtime_file_module), f"{app_name}_iteration")
         with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
             is_privileged = file_dict["permissionLevel"] == "privileged"
