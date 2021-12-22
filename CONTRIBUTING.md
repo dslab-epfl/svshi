@@ -192,7 +192,7 @@ The code modification consists, in a nutshell, to:
   - one precondition for all postconditions of the `unchecked` functions
   - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value
 - Moving all used functions in one file (called either `verification_file.py` or `runtime_file.py`)
-- add to that file all the generated code (`PhysicalState`, devices' classes, ...)
+- Adding to that file all the generated code (`PhysicalState`, devices' classes and instances, ...)
 
 The `verifier` then calls CrossHair on that file, and retrieve `std.out`. Each counter example found by CrossHair is considered as an error and is returned by the `verifier` to be displayed.
 
