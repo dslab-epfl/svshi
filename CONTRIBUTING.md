@@ -74,7 +74,7 @@ If the `PhysicalStructure` did not change (i.e., no difference between the one p
 #### Compile
 During the execution of the `compile` task, the `compiler` produces a `GroupAddressAssignment` (and a corresponding `assignment.txt` file in the `assignments` folder). The idea here is to take all the bindings between prototypical devices I/O channels and physical devices communications objects and assign them group addresses. A group address must be unique to one "connection" to ensure that no interference will occur on the bus at runtime (i.e., sending a command to a device will trigger another because they are listening to the same group address).
 
-One new group address (assigned incrementally) is assigned to each physical id (i.e., one per physical device's communication object).
+A single new group address (assigned incrementally) is assigned to each physical id (i.e., one per physical device's communication object).
 
 Once this assignment is constructed, the `compiler`:
 - produces one `JSON` file (`PythonAddress`) for each application that will then be used by the runtime module and the `verifier` and stores it in the application's folder.
