@@ -194,7 +194,7 @@ The code modification consists, in a nutshell, to:
 - Moving all used functions in one file (called either `verification_file.py` or `runtime_file.py`)
 - Adding to that file all the generated code (`PhysicalState`, devices' classes and instances, ...)
 
-The `verifier` then calls CrossHair on that file, and retrieve `std.out`. Each counter example found by CrossHair is considered as an error and is returned by the `verifier` to be displayed.
+The `verifier` then calls CrossHair on that file, and retrieves `std.out`. Each counterexample found by CrossHair is considered as an error and is returned by the `verifier` to be displayed.
 
 #### What to change to add new prototypical devices?
 
