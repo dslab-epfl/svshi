@@ -78,11 +78,11 @@ A single new group address (assigned incrementally) is assigned to each physical
 
 Once this assignment is constructed, the `compiler`:
 - produces one `JSON` file (`PythonAddress`, the file is named `addresses.json`) for each application that will then be used by the runtime module and the `verifier` and stores it in the application's folder.
-- passes this assignment to the KNX `programer` component.
+- passes this assignment to the KNX `programmer` component.
 
 ### Verifier
 
-The `verifier` does various kind of verification on what the `compiler` produced and on the applications themselves. Let us detail the different stages and what they verify.
+The `verifier` performs various kinds of verification on what the `compiler` produced and on the applications themselves. Let us detail the different stages and what they verify.
 
 Except when it is explicity said that the verifier outputs a warning, everytime something is invalid the `verifier` produces an error. More than 0 errors is considered as a fail of the verification and requires adjusting the applications and/or bindings to install the application.
 
@@ -92,9 +92,9 @@ This part of the `verifier` verifies properties of the bindings between prototyp
 
 ##### IOTypes
 
-The first property verified is that IO Types correctly matched. IO Type can be `in`, `out` or `in/out`. `in` means that the prototypical (physical repspectively) device channel (communication object repspectively) can receive value from the bus and react accordingly. `out` means the opposite, i.e., that the device channel (communication object respectively) can write value to the bus. Lastly `in/out` means that the channel (communication object respectively) can do both simulatenously.
+The first property verified is that IO Types are correctly matched. IO Type can be `in`, `out` or `in/out`. `in` means that the prototypical (physical respectively) device channel (communication object respectively) can receive value from the bus and react accordingly. `out` means the opposite, i.e., that the device channel (communication object respectively) can write value to the bus. Lastly `in/out` means that the channel (communication object respectively) can do both simultaneously.
 
-Every prototypical device defined as a `SupportedDevice` provides the IO type for each of these channels (through the class `SupportedDeviceBinding`). The IO type of physical device's communication objects are read by the parser in the ETS project file.
+Every prototypical device defined as a `SupportedDevice` provides the IO type for each of these channels (through the class `SupportedDeviceBinding`). The IO type of each physical device's communication objects are read by the parser in the ETS project file.
 As the IO type is not always provided for physical devices, it can be `Unknown`.
 
 Compatibility is defined as follows:
@@ -149,17 +149,17 @@ Compatibility is defined as follows:
 </table>
 
 
-As we abstract the Physical state and run applications on it, it means that a prototypical device in an application can read a state that is only an `out` in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
+As we abstract the physical state and run applications on it, it means that a prototypical device in an application can read a state that is only an `out` in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
 
 With `Unknown` type for physical devices, we cannot do more than give a warning to the developer to really make sure that the connection is valid.
 
 ##### Python types 
 
-As we abstract the state of the physical installation in a mirrored state, we assign Python type (e.g., `int`, `float`, `bool`, ...) to each group address. For this to be valid, all prototypical device channels linked to that group address must use values of the same type.
+As we abstract the state of the physical installation in a mirrored state, we assign a Python type (e.g., `int`, `float`, `bool`, ...) to each group address. For this to be valid, all prototypical device channels linked to that group address must use values of the same type.
 
 Each device, just as for IO Types, has the Python type of the value it would read/write on the KNX bus encoded in the corresponding `SupportedDeviceBinding` class.
 
-This stage then check that all channels connected to the same group address uses the same Python type for their values.
+This stage then checks that all channels connected to the same group address use the same Python type for their values.
 
 ##### KNX datatypes
 This stage does the same kind of verification as the IO Types one but checking that the KNX datatypes of the value that the device would read/write on the bus are compatible.
@@ -168,25 +168,25 @@ For each binding between a physical device's communication object and a prototyp
 
 As for the IO Types, if the KNX Datatype is not known for a physical communication object, the `verifier` gives a warning to the developer. Otherwise, KNX Datatypes must be **equal**.
 
-##### Mututal KNX datatypes
+##### Mutual KNX datatypes
 
 This stage performs the KNX Datatype check just as the previous ones but between prototypical device channels that are linked to the same physical device's communication object.
 
 #### python.static.Verifier
 
-This stage verifies that Python applications preserve the invariants.
+This stage verifies that Python applications preserve the invariants specified by the app developer.
 
 In each Python application, the developer can fill 2 functions: `iteration()` and `invariant()`. Both of these functions can access the devices.
 - `invariant` returns a `bool` and represents an invariant that the KNX system's state should always satisfy
-- `iteration` is called everytime the state of one of the devices the applications uses changes. It represents the state modification function.
+- `iteration` is called everytime the state of one of the applications' devices changes. It represents the state modification function.
 
 The static verification done at this stage verifies using [CrossHair](https://github.com/pschanely/CrossHair) that, given a valid state of the KNX installation (i.e., that satisfies the invariants of ALL applications installed or being installed), it cannot return a state that violates one of these invariants.
 
 To do so, this stage calls the `verification` module written in Python that transforms the code and prepare two versions of it: one used for the verification and one used later by the runtime module.
 
-The code modification consists, in a nutshell, to:
-- add a `PhysicalState` instance as argument of `iteration` and `invariant` functions
-- add an instance of the corresponding type as argument of `iteration` function for each `unchecked` function
+The code modification consists, in a nutshell, in:
+- Adding a `PhysicalState` instance as argument of `iteration` and `invariant` functions
+- Adding an instance of the corresponding type as argument of `iteration` function for each `unchecked` function. The type used for the instance is the return type of the `unchecked` function.
 - Adding a CrossHair contract to `iteration` containing:
   - one precondition for all `invariant` function of installed or being installed applications
   - one precondition for all postconditions of the `unchecked` functions
