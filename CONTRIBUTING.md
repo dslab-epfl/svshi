@@ -52,7 +52,7 @@ For formatting and code style, we use [scalafmt](https://github.com/scalameta/sc
 This module contains mainly the `compiler`, the `verifier` and the KNX `programmer`. Along with these two major components live some parsers for `.json` and `.knxproj` (i.e., ETS project file) files and some utility functions that are used by them. This also includes everything related to the CLI.
 
 ### Parsers
-The `compiler` and the `verifier` need parsers for some `JSON` files and ets-project. These parsers are:
+The `compiler` and the `verifier` need parsers for some `JSON` files and ETS projects. These parsers are:
 - ETS Project: this parser parses a file of type `.knxproj` which is the file used by ETS. It outputs an instance of `PhysicalStructure` that represents the physical KNX installation in which SVSHI is running.
 - `JSON` files: these parsers read (and for some write) `JSON` files containing the following structures:
   - `Bindings`: this one is used to store and retrieve bindings between prototypical devices and physical communication objects
