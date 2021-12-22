@@ -180,7 +180,7 @@ In each Python application, the developer can fill 2 functions: `iteration()` an
 - `invariant` returns a `bool` and represents an invariant that the KNX system's state should always satisfy
 - `iteration` is called everytime the state of one of the applications' devices changes. It represents the state modification function.
 
-The static verification done at this stage verifies using [CrossHair](https://github.com/pschanely/CrossHair) that, given a valid state of the KNX installation (i.e., that satisfies the invariants of ALL applications installed or being installed), it cannot return a state that violates one of these invariants.
+The static verification done at this stage verifies using [CrossHair](https://github.com/pschanely/CrossHair) that, given a valid state of the KNX installation (i.e., that satisfies the invariants of ALL applications installed or being installed), it cannot return a state that violates one of these invariants. In other words, a new applications must not be able to return a state that violates any of the `invariant` of already installed applications.
 
 To do so, this stage calls the `verification` module written in Python that transforms the code and prepare two versions of it: one used for the verification and one used later by the runtime module.
 
