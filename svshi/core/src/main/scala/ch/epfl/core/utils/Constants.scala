@@ -18,7 +18,7 @@ object Constants {
   val APP_PROTO_STRUCT_FILE_NAME = "app_prototypical_structure.json"
   val GENERATED_FOLDER_PATH_STRING = s"$SVSHI_HOME/generated"
   val APP_LIBRARY_FOLDER_PATH_STRING = s"$SVSHI_FOLDER/app_library"
-  val GENERATED_FOLDER_PATH: Path = os.Path(APP_LIBRARY_FOLDER_PATH_STRING)
+  val GENERATED_FOLDER_PATH: Path = os.Path(GENERATED_FOLDER_PATH_STRING)
   val APP_LIBRARY_FOLDER_PATH: Path = os.Path(APP_LIBRARY_FOLDER_PATH_STRING)
   val GENERATED_VERIFICATION_FILE_PATH: Path = os.Path(s"$SVSHI_FOLDER/verification/verification_file.py")
   val GENERATED_RUNTIME_FILE_PATH: Path = os.Path(s"$SVSHI_FOLDER/verification/runtime_file.py")

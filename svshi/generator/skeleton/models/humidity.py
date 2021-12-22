@@ -17,4 +17,7 @@ class HumiditySensor(Device):
         super().__init__(name, "humidity")
 
     def read(self) -> Optional[float]:
+        """
+        Reads the value of the sensor. Returns None if KNX did not answer.
+        """
         pass

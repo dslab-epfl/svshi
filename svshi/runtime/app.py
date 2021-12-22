@@ -19,12 +19,15 @@ class App:
     should_run: bool = True
 
     def __eq__(self, other: object) -> bool:
-        return (
-            self.name == other.name
-            and self.directory == other.directory
-            and self.is_privileged == other.is_privileged
-            and self.should_run == other.should_run
-        )
+        if isinstance(other, App):
+            return (
+                self.name == other.name
+                and self.directory == other.directory
+                and self.is_privileged == other.is_privileged
+                and self.should_run == other.should_run
+            )
+        else:
+            return False
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -52,7 +55,7 @@ class App:
                 "pip",
                 "install",
                 "-r",
-                f"app_library/{self.name}/requirements.txt",
+                f"{self.directory}/{self.name}/requirements.txt",
             ]
         )
 

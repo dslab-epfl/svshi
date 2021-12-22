@@ -139,7 +139,7 @@ def iteration():
 
 To run all the installed apps (with [runtime verification](#runtime) enabled):
 
-1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt`.
+1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt` and program the devices.
 2. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
 
 ## App generator

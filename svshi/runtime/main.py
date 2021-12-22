@@ -2,7 +2,7 @@ from typing import Tuple
 from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.xknx import XKNX
 from runtime.app import get_addresses_listeners, get_apps
-from runtime.generator import ConditionsGenerator
+from runtime.resetter import FileResetter
 from runtime.state import State
 from runtime.conditions import check_conditions
 from runtime.parser import GroupAddressesParser
@@ -28,7 +28,7 @@ def parse_args() -> Tuple[str, int]:
     """
     parser = argparse.ArgumentParser(description="Runtime module.")
     parser.add_argument("ip_address", type=str, help="the KNX IP address to use")
-    parser.add_argument("port", type=int, help="the KNX port to use")
+    parser.add_argument("port", type=int, help="the KNX port to use", default=3671)
     args = parser.parse_args()
 
     address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
@@ -45,26 +45,26 @@ def parse_args() -> Tuple[str, int]:
     return address, port
 
 
-async def cleanup(generator: ConditionsGenerator, error: bool = False):
+async def cleanup(error: bool = False):
     """
     Resets the verification and the conditions files.
     """
     error_message = "An error occurred!\n" if error else ""
     print(f"{error_message}Exiting... ", end="")
-    generator.reset_verification_file()
-    generator.reset_runtime_file()
-    generator.reset_conditions_file()
+    file_resetter = FileResetter(
+        CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
+    )
+    file_resetter.reset_verification_file()
+    file_resetter.reset_runtime_file()
+    file_resetter.reset_conditions_file()
     print("bye!")
 
 
 async def main():
     knx_address, knx_port = parse_args()
-    conditions_generator = ConditionsGenerator(
-        CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
-    )
     try:
         print("Initializing state and listeners... ", end="")
-        apps = get_apps(APP_LIBRARY_DIR, "runtime_file")
+        apps = get_apps(APP_LIBRARY_DIR, "runtime.runtime_file")
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
 
@@ -96,12 +96,12 @@ async def main():
         await state.stop()
         print("done!")
 
-        await cleanup(conditions_generator)
+        await cleanup()
 
     except KeyboardInterrupt:
-        await cleanup(conditions_generator)
+        await cleanup()
     except BaseException as e:
-        await cleanup(conditions_generator, error=True)
+        await cleanup(error=True)
         raise e
 
 

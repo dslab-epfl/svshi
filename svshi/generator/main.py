@@ -1,13 +1,12 @@
 import argparse
 import re
 import os
-from typing import Tuple
+from typing import Tuple, Final
 from generator.parsing.parser import Parser
 from generator.generation.generator import Generator
 
-SVSHI_HOME = os.environ["SVSHI_HOME"]
-
-GENERATED_APPS_FOLDER_NAME = f"{SVSHI_HOME}/generated"
+SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
+GENERATED_APPS_FOLDER_NAME: Final = f"{SVSHI_HOME}/generated"
 
 
 def parse_args() -> Tuple[str, str]:

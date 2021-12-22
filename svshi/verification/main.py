@@ -1,17 +1,18 @@
 import os
+from typing import Final
 
 from verification.generator import Generator
 from verification.parser import Parser
 
-SVSHI_HOME = os.environ["SVSHI_HOME"]
-APP_LIBRARY = f"{SVSHI_HOME}/svshi/app_library"
+SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
+APP_LIBRARY: Final = f"{SVSHI_HOME}/svshi/app_library"
 
 if __name__ == "__main__":
     parser = Parser(f"{SVSHI_HOME}/generated", APP_LIBRARY)
     group_addresses_with_types = parser.parse_group_addresses()
     devices_instances = parser.parse_devices_instances()
     devices_classes = parser.parse_devices_classes()
-    app_names = parser.get_app_names_from_app_library()
+    app_names = parser.get_app_names()
 
     verification_filename = f"{SVSHI_HOME}/svshi/verification/verification_file.py"
     runtime_filename = f"{SVSHI_HOME}/svshi/verification/runtime_file.py"
@@ -23,7 +24,7 @@ if __name__ == "__main__":
         group_addresses_with_types,
         devices_instances,
         devices_classes,
-        app_names
+        app_names,
     )
     generator.generate_verification_file()
     generator.generate_runtime_file()

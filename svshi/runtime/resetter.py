@@ -1,9 +1,12 @@
-import os
+from typing import Final
 
 
-class ConditionsGenerator:
+class FileResetter:
+    """
+    File resetter.
+    """
 
-    __DEFAULT_RUNTIME_AND_VERIFICATION_FILE = f"""
+    __DEFAULT_RUNTIME_AND_VERIFICATION_FILE: Final = f"""
 # Default file, will be overwritten while running
 import dataclasses
 
@@ -25,11 +28,6 @@ class PhysicalState:
         self.__verification_file_path = verification_file_path
         self.__runtime_file_path = runtime_file_path
 
-    def __write_conditions_file(self, data: str):
-        os.makedirs(os.path.dirname(self.__conditions_file_path), exist_ok=True)
-        with open(self.__conditions_file_path, "w+") as output_file:
-            output_file.write(data)
-
     def reset_conditions_file(self):
         """
         Resets the conditions file.
@@ -43,7 +41,8 @@ def check_conditions(state: PhysicalState) -> bool:
     return True    
 """.strip()
 
-        self.__write_conditions_file(file)
+        with open(self.__conditions_file_path, "w+") as output_file:
+            output_file.write(file)
 
     def reset_verification_file(self):
         """
