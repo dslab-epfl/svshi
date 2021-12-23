@@ -42,8 +42,8 @@ object KNXDatatype {
   def fromString(s: String): Option[KNXDatatype] = if (datatypeRegex.findFirstIn(s).isEmpty) None
   else
     s match {
-      case _ if datatypeRegex.findFirstIn(s).get == "DPT-Unknown"                => Some(DPTUnknown)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1  => Some(DPT1)
+      case _ if datatypeRegex.findFirstIn(s).get == "DPT-Unknown"               => Some(DPTUnknown)
+      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1 => Some(DPT1)
 //      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2  => Some(DPT2)
 //      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3  => Some(DPT3)
       case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 5  => Some(DPT5)
@@ -99,7 +99,6 @@ case object DPT1 extends KNXDatatype {
 //  override def toString = "DPT-3"
 //  override def toPythonType: PythonType = PythonInt
 //}
-
 
 case object DPT5 extends KNXDatatype {
   override def toString = "DPT-5"
