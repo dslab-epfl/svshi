@@ -44,7 +44,6 @@ object EtsParser {
   val ATTRIBUTENAME_PARAM = "AttributeName"
   val TRANSLATION_TAG = "Translation"
   val APPLICATIONPROGRAM_TAG = "ApplicationProgram"
-
   val enUsLanguageCode = "en-US"
 
   val enabledText = "Enabled"
@@ -145,12 +144,16 @@ object EtsParser {
   private def getDeviceNameInCatalog(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(
     etsProjectPath,
     projectRootPath => {
-      val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-      val catalogEntry = XML.loadFile(xmlPath.toIO)
-      val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
-      val originalName = applicationProgram \@ NAME_PARAM
-      val id = applicationProgram \@ ID_PARAM
-      getTranslation(catalogEntry, enUsLanguageCode, id, NAME_PARAM).getOrElse(originalName)
+      val hardwareXmlPath = hardwareXmlFile(etsProjectPath, productRefId, hardware2ProgramRefId)
+      val hardwareEntry = XML.loadFile(hardwareXmlPath.toIO)
+      val productEntryOpt = (hardwareEntry \\ PRODUCT_TAG).find(n => (n \@ ID_PARAM) == productRefId)
+      val name = productEntryOpt match {
+        case Some(value) => getTranslation(hardwareEntry, enUsLanguageCode, productRefId, TEXT_PARAM).getOrElse(value \@ TEXT_PARAM)
+        case None => ""
+      }
+      if(name.isBlank) throw new MalformedXMLException(s"Cannot find the product name in Hardware.xml for the productRefId = $productRefId")
+      name
+
     }
   )
 
@@ -246,7 +249,7 @@ object EtsParser {
   private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[CommObject] =
     extractIfNotExist(
       etsProjectPath,
-      projectRootPath => {
+      _ => {
         if (groupObjectInstanceId.nonEmpty) {
           // Get IOPort info in xmls
           val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
@@ -329,6 +332,16 @@ object EtsParser {
       None
     }
   }
+
+  private def hardwareXmlFile(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(etsProjectPath,
+    projectRootPath => {
+      val catalogId = productRefId.split('_').apply(0) // e.g., "M-0002"
+      val filePathOpt = recursiveListFiles(projectRootPath / catalogId).find(file => file.toIO.getName.contains(HARDWARE_XML_NAME))
+      filePathOpt match {
+        case Some(value) => value
+        case None        => throw new MalformedXMLException(s"Cannot find the hardware.xml file in the folder $catalogId in the project.")
+      }
+    })
 
   private def productCatalogXMLFile(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(
     etsProjectPath,

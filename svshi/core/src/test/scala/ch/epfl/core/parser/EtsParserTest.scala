@@ -19,7 +19,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   "parseEtsProjectFile" should "return the correct structure on the test file 1" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePath1)
     val device1 = PhysicalDevice(
-      name = "Switch Standard 2-fold 16A/1.0a",
+      name = "SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC",
       address = ("1", "1", "1"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", Nil),
@@ -53,7 +53,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
 
     val device2 =
       PhysicalDevice(
-        name = "Push-button 1- to 4-gang moisture protection",
+        name = "STANDARDdue Push-button moisture protection",
         address = ("1", "1", "2"),
         nodes = List(
           PhysicalDeviceNode(
@@ -64,7 +64,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
       )
 
     val device3 = PhysicalDevice(
-      name = "HVAC device, 6gang BE/1",
+      name = "SBR/U6.0 HVAC device, 6gang BE",
       address = ("1", "1", "3"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", List()),
@@ -142,7 +142,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     )
 
     val device4 = PhysicalDevice(
-      name = "HVAC Application/1.0a with BACnet",
+      name = "AC/S1.2.1 Application Controller,BACnet",
       address = ("1", "1", "4"),
       nodes = List(
         PhysicalDeviceNode(
@@ -158,7 +158,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     )
 
     val device5 = PhysicalDevice(
-      name = "TL501A V1.1",
+      name = "Valve actuator",
       address = ("1", "2", "1"),
       nodes = List(
         PhysicalDeviceNode(
@@ -220,10 +220,10 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   "parseEtsProjectFile" should "return the correct structure on the test file 2" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePath2)
 
-    val device1 = PhysicalDevice("IP Interface/2.1a",("1","1","1"),List(
+    val device1 = PhysicalDevice("IPS/S3.1.1 IP Interface,MDRC",("1","1","1"),List(
       PhysicalDeviceNode("Channel - CH-0 - IP settings",List())))
 
-    val device2 = PhysicalDevice("Binary Input Display Heat 2f/1.3c",("1","1","7"),List(
+    val device2 = PhysicalDevice("US/U2.2 Universal Interface,2-fold,FM",("1","1","7"),List(
       PhysicalDeviceNode("Default",List(
         PhysicalDeviceCommObject.from("Disable - Eingang A - Input A",DPT1,In, ("1","1","7")),
         PhysicalDeviceCommObject.from("Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A",DPTUnknown,InOut, ("1","1","7")),
@@ -243,7 +243,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
         PhysicalDeviceCommObject.from("ON - Central permanent",DPT1,In,("1","1","8")),
         PhysicalDeviceCommObject.from("OFF - Central switching",DPT1,In,("1","1","8"))))))
 
-    val device4 = PhysicalDevice("AMUN 716 S",("1","1","10"),List(
+    val device4 = PhysicalDevice("Set basic KNX Multi",("1","1","10"),List(
       PhysicalDeviceNode("Channel - CH-0 - General",List(
         PhysicalDeviceCommObject.from("Version - Firmware",DPTUnknown,Unknown,("1", "1", "10")),
         PhysicalDeviceCommObject.from("Send - CO2 value",DPT9,Unknown,("1", "1", "10")),
