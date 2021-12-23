@@ -11,10 +11,13 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
     Constants.setSvshiHome(os.Path("../..", os.pwd).toString)
   }
-  val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
-  val testFilePath: os.Path = os.Path(testFilePathString, os.pwd / os.up / os.up)
-  "parseEtsProjectFile" should "return the correct structure on the test file" in {
-    val structure = EtsParser.parseEtsProjectFile(testFilePath)
+  val testFilePathString1 = "svshi/core/res/ets_project_test.knxproj"
+  val testFilePath1: os.Path = os.Path(testFilePathString1, os.pwd / os.up / os.up)
+  val testFilePathString2 = "svshi/core/res/DSLAB_proto.knxproj"
+  val testFilePath2: os.Path = os.Path(testFilePathString2, os.pwd / os.up / os.up)
+
+  "parseEtsProjectFile" should "return the correct structure on the test file 1" in {
+    val structure = EtsParser.parseEtsProjectFile(testFilePath1)
     val device1 = PhysicalDevice(
       name = "Switch Standard 2-fold 16A/1.0a",
       address = ("1", "1", "1"),
@@ -55,7 +58,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceCommObject.from("Object 1 - Object 1", DPT5, InOut, ("1", "1", "2")))
+            List(PhysicalDeviceCommObject.from("ON/OFF, switching - Object 1 - Object 1 - Push-button", DPT5, InOut, ("1", "1", "2")))
           )
         )
       )
@@ -210,7 +213,83 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   }
 
   "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {
-    EtsParser.parseEtsProjectFile(testFilePath)
-    os.exists(EtsParser.computeExtractedPath(testFilePath)) shouldBe false
+    EtsParser.parseEtsProjectFile(testFilePath1)
+    os.exists(EtsParser.computeExtractedPath(testFilePath1)) shouldBe false
+  }
+
+  "parseEtsProjectFile" should "return the correct structure on the test file 2" in {
+    val structure = EtsParser.parseEtsProjectFile(testFilePath2)
+
+    val device1 = PhysicalDevice("IP Interface/2.1a",("1","1","1"),List(
+      PhysicalDeviceNode("Channel - CH-0 - IP settings",List())))
+
+    val device2 = PhysicalDevice("Binary Input Display Heat 2f/1.3c",("1","1","7"),List(
+      PhysicalDeviceNode("Default",List(
+        PhysicalDeviceCommObject.from("Disable - Eingang A - Input A",DPT1,In, ("1","1","7")),
+        PhysicalDeviceCommObject.from("Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A",DPTUnknown,InOut, ("1","1","7")),
+        PhysicalDeviceCommObject.from("Disable - Eingang B - Input B",DPT1,In, ("1","1","7")),
+        PhysicalDeviceCommObject.from("Control value (PWM) - Telegr. switch - Ausgang B - Output B - Input B",DPTUnknown,In, ("1","1","7"))))))
+
+    val device3 = PhysicalDevice("LUXORliving S1",("1","1","8"),List(
+      PhysicalDeviceNode("Channel - CH-1 - Channel C1",List(
+        PhysicalDeviceCommObject.from("Threshold as a percentage - Switch object - Channel C1",DPT1,In,("1","1","8")),
+        PhysicalDeviceCommObject.from("Feedback On/Off - Channel C1",DPT1,Out,("1","1","8")))),
+      PhysicalDeviceNode("Channel - CH-2 - Input I1",List(
+        PhysicalDeviceCommObject.from("Switching - Channel I1",DPT1,Out,("1","1","8")))),
+      PhysicalDeviceNode("Channel - CH-3 - Input I2",List(
+        PhysicalDeviceCommObject.from("Switching - Channel I2",DPT1,Out,("1","1","8")))),
+      PhysicalDeviceNode("Default",List(
+        PhysicalDeviceCommObject.from("Excess temperature - Alarm",DPT1,Out,("1","1","8")),
+        PhysicalDeviceCommObject.from("ON - Central permanent",DPT1,In,("1","1","8")),
+        PhysicalDeviceCommObject.from("OFF - Central switching",DPT1,In,("1","1","8"))))))
+
+    val device4 = PhysicalDevice("AMUN 716 S",("1","1","10"),List(
+      PhysicalDeviceNode("Channel - CH-0 - General",List(
+        PhysicalDeviceCommObject.from("Version - Firmware",DPTUnknown,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - CO2 value",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Relative humidity",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Air pressure",DPT14,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Degree of comfort",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Temperature value",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Measurement value offset - CO2 Offset",DPT9,InOut,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Receive measurement value - CO2 reference",DPT9,InOut,("1", "1", "10")))),
+      PhysicalDeviceNode("Channel - CH-2 - CO2 sensor",List(
+        PhysicalDeviceCommObject.from("Switching - CO2 threshold 1",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Switching - CO2 threshold 2",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Switching - CO2 threshold 3",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Actuating value 0-100% - Ventilation of CO2",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - CO2 scenes",DPT17,Unknown,("1", "1", "10")))),
+      PhysicalDeviceNode("Channel - CH-3 - Humidity sensor",List(
+        PhysicalDeviceCommObject.from("Switching - Humidity threshold 1",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Switching - Humidity threshold 2",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Switching - Humidity threshold 3",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Actuating value 0-100% - Ventilating humidity",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Humidity scenes",DPT17,Unknown,("1", "1", "10")))),
+      PhysicalDeviceNode("Channel - CH-4 - RTR",List(
+        PhysicalDeviceCommObject.from("Send - Control actual value",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Receive - Operating mode preset",DPT20,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Receive - Presence",DPT1,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Closed=0, open=1 - Window status",DPT1,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Save/call up - Operating mode as scene",DPT18,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Current operating mode",DPT20,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Heating actuating value",DPT5,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Defining the set temperature - Base setpoint",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Send - Setpoint offset at rotary control",DPT9,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Setting/sending - Current setpoint",DPT9,Unknown,("1", "1", "10")))),
+      PhysicalDeviceNode("Channel - CH-6 - External inputs",List()),
+      PhysicalDeviceNode("Channel - CH-7 - Comparator",List(
+        PhysicalDeviceCommObject.from("Output - Comparator",DPT5,Out,("1", "1", "10")))),
+      PhysicalDeviceNode("Default",List(
+        PhysicalDeviceCommObject.from("Info - Alarm",DPTUnknown,Unknown,("1", "1", "10")),
+        PhysicalDeviceCommObject.from("Error text - Alarm",DPT16,Unknown,("1", "1", "10"))))))
+
+    structure.deviceInstances.exists(p => p.address == device1.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device1.address) shouldEqual Some(device1)
+    structure.deviceInstances.exists(p => p.address == device2.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device2.address) shouldEqual Some(device2)
+    structure.deviceInstances.exists(p => p.address == device3.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device3.address) shouldEqual Some(device3)
+    structure.deviceInstances.exists(p => p.address == device4.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device4.address) shouldEqual Some(device4)
   }
 }

@@ -261,7 +261,7 @@ object EtsParser {
                 case Some(value) => {
                   val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
                   val dptStr = if (comObjectDPTString.nonEmpty) comObjectDPTString else comObjectRefDPTString
-                  IOPort(constructIOPortName(value, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
+                  IOPort(constructIOPortName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
                 }
                 case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }
@@ -275,20 +275,35 @@ object EtsParser {
       }
     )
 
-  private def constructIOPortName(ioPortNode: Node, catalogEntry: Elem): String = {
-    val funText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ FUNCTIONTEXT_PARAM
+  private def constructIOPortName(ioPortNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
+    def validContent(tr: String): Boolean = tr != "" && tr != "-" && !tr.contains("GO_")
+    val funTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ FUNCTIONTEXT_PARAM
       case None        => ioPortNode \@ FUNCTIONTEXT_PARAM
     }
-    val nameText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ NAME_PARAM
+    val funTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ FUNCTIONTEXT_PARAM
+      case None        => comObjectRef \@ FUNCTIONTEXT_PARAM
+    }
+    val nameTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ NAME_PARAM
       case None        => ioPortNode \@ NAME_PARAM
     }
-    val textText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ TEXT_PARAM
+    val nameTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ NAME_PARAM
+      case None        => comObjectRef \@ NAME_PARAM
+    }
+
+    val textTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ TEXT_PARAM
       case None        => ioPortNode \@ TEXT_PARAM
     }
-    List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
+    val textTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ TEXT_PARAM
+      case None        => comObjectRef \@ TEXT_PARAM
+    }
+
+    List(funTextIoNode, funTextRef, nameTextIoNode, nameTextRef, textTextIoNode, textTextRef).filter(validContent).mkString(" - ")
   }
 
   /** Search for a translation for the given id and given attribute name, for the given language, if not found, return None
