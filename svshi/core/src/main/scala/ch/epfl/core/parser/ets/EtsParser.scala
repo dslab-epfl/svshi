@@ -78,7 +78,7 @@ object EtsParser {
       * @param parsedioPort
       * @return
       */
-    def ioPortToPhysicalChannel(parsedioPort: IOPort, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
+    def ioPortToPhysicalChannel(parsedioPort: CommObject, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
       val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
       val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
       val datatype =
@@ -243,7 +243,7 @@ object EtsParser {
     }
   }
 
-  private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] =
+  private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[CommObject] =
     extractIfNotExist(
       etsProjectPath,
       projectRootPath => {
@@ -261,7 +261,7 @@ object EtsParser {
                 case Some(value) => {
                   val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
                   val dptStr = if (comObjectDPTString.nonEmpty) comObjectDPTString else comObjectRefDPTString
-                  IOPort(constructIOPortName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
+                  CommObject(constructCommObjectName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
                 }
                 case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }
@@ -275,7 +275,7 @@ object EtsParser {
       }
     )
 
-  private def constructIOPortName(ioPortNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
+  private def constructCommObjectName(ioPortNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
     def validContent(tr: String): Boolean = tr != "" && tr != "-" && !tr.contains("GO_")
     val funTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
       case Some(value) => if (validContent(value)) value else ioPortNode \@ FUNCTIONTEXT_PARAM
