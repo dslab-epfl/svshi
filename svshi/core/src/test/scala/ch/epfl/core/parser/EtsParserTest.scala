@@ -11,12 +11,15 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
     Constants.setSvshiHome(os.Path("../..", os.pwd).toString)
   }
-  val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
-  val testFilePath: os.Path = os.Path(testFilePathString, os.pwd / os.up / os.up)
-  "parseEtsProjectFile" should "return the correct structure on the test file" in {
-    val structure = EtsParser.parseEtsProjectFile(testFilePath)
+  val testFilePathString1 = "svshi/core/res/ets_project_test.knxproj"
+  val testFilePath1: os.Path = os.Path(testFilePathString1, os.pwd / os.up / os.up)
+  val testFilePathString2 = "svshi/core/res/DSLAB_proto.knxproj"
+  val testFilePath2: os.Path = os.Path(testFilePathString2, os.pwd / os.up / os.up)
+
+  "parseEtsProjectFile" should "return the correct structure on the test file 1" in {
+    val structure = EtsParser.parseEtsProjectFile(testFilePath1)
     val device1 = PhysicalDevice(
-      name = "Switch Standard 2-fold 16A/1.0a",
+      name = "SA/S2.16.2.2 Switch Act, 2f, 16A, MDRC",
       address = ("1", "1", "1"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", Nil),
@@ -50,18 +53,18 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
 
     val device2 =
       PhysicalDevice(
-        name = "Push-button 1- to 4-gang moisture protection",
+        name = "STANDARDdue Push-button moisture protection",
         address = ("1", "1", "2"),
         nodes = List(
           PhysicalDeviceNode(
             "Default",
-            List(PhysicalDeviceCommObject.from("Object 1 - Object 1", DPT5, InOut, ("1", "1", "2")))
+            List(PhysicalDeviceCommObject.from("ON/OFF, switching - Object 1 - Object 1 - Push-button", DPT5, InOut, ("1", "1", "2")))
           )
         )
       )
 
     val device3 = PhysicalDevice(
-      name = "HVAC device, 6gang BE/1",
+      name = "SBR/U6.0 HVAC device, 6gang BE",
       address = ("1", "1", "3"),
       nodes = List(
         PhysicalDeviceNode("Channel - CH-1 - Device settings", List()),
@@ -139,7 +142,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     )
 
     val device4 = PhysicalDevice(
-      name = "HVAC Application/1.0a with BACnet",
+      name = "AC/S1.2.1 Application Controller,BACnet",
       address = ("1", "1", "4"),
       nodes = List(
         PhysicalDeviceNode(
@@ -155,7 +158,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     )
 
     val device5 = PhysicalDevice(
-      name = "TL501A V1.1",
+      name = "Valve actuator",
       address = ("1", "2", "1"),
       nodes = List(
         PhysicalDeviceNode(
@@ -210,7 +213,142 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   }
 
   "parseEtsProjectFile" should "have deleted temporary unzipped file when it is done" in {
-    EtsParser.parseEtsProjectFile(testFilePath)
-    os.exists(EtsParser.computeExtractedPath(testFilePath)) shouldBe false
+    EtsParser.parseEtsProjectFile(testFilePath1)
+    os.exists(EtsParser.computeExtractedPath(testFilePath1)) shouldBe false
+  }
+
+  "parseEtsProjectFile" should "return the correct structure on the test file 2" in {
+    val structure = EtsParser.parseEtsProjectFile(testFilePath2)
+
+    val device1 =
+      PhysicalDevice(name = "IPS/S3.1.1 IP Interface,MDRC", address = ("1", "1", "1"), nodes = List(PhysicalDeviceNode(name = "Channel - CH-0 - IP settings", comObjects = List())))
+
+    val device2 = PhysicalDevice(
+      name = "US/U2.2 Universal Interface,2-fold,FM",
+      address = ("1", "1", "7"),
+      nodes = List(
+        PhysicalDeviceNode(
+          name = "Default",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Disable - Eingang A - Input A", datatype = DPT1, ioType = In, physicalAddress = ("1", "1", "7")),
+            PhysicalDeviceCommObject
+              .from(name = "Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A", datatype = DPTUnknown, ioType = InOut, physicalAddress = ("1", "1", "7")),
+            PhysicalDeviceCommObject.from(name = "Disable - Eingang B - Input B", datatype = DPT1, ioType = In, physicalAddress = ("1", "1", "7")),
+            PhysicalDeviceCommObject.from(
+              name = "Control value (PWM) - Telegr. switch - Ausgang B - Output B - Input B",
+              datatype = DPTUnknown,
+              ioType = In,
+              physicalAddress = ("1", "1", "7")
+            )
+          )
+        )
+      )
+    )
+
+    val device3 = PhysicalDevice(
+      name = "LUXORliving S1",
+      address = ("1", "1", "8"),
+      nodes = List(
+        PhysicalDeviceNode(
+          name = "Channel - CH-1 - Channel C1",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Threshold as a percentage - Switch object - Channel C1", datatype = DPT1, ioType = In, physicalAddress = ("1", "1", "8")),
+            PhysicalDeviceCommObject.from(name = "Feedback On/Off - Channel C1", datatype = DPT1, ioType = Out, physicalAddress = ("1", "1", "8"))
+          )
+        ),
+        PhysicalDeviceNode(
+          name = "Channel - CH-2 - Input I1",
+          comObjects = List(PhysicalDeviceCommObject.from(name = "Switching - Channel I1", datatype = DPT1, ioType = Out, physicalAddress = ("1", "1", "8")))
+        ),
+        PhysicalDeviceNode(
+          name = "Channel - CH-3 - Input I2",
+          comObjects = List(PhysicalDeviceCommObject.from(name = "Switching - Channel I2", datatype = DPT1, ioType = Out, physicalAddress = ("1", "1", "8")))
+        ),
+        PhysicalDeviceNode(
+          name = "Default",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Excess temperature - Alarm", datatype = DPT1, ioType = Out, physicalAddress = ("1", "1", "8")),
+            PhysicalDeviceCommObject.from(name = "ON - Central permanent", datatype = DPT1, ioType = In, physicalAddress = ("1", "1", "8")),
+            PhysicalDeviceCommObject.from(name = "OFF - Central switching", datatype = DPT1, ioType = In, physicalAddress = ("1", "1", "8"))
+          )
+        )
+      )
+    )
+
+    val device4 = PhysicalDevice(
+      name = "Set basic KNX Multi",
+      address = ("1", "1", "10"),
+      nodes = List(
+        PhysicalDeviceNode(
+          name = "Channel - CH-0 - General",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Version - Firmware", datatype = DPTUnknown, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - CO2 value", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Relative humidity", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Air pressure", datatype = DPT14, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Degree of comfort", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Temperature value", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Measurement value offset - CO2 Offset", datatype = DPT9, ioType = InOut, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Receive measurement value - CO2 reference", datatype = DPT9, ioType = InOut, physicalAddress = ("1", "1", "10"))
+          )
+        ),
+        PhysicalDeviceNode(
+          name = "Channel - CH-2 - CO2 sensor",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Switching - CO2 threshold 1", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Switching - CO2 threshold 2", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Switching - CO2 threshold 3", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Actuating value 0-100% - Ventilation of CO2", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - CO2 scenes", datatype = DPT17, ioType = Unknown, physicalAddress = ("1", "1", "10"))
+          )
+        ),
+        PhysicalDeviceNode(
+          name = "Channel - CH-3 - Humidity sensor",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Switching - Humidity threshold 1", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Switching - Humidity threshold 2", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Switching - Humidity threshold 3", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Actuating value 0-100% - Ventilating humidity", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Humidity scenes", datatype = DPT17, ioType = Unknown, physicalAddress = ("1", "1", "10"))
+          )
+        ),
+        PhysicalDeviceNode(
+          name = "Channel - CH-4 - RTR",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Send - Control actual value", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Receive - Operating mode preset", datatype = DPT20, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Receive - Presence", datatype = DPT1, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Closed=0, open=1 - Window status", datatype = DPT1, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Save/call up - Operating mode as scene", datatype = DPT18, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Current operating mode", datatype = DPT20, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Heating actuating value", datatype = DPT5, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Defining the set temperature - Base setpoint", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Send - Setpoint offset at rotary control", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Setting/sending - Current setpoint", datatype = DPT9, ioType = Unknown, physicalAddress = ("1", "1", "10"))
+          )
+        ),
+        PhysicalDeviceNode(name = "Channel - CH-6 - External inputs", comObjects = List()),
+        PhysicalDeviceNode(
+          name = "Channel - CH-7 - Comparator",
+          comObjects = List(PhysicalDeviceCommObject.from(name = "Output - Comparator", datatype = DPT5, ioType = Out, physicalAddress = ("1", "1", "10")))
+        ),
+        PhysicalDeviceNode(
+          name = "Default",
+          comObjects = List(
+            PhysicalDeviceCommObject.from(name = "Info - Alarm", datatype = DPTUnknown, ioType = Unknown, physicalAddress = ("1", "1", "10")),
+            PhysicalDeviceCommObject.from(name = "Error text - Alarm", datatype = DPT16, ioType = Unknown, physicalAddress = ("1", "1", "10"))
+          )
+        )
+      )
+    )
+
+    structure.deviceInstances.exists(p => p.address == device1.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device1.address) shouldEqual Some(device1)
+    structure.deviceInstances.exists(p => p.address == device2.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device2.address) shouldEqual Some(device2)
+    structure.deviceInstances.exists(p => p.address == device3.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device3.address) shouldEqual Some(device3)
+    structure.deviceInstances.exists(p => p.address == device4.address) shouldEqual true
+    structure.deviceInstances.find(p => p.address == device4.address) shouldEqual Some(device4)
   }
 }
