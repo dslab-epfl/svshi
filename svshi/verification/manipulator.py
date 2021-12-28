@@ -600,6 +600,8 @@ class Manipulator:
             imps, funcs = self.__manipulate_app_main(
                 directory, app_name, accepted_names, verification
             )
+            # Some imports might be a single string containing multiple imports separated by '\n'
+            imps = (i for imp in imps for i in imp.split("\n"))
             imports.extend(imps)
             functions.append(funcs)
 
