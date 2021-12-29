@@ -17,6 +17,7 @@ class App:
     code: Callable[[PhysicalState], None]
     is_privileged: bool = False
     should_run: bool = True
+    timer: int = 0
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, App):
@@ -79,7 +80,10 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
         with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
             is_privileged = file_dict["permissionLevel"] == "privileged"
-            apps.append(App(app_name, app_library_dir, app_code, is_privileged))
+            timer = file_dict["timer"]
+            apps.append(
+                App(app_name, app_library_dir, app_code, is_privileged, timer=timer)
+            )
 
     return apps
 
@@ -106,11 +110,12 @@ def get_addresses_listeners(apps: List[App]) -> Dict[str, List[App]]:
     for address, group in groupby(
         sorted(apps_addresses, key=lambda p: p[1]), lambda x: x[1]
     ):
-        ga_listeners = []
         # Sort the apps first by permission level (not privileged first), then by name
-        for pair in sorted(group, key=lambda p: (p[0].is_privileged, p[0].name)):
-            app = pair[0]
-            ga_listeners.append(app)
-        listeners[address] = ga_listeners
+        listeners[address] = list(
+            map(
+                lambda pair: pair[0],
+                sorted(group, key=lambda p: (p[0].is_privileged, p[0].name)),
+            )
+        )
 
     return listeners

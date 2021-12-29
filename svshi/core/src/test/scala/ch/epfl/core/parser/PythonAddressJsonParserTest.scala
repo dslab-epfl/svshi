@@ -12,6 +12,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
   "assignmentToPythonAddressJson" should "return correct PythonAddressJson for correct inputs notPrivileged" in {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
+      timer = 60,
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -88,6 +89,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
 
     val expected = AppPythonAddressesJson(
       permissionLevel = NotPrivileged.toString,
+      timer = 60,
       addresses = List(
         BinarySensorAddressJson("device1", "3/1/1"),
         SwitchAddressJson("device2", "2/1/1", "2/1/1"),
@@ -100,6 +102,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
   "assignmentToPythonAddressJson" should "return correct PythonAddressJson for correct inputs privileged" in {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = Privileged,
+      timer = 60,
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -176,6 +179,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
 
     val expected = AppPythonAddressesJson(
       permissionLevel = Privileged.toString,
+      timer = 60,
       addresses = List(
         BinarySensorAddressJson("device1", "3/1/1"),
         SwitchAddressJson("device2", "2/1/1", "2/1/1"),

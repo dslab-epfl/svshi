@@ -1,5 +1,8 @@
 import dataclasses
-from typing import Callable, Dict, Final, List, Tuple, Union
+import asyncio
+from asyncio.tasks import Task
+from typing import Callable, Dict, Final, List, Optional, Tuple, Union, cast
+from itertools import groupby
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
@@ -29,15 +32,37 @@ class State:
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
     ):
         self._physical_state: PhysicalState
+        # Used to access and modify the physical state
+        self.__physical_state_execution_lock = asyncio.Lock()
+
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
         self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
+
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
+
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
+
+        periodic_apps = list(
+            filter(
+                lambda app: app.timer > 0,
+                (app for apps in self.__addresses_listeners.values() for app in apps),
+            )
+        )
+        # Group the apps by timer
+        self.__periodic_apps: Dict[int, List[App]] = {}
+        for timer, group in groupby(
+            sorted(periodic_apps, key=lambda app: app.timer),
+            lambda app: app.timer,
+        ):
+            self.__periodic_apps[timer] = sorted(
+                group, key=lambda a: (a.is_privileged, a.name)
+            )
+        self.__periodic_apps_task: Optional[Task] = None
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -53,13 +78,14 @@ class State:
                 # we do not need to listen to GroupValueResponse
                 v = payload.value
                 if v:
-                    value = await self.__from_knx(address, v.value)
-                    setattr(
-                        self._physical_state,
-                        self.__group_addr_to_field_name(address),
-                        value,
-                    )
-                    await self.__notify_listeners(address)
+                    async with self.__physical_state_execution_lock:
+                        value = await self.__from_knx(address, v.value)
+                        setattr(
+                            self._physical_state,
+                            self.__group_addr_to_field_name(address),
+                            value,
+                        )
+                        await self.__notify_listeners(address)
 
     async def listen(self):
         """
@@ -71,6 +97,8 @@ class State:
         """
         Stops listening for telegrams and disconnects.
         """
+        if self.__periodic_apps_task:
+            self.__periodic_apps_task.cancel()
         await self.__xknx_for_listening.stop()
 
     async def __send_value_to_knx(
@@ -138,6 +166,10 @@ class State:
 
         self._physical_state = PhysicalState(**fields)
 
+        # Start executing the periodic apps in a background task
+        if self.__periodic_apps:
+            self.__periodic_apps_task = asyncio.create_task(self.__run_periodic_apps())
+
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         """
         Converts a group address to its corresponding field name in PhysicalState.
@@ -204,36 +236,61 @@ class State:
                 setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
 
+    async def __run_periodic_apps(self):
+        """
+        Runs the periodic apps.
+        """
+
+        async def run_apps_with_lock():
+            async with self.__physical_state_execution_lock:
+                await self.__run_apps(apps)
+
+        while True:
+            # Run the apps sorted by timer in ascending order
+            for timer, apps in self.__periodic_apps.items():
+                # We use gather + sleep to run the apps every `timer` seconds without drift
+                await asyncio.gather(
+                    asyncio.sleep(float(cast(int, timer))),
+                    run_apps_with_lock(),
+                )
+
+    async def __run_apps(self, apps: List[App]):
+        """
+        Executes all the given apps. Then, the physical state is updated, and the changes propagated to KNX.
+        The execution lock needs to be acquired.
+        """
+        old_state = dataclasses.replace(self._physical_state)
+        new_states = {}
+        # We first execute all the apps
+        for app in apps:
+            if app.should_run:
+                per_app_state = dataclasses.replace(old_state)
+                app.notify(per_app_state)
+                if not self.__check_conditions_function(per_app_state):
+                    # If conditions are not preserved, we prevent the app from running again
+                    app.stop()
+                else:
+                    # If conditions are preserved, we keep the state to later propagate
+                    new_states[app] = per_app_state
+
+        merged_state = self.__merge_states(old_state, new_states)
+
+        # Update the physical_state with the merged one
+        self._physical_state = merged_state
+
+        # Then we write to KNX for just the final values given to the updated fields
+        updated_fields = self.__compare(merged_state, old_state)
+        if updated_fields:
+            for address, value in updated_fields:
+                # Send to KNX
+                await self.__send_value_to_knx(address, value)
+                # Notify the listeners of the change
+                await self.__notify_listeners(address)
+
     async def __notify_listeners(self, address: str):
         """
         Notifies all the listeners (i.e. apps) of the given address, triggering their execution.
-        Then, the physical state is updated, and the changes propagated to KNX.
+        The execution lock needs to be acquired.
         """
         if address in self.__addresses_listeners:
-            old_state = dataclasses.replace(self._physical_state)
-            new_states = {}
-            # We first execute all the listeners
-            for app in self.__addresses_listeners[address]:
-                if app.should_run:
-                    per_app_state = dataclasses.replace(old_state)
-                    app.notify(per_app_state)
-                    if not self.__check_conditions_function(per_app_state):
-                        # If conditions are not preserved, we prevent the app from running again
-                        app.stop()
-                    else:
-                        # If conditions are preserved, we keep the state to later propagate
-                        new_states[app] = per_app_state
-
-            merged_state = self.__merge_states(old_state, new_states)
-
-            # Update the physical_state with the merged one
-            self._physical_state = merged_state
-
-            # Then we write to KNX for just the final values given to the updated fields
-            updated_fields = self.__compare(merged_state, old_state)
-            if updated_fields:
-                for address, value in updated_fields:
-                    # Send to KNX
-                    await self.__send_value_to_knx(address, value)
-                    # Notify the listeners of the change
-                    await self.__notify_listeners(address)
+            await self.__run_apps(self.__addresses_listeners[address])

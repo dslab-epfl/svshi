@@ -13,6 +13,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       """
         |{
         |    "permissionLevel": "notPrivileged",
+        |    "timer": 0,
         |    "devices":
         |    [
         |       {
@@ -35,15 +36,17 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson("notPrivileged", List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
+
   "parseJson" should "return the correct ParsedStructure with correct input Privileged" in {
     val json =
       """
         |{
         |    "permissionLevel": "privileged",
+        |    "timer": 60,
         |    "devices":
         |    [
         |       {
@@ -66,7 +69,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson("privileged", List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -76,6 +79,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       """
         |{
         |    "permissionLevel": "notPrivileged",
+        |    "timer": 60,
         |    "devices":
         |    [
         |       {
@@ -104,6 +108,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       """
         |{
         |    "permissionLevel": "notPrivileged",
+        |    "timer": 60,
         |    "devices":
         |    [
         |       {
@@ -126,7 +131,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), permissionLevel = NotPrivileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = NotPrivileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -137,6 +142,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       """
         |{
         |    "permissionLevel": "privileged",
+        |    "timer": 60,
         |    "devices":
         |    [
         |       {
@@ -159,7 +165,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -170,6 +176,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
       """
         |{
         |    "permissionLevel": "unknown",
+        |    "timer": 60,
         |    "devices":
         |    [
         |       {
@@ -192,7 +199,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
 
     an[JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)

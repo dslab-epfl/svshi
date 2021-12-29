@@ -16,6 +16,7 @@ class PhysicalState:
     GA_1_1_1: float
     GA_1_1_2: float
     GA_1_1_3: bool
+    GA_1_1_4: bool
 """.strip()
 
     def __init__(

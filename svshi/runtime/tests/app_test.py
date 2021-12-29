@@ -39,16 +39,30 @@ def test_app_get_apps():
     assert first_app.directory == "tests/fake_app_library"
     assert first_app.code is not None
     assert first_app.is_privileged == False
+    assert first_app.timer == 0
     assert second_app.name == "app"
     assert second_app.directory == "tests/fake_app_library"
     assert second_app.code is not None
     assert second_app.is_privileged == True
+    assert second_app.timer == 2
 
 
 def test_app_get_addresses_listeners():
-    app = App("app", "tests/fake_app_library", Mock(), is_privileged=True)
+    app = App(
+        "app",
+        "tests/fake_app_library",
+        Mock(),
+        is_privileged=True,
+        should_run=True,
+        timer=2,
+    )
     another_app = App(
-        "another_app", "tests/fake_app_library", Mock(), is_privileged=False
+        "another_app",
+        "tests/fake_app_library",
+        Mock(),
+        is_privileged=False,
+        should_run=True,
+        timer=0,
     )
     apps = [app, another_app]
     listeners = get_addresses_listeners(apps)
