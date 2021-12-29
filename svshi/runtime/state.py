@@ -32,13 +32,18 @@ class State:
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
     ):
         self._physical_state: PhysicalState
+        # Used to access and modify the physical state
+        self.__physical_state_lock = asyncio.Lock()
+
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
         self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
+
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
+
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
 
@@ -73,13 +78,14 @@ class State:
                 # we do not need to listen to GroupValueResponse
                 v = payload.value
                 if v:
-                    value = await self.__from_knx(address, v.value)
-                    setattr(
-                        self._physical_state,
-                        self.__group_addr_to_field_name(address),
-                        value,
-                    )
-                    await self.__notify_listeners(address)
+                    async with self.__physical_state_lock:
+                        value = await self.__from_knx(address, v.value)
+                        setattr(
+                            self._physical_state,
+                            self.__group_addr_to_field_name(address),
+                            value,
+                        )
+                        await self.__notify_listeners(address)
 
     async def listen(self):
         """
@@ -231,13 +237,17 @@ class State:
         return res
 
     async def __run_periodic_apps(self):
+        async def run_apps_with_lock():
+            async with self.__physical_state_lock:
+                await self.__run_apps(apps)
+
         while True:
             # Run the apps sorted by timer in ascending order
             for timer, apps in self.__periodic_apps.items():
                 # We use gather + sleep to run the apps every `timer` seconds without drift
                 await asyncio.gather(
                     asyncio.sleep(float(cast(int, timer))),
-                    self.__run_apps(apps),
+                    run_apps_with_lock(),
                 )
 
     async def __run_apps(self, apps: List[App]):
