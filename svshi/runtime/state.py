@@ -39,35 +39,25 @@ class State:
         )
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
-        self.__periodic_apps = list(
+        self.__check_conditions_function = check_conditions_function
+        self.__group_address_to_dpt = group_address_to_dpt
+
+        periodic_apps = list(
             filter(
                 lambda app: app.timer > 0,
                 (app for apps in self.__addresses_listeners.values() for app in apps),
             )
         )
+        # Group the apps by timer
+        self.__periodic_apps: Dict[int, List[App]] = {}
+        for timer, group in groupby(
+            sorted(periodic_apps, key=lambda app: app.timer),
+            lambda app: app.timer,
+        ):
+            self.__periodic_apps[timer] = sorted(
+                group, key=lambda a: (a.is_privileged, a.name)
+            )
         self.__periodic_apps_task: Optional[Task] = None
-        self.__check_conditions_function = check_conditions_function
-        self.__group_address_to_dpt = group_address_to_dpt
-
-    async def __run_periodic_apps(self):
-        while True:
-            # Group the apps by timer
-            per_timer_apps: Dict[int, List[App]] = {}
-            for timer, group in groupby(
-                sorted(self.__periodic_apps, key=lambda app: app.timer),
-                lambda app: app.timer,
-            ):
-                per_timer_apps[timer] = sorted(
-                    group, key=lambda a: (a.is_privileged, a.name)
-                )
-
-            # Run the apps
-            for timer, apps in per_timer_apps.items():
-                # We use gather + sleep to run the apps every `timer` seconds without drift
-                await asyncio.gather(
-                    asyncio.sleep(float(cast(int, timer))),
-                    self.__run_apps(apps),
-                )
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -239,6 +229,16 @@ class State:
             for addr, value in updated_fields:
                 setattr(res, self.__group_addr_to_field_name(addr), value)
         return res
+
+    async def __run_periodic_apps(self):
+        while True:
+            # Run the apps sorted by timer in ascending order
+            for timer, apps in self.__periodic_apps.items():
+                # We use gather + sleep to run the apps every `timer` seconds without drift
+                await asyncio.gather(
+                    asyncio.sleep(float(cast(int, timer))),
+                    self.__run_apps(apps),
+                )
 
     async def __run_apps(self, apps: List[App]):
         """
