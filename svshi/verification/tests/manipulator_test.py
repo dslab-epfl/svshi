@@ -51,7 +51,12 @@ def test_manipulator_manipulate_mains_verification():
 def test_manipulator_manipulate_mains_runtime():
     imports, functions = manipulator.manipulate_mains(verification=False)
 
-    assert imports == ["import time"]
+    assert imports == [
+        "from slack_sdk.web.client import WebClient",
+        "from slack_sdk.web.slack_response import SlackResponse",
+        "from decouple import config",
+        "import time",
+    ]
     assert functions == [
         'def third_app_invariant(physical_state: PhysicalState) ->bool:\n    return THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) < 82\n\n\ndef third_app_iteration(physical_state: PhysicalState):\n    """\npre: first_app_invariant(physical_state)\npre: second_app_invariant(physical_state)\npre: third_app_invariant(physical_state)\npost: first_app_invariant(__return__)\npost: second_app_invariant(__return__)\npost: third_app_invariant(__return__)\n"""\n    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) > 30:\n        THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)\n    return physical_state\n',
         'def first_app_invariant(physical_state: PhysicalState) ->bool:\n    return FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state\n        ) and FIRST_APP_TEMPERATURE_SENSOR_INSTANCE_NAME.read(physical_state\n        ) > 18\n\n\ndef first_app_iteration(physical_state: PhysicalState):\n    """\npre: first_app_invariant(physical_state)\npre: second_app_invariant(physical_state)\npre: third_app_invariant(physical_state)\npost: first_app_invariant(__return__)\npost: second_app_invariant(__return__)\npost: third_app_invariant(__return__)\n"""\n    if first_app_uncheckedcompute_bool():\n        first_app_unchecked_print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.\n            is_on(physical_state))\n    else:\n        v = first_app_unchecked_return_two()\n        first_app_unchecked_print(v)\n    return physical_state\n\n\ndef first_app_uncheckedcompute_bool() ->bool:\n    """\n    post: __return__ == False\n    """\n    return False\n\n\ndef first_app_unchecked_return_two() ->int:\n    """\n    pre: True\n    post: __return__ > 0\n    post: __return__ != 3\n    """\n    return 2\n\n\ndef first_app_unchecked_print(s) ->None:\n    print(s)\n',
