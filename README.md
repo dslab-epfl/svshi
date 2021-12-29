@@ -148,6 +148,10 @@ To run all the installed apps (with [runtime verification](#runtime) enabled):
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types. It also specifies whether the app is _privileged_ or not (`"permissionLevel": "privileged" | "notPrivileged"`). A privileged app can override the behavior of the non-privileged ones.
 
+The `timer` attribute can be used to run the application even though the physical state has not changed. 
+- if `timer == 0` the application runs when the physical state changes
+- if `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
+
 Once the app is generated, it is moved to the `generated` folder.
 
 Here is an example:
@@ -155,6 +159,7 @@ Here is an example:
 ```json
 {
   "permissionLevel": "notPrivileged",
+  "timer": 60,
   "devices": [
     {
       "name": "name_of_the_instances",
