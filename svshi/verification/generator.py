@@ -98,10 +98,9 @@ class Switch_{app_name}_{instance_name}():
 
         instances_names_per_app = {}
         for key, group in groupby(self.__devices_classes, lambda d: d.app):
-            names = set()
-            for device in group:
-                names.add(device.name.upper())
-            instances_names_per_app[(key.directory, key.name)] = names
+            instances_names_per_app[(key.directory, key.name)] = {
+                device.name.upper() for device in group
+            }
 
         self.__manipulator = Manipulator(instances_names_per_app)
 
