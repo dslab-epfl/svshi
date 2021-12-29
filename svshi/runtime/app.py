@@ -3,7 +3,7 @@ import os
 import json
 import subprocess
 import sys
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 from itertools import groupby
 from importlib import import_module
 
@@ -17,6 +17,7 @@ class App:
     code: Callable[[PhysicalState], None]
     is_privileged: bool = False
     should_run: bool = True
+    timer: int = 0
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, App):
@@ -79,7 +80,10 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
         with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
             is_privileged = file_dict["permissionLevel"] == "privileged"
-            apps.append(App(app_name, app_library_dir, app_code, is_privileged))
+            timer = file_dict["timer"]
+            apps.append(
+                App(app_name, app_library_dir, app_code, is_privileged, timer=timer)
+            )
 
     return apps
 
