@@ -33,7 +33,7 @@ class State:
     ):
         self._physical_state: PhysicalState
         # Used to access and modify the physical state
-        self.__physical_state_lock = asyncio.Lock()
+        self.__physical_state_execution_lock = asyncio.Lock()
 
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
@@ -78,7 +78,7 @@ class State:
                 # we do not need to listen to GroupValueResponse
                 v = payload.value
                 if v:
-                    async with self.__physical_state_lock:
+                    async with self.__physical_state_execution_lock:
                         value = await self.__from_knx(address, v.value)
                         setattr(
                             self._physical_state,
@@ -238,7 +238,7 @@ class State:
 
     async def __run_periodic_apps(self):
         async def run_apps_with_lock():
-            async with self.__physical_state_lock:
+            async with self.__physical_state_execution_lock:
                 await self.__run_apps(apps)
 
         while True:
