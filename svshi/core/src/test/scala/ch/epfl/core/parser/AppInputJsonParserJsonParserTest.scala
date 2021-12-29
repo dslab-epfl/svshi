@@ -39,6 +39,39 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
+
+  "parseJson" should "return the correct ParsedStructure with correct input NotPrivileged even with timer entry" in {
+    val json =
+      """
+        |{
+        |    "permissionLevel": "notPrivileged",
+        |    "timer": 60,
+        |    "devices":
+        |    [
+        |       {
+        |         "name": "device1",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device2",
+        |         "deviceType": "binary"
+        |       },
+        |       {
+        |         "name": "device3",
+        |         "deviceType": "switch"
+        |       }
+        |    ]
+        |}
+        |
+        |""".stripMargin
+
+    val device1 = DeviceInstanceJson("device1", "binary")
+    val device2 = DeviceInstanceJson("device2", "binary")
+    val device3 = DeviceInstanceJson("device3", "switch")
+    val app = PrototypicalStructureJson("notPrivileged", List(device1, device2, device3))
+
+    AppInputJsonParser.parseJson(json) shouldEqual app
+  }
   "parseJson" should "return the correct ParsedStructure with correct input Privileged" in {
     val json =
       """
