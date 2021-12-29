@@ -237,6 +237,10 @@ class State:
         return res
 
     async def __run_periodic_apps(self):
+        """
+        Runs the periodic apps.
+        """
+
         async def run_apps_with_lock():
             async with self.__physical_state_execution_lock:
                 await self.__run_apps(apps)
@@ -253,6 +257,7 @@ class State:
     async def __run_apps(self, apps: List[App]):
         """
         Executes all the given apps. Then, the physical state is updated, and the changes propagated to KNX.
+        The execution lock needs to be acquired.
         """
         old_state = dataclasses.replace(self._physical_state)
         new_states = {}
@@ -285,6 +290,7 @@ class State:
     async def __notify_listeners(self, address: str):
         """
         Notifies all the listeners (i.e. apps) of the given address, triggering their execution.
+        The execution lock needs to be acquired.
         """
         if address in self.__addresses_listeners:
             await self.__run_apps(self.__addresses_listeners[address])
