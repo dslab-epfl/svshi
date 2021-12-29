@@ -148,9 +148,10 @@ To run all the installed apps (with [runtime verification](#runtime) enabled):
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types. It also specifies whether the app is _privileged_ or not (`"permissionLevel": "privileged" | "notPrivileged"`). A privileged app can override the behavior of the non-privileged ones.
 
-The `timer` attribute can be used to run the application even though the physical state has not changed. 
-- if `timer == 0` the application runs when the physical state changes
-- if `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
+The `timer` attribute can be used to run the application even though the physical state has not changed.
+
+- If `timer == 0` the application runs only when the physical state changes
+- If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
 Once the app is generated, it is moved to the `generated` folder.
 
@@ -239,7 +240,7 @@ Whenever an app wants to update the KNX system, SVSHI verifies whether the updat
 
 ### Execution
 
-SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
+SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
 
 _Running an application_ concretely means that its `iteration()` function is executed on the current state of the system.
 
