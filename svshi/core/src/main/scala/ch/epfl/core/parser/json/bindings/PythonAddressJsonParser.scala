@@ -41,6 +41,7 @@ object PythonAddressJsonParser {
     val applicationBindings = applicationBindingsOpt.get
     AppPythonAddressesJson(
       permissionLevel = app.appProtoStructure.permissionLevel.toString,
+      timer = app.appProtoStructure.timer,
       addresses = applicationBindings.bindings.map(createAddressJsonFromBinding(_, assignment.physIdToGA))
     )
   }
