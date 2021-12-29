@@ -3,7 +3,7 @@ import os
 import json
 import subprocess
 import sys
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
