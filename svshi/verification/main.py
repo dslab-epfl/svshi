@@ -6,6 +6,7 @@ from verification.parser import Parser
 
 SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
 APP_LIBRARY: Final = f"{SVSHI_HOME}/svshi/app_library"
+VERIFICATION_MODULE_PATH = f"{SVSHI_HOME}/svshi/verification"
 
 if __name__ == "__main__":
     parser = Parser(f"{SVSHI_HOME}/generated", APP_LIBRARY)
@@ -14,9 +15,9 @@ if __name__ == "__main__":
     devices_classes = parser.parse_devices_classes()
     app_names = parser.get_app_names()
 
-    verification_filename = f"{SVSHI_HOME}/svshi/verification/verification_file.py"
-    runtime_filename = f"{SVSHI_HOME}/svshi/verification/runtime_file.py"
-    conditions_filename = f"{SVSHI_HOME}/svshi/verification/conditions.py"
+    verification_filename = f"{VERIFICATION_MODULE_PATH}/verification_file.py"
+    runtime_filename = f"{VERIFICATION_MODULE_PATH}/runtime_file.py"
+    conditions_filename = f"{VERIFICATION_MODULE_PATH}/conditions.py"
     generator = Generator(
         verification_filename,
         runtime_filename,

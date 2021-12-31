@@ -24,7 +24,7 @@ class Generator:
 
     def move_devices_json_to_generated_app(self):
         """
-        Moves the devices json to the newly generated app.
+        Moves the devices json to the newly generated app, renaming it `app_prototypical_structure.json`.
         """
         subprocess.run(
             f"mv {self.__devices_json_filename} {self.__app_name}/app_prototypical_structure.json",
@@ -33,7 +33,7 @@ class Generator:
 
     def generate_multiton_class(self):
         """
-        Generates the source code files for the multiton class.
+        Generates the source code file for the multiton class.
         """
         allowed_names = list(map(lambda d: d.name, self.__devices))
         file = f'''
@@ -64,7 +64,7 @@ def multiton(cls):
 
     def generate_device_instances(self):
         """
-        Generates the source code files for the device instances.
+        Generates the source code file for the device instances.
         """
         imports = ""
         devices_code = ""
@@ -98,7 +98,7 @@ def multiton(cls):
 
     def add_device_instances_imports_to_main(self):
         """
-        Writes import statements in main for the newly created instances.
+        Writes import statements in `main.py` for the newly created instances.
         """
         with open(f"{self.__app_name}/main.py", "r+") as fp:
             lines = fp.readlines()

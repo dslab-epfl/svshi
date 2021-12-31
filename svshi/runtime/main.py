@@ -19,6 +19,7 @@ GROUP_ADDRESSES_PATH = f"{APP_LIBRARY_DIR}/group_addresses.json"
 CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
 RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
+RUNTIME_FILE_MODULE = "runtime.runtime_file"
 VERIFICATION_MODULE_PATH = f"{SVSHI_FOLDER}/verification"
 
 
@@ -64,7 +65,7 @@ async def main():
     knx_address, knx_port = parse_args()
     try:
         print("Initializing state and listeners... ", end="")
-        apps = get_apps(APP_LIBRARY_DIR, "runtime.runtime_file")
+        apps = get_apps(APP_LIBRARY_DIR, RUNTIME_FILE_MODULE)
         addresses_listeners = get_addresses_listeners(apps)
         [app.install_requirements() for app in apps]
 
