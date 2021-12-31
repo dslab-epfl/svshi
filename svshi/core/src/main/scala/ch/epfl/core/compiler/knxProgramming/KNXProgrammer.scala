@@ -1,10 +1,12 @@
 package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
-import ch.epfl.core.model.physical.{GroupAddress, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode}
+import ch.epfl.core.model.physical.{GroupAddress, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, KNXDatatype}
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
+import java.io.File
+import com.github.tototoshi.csv.CSVWriter
 
-private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress)
+private case class Assignment(deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress, datatype: KNXDatatype)
 
 object Programmer {
 
@@ -19,7 +21,7 @@ object Programmer {
       val addressString = s"$a1.$a2.$a3"
       nodes.flatMap { case PhysicalDeviceNode(nodeName, comObjects) =>
         comObjects.filter(idToGroupAddress contains _.id).map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
-          Assignment(addressString, nodeName, objName, idToGroupAddress(id))
+          Assignment(addressString, nodeName, objName, idToGroupAddress(id), datatype)
         }
       }
     }
@@ -38,5 +40,19 @@ object Programmer {
 
     if (os.exists(filePath)) os.remove(filePath)
     os.write(filePath, text)
+  }
+
+  def outputGroupAddressesCsv(assignment: GroupAddressAssignment, filename: String = "assignment.csv"): Unit = {
+    def generateLine(assignment: Assignment) = {
+      List("", "", assignment.commObjectName, assignment.groupAddress.toString, "", "", "", assignment.datatype.toString, "Auto")
+    }
+
+    val header = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
+
+    val f = new File(filename)
+    val writer = CSVWriter.open(f)
+    writer.writeRow(header)
+    // writer.writeAll(List(List("a", "b", "c"), List("d", "e", "f")))
+    writer.close()
   }
 }
