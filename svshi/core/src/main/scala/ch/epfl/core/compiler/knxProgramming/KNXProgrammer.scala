@@ -7,11 +7,15 @@ import java.io.File
 import com.github.tototoshi.csv.CSVWriter
 import ch.epfl.core.model.prototypical.{AppPrototypeBindings, DeviceInstanceBinding}
 
-private case class Assignment(deviceName: String, deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress, datatype: KNXDatatype)
+/** KNX programmer
+  *
+  * @param assignment the group address assignment data structure
+  */
+case class Programmer(assignment: GroupAddressAssignment) {
 
-object Programmer {
+  private case class Assignment(deviceName: String, deviceAddress: String, nodeName: String, commObjectName: String, groupAddress: GroupAddress, datatype: KNXDatatype)
 
-  private def extractAssignments(assignment: GroupAddressAssignment): List[Assignment] = {
+  private val assignments = {
     val idToGroupAddress = assignment.physIdToGA
     val dpts = assignment.getDPTsMap
     assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
@@ -31,11 +35,9 @@ object Programmer {
 
   /** Outputs the programming file with the group address assignments for each communication object.
     *
-    * @param assignment the group address assignment data structure
     * @param filename the output filename. Defaults to "assignment.txt"
     */
-  def outputProgrammingFile(assignment: GroupAddressAssignment, filename: String = "assignment.txt"): Unit = {
-    val assignments = extractAssignments(assignment)
+  def outputProgrammingFile(filename: String = "assignment.txt"): Unit = {
     val tree = assignments.groupBy(_.deviceAddress).map { case (deviceAddress, assignments) =>
       s"device address '$deviceAddress'\n" + assignments
         .groupBy(_.nodeName)
@@ -55,16 +57,13 @@ object Programmer {
 
   /** Outputs the CSV file with the group address assignments for each communication object.
     *
-    * @param assignment the group address assignment data structure
     * @param filename the output filename. Defaults to "assignment.csv"
     */
-  def outputGroupAddressesCsv(assignment: GroupAddressAssignment, filename: String = "assignment.csv"): Unit = {
+  def outputGroupAddressesCsv(filename: String = "assignment.csv"): Unit = {
     def generateLine(assignment: Assignment) =
       List("", "", s"${assignment.deviceName} - ${assignment.commObjectName}", assignment.groupAddress.toString, "", "", "", assignment.datatype.toString, "Auto")
 
     val header = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
-
-    val assignments = extractAssignments(assignment)
 
     val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
     if (!os.exists(directoryPath)) os.makeDir(directoryPath)
