@@ -43,16 +43,29 @@ object Programmer {
   }
 
   def outputGroupAddressesCsv(assignment: GroupAddressAssignment, filename: String = "assignment.csv"): Unit = {
-    def generateLine(assignment: Assignment) = {
+    def generateLine(assignment: Assignment) =
       List("", "", assignment.commObjectName, assignment.groupAddress.toString, "", "", "", assignment.datatype.toString, "Auto")
-    }
 
     val header = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
+    val idToGroupAddress = assignment.physIdToGA
+    val assignments = assignment.physStruct.deviceInstances.flatMap { case PhysicalDevice(deviceName, (a1, a2, a3), nodes) =>
+      val addressString = s"$a1.$a2.$a3"
+      nodes.flatMap { case PhysicalDeviceNode(nodeName, comObjects) =>
+        comObjects.filter(idToGroupAddress contains _.id).map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
+          Assignment(addressString, nodeName, objName, idToGroupAddress(id), datatype)
+        }
+      }
+    }
 
-    val f = new File(filename)
-    val writer = CSVWriter.open(f)
+    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
+    if (!os.exists(directoryPath)) os.makeDir(directoryPath)
+    val filePath = directoryPath / filename
+    
+    val writer = CSVWriter.open(filePath.toIO)
     writer.writeRow(header)
-    // writer.writeAll(List(List("a", "b", "c"), List("d", "e", "f")))
+    writer.writeRow(List("New main group", "", "", "0/-/-", "", "", "", "", "Auto"))
+    writer.writeRow(List("", "New middle group", "", "0/0/-", "", "", "", "", "Auto"))
+    writer.writeAll(assignments.map(generateLine))
     writer.close()
   }
 }

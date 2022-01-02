@@ -41,6 +41,7 @@ object Compiler {
       PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
     Programmer.outputProgrammingFile(gaAssignment)
+    Programmer.outputGroupAddressesCsv(gaAssignment)
 
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
