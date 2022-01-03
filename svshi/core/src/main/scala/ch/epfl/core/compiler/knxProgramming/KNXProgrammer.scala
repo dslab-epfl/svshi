@@ -1,11 +1,13 @@
 package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
-import ch.epfl.core.model.physical.{GroupAddress, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode, KNXDatatype, DPTUnknown}
+import ch.epfl.core.model.physical.{DPTUnknown, GroupAddress, KNXDatatype, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode}
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
+
 import java.io.File
 import com.github.tototoshi.csv.CSVWriter
 import ch.epfl.core.model.prototypical.{AppPrototypeBindings, DeviceInstanceBinding}
+import ch.epfl.core.utils.FileUtils
 
 /** KNX programmer
   *
@@ -48,11 +50,11 @@ case class Programmer(assignment: GroupAddressAssignment) {
     }
     val text = tree.mkString("\n")
     val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
-    if (!os.exists(directoryPath)) os.makeDir(directoryPath)
+    if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
     if (os.exists(filePath)) os.remove(filePath)
-    os.write(filePath, text)
+    FileUtils.writeToFile(filePath, text.toCharArray.map(_.toByte))
   }
 
   /** Outputs the CSV file with the group address assignments for each communication object.
@@ -66,7 +68,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
     val header = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
 
     val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
-    if (!os.exists(directoryPath)) os.makeDir(directoryPath)
+    if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
     val writer = CSVWriter.open(filePath.toIO)

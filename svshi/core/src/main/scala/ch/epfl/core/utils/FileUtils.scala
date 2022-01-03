@@ -120,6 +120,7 @@ object FileUtils {
     * @param data
     */
   def writeToFile(path: os.Path, data: Array[Byte]): Unit = {
+
     os.write(path, data)
   }
 
