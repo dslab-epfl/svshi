@@ -25,15 +25,16 @@ case class Programmer(assignment: GroupAddressAssignment) {
       nodes.flatMap { case PhysicalDeviceNode(nodeName, comObjects) =>
         comObjects.filter(idToGroupAddress contains _.id).map { case PhysicalDeviceCommObject(objName, datatype, ioType, id) =>
           val groupAddress = idToGroupAddress(id)
-          val dtype = datatype match {
-            case DPTUnknown => dpts(groupAddress).head
-            case d          => d
-          }
+          val dtype = dpts(groupAddress).head
           Assignment(deviceName, addressString, nodeName, objName, groupAddress, dtype)
         }
       }
     }
   }
+
+  private val CSV_HEADER = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
+  private val CSV_MAIN_GROUP = List("New main group", "", "", "0/-/-", "", "", "", "", "Auto")
+  private val CSV_MIDDLE_GROUP = List("", "New middle group", "", "0/0/-", "", "", "", "", "Auto")
 
   /** Outputs the programming file with the group address assignments for each communication object.
     *
@@ -65,16 +66,14 @@ case class Programmer(assignment: GroupAddressAssignment) {
     def generateLine(assignment: Assignment) =
       List("", "", s"${assignment.deviceName} - ${assignment.commObjectName}", assignment.groupAddress.toString, "", "", "", assignment.datatype.toString, "Auto")
 
-    val header = List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security")
-
     val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
     val writer = CSVWriter.open(filePath.toIO)
-    writer.writeRow(header)
-    writer.writeRow(List("New main group", "", "", "0/-/-", "", "", "", "", "Auto"))
-    writer.writeRow(List("", "New middle group", "", "0/0/-", "", "", "", "", "Auto"))
+    writer.writeRow(CSV_HEADER)
+    writer.writeRow(CSV_MAIN_GROUP)
+    writer.writeRow(CSV_MIDDLE_GROUP)
     writer.writeAll(assignments.map(generateLine))
     writer.close()
   }
