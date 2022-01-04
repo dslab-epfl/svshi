@@ -57,8 +57,25 @@ object Main {
               val appLibraryPath = existingAppsLibrary.path
               FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), RUNTIME_PYTHON_MODULE_PATH)
 
+              // Copy files used by each app
+              val filesDirPath = RUNTIME_PYTHON_MODULE_PATH / "files"
+              os.remove.all(filesDirPath)
+              os.makeDir.all(filesDirPath)
+
+              val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.appProtoStructure.files)).toMap
+              appToFiles.foreach{
+                case (appName, appFiles) => 
+                  appFiles.foreach(fileName => {
+                    val newFileName = f"${appName}_$fileName"
+                    FileUtils.copyFileWithNewName(appLibraryPath / appName / fileName, filesDirPath, newFileName)
+                  })
+              })
+
               // Run the runtime module
               runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
+
+              // Clear all files used by apps
+              os.remove.all(filesDirPath)
             } else printErrorAndExit("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
           case None => printErrorAndExit("The KNX address and port need to be specified to run the apps")
         }
