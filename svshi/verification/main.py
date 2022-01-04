@@ -6,7 +6,8 @@ from verification.parser import Parser
 
 SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
 APP_LIBRARY: Final = f"{SVSHI_HOME}/svshi/app_library"
-VERIFICATION_MODULE_PATH = f"{SVSHI_HOME}/svshi/verification"
+VERIFICATION_MODULE_PATH: Final = f"{SVSHI_HOME}/svshi/verification"
+FILES_FOLDER_PATH: Final = f"{SVSHI_HOME}/svshi/runtime/files"
 
 if __name__ == "__main__":
     parser = Parser(f"{SVSHI_HOME}/generated", APP_LIBRARY)
@@ -23,6 +24,7 @@ if __name__ == "__main__":
         verification_filename,
         runtime_filename,
         conditions_filename,
+        FILES_FOLDER_PATH,
         group_addresses_with_types,
         devices_instances,
         devices_classes,

@@ -156,7 +156,7 @@ The `timer` attribute can be used to run the application even though the physica
 - If `timer == 0` the application runs only when the physical state changes
 - If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
-The `files` attributes is used to indicate files that the app need to work properly. These files must be at the root of the application project (next to `main.py`).
+The `files` attributes is used to indicate files that the app needs to work properly. These files must be at the root of the application project (next to `main.py`).
 
 Once the app is generated, it is moved to the `generated` folder.
 
@@ -166,10 +166,7 @@ Here is an example:
 {
   "permissionLevel": "notPrivileged",
   "timer": 60,
-  "files": [
-    "file1.txt",
-    "file2.png"
-  ],
+  "files": ["file1.txt", "file2.png"],
   "devices": [
     {
       "name": "name_of_the_instances",

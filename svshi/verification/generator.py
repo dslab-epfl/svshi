@@ -83,6 +83,7 @@ class Switch_{app_name}_{instance_name}():
         verification_filename: str,
         runtime_filename: str,
         conditions_filename: str,
+        files_folder_path: str,
         group_addresses: List[GroupAddress],
         devices_instances: List[DeviceInstance],
         devices_classes: List[DeviceClass],
@@ -103,7 +104,7 @@ class Switch_{app_name}_{instance_name}():
                 device.name.upper() for device in group
             }
 
-        self.__manipulator = Manipulator(instances_names_per_app, filenames_per_app)
+        self.__manipulator = Manipulator(instances_names_per_app, filenames_per_app, files_folder_path)
 
         self.__code: List[str] = []
         self.__imports: List[str] = []

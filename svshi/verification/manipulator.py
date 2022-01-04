@@ -1,5 +1,6 @@
 import ast
 import astor
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
 
@@ -44,10 +45,12 @@ class Manipulator:
         self,
         instances_names_per_app: Dict[Tuple[str, str], Set[str]],
         filenames_per_app: Dict[str, Set[str]],
+        files_folder_path: str,
     ):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
         self.__filenames_per_app = filenames_per_app
+        self.__files_folder_path = files_folder_path
 
     def __get_unchecked_functions(
         self,
@@ -128,12 +131,10 @@ class Manipulator:
         and with the state parameter added for the first two.
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            [
+            for v in list(op):
                 self.__rename_instances_add_state(
                     v, app_name, accepted_names, unchecked_functions
                 )
-                for v in list(op)
-            ]
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             self.__rename_instances_add_state(
                 op.elts, app_name, accepted_names, unchecked_functions
@@ -633,7 +634,7 @@ class Manipulator:
             ]
         ) -> bool:
             if isinstance(op, list) or isinstance(op, tuple):
-                for o in [check(v) for v in list(op)]:
+                for o in (check(v) for v in list(op)):
                     if not o:
                         return False
                 return True
@@ -710,15 +711,14 @@ class Manipulator:
         """
         In place, adds to the given function the given arguments.
         """
-        ast_arguments = list(
-            map(
-                lambda unchecked_f: ast.arg(
-                    unchecked_f.name_with_app_name,
-                    ast.Name(unchecked_f.return_type, ast.Load),
-                ),
-                filter(lambda uf: uf.return_type != None, arguments),
-            )
+        ast_arguments = map(
+            lambda unchecked_f: ast.arg(
+                unchecked_f.name_with_app_name,
+                ast.Name(unchecked_f.return_type, ast.Load),
+            ),
+            filter(lambda uf: uf.return_type != None, arguments),
         )
+
         f.args.args.extend(ast_arguments)
 
     def __rename_files(
@@ -737,7 +737,7 @@ class Manipulator:
         filenames: Set[str],
     ):
         """
-        In place, renames all the occurrences of the given filenames by prepending the app name.
+        In place, renames all the occurrences of the given filenames by prepending the path to it.
         """
         if isinstance(op, list) or isinstance(op, tuple):
             for v in list(op):
@@ -806,7 +806,8 @@ class Manipulator:
         elif isinstance(op, ast.Constant):
             v = op.value
             if v in filenames:
-                op.value = f"{app_name}_{v}"
+                # We rename the file
+                op.value = f"{self.__files_folder_path}/{app_name}/{v}"
 
     def __manipulate_app_main(
         self,

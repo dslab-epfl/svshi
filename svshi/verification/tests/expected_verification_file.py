@@ -193,7 +193,7 @@ post: second_app_invariant(__return__)
 post: third_app_invariant(__return__)
 """
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) > 30:
-        another_file = 'third_app_file2.csv'
+        another_file = '/third_app/file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
     return physical_state
 
