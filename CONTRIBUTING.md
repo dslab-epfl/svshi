@@ -118,7 +118,7 @@ As the IO type is not always provided for physical devices, it can be `Unknown`.
 
 Compatibility is defined as follows:
 
-<img src="res/Contributing_types_table.png" alt="Contributing_types_table" width="400"/>
+<img src="res/Contributing_types_table.png" alt="Contributing_types_table" width="500"/>
 
 As we abstract the physical state and run applications on it, it means that a prototypical device in an application can read a state that is only an `out` in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
 
