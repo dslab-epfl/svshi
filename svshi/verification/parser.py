@@ -1,28 +1,28 @@
 import json
-import dataclasses
+from dataclasses import dataclass
 import os
 from typing import Dict, List, Tuple
 
 
-@dataclasses.dataclass
+@dataclass
 class App:
     name: str
     directory: str
 
 
-@dataclasses.dataclass
+@dataclass
 class GroupAddress:
     address: str
     type: str
 
 
-@dataclasses.dataclass
+@dataclass
 class DeviceInstance:
     name: str
     type: str
 
 
-@dataclasses.dataclass
+@dataclass
 class DeviceClass:
     app: App
     name: str

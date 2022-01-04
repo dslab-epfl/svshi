@@ -7,6 +7,7 @@ from generator.generation.generator import Generator
 
 SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
 GENERATED_APPS_FOLDER_NAME: Final = f"{SVSHI_HOME}/generated"
+SKELETON_PATH: Final = f"{SVSHI_HOME}/svshi/generator/skeleton"
 
 
 def parse_args() -> Tuple[str, str]:
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     )
     generator.generate_device_instances()
     generator.generate_init_files()
-    generator.copy_skeleton_to_generated_app(f"{SVSHI_HOME}/svshi/generator/skeleton")
+    generator.copy_skeleton_to_generated_app(SKELETON_PATH)
     generator.generate_multiton_class()
     generator.move_devices_json_to_generated_app()
     generator.add_device_instances_imports_to_main()
