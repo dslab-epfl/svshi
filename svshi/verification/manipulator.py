@@ -131,12 +131,10 @@ class Manipulator:
         and with the state parameter added for the first two.
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            [
+            for v in list(op):
                 self.__rename_instances_add_state(
                     v, app_name, accepted_names, unchecked_functions
                 )
-                for v in list(op)
-            ]
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             self.__rename_instances_add_state(
                 op.elts, app_name, accepted_names, unchecked_functions
@@ -636,7 +634,7 @@ class Manipulator:
             ]
         ) -> bool:
             if isinstance(op, list) or isinstance(op, tuple):
-                for o in [check(v) for v in list(op)]:
+                for o in (check(v) for v in list(op)):
                     if not o:
                         return False
                 return True
@@ -713,15 +711,14 @@ class Manipulator:
         """
         In place, adds to the given function the given arguments.
         """
-        ast_arguments = list(
-            map(
-                lambda unchecked_f: ast.arg(
-                    unchecked_f.name_with_app_name,
-                    ast.Name(unchecked_f.return_type, ast.Load),
-                ),
-                filter(lambda uf: uf.return_type != None, arguments),
-            )
+        ast_arguments = map(
+            lambda unchecked_f: ast.arg(
+                unchecked_f.name_with_app_name,
+                ast.Name(unchecked_f.return_type, ast.Load),
+            ),
+            filter(lambda uf: uf.return_type != None, arguments),
         )
+
         f.args.args.extend(ast_arguments)
 
     def __rename_files(
