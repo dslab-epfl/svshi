@@ -153,7 +153,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = NotPrivileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = NotPrivileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -192,7 +192,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = Privileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -231,7 +231,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = Privileged)
 
     an[JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
