@@ -14,6 +14,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "notPrivileged",
         |    "timer": 0,
+        |    "files":
+        |    [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
@@ -36,7 +41,9 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, devices = List(device1, device2, device3))
+    val file1 = "file1.txt"
+    val file2 = "file2.png"
+    val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, files = List(file1, file2), devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -47,6 +54,10 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "privileged",
         |    "timer": 60,
+        |    "files": [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
@@ -69,7 +80,9 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
+    val file1 = "file1.txt"
+    val file2 = "file2.png"
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -80,6 +93,10 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "notPrivileged",
         |    "timer": 60,
+        |    "files": [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
@@ -109,6 +126,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "notPrivileged",
         |    "timer": 60,
+        |    "files":
+        |    [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
@@ -143,6 +165,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "privileged",
         |    "timer": 60,
+        |    "files":
+        |    [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
@@ -177,6 +204,11 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
         |{
         |    "permissionLevel": "unknown",
         |    "timer": 60,
+        |    "files":
+        |    [
+        |       "file1.txt",
+        |       "file2.png"
+        |    ],
         |    "devices":
         |    [
         |       {
