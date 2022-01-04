@@ -40,9 +40,14 @@ class Manipulator:
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
 
-    def __init__(self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]):
+    def __init__(
+        self,
+        instances_names_per_app: Dict[Tuple[str, str], Set[str]],
+        filenames_per_app: Dict[str, Set[str]],
+    ):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
+        self.__filenames_per_app = filenames_per_app
 
     def __get_unchecked_functions(
         self,
@@ -729,7 +734,7 @@ class Manipulator:
             List[ast.keyword],
         ],
         app_name: str,
-        filenames: List[str],
+        filenames: Set[str],
     ):
         """
         In place, renames all the occurrences of the given filenames by prepending the app name.
@@ -873,6 +878,11 @@ class Manipulator:
 
             unchecked_func_dict = self.__get_unchecked_functions(module_body, app_name)
             unchecked_funcs = list(unchecked_func_dict.values())
+
+            # We rename all the files, if any
+            filenames = self.__filenames_per_app[app_name]
+            if filenames:
+                self.__rename_files(module_body, app_name, filenames)
 
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(
