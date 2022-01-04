@@ -64,30 +64,30 @@ APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_app_temperature_sensor
 APP_HUMIDITY_SENSOR_INSTANCE_NAME = Humidity_sensor_app_humidity_sensor_instance_name()
 
 
-def app_precond(physical_state: PhysicalState) ->bool:
+def app_invariant(physical_state: PhysicalState) ->bool:
     return True
 
 
 def app_iteration(physical_state: PhysicalState):
     """
-pre: app_precond(physical_state)
-pre: another_app_precond(physical_state)
-post: app_precond(__return__)
-post: another_app_precond(__return__)
+pre: app_invariant(physical_state)
+pre: another_app_invariant(physical_state)
+post: app_invariant(__return__)
+post: another_app_invariant(__return__)
 """
     print('Hello, world!')
     return physical_state
 
-def another_app_precond(physical_state: PhysicalState) ->bool:
+def another_app_invariant(physical_state: PhysicalState) ->bool:
     return True
 
 
 def another_app_iteration(physical_state: PhysicalState):
     """
-pre: app_precond(physical_state)
-pre: another_app_precond(physical_state)
-post: app_precond(__return__)
-post: another_app_precond(__return__)
+pre: app_invariant(physical_state)
+pre: another_app_invariant(physical_state)
+post: app_invariant(__return__)
+post: another_app_invariant(__return__)
 """
     print('Hello, world!')
     return physical_state

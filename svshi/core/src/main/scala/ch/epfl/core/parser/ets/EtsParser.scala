@@ -91,9 +91,8 @@ object EtsParser {
           throw new MalformedXMLException(
             s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}"
           )
-      if (datatype.isEmpty) throw new UnsupportedDatatype(s"The Datatype $parsedioPort.dpt is not supported")
       val ioType = IOType.fromString(parsedioPort.inOutType).get
-      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.get, ioType, physicalAddress)
+      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.getOrElse(DPTUnknown), ioType, physicalAddress)
     }
     physical.PhysicalDevice(
       parsedDevice.name,
@@ -254,11 +253,16 @@ object EtsParser {
           val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(groupObjectInstanceId))
           comObjectRef match {
             case Some(comObjectRef) => {
+              val comObjectRefDPTString = comObjectRef \@ DATAPOINTTYPE_PARAM
               val refId = comObjectRef \@ REFID_PARAM
               val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
               comObject match {
-                case Some(value) => IOPort(constructIOPortName(value, catalogEntry), value \@ DATAPOINTTYPE_PARAM, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
-                case None        => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
+                case Some(value) => {
+                  val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
+                  val dptStr = if (comObjectDPTString.nonEmpty) comObjectDPTString else comObjectRefDPTString
+                  IOPort(constructIOPortName(value, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
+                }
+                case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }
             }
             case None => throw new MalformedXMLException(s"Cannot find the ComObjectRef for the id: $groupObjectInstanceId for the productRefId: $productRefId")
@@ -349,6 +353,9 @@ object EtsParser {
         .flatMap(area =>
           (area \\ LINE_TAG).flatMap(line => (line \\ DEVICE_TAG).flatMap(deviceInstance => (area \@ ADDRESS_PARAM, line \@ ADDRESS_PARAM, deviceInstance \@ ADDRESS_PARAM) :: Nil))
         )
+        .filter { case (areaId, lineId, deviceId) =>
+          areaId.nonEmpty && lineId.nonEmpty && deviceId.nonEmpty
+        }
         .toList
     }
   )

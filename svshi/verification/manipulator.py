@@ -1,7 +1,7 @@
 import ast
 import astor
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple, Union, cast
+from typing import Dict, List, Set, Tuple, Union, Final, cast
 
 
 class InvalidFunctionCallException(Exception):
@@ -33,16 +33,14 @@ class Manipulator:
     Python AST manipulator.
     """
 
-    __STATE_ARGUMENT = "physical_state"
-    __STATE_TYPE = "PhysicalState"
-    __UNCHECKED_FUNC_PREFIX = "unchecked"
-    __PRECOND_FUNC_NAME = "precond"
-    __ITERATION_FUNC_NAME = "iteration"
-    __PRINT_FUNC_NAME = "print"
+    __STATE_ARGUMENT: Final = "physical_state"
+    __STATE_TYPE: Final = "PhysicalState"
+    __UNCHECKED_FUNC_PREFIX: Final = "unchecked"
+    __INVARIANT_FUNC_NAME: Final = "invariant"
+    __ITERATION_FUNC_NAME: Final = "iteration"
+    __PRINT_FUNC_NAME: Final = "print"
 
-    def __init__(
-        self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]
-    ) -> None:
+    def __init__(self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
 
@@ -59,8 +57,8 @@ class Manipulator:
         app_name: str,
     ) -> Dict[str, UncheckedFunction]:
         """
-        Go through the AST and return a Dict containing
-        "unchecked_func_name" -> UncheckedFunction
+        Goes through the AST and returns a Dict containing entries of the form
+        "unchecked_func_name" -> UncheckedFunction.
         """
         if isinstance(op, list) or isinstance(op, tuple):
             dicts_list = [self.__get_unchecked_functions(v, app_name) for v in list(op)]
@@ -117,6 +115,13 @@ class Manipulator:
         accepted_names: Set[str],
         unchecked_functions: List[UncheckedFunction],
     ):
+        """
+        Renames the instances calling functions with name in accepted_names
+        and unchecked_functions by adding the app_name in front of them. Additionally, it also adds the
+        "state" argument to the calls with name in accepted_names.
+        Furthermore, "precond", "iteration" and "unchecked" functions are modified with the app_name added to them
+        and with the state parameter added for the first two.
+        """
         if isinstance(op, list) or isinstance(op, tuple):
             [
                 self.__rename_instances_add_state(
@@ -264,12 +269,12 @@ class Manipulator:
                 op.value, app_name, accepted_names, unchecked_functions
             )
         elif isinstance(op, ast.FunctionDef) and (
-            op.name == self.__PRECOND_FUNC_NAME
+            op.name == self.__INVARIANT_FUNC_NAME
             or op.name == self.__ITERATION_FUNC_NAME
             or op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
         ):
             if (
-                op.name == self.__PRECOND_FUNC_NAME
+                op.name == self.__INVARIANT_FUNC_NAME
                 or op.name == self.__ITERATION_FUNC_NAME
             ):
                 # Add the state argument to the function
@@ -288,6 +293,10 @@ class Manipulator:
         unchecked_functions: List[UncheckedFunction],
         verification: bool = True,
     ) -> str:
+        """
+        Returns the contract as a docstring using the given app names. If the verification flag is set,
+        it also adds to the pre-conditions the unchecked functions' post-conditions.
+        """
         pre_str = "pre: "
         post_str = "post: "
         return_value_name_str = "__return__"
@@ -320,11 +329,11 @@ class Manipulator:
         conditions = []
         sorted_app_names = sorted(app_names)
         for app_name in sorted_app_names:
-            precond = pre_str
-            precond += construct_func_call(
-                app_name + "_" + self.__PRECOND_FUNC_NAME, [self.__STATE_ARGUMENT]
+            invariant = pre_str
+            invariant += construct_func_call(
+                app_name + "_" + self.__INVARIANT_FUNC_NAME, [self.__STATE_ARGUMENT]
             )
-            conditions.append(precond)
+            conditions.append(invariant)
 
         if verification:
             for unchecked_func in unchecked_functions:
@@ -337,13 +346,16 @@ class Manipulator:
         for app_name in sorted_app_names:
             postcond = post_str
             postcond += construct_func_call(
-                app_name + "_" + self.__PRECOND_FUNC_NAME, [return_value_name_str]
+                app_name + "_" + self.__INVARIANT_FUNC_NAME, [return_value_name_str]
             )
             conditions.append(postcond)
         res = "\n".join(conditions)
         return res
 
     def __add_doc_string(self, f: ast.FunctionDef, doc_string: str) -> ast.FunctionDef:
+        """
+        Adds the given docstring to the given function, returning it.
+        """
         old_doc_string = ast.get_docstring(f)
         s = ast.Str("\n" + doc_string + "\n")
         new_doc_string_ast = ast.Expr(value=s)
@@ -354,6 +366,9 @@ class Manipulator:
         return f
 
     def __add_return_state(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        """
+        Adds a "return physical_state" statement to the end of the body of the given function, returning it.
+        """
         f.body.append(ast.Return(ast.Name(self.__STATE_ARGUMENT, ast.Load)))
         return f
 
@@ -573,7 +588,7 @@ class Manipulator:
     def manipulate_mains(self, verification: bool) -> Tuple[List[str], List[str]]:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
-        and adding the state argument to the calls. Then, the `precond` and `iteration` functions are extracted, together with their imports,
+        and adding the state argument to the calls. Then, the `invariant` and `iteration` functions are extracted, together with their imports,
         and dumped in the verification file.
         """
         imports = []
@@ -594,6 +609,10 @@ class Manipulator:
     def __check_no_invalid_calls_in_function(
         self, functions: List[ast.FunctionDef], invalid_func_names: Set[str]
     ) -> Tuple[bool, str]:
+        """
+        Checks that there are no calls to the given functions in the body of the given function definitions.
+        """
+
         def check(
             op: Union[
                 ast.stmt,
@@ -678,9 +697,12 @@ class Manipulator:
 
         return True, ""
 
-    def __add_unchecked_function_arguments_to_iteration(
+    def __add_unchecked_function_arguments(
         self, f: ast.FunctionDef, arguments: List[UncheckedFunction]
     ):
+        """
+        In place, adds to the given function the given arguments.
+        """
         ast_arguments = list(
             map(
                 lambda unchecked_f: ast.arg(
@@ -703,7 +725,7 @@ class Manipulator:
             module_body: List[ast.stmt],
             unchecked_func_dict: Dict[str, UncheckedFunction],
         ):
-            # We only keep precond and iteration functions, and we add to them the docstring with the contracts
+            # We only keep invariant and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
                 map(
                     lambda f: self.__add_return_state(
@@ -723,7 +745,7 @@ class Manipulator:
                         filter(
                             lambda n: isinstance(n, ast.FunctionDef)
                             and (
-                                n.name == f"{app_name}_{self.__PRECOND_FUNC_NAME}"
+                                n.name == f"{app_name}_{self.__INVARIANT_FUNC_NAME}"
                                 or n.name == f"{app_name}_{self.__ITERATION_FUNC_NAME}"
                                 or (
                                     not verification
@@ -739,7 +761,7 @@ class Manipulator:
             )
             # We only keep the imports that were added by the user, if it is the runtime file.
             # Otherwise, we remove them as well, so that the verification fails if the user used
-            # external libraries in iteration or precond functions
+            # external libraries in iteration or invariant functions
             imports_ast = list(
                 filter(
                     lambda n: not verification and isinstance(n, ast.Import),
@@ -768,34 +790,34 @@ class Manipulator:
                 module_body, app_name, accepted_names, unchecked_funcs
             )
 
-            # Extract imports, precond/iteration functions and add the contracts to them
+            # Extract imports, invariant/iteration functions and add the contracts to them
             (
                 functions_ast,
                 imports_ast,
                 from_imports_ast,
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
-            # Contains all the invalid function names: these are not allowed in precond or iteration functions
+            # Contains all the invalid function names: these are not allowed in invariant or iteration functions
             invalid_func_names = {self.__PRINT_FUNC_NAME}
 
-            # Check if a precondition function contains a call to an invalid function,
+            # Check if an invariant function contains a call to an invalid function,
             # i.e. an unchecked function or print
             unchecked_func_names = {
                 uf.name_with_app_name for _, uf in unchecked_func_dict.items()
             }
-            precond_invalid_func_names = unchecked_func_names | invalid_func_names
-            valid, wrong_precond_func = self.__check_no_invalid_calls_in_function(
+            invariant_invalid_func_names = unchecked_func_names | invalid_func_names
+            valid, wrong_invariant_func = self.__check_no_invalid_calls_in_function(
                 list(
                     filter(
-                        lambda f: f.name.endswith(f"_{self.__PRECOND_FUNC_NAME}"),
+                        lambda f: f.name.endswith(f"_{self.__INVARIANT_FUNC_NAME}"),
                         functions_ast,
                     )
                 ),
-                precond_invalid_func_names,
+                invariant_invalid_func_names,
             )
             if not valid:
                 raise InvalidFunctionCallException(
-                    f"The precondition function '{wrong_precond_func}' contains a call to an unchecked function or to 'print'."
+                    f"The invariant function '{wrong_invariant_func}' contains a call to an unchecked function or to 'print'."
                 )
 
             iteration_functions = list(
@@ -824,9 +846,7 @@ class Manipulator:
 
                 # Add unchecked_function_names as arguments of the iteration functions
                 for f in iteration_functions:
-                    self.__add_unchecked_function_arguments_to_iteration(
-                        f, unchecked_funcs
-                    )
+                    self.__add_unchecked_function_arguments(f, unchecked_funcs)
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))

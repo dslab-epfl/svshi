@@ -25,7 +25,7 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT2, Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
             PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
           )
         )
@@ -38,7 +38,7 @@ class GroupAddressAssignerTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT2, Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
             PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
           )
         ),

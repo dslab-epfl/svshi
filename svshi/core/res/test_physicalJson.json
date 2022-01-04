@@ -26,7 +26,7 @@
           "comObjects": [
             {
               "name": "device2Node1ComObj1",
-              "datatype": "DPT-2",
+              "datatype": "DPT-1",
               "ioType": "out",
               "id": 211
             },
@@ -49,7 +49,7 @@
           "comObjects": [
             {
               "name": "device3Node1ComObj1",
-              "datatype": "DPT-2",
+              "datatype": "DPT-1",
               "ioType": "out",
               "id": 311
             },

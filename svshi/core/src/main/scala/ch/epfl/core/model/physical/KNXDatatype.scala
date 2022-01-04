@@ -44,8 +44,8 @@ object KNXDatatype {
     s match {
       case _ if datatypeRegex.findFirstIn(s).get == "DPT-Unknown"                => Some(DPTUnknown)
       case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1  => Some(DPT1)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2  => Some(DPT2)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3  => Some(DPT3)
+//      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2  => Some(DPT2)
+//      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3  => Some(DPT3)
       case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 5  => Some(DPT5)
       case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 6  => Some(DPT6)
       case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 7  => Some(DPT7)
@@ -73,8 +73,8 @@ object KNXDatatype {
     if (dptSize.toLowerCase.contains("bit")) {
       if (dptSize.contains("1 ") || dptSize.toLowerCase.contains("one")) {
         Some(DPT1)
-      } else if (dptSize.contains("2 ") || dptSize.toLowerCase.contains("two")) {
-        Some(DPT2)
+//      } else if (dptSize.contains("2 ") || dptSize.toLowerCase.contains("two")) {
+//        Some(DPT2)
       } else {
         None
       }
@@ -87,14 +87,20 @@ case object DPT1 extends KNXDatatype {
   override def toString = "DPT-1"
   override def toPythonType: PythonType = PythonBool
 }
-case object DPT2 extends KNXDatatype {
-  override def toString = "DPT-2"
-  override def toPythonType: PythonType = PythonInt
-}
-case object DPT3 extends KNXDatatype {
-  override def toString = "DPT-3"
-  override def toPythonType: PythonType = PythonInt
-}
+
+// These two are currently not supported by the Python runtime because they are not supported by XKNX.
+// To use them, python code needs to be added to support conversion
+
+//case object DPT2 extends KNXDatatype {
+//  override def toString = "DPT-2"
+//  override def toPythonType: PythonType = PythonInt
+//}
+//case object DPT3 extends KNXDatatype {
+//  override def toString = "DPT-3"
+//  override def toPythonType: PythonType = PythonInt
+//}
+
+
 case object DPT5 extends KNXDatatype {
   override def toString = "DPT-5"
   override def toPythonType: PythonType = PythonInt
