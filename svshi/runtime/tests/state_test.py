@@ -10,7 +10,7 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.xknx import XKNX
 
-from ..verification_file import PhysicalState
+from ..verification_file import AppState, PhysicalState
 from ..app import App
 from ..state import State
 
@@ -25,12 +25,29 @@ SECOND_GROUP_ADDRESS = "1/1/2"
 THIRD_GROUP_ADDRESS = "1/1/3"
 FOURTH_GROUP_ADDRESS = "1/1/4"
 
+FIRST_APP_NAME = "test1"
+SECOND_APP_NAME = "test2"
+THIRD_APP_NAME = "test3"
+FOURTH_APP_NAME = "test4"
 
-def always_valid_conditions(state: PhysicalState) -> bool:
+
+def always_valid_conditions(
+    test1_app_state: AppState,
+    test2_app_state: AppState,
+    test3_app_state: AppState,
+    test4_app_state: AppState,
+    physical_state: PhysicalState,
+) -> bool:
     return True
 
 
-def always_invalid_conditions(state: PhysicalState) -> bool:
+def always_invalid_conditions(
+    test1_app_state: AppState,
+    test2_app_state: AppState,
+    test3_app_state: AppState,
+    test4_app_state: AppState,
+    physical_state: PhysicalState,
+) -> bool:
     return False
 
 
@@ -80,10 +97,10 @@ class StateHolder:
         self.app_three_called = False
         self.app_four_called = False
 
-        self.app_one = App("test1", "tests", self.app_one_code)
-        self.app_two = App("test2", "tests", self.app_two_code)
-        self.app_three = App("test3", "tests", self.app_three_code)
-        self.app_four = App("test4", "tests", self.app_four_code, timer=2)
+        self.app_one = App(FIRST_APP_NAME, "tests", self.app_one_code)
+        self.app_two = App(SECOND_APP_NAME, "tests", self.app_two_code)
+        self.app_three = App(THIRD_APP_NAME, "tests", self.app_three_code)
+        self.app_four = App(FOURTH_APP_NAME, "tests", self.app_four_code, timer=2)
         self.addresses_listeners = {
             FIRST_GROUP_ADDRESS: [
                 self.app_one,
@@ -104,16 +121,16 @@ class StateHolder:
         self.xknx_for_initialization = MockXKNX(MockTelegramQueue())
         self.xknx_for_listening = MockXKNX(MockTelegramQueue())
 
-    def app_one_code(self, state: PhysicalState):
+    def app_one_code(self, state1: AppState, state2: PhysicalState):
         self.app_one_called = True
 
-    def app_two_code(self, state: PhysicalState):
+    def app_two_code(self, state1: AppState, state: PhysicalState):
         self.app_two_called = True
 
-    def app_three_code(self, state: PhysicalState):
+    def app_three_code(self, state1: AppState, state: PhysicalState):
         self.app_three_called = True
 
-    def app_four_code(self, state: PhysicalState):
+    def app_four_code(self, state1: AppState, state: PhysicalState):
         self.app_four_called = True
 
     def reset(self):
@@ -313,10 +330,10 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
         test_state_holder.app_two_called = True
-        state.GA_1_1_2 = new_second_address_value
-        state.GA_1_1_3 = new_third_address_value
+        physical_state.GA_1_1_2 = new_second_address_value
+        physical_state.GA_1_1_3 = new_third_address_value
 
     test_state_holder.set_app_two_code(test_two_code)
 
@@ -364,3 +381,58 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
+
+
+@pytest.mark.asyncio
+async def test_state_update_app_state():
+    new_int_0_value = 42
+    new_float_1_value = 42.42
+    new_bool_2_value = True
+    new_str_3_value = "the answer to everything is 42"
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+        test_state_holder.app_two_called = True
+        app_state.INT_0 = new_int_0_value
+        app_state.FLOAT_1 = new_float_1_value
+        app_state.BOOL_2 = new_bool_2_value
+        app_state.STR_3 = new_str_3_value
+
+    test_state_holder.set_app_two_code(test_two_code)
+
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+    )
+    await state.initialize()
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(FIRST_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+        )
+    )
+
+    assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
+    assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == False
+    assert state._physical_state.GA_1_1_4 == True
+    assert test_state_holder.app_one_called == True
+    assert test_state_holder.app_two_called == True
+    assert test_state_holder.app_three_called == False
+    assert test_state_holder.app_four_called == False
+    assert test_state_holder.app_one.should_run == True
+    assert test_state_holder.app_two.should_run == True
+    assert test_state_holder.app_three.should_run == True
+    assert test_state_holder.app_four.should_run == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState(
+        INT_0=new_int_0_value,
+        FLOAT_1=new_float_1_value,
+        BOOL_2=new_bool_2_value,
+        STR_3=new_str_3_value,
+    )
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()

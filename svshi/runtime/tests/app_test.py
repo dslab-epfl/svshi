@@ -5,12 +5,12 @@ from unittest.mock import Mock
 def test_app_notify():
     app_called = [False]
 
-    def app_code(s):
+    def app_code(s1, s2):
         app_called[0] = True
 
     app = App("test", "tests", app_code)
 
-    app.notify(Mock())
+    app.notify(Mock(), Mock())
 
     assert app_called[0] == True
 

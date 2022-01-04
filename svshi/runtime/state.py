@@ -1,7 +1,7 @@
 import dataclasses
 import asyncio
 from asyncio.tasks import Task
-from typing import Callable, Dict, Final, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
 from itertools import groupby
 from collections import defaultdict
 from xknx.core.value_reader import ValueReader
@@ -10,7 +10,7 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
-from .verification_file import PhysicalState
+from .verification_file import AppState, PhysicalState
 from .app import App
 
 
@@ -28,12 +28,19 @@ class State:
         addresses_listeners: Dict[str, List[App]],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
-        check_conditions_function: Callable[[PhysicalState], bool],
+        check_conditions_function: Callable,
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
     ):
+        self.__addresses_listeners = addresses_listeners
+        self.__addresses = list(addresses_listeners.keys())
+
+        apps = set(app for apps in self.__addresses_listeners.values() for app in apps)
+
         self._physical_state: PhysicalState
-        # Used to access and modify the physical state
-        self.__physical_state_execution_lock = asyncio.Lock()
+        self._app_states = {app.name: AppState() for app in apps}
+
+        # Used to access and modify the states
+        self.__execution_lock = asyncio.Lock()
 
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
@@ -41,15 +48,12 @@ class State:
             self.__telegram_received_cb
         )
 
-        self.__addresses_listeners = addresses_listeners
-        self.__addresses = list(addresses_listeners.keys())
-
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
 
         periodic_apps = filter(
             lambda app: app.timer > 0,
-            (app for apps in self.__addresses_listeners.values() for app in apps),
+            apps,
         )
 
         # Group the apps by timer
@@ -77,7 +81,7 @@ class State:
                 # we do not need to listen to GroupValueResponse
                 v = payload.value
                 if v:
-                    async with self.__physical_state_execution_lock:
+                    async with self.__execution_lock:
                         value = await self.__from_knx(address, v.value)
                         setattr(
                             self._physical_state,
@@ -241,7 +245,7 @@ class State:
         """
 
         async def run_apps_with_lock():
-            async with self.__physical_state_execution_lock:
+            async with self.__execution_lock:
                 await self.__run_apps(apps)
 
         while True:
@@ -263,14 +267,29 @@ class State:
         # We first execute all the apps
         for app in apps:
             if app.should_run:
-                per_app_state = dataclasses.replace(old_state)
-                app.notify(per_app_state)
-                if not self.__check_conditions_function(per_app_state):
+                # Copy the states before executing the app
+                app_local_state_copy = dataclasses.replace(self._app_states[app.name])
+                per_app_physical_state_copy = dataclasses.replace(old_state)
+
+                # Notify the app to trigger execution
+                app.notify(app_local_state_copy, per_app_physical_state_copy)
+
+                # Build the check conditions args with all app states and the physical state
+                check_conditions_args: Dict[str, Any] = {
+                    f"{app_name}_app_state": state
+                    for app_name, state in self._app_states.items()
+                }
+                check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
+                check_conditions_args["physical_state"] = per_app_physical_state_copy
+                if not self.__check_conditions_function(**check_conditions_args):
                     # If conditions are not preserved, we prevent the app from running again
                     app.stop()
                 else:
-                    # If conditions are preserved, we keep the state to later propagate
-                    new_states[app] = per_app_state
+                    # If conditions are preserved, we keep the physical state to later propagate
+                    new_states[app] = per_app_physical_state_copy
+
+                    # We update the app local state
+                    self._app_states[app.name] = app_local_state_copy
 
         merged_state = self.__merge_states(old_state, new_states)
 
