@@ -47,12 +47,11 @@ class State:
         self.__check_conditions_function = check_conditions_function
         self.__group_address_to_dpt = group_address_to_dpt
 
-        periodic_apps = list(
-            filter(
-                lambda app: app.timer > 0,
-                (app for apps in self.__addresses_listeners.values() for app in apps),
-            )
+        periodic_apps = filter(
+            lambda app: app.timer > 0,
+            (app for apps in self.__addresses_listeners.values() for app in apps),
         )
+
         # Group the apps by timer
         self.__periodic_apps: Dict[int, List[App]] = {}
         for timer, group in groupby(
