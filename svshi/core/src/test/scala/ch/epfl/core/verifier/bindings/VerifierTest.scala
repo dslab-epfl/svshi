@@ -74,6 +74,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -148,6 +149,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -225,6 +227,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -301,6 +304,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -378,6 +382,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -455,6 +460,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -529,6 +535,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -607,6 +614,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -685,6 +693,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -763,6 +772,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -841,6 +851,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -922,6 +933,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1001,6 +1013,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1084,6 +1097,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1158,6 +1172,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1238,6 +1253,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1318,6 +1334,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1397,6 +1414,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
@@ -1476,6 +1494,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
+      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),

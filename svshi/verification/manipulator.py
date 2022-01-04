@@ -1,5 +1,6 @@
 import ast
 import astor
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
 
@@ -40,9 +41,16 @@ class Manipulator:
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
 
-    def __init__(self, instances_names_per_app: Dict[Tuple[str, str], Set[str]]):
+    def __init__(
+        self,
+        instances_names_per_app: Dict[Tuple[str, str], Set[str]],
+        filenames_per_app: Dict[str, Set[str]],
+        files_folder_path: str,
+    ):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
+        self.__filenames_per_app = filenames_per_app
+        self.__files_folder_path = files_folder_path
 
     def __get_unchecked_functions(
         self,
@@ -123,12 +131,10 @@ class Manipulator:
         and with the state parameter added for the first two.
         """
         if isinstance(op, list) or isinstance(op, tuple):
-            [
+            for v in list(op):
                 self.__rename_instances_add_state(
                     v, app_name, accepted_names, unchecked_functions
                 )
-                for v in list(op)
-            ]
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             self.__rename_instances_add_state(
                 op.elts, app_name, accepted_names, unchecked_functions
@@ -628,7 +634,7 @@ class Manipulator:
             ]
         ) -> bool:
             if isinstance(op, list) or isinstance(op, tuple):
-                for o in [check(v) for v in list(op)]:
+                for o in (check(v) for v in list(op)):
                     if not o:
                         return False
                 return True
@@ -705,16 +711,103 @@ class Manipulator:
         """
         In place, adds to the given function the given arguments.
         """
-        ast_arguments = list(
-            map(
-                lambda unchecked_f: ast.arg(
-                    unchecked_f.name_with_app_name,
-                    ast.Name(unchecked_f.return_type, ast.Load),
-                ),
-                filter(lambda uf: uf.return_type != None, arguments),
-            )
+        ast_arguments = map(
+            lambda unchecked_f: ast.arg(
+                unchecked_f.name_with_app_name,
+                ast.Name(unchecked_f.return_type, ast.Load),
+            ),
+            filter(lambda uf: uf.return_type != None, arguments),
         )
+
         f.args.args.extend(ast_arguments)
+
+    def __rename_files(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
+        ],
+        app_name: str,
+        filenames: Set[str],
+    ):
+        """
+        In place, renames all the occurrences of the given filenames by prepending the path to it.
+        """
+        if isinstance(op, list) or isinstance(op, tuple):
+            for v in list(op):
+                self.__rename_files(v, app_name, filenames)
+        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+            self.__rename_files(op.elts, app_name, filenames)
+        elif isinstance(op, ast.BoolOp):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.UnaryOp):
+            self.__rename_files(op.operand, app_name, filenames)
+        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Lambda):
+            self.__rename_files(op.body, app_name, filenames)
+        elif isinstance(op, ast.Assign):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Compare):
+            self.__rename_files(op.left, app_name, filenames)
+            self.__rename_files(op.comparators, app_name, filenames)
+        elif isinstance(op, ast.BinOp):
+            self.__rename_files(op.left, app_name, filenames)
+            self.__rename_files(op.right, app_name, filenames)
+        elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+            self.__rename_files(op.test, app_name, filenames)
+            self.__rename_files(op.body, app_name, filenames)
+            self.__rename_files(op.orelse, app_name, filenames)
+        elif isinstance(op, ast.Dict):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.Set):
+            self.__rename_files(op.elts, app_name, filenames)
+        elif isinstance(op, ast.comprehension):
+            self.__rename_files(op.iter, app_name, filenames)
+            self.__rename_files(op.ifs, app_name, filenames)
+        elif (
+            isinstance(op, ast.ListComp)
+            or isinstance(op, ast.SetComp)
+            or isinstance(op, ast.GeneratorExp)
+        ):
+            self.__rename_files(op.generators, app_name, filenames)
+        elif isinstance(op, ast.DictComp):
+            self.__rename_files(op.value, app_name, filenames)
+            self.__rename_files(op.generators, app_name, filenames)
+        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.FormattedValue):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.JoinedStr):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Call):
+            self.__rename_files(op.func, app_name, filenames)
+            self.__rename_files(op.args, app_name, filenames)
+            self.__rename_files(op.keywords, app_name, filenames)
+        elif isinstance(op, ast.keyword):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.FunctionDef):
+            self.__rename_files(op.body, app_name, filenames)
+            if op.returns:
+                self.__rename_files(op.returns, app_name, filenames)
+        elif isinstance(op, ast.Constant):
+            v = op.value
+            if v in filenames:
+                # We rename the file
+                op.value = f"{self.__files_folder_path}/{app_name}/{v}"
 
     def __manipulate_app_main(
         self,
@@ -786,6 +879,11 @@ class Manipulator:
 
             unchecked_func_dict = self.__get_unchecked_functions(module_body, app_name)
             unchecked_funcs = list(unchecked_func_dict.values())
+
+            # We rename all the files, if any
+            filenames = self.__filenames_per_app[app_name]
+            if filenames:
+                self.__rename_files(module_body, app_name, filenames)
 
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(

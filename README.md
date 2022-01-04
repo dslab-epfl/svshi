@@ -93,6 +93,8 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the device instances you can use are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
+The application can use external files. They however need to have been declared in the prototypical structure `json` file and they have to be located at the root of the project, next to `main.py`.
+
 There are two important functions in `main.py`, `invariant()` and `iteration()`. In the first one you should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second you should write the app code.
 
 An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated, and only then they can be used in `iteration()`.
@@ -154,6 +156,8 @@ The `timer` attribute can be used to run the application even though the physica
 - If `timer == 0` the application runs only when the physical state changes
 - If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
+The `files` attributes is used to indicate files that the app needs to work properly. These files must be at the root of the application project (next to `main.py`).
+
 Once the app is generated, it is moved to the `generated` folder.
 
 Here is an example:
@@ -162,6 +166,7 @@ Here is an example:
 {
   "permissionLevel": "notPrivileged",
   "timer": 60,
+  "files": ["file1.txt", "file2.png"],
   "devices": [
     {
       "name": "name_of_the_instances",

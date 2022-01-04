@@ -1,13 +1,10 @@
 package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
-import ch.epfl.core.model.physical.{DPTUnknown, GroupAddress, KNXDatatype, PhysicalDevice, PhysicalDeviceCommObject, PhysicalDeviceNode}
+import ch.epfl.core.model.physical._
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
-
-import java.io.File
-import com.github.tototoshi.csv.CSVWriter
-import ch.epfl.core.model.prototypical.{AppPrototypeBindings, DeviceInstanceBinding}
 import ch.epfl.core.utils.FileUtils
+import com.github.tototoshi.csv.CSVWriter
 
 /** KNX programmer
   *

@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 
 @dataclass
@@ -38,6 +38,16 @@ class Parser:
     def __init__(self, generated_dir_name: str, app_library_dir_name: str):
         self.__generated_dir_name = generated_dir_name
         self.__app_library_dir_name = app_library_dir_name
+        self.__apps = self.__get_apps()
+
+        self.__app_protos: Dict[str, dict] = {}
+        for app in self.__apps:
+            directory = app.directory
+            app_name = app.name
+            with open(
+                f"{directory}/{app_name}/app_prototypical_structure.json", "r"
+            ) as proto_file:
+                self.__app_protos[app_name] = json.load(proto_file)
 
     def get_app_names(self) -> List[str]:
         """
@@ -46,7 +56,7 @@ class Parser:
         return list(
             map(
                 lambda a: a.name,
-                self.__get_apps(),
+                self.__apps,
             )
         )
 
@@ -74,21 +84,29 @@ class Parser:
         """
         Parses the devices instances of all the apps, returning a list of (name, type) pairs.
         """
-        apps_dirs = self.__get_apps()
         apps_instances = []
-        for app in apps_dirs:
-            directory = app.directory
+        for app in self.__apps:
             app_name = app.name
-            with open(
-                f"{directory}/{app_name}/app_prototypical_structure.json", "r"
-            ) as instances_file:
-                instances_dict = json.load(instances_file)
-                for instance in instances_dict["devices"]:
-                    name = instance["name"]
-                    type = instance["deviceType"]
-                    apps_instances.append(DeviceInstance(f"{app_name}_{name}", type))
+            proto = self.__app_protos[app_name]
+            for instance in proto["devices"]:
+                name = instance["name"]
+                type = instance["deviceType"]
+                apps_instances.append(DeviceInstance(f"{app_name}_{name}", type))
 
         return apps_instances
+
+    def parse_filenames(self) -> Dict[str, Set[str]]:
+        """
+        Parses the filenames associated to each app.
+        """
+        filenames = {}
+        for app in self.__apps:
+            app_name = app.name
+            proto = self.__app_protos[app_name]
+            names = set(proto["files"])
+            filenames[app_name] = names
+
+        return filenames
 
     def parse_devices_classes(self) -> List[DeviceClass]:
         """
@@ -113,9 +131,8 @@ class Parser:
             return device_and_app_name_to_type_map
 
         devices_types = parse_devices_types()
-        apps_dirs = self.__get_apps()
         devices = []
-        for app in apps_dirs:
+        for app in self.__apps:
             directory = app.directory
             app_name = app.name
             with open(f"{directory}/{app_name}/addresses.json") as file:

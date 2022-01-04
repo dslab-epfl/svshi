@@ -3,7 +3,7 @@ import os
 import json
 import subprocess
 import sys
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
@@ -61,12 +61,12 @@ class App:
         )
 
 
-def __get_apps_names(app_library_dir: str) -> List[str]:
-    return [
+def __get_apps_names(app_library_dir: str) -> Iterator[str]:
+    return (
         f.name
         for f in os.scandir(app_library_dir)
         if f.is_dir() and f.name != "__pycache__"
-    ]
+    )
 
 
 def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:

@@ -1,13 +1,12 @@
 package ch.epfl.core.compiler.knxProgramming
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import ch.epfl.core.model.bindings.GroupAddressAssignment
-import ch.epfl.core.model.physical.{PhysicalStructure, PhysicalDevice, PhysicalDeviceNode, PhysicalDeviceCommObject, DPT1, DPT9, DPTUnknown, In, Out}
-import ch.epfl.core.model.prototypical.{AppLibraryBindings, AppPrototypeBindings, DeviceInstanceBinding, HumiditySensorBinding, BinarySensorBinding, TemperatureSensorBinding}
-import ch.epfl.core.model.physical.GroupAddress
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical._
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
 import com.github.tototoshi.csv.CSVReader
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class KNXProgrammerTest extends AnyFlatSpec with Matchers {
 

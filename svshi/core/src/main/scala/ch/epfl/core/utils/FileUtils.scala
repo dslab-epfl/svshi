@@ -83,6 +83,20 @@ object FileUtils {
     os.copy.into(filePath, destinationDir, replaceExisting = true)
   }
 
+  /** Copy the file into destinationDir while renaming it
+    * WARNING! if a file with the new name already exists in the destination directory, it is replaced
+    *
+    * @param filePath the file to copy
+    * @param destinationDir the directory in which the file is copied
+    * @param newFileName the new name the file must have
+    */
+  def copyFileWithNewName(filePath: os.Path, destinationDir: os.Path, newFileName: String): Unit = {
+    if (!os.exists(filePath)) throw new IllegalArgumentException("filePath must be an existing path!")
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+
+    os.copy(filePath, destinationDir / newFileName, replaceExisting = true)
+  }
+
   /** Copies the files into destinationDir
     *
     * @param filePaths the files to copy

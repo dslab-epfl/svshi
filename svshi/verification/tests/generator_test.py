@@ -18,16 +18,19 @@ group_addresses_with_types = parser.parse_group_addresses()
 devices_instances = parser.parse_devices_instances()
 devices_classes = parser.parse_devices_classes()
 app_names = parser.get_app_names()
+filenames = parser.parse_filenames()
 
 
 generator = Generator(
     VERIFICATION_FILE_PATH,
     RUNTIME_FILE_PATH,
     CONDITIONS_FILE_PATH,
+    "",
     group_addresses_with_types,
     devices_instances,
     devices_classes,
     app_names,
+    filenames,
 )
 
 
