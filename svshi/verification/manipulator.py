@@ -1,5 +1,6 @@
 import ast
 import astor
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
 
@@ -39,6 +40,7 @@ class Manipulator:
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
+    __FILES_FOLDER_PATH: Final = f"{os.environ['SVSHI_HOME']}/svshi/runtime/files"
 
     def __init__(
         self,
@@ -737,7 +739,7 @@ class Manipulator:
         filenames: Set[str],
     ):
         """
-        In place, renames all the occurrences of the given filenames by prepending the app name.
+        In place, renames all the occurrences of the given filenames by prepending the path to it.
         """
         if isinstance(op, list) or isinstance(op, tuple):
             for v in list(op):
@@ -806,7 +808,8 @@ class Manipulator:
         elif isinstance(op, ast.Constant):
             v = op.value
             if v in filenames:
-                op.value = f"{app_name}_{v}"
+                # We rename the file
+                op.value = f"{self.__FILES_FOLDER_PATH}/{app_name}/{v}"
 
     def __manipulate_app_main(
         self,
