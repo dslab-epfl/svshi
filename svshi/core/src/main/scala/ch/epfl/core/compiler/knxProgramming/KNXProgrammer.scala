@@ -64,7 +64,17 @@ case class Programmer(assignment: GroupAddressAssignment) {
     */
   def outputGroupAddressesCsv(filename: String = "assignment.csv"): Unit = {
     def generateLine(assignment: Assignment) =
-      List("", "", s"${assignment.deviceName} - ${assignment.commObjectName}", assignment.groupAddress.toString, "", "", "", assignment.datatype.toString, "Auto")
+      List(
+        "",
+        "",
+        s"${assignment.deviceAddress} - ${assignment.deviceName} - ${assignment.commObjectName}",
+        assignment.groupAddress.toString,
+        "",
+        "",
+        "",
+        assignment.datatype.toString,
+        "Auto"
+      )
 
     val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
