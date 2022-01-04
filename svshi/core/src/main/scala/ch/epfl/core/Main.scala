@@ -63,13 +63,11 @@ object Main {
               os.makeDir.all(filesDirPath)
 
               val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.appProtoStructure.files)).toMap
-              appToFiles.foreach{
-                case (appName, appFiles) => 
-                  appFiles.foreach(fileName => {
-                    val newFileName = f"${appName}_$fileName"
-                    FileUtils.copyFileWithNewName(appLibraryPath / appName / fileName, filesDirPath, newFileName)
-                  })
-              }
+              appToFiles.foreach{ case (appName, appFiles) => {
+                val appFilesPath = filesDirPath / appName
+                if(!os.exists(appFilesPath)) os.makeDir.all(appFilesPath)
+                FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName ), appFilesPath)
+              }}
 
               // Run the runtime module
               runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
