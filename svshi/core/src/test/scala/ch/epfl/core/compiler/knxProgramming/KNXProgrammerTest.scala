@@ -44,9 +44,9 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
       List("Main", "Middle", "Sub", "Address", "Central", "Unfiltered", "Description", "DatapointType", "Security"),
       List("New main group", "", "", "0/-/-", "", "", "", "", "Auto"),
       List("", "New middle group", "", "0/0/-", "", "", "", "", "Auto"),
-      List("", "", "device1 - commObject1", "2/1/1", "", "", "", "DPT-9", "Auto"),
-      List("", "", "device2 - commObject2", "2/1/2", "", "", "", "DPT-1", "Auto"),
-      List("", "", "device2 - commObject3", "2/1/3", "", "", "", "DPT-9", "Auto")
+      List("", "", "1.1.1 - device1 - commObject1", "2/1/1", "", "", "", "DPT-9", "Auto"),
+      List("", "", "1.1.2 - device2 - commObject2", "2/1/2", "", "", "", "DPT-1", "Auto"),
+      List("", "", "1.1.2 - device2 - commObject3", "2/1/3", "", "", "", "DPT-9", "Auto")
     )
 
     val filename = "assignment_test.csv"
