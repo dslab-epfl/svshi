@@ -118,7 +118,42 @@ As the IO type is not always provided for physical devices, it can be `Unknown`.
 
 Compatibility is defined as follows:
 
-<img src="res/Contributing_types_table.png" alt="Contributing_types_table" width="500"/>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-0pky">Physical\Prototypical</th>
+    <th class="tg-0pky">In</th>
+    <th class="tg-0pky">Out</th>
+    <th class="tg-0pky">In/Out</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <th class="tg-0pky">In</th>
+    <td class="tg-d52n">Yes</td>
+    <td class="tg-g191">No</td>
+    <td class="tg-lwlt">No</td>
+  </tr>
+  <tr>
+    <th class="tg-0pky">Out</th>
+    <td class="tg-d52n">Yes</td>
+    <td class="tg-d52n">Yes</td>
+    <td class="tg-d52n">Yes</td>
+  </tr>
+  <tr>
+    <th class="tg-0pky">In/Out</th>
+    <td class="tg-d52n">Yes</td>
+    <td class="tg-d52n">Yes</td>
+    <td class="tg-d52n">Yes</td>
+  </tr>
+  <tr>
+    <th class="tg-0pky">Unknown</th>
+    <td class="tg-x6qq">Yes but warning</td>
+    <td class="tg-x6qq">Yes but warning</td>
+    <td class="tg-x6qq">Yes but warning</td>
+  </tr>
+</tbody>
+</table>
 
 As we abstract the physical state and run applications on it, it means that a prototypical device in an application can read a state that is only an `out` in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
 
