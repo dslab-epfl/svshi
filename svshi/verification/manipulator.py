@@ -716,6 +716,93 @@ class Manipulator:
         )
         f.args.args.extend(ast_arguments)
 
+    def __rename_files(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
+        ],
+        app_name: str,
+        filenames: List[str],
+    ):
+        """
+        In place, renames all the occurrences of the given filenames by prepending the app name.
+        """
+        if isinstance(op, list) or isinstance(op, tuple):
+            for v in list(op):
+                self.__rename_files(v, app_name, filenames)
+        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+            self.__rename_files(op.elts, app_name, filenames)
+        elif isinstance(op, ast.BoolOp):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.UnaryOp):
+            self.__rename_files(op.operand, app_name, filenames)
+        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Lambda):
+            self.__rename_files(op.body, app_name, filenames)
+        elif isinstance(op, ast.Assign):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Compare):
+            self.__rename_files(op.left, app_name, filenames)
+            self.__rename_files(op.comparators, app_name, filenames)
+        elif isinstance(op, ast.BinOp):
+            self.__rename_files(op.left, app_name, filenames)
+            self.__rename_files(op.right, app_name, filenames)
+        elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+            self.__rename_files(op.test, app_name, filenames)
+            self.__rename_files(op.body, app_name, filenames)
+            self.__rename_files(op.orelse, app_name, filenames)
+        elif isinstance(op, ast.Dict):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.Set):
+            self.__rename_files(op.elts, app_name, filenames)
+        elif isinstance(op, ast.comprehension):
+            self.__rename_files(op.iter, app_name, filenames)
+            self.__rename_files(op.ifs, app_name, filenames)
+        elif (
+            isinstance(op, ast.ListComp)
+            or isinstance(op, ast.SetComp)
+            or isinstance(op, ast.GeneratorExp)
+        ):
+            self.__rename_files(op.generators, app_name, filenames)
+        elif isinstance(op, ast.DictComp):
+            self.__rename_files(op.value, app_name, filenames)
+            self.__rename_files(op.generators, app_name, filenames)
+        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.FormattedValue):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.JoinedStr):
+            self.__rename_files(op.values, app_name, filenames)
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.Call):
+            self.__rename_files(op.func, app_name, filenames)
+            self.__rename_files(op.args, app_name, filenames)
+            self.__rename_files(op.keywords, app_name, filenames)
+        elif isinstance(op, ast.keyword):
+            self.__rename_files(op.value, app_name, filenames)
+        elif isinstance(op, ast.FunctionDef):
+            self.__rename_files(op.body, app_name, filenames)
+            if op.returns:
+                self.__rename_files(op.returns, app_name, filenames)
+        elif isinstance(op, ast.Constant):
+            v = op.value
+            if v in filenames:
+                op.value = f"{app_name}_{v}"
+
     def __manipulate_app_main(
         self,
         directory: str,
