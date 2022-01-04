@@ -1,6 +1,6 @@
 # SVSHI - Secure and Verified Smart Home Infrastructure
 
-<img src="logo/logo.png" alt="logo" width="300"/>
+<img src="res/logo.png" alt="logo" width="300"/>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
 ![Latest Stable Version](https://img.shields.io/github/v/release/dslab/smartinfra?label=version)
