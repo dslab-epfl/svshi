@@ -99,54 +99,7 @@ As the IO type is not always provided for physical devices, it can be `Unknown`.
 
 Compatibility is defined as follows:
 
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:bold;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-d52n{background-color:#32cb00;border-color:inherit;text-align:left;vertical-align:top}
-.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-.tg .tg-g191{background-color:#ff7474;border-color:inherit;text-align:left;vertical-align:top}
-.tg .tg-lwlt{background-color:#ff7474;border-color:inherit;color:#333333;text-align:left;vertical-align:top}
-.tg .tg-x6qq{background-color:#dae8fc;border-color:inherit;text-align:left;vertical-align:top}
-</style>
-<table class="tg">
-<thead>
-  <tr>
-    <th class="tg-0pky">Physical\Prototypical</th>
-    <th class="tg-0pky">In</th>
-    <th class="tg-0pky">Out</th>
-    <th class="tg-0pky">In/Out</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <th class="tg-0pky">In</th>
-    <td class="tg-d52n">Yes</td>
-    <td class="tg-g191">No</td>
-    <td class="tg-lwlt">No</td>
-  </tr>
-  <tr>
-    <th class="tg-0pky">Out</th>
-    <td class="tg-d52n">Yes</td>
-    <td class="tg-d52n">Yes</td>
-    <td class="tg-d52n">Yes</td>
-  </tr>
-  <tr>
-    <th class="tg-0pky">In/Out</th>
-    <td class="tg-d52n">Yes</td>
-    <td class="tg-d52n">Yes</td>
-    <td class="tg-d52n">Yes</td>
-  </tr>
-  <tr>
-    <th class="tg-0pky">Unknown</th>
-    <td class="tg-x6qq">Yes but warning</td>
-    <td class="tg-x6qq">Yes but warning</td>
-    <td class="tg-x6qq">Yes but warning</td>
-  </tr>
-</tbody>
-</table>
+<img src="res/Contributing_types_table.png" alt="Contributing_types_table" width="400"/>
 
 
 As we abstract the physical state and run applications on it, it means that a prototypical device in an application can read a state that is only an `out` in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
