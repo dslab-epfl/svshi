@@ -21,7 +21,6 @@ generator = Generator(
     f"{TESTS_DIRECTORY}/devices.json",
 )
 
-
 @pytest.fixture(autouse=True)
 def run_before_and_after_tests():
     """Fixture to execute setup and cleanup"""
@@ -55,6 +54,7 @@ def test_generator_copy_skeleton_to_generated_app():
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/device.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/humidity.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/switch.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/state.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/temperature.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/__init__.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/main.py") == True
@@ -76,25 +76,25 @@ def test_generator_generate_multiton_class():
     )
 
 
-def test_generator_generate_device_instances():
-    generator.generate_device_instances()
+def test_generator_generate_instances():
+    generator.generate_instances()
 
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/devices.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/instances.py") == True
     assert (
         filecmp.cmp(
-            f"{GENERATED_APP_DIRECTORY}/devices.py",
-            f"{EXPECTED_FILES_DIRECTORY}/expected_devices.py",
+            f"{GENERATED_APP_DIRECTORY}/instances.py",
+            f"{EXPECTED_FILES_DIRECTORY}/expected_instances.py",
             shallow=False,
         )
         == True
     )
 
 
-def test_generator_add_device_instances_imports_to_main():
+def test_generator_add_instances_imports_to_main():
     # Create a main.py for the test
     open(f"{GENERATED_APP_DIRECTORY}/main.py", "a").close()
 
-    generator.add_device_instances_imports_to_main()
+    generator.add_instances_imports_to_main()
 
     assert (
         filecmp.cmp(
