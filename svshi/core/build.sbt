@@ -19,7 +19,8 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.lihaoyi" %% "upickle" % "1.4.2",
     libraryDependencies += "com.lihaoyi" %% "mainargs" % "0.2.2",
     libraryDependencies += "com.lihaoyi" %% "fansi" % "0.3.0",
-    libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1"
+    libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1",
+    libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.10"
   )
 
 packMain := Map(appName -> "ch.epfl.core.Main")

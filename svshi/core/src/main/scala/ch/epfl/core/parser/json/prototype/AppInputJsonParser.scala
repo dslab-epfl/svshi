@@ -35,7 +35,7 @@ object AppInputJsonParser {
       throw new JsonParsingException(
         s"The permission level '${parsedStructure.permissionLevel}' is unknown. PermissionLevel must be '${NotPrivileged.toString}' or '${Privileged.toString}'!"
       )
-    AppPrototypicalStructure(permissionLevel = permissionLevel.get, deviceInstances = parsedStructure.devices.map(convertDeviceInstance))
+    AppPrototypicalStructure(permissionLevel = permissionLevel.get, timer = parsedStructure.timer, deviceInstances = parsedStructure.devices.map(convertDeviceInstance))
   }
 
   /** Produce an instance of PrototypicalStructureJson from JSON file content using upickle

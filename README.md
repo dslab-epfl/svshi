@@ -139,14 +139,20 @@ def iteration():
 
 To run all the installed apps (with [runtime verification](#runtime) enabled):
 
-1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), assign to each communication object the right group address as presented in `assignments/assignment.txt` and program the devices.
-2. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
+1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), import the file `assignments/assignment.csv` to create the group addresses, then assign to each communication object the right group address as presented in `assignments/assignment.txt`.
+2. In ETS, do a basic configuration of the devices to make them have the correct basic behaviour (the amount of configuration depends on the particular device)
+3. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
 
 ## App generator
 
 ### Prototypical structure
 
 This JSON file is given by the programmer/developer that wants to develop an application. It represents the prototypical devices that the app needs with their types. It also specifies whether the app is _privileged_ or not (`"permissionLevel": "privileged" | "notPrivileged"`). A privileged app can override the behavior of the non-privileged ones.
+
+The `timer` attribute can be used to run the application even though the physical state has not changed.
+
+- If `timer == 0` the application runs only when the physical state changes
+- If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
 Once the app is generated, it is moved to the `generated` folder.
 
@@ -155,6 +161,7 @@ Here is an example:
 ```json
 {
   "permissionLevel": "notPrivileged",
+  "timer": 60,
   "devices": [
     {
       "name": "name_of_the_instances",
@@ -234,7 +241,7 @@ Whenever an app wants to update the KNX system, SVSHI verifies whether the updat
 
 ### Execution
 
-SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners.
+SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
 
 _Running an application_ concretely means that its `iteration()` function is executed on the current state of the system.
 

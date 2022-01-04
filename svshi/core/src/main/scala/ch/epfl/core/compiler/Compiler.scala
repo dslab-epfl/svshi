@@ -40,7 +40,10 @@ object Compiler {
 
       PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
-    Programmer.outputProgrammingFile(gaAssignment)
+
+    val programmer = Programmer(gaAssignment)
+    programmer.outputProgrammingFile()
+    programmer.outputGroupAddressesCsv()
 
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
@@ -76,7 +79,7 @@ object Compiler {
     val dptMap = groupAddressAssignment.getDPTsMap
     val pythonList = pythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr, pythonTypesList.map(_.toString).min) }
 
-    val list = pythonList.map { case (ga, pythonType) => (ga.toString, pythonType, dptMap(ga).map(_.toString).min)}
+    val list = pythonList.map { case (ga, pythonType) => (ga.toString, pythonType, dptMap(ga).map(_.toString).min) }
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
     val filePathNio = filePath.toNIO

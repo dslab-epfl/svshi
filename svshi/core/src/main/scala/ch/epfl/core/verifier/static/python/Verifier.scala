@@ -23,7 +23,7 @@ object Verifier extends VerifierTr {
     if (stdOutLines.length != 1) {
       // Error while creating the verification file, output
       if (stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))
-      else List(PythonVerifierError("Verification_file creation ERRORS: The core_python module returned nothing!"))
+      else List(PythonVerifierError("Verification_file creation ERRORS: The verification module returned nothing!"))
 
     } else {
       val strings = stdOutLines.head.split('/')

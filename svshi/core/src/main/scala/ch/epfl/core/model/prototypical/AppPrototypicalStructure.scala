@@ -6,5 +6,5 @@ import ch.epfl.core.model.application.PermissionLevel
   * @param permissionLevel
   * @param deviceInstances
   */
-case class AppPrototypicalStructure(permissionLevel: PermissionLevel, deviceInstances: List[AppPrototypicalDeviceInstance])
+case class AppPrototypicalStructure(permissionLevel: PermissionLevel, timer: Int, deviceInstances: List[AppPrototypicalDeviceInstance])
 case class AppPrototypicalDeviceInstance(name: String, deviceType: SupportedDevice)

@@ -44,7 +44,6 @@ object EtsParser {
   val ATTRIBUTENAME_PARAM = "AttributeName"
   val TRANSLATION_TAG = "Translation"
   val APPLICATIONPROGRAM_TAG = "ApplicationProgram"
-
   val enUsLanguageCode = "en-US"
 
   val enabledText = "Enabled"
@@ -78,7 +77,7 @@ object EtsParser {
       * @param parsedioPort
       * @return
       */
-    def ioPortToPhysicalChannel(parsedioPort: IOPort, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
+    def ioPortToPhysicalChannel(parsedioPort: CommObject, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
       val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
       val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
       val datatype =
@@ -145,12 +144,16 @@ object EtsParser {
   private def getDeviceNameInCatalog(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): String = extractIfNotExist(
     etsProjectPath,
     projectRootPath => {
-      val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-      val catalogEntry = XML.loadFile(xmlPath.toIO)
-      val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
-      val originalName = applicationProgram \@ NAME_PARAM
-      val id = applicationProgram \@ ID_PARAM
-      getTranslation(catalogEntry, enUsLanguageCode, id, NAME_PARAM).getOrElse(originalName)
+      val hardwareXmlPath = hardwareXmlFile(etsProjectPath, productRefId, hardware2ProgramRefId)
+      val hardwareEntry = XML.loadFile(hardwareXmlPath.toIO)
+      val productEntryOpt = (hardwareEntry \\ PRODUCT_TAG).find(n => (n \@ ID_PARAM) == productRefId)
+      val name = productEntryOpt match {
+        case Some(value) => getTranslation(hardwareEntry, enUsLanguageCode, productRefId, TEXT_PARAM).getOrElse(value \@ TEXT_PARAM)
+        case None        => ""
+      }
+      if (name.isBlank) throw new MalformedXMLException(s"Cannot find the product name in Hardware.xml for the productRefId = $productRefId")
+      name
+
     }
   )
 
@@ -191,26 +194,28 @@ object EtsParser {
           // Find groupObjectInstances id and search them in the files
           val groupObjectTreeInstance = deviceInstanceXML \\ GROUPOBJECTTREE_TAG
           val nodes = groupObjectTreeInstance \\ NODES_TAG
-          if (nodes.isEmpty) {
-            // There is no Nodes object in the xml, but only directly the GroupObjectInstances
-            ChannelNode(
-              defaultNodeName,
-              (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM)
-                .split(' ')
-                .flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId))
-                .toList
-            ) :: Nil
-          } else {
-            (nodes \\ NODE_TAG)
-              .map(n =>
-                ChannelNode(
-                  constructChannelNodeName(n, productRefId, hardware2programRefId),
-                  (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId)).toList
-                )
+          val nodesChannels = (nodes \\ NODE_TAG)
+            .map(n =>
+              ChannelNode(
+                constructChannelNodeName(n, productRefId, hardware2programRefId),
+                (n \@ GROUPOBJECTINSTANCES_PARAM).split(' ').flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId)).toList
               )
+            )
+            .toList
+          // Now gets the channels that are not in a Node but naked at the root
+          val rootChannel = ChannelNode(
+            defaultNodeName,
+            (groupObjectTreeInstance \@ GROUPOBJECTINSTANCES_PARAM)
+              .split(' ')
+              .flatMap(getCommObjectsFromString(etsProjectPath, _, productRefId, hardware2programRefId))
               .toList
-          }
+          )
 
+          if (rootChannel.ioPorts.isEmpty) {
+            nodesChannels
+          } else {
+            nodesChannels ++ List(rootChannel)
+          }
         }
         case None => throw new MalformedXMLException("Cannot get the deviceInstance in xml")
       }
@@ -242,10 +247,10 @@ object EtsParser {
     }
   }
 
-  private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[IOPort] =
+  private def getCommObjectsFromString(etsProjectPath: os.Path, groupObjectInstanceId: String, productRefId: String, hardware2ProgramRefId: String): List[CommObject] =
     extractIfNotExist(
       etsProjectPath,
-      projectRootPath => {
+      _ => {
         if (groupObjectInstanceId.nonEmpty) {
           // Get IOPort info in xmls
           val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
@@ -260,7 +265,7 @@ object EtsParser {
                 case Some(value) => {
                   val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
                   val dptStr = if (comObjectDPTString.nonEmpty) comObjectDPTString else comObjectRefDPTString
-                  IOPort(constructIOPortName(value, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
+                  CommObject(constructCommObjectName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
                 }
                 case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }
@@ -274,20 +279,35 @@ object EtsParser {
       }
     )
 
-  private def constructIOPortName(ioPortNode: Node, catalogEntry: Elem): String = {
-    val funText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ FUNCTIONTEXT_PARAM
+  private def constructCommObjectName(ioPortNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
+    def validContent(tr: String): Boolean = tr != "" && tr != "-" && !tr.contains("GO_")
+    val funTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ FUNCTIONTEXT_PARAM
       case None        => ioPortNode \@ FUNCTIONTEXT_PARAM
     }
-    val nameText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ NAME_PARAM
+    val funTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ FUNCTIONTEXT_PARAM
+      case None        => comObjectRef \@ FUNCTIONTEXT_PARAM
+    }
+    val nameTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ NAME_PARAM
       case None        => ioPortNode \@ NAME_PARAM
     }
-    val textText = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
-      case Some(value) => if (value != "") value else ioPortNode \@ TEXT_PARAM
+    val nameTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ NAME_PARAM
+      case None        => comObjectRef \@ NAME_PARAM
+    }
+
+    val textTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else ioPortNode \@ TEXT_PARAM
       case None        => ioPortNode \@ TEXT_PARAM
     }
-    List(funText, nameText, textText).filterNot(_ == "").mkString(" - ")
+    val textTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectRef \@ TEXT_PARAM
+      case None        => comObjectRef \@ TEXT_PARAM
+    }
+
+    List(funTextIoNode, funTextRef, nameTextIoNode, nameTextRef, textTextIoNode, textTextRef).filter(validContent).mkString(" - ")
   }
 
   /** Search for a translation for the given id and given attribute name, for the given language, if not found, return None
@@ -313,6 +333,18 @@ object EtsParser {
       None
     }
   }
+
+  private def hardwareXmlFile(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(
+    etsProjectPath,
+    projectRootPath => {
+      val catalogId = productRefId.split('_').apply(0) // e.g., "M-0002"
+      val filePathOpt = recursiveListFiles(projectRootPath / catalogId).find(file => file.toIO.getName.contains(HARDWARE_XML_NAME))
+      filePathOpt match {
+        case Some(value) => value
+        case None        => throw new MalformedXMLException(s"Cannot find the hardware.xml file in the folder $catalogId in the project.")
+      }
+    }
+  )
 
   private def productCatalogXMLFile(etsProjectPath: os.Path, productRefId: String, hardware2ProgramRefId: String): os.Path = extractIfNotExist(
     etsProjectPath,

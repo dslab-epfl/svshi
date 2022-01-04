@@ -17,7 +17,7 @@ RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y software-properties-common  && \
     add-apt-repository universe && \
-	apt-get install -y zip unzip build-essential jq curl wget rubygems gcc gdb python3 python3-pip python3-dev wget git nano && \
+	apt-get install -y zip unzip build-essential jq curl wget rubygems gcc gdb python3 python3-pip python3-dev python3.9-venv wget git nano && \
     apt-get install -y openjdk-11-jdk scala 
 
 RUN apt-get update && \
@@ -54,8 +54,19 @@ ENV SVSHI_HOME="/home/maki/smartinfra"
 RUN mkdir /home/maki/smartinfra/
 COPY . /home/maki/smartinfra/
 
-# Install python requirements 
-RUN cd /home/maki/smartinfra/svshi && [ -f requirements.txt  ] && pip3 install -r requirements.txt
+# Install crosshair from main branch of the repo
+RUN cd /home/maki/ && mkdir crosshair_local
+RUN cd /home/maki/crosshair_local && git clone https://github.com/pschanely/CrossHair.git
+
+ENV VIRTUAL_ENV=/home/maki/sushi_python_env
+
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN cd /home/maki/crosshair_local/CrossHair && pip3 install --editable .
+
+
+# Install python requirements
+RUN cd /home/maki/smartinfra/svshi && [ -f requirements.txt  ] && pip3 install -r requirements_without_crosshair.txt
 
 # Install SVSHI
 RUN cd /home/maki/ && mkdir temp
