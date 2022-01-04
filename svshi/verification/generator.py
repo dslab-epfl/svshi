@@ -104,7 +104,9 @@ class Switch_{app_name}_{instance_name}():
                 device.name.upper() for device in group
             }
 
-        self.__manipulator = Manipulator(instances_names_per_app, filenames_per_app, files_folder_path)
+        self.__manipulator = Manipulator(
+            instances_names_per_app, filenames_per_app, files_folder_path
+        )
 
         self.__code: List[str] = []
         self.__imports: List[str] = []
@@ -132,6 +134,29 @@ class PhysicalState:
 """
         self.__code.append(code)
         self.__imports.append("import dataclasses")
+
+    def __generate_app_state_class(self):
+        code = f"""
+@dataclasses.dataclass
+class AppState:
+    INT_0: int
+    INT_1: int
+    INT_2: int
+    INT_3: int
+    FLOAT_0: float
+    FLOAT_1: float
+    FLOAT_2: float
+    FLOAT_3: float
+    BOOL_0: bool
+    BOOL_1: bool
+    BOOL_2: bool
+    BOOL_3: bool
+    STR_0: str
+    STR_1: str
+    STR_2: str
+    STR_3: str
+"""
+        self.__code.append(code)
 
     def __generate_device_classes(self):
         code = []
@@ -187,6 +212,7 @@ class PhysicalState:
     def __generate_file(self, filename: str, verification: bool):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
+            self.__generate_app_state_class()
             self.__generate_physical_state_class()
             self.__generate_device_classes()
             self.__generate_devices_instances()
@@ -218,22 +244,27 @@ class PhysicalState:
         imports = "from .verification_file import "
         imports_code = []
         nb_apps = len(self.__app_names)
+        app_state_arguments = []
         for i, app in enumerate(sorted(self.__app_names)):
-            # We also need to import the PhysicalState at the end
-            suffix = ", " if i < nb_apps - 1 else ", PhysicalState\n"
+            # We also need to import the states at the end
+            suffix = ", " if i < nb_apps - 1 else ", AppState, PhysicalState\n"
             invariant_function = f"{app}_invariant"
             imports += f"{invariant_function}{suffix}"
-            imports_code.append(invariant_function)
+            imports_code.append((app, invariant_function))
+
+            app_state_arguments.append(f"{app}_app_state: AppState")
 
         check_conditions_body = ""
         nb_imports = len(imports_code)
-        for i, import_code in enumerate(imports_code):
+        for i, (app, import_code) in enumerate(imports_code):
             suffix = " and " if i < nb_imports - 1 else ""
-            check_conditions_body += f"{import_code}(state){suffix}"
+            check_conditions_body += (
+                f"{import_code}({app}_app_state, physical_state){suffix}"
+            )
 
         file = f"""
 {imports}
-def check_conditions(state: PhysicalState) -> bool:
+def check_conditions({", ".join(app_state_arguments)}, physical_state: PhysicalState) -> bool:
     return {check_conditions_body}
 """.strip()
 
