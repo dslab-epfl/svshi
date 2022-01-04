@@ -40,16 +40,17 @@ class Manipulator:
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
-    __FILES_FOLDER_PATH: Final = f"{os.environ['SVSHI_HOME']}/svshi/runtime/files"
 
     def __init__(
         self,
         instances_names_per_app: Dict[Tuple[str, str], Set[str]],
         filenames_per_app: Dict[str, Set[str]],
+        files_folder_path: str,
     ):
         self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
         self.__instances_names_per_app = instances_names_per_app
         self.__filenames_per_app = filenames_per_app
+        self.__files_folder_path = files_folder_path
 
     def __get_unchecked_functions(
         self,
@@ -809,7 +810,7 @@ class Manipulator:
             v = op.value
             if v in filenames:
                 # We rename the file
-                op.value = f"{self.__FILES_FOLDER_PATH}/{app_name}/{v}"
+                op.value = f"{self.__files_folder_path}/{app_name}/{v}"
 
     def __manipulate_app_main(
         self,

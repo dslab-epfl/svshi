@@ -25,11 +25,12 @@ generator = Generator(
     VERIFICATION_FILE_PATH,
     RUNTIME_FILE_PATH,
     CONDITIONS_FILE_PATH,
+    "",
     group_addresses_with_types,
     devices_instances,
     devices_classes,
     app_names,
-    filenames
+    filenames,
 )
 
 
