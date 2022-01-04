@@ -69,7 +69,7 @@ object Main {
                     val newFileName = f"${appName}_$fileName"
                     FileUtils.copyFileWithNewName(appLibraryPath / appName / fileName, filesDirPath, newFileName)
                   })
-              })
+              }
 
               // Run the runtime module
               runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
