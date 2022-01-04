@@ -67,7 +67,8 @@ async def main():
         print("Initializing state and listeners... ", end="")
         apps = get_apps(APP_LIBRARY_DIR, RUNTIME_FILE_MODULE)
         addresses_listeners = get_addresses_listeners(apps)
-        [app.install_requirements() for app in apps]
+        for app in apps:
+            app.install_requirements()
 
         connection_config = ConnectionConfig(
             connection_type=ConnectionType.TUNNELING,
