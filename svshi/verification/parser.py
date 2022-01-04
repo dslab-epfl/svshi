@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 
 @dataclass
@@ -89,6 +89,24 @@ class Parser:
                     apps_instances.append(DeviceInstance(f"{app_name}_{name}", type))
 
         return apps_instances
+
+    def parse_filenames(self) -> Dict[str, Set[str]]:
+        """
+        Parses the filenames associated to each app.
+        """
+        apps_dirs = self.__get_apps()
+        filenames = {}
+        for app in apps_dirs:
+            directory = app.directory
+            app_name = app.name
+            with open(
+                f"{directory}/{app_name}/app_prototypical_structure.json", "r"
+            ) as instances_file:
+                instances_dict = json.load(instances_file)
+                names = set(instances_dict["files"])
+                filenames[app_name] = names
+
+        return filenames
 
     def parse_devices_classes(self) -> List[DeviceClass]:
         """

@@ -14,6 +14,7 @@ if __name__ == "__main__":
     devices_instances = parser.parse_devices_instances()
     devices_classes = parser.parse_devices_classes()
     app_names = parser.get_app_names()
+    filenames = parser.parse_filenames()
 
     verification_filename = f"{VERIFICATION_MODULE_PATH}/verification_file.py"
     runtime_filename = f"{VERIFICATION_MODULE_PATH}/runtime_file.py"
@@ -26,6 +27,7 @@ if __name__ == "__main__":
         devices_instances,
         devices_classes,
         app_names,
+        filenames,
     )
     generator.generate_verification_file()
     generator.generate_runtime_file()

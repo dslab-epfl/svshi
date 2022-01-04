@@ -3,6 +3,8 @@ from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 from decouple import config
 
+FILE = "file3.json"
+
 def invariant() -> bool:
     # Write the invariants of the app here
     # It can be any boolean expressions containing the read properties of the devices and constants
@@ -16,6 +18,7 @@ def iteration():
     else:
         v = unchecked_return_two()
         unchecked_print(v)
+        unchecked_print("file4.csv")
 
 def uncheckedcompute_bool() -> bool:
     """

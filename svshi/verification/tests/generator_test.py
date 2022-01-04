@@ -18,6 +18,7 @@ group_addresses_with_types = parser.parse_group_addresses()
 devices_instances = parser.parse_devices_instances()
 devices_classes = parser.parse_devices_classes()
 app_names = parser.get_app_names()
+filenames = parser.parse_filenames()
 
 
 generator = Generator(
@@ -28,6 +29,7 @@ generator = Generator(
     devices_instances,
     devices_classes,
     app_names,
+    filenames
 )
 
 

@@ -1,6 +1,6 @@
 import os
 from itertools import groupby
-from typing import Final, List
+from typing import Dict, Final, List, Set
 
 from .manipulator import Manipulator
 from .parser import DeviceClass, DeviceInstance, GroupAddress
@@ -87,6 +87,7 @@ class Switch_{app_name}_{instance_name}():
         devices_instances: List[DeviceInstance],
         devices_classes: List[DeviceClass],
         app_names: List[str],
+        filenames_per_app: Dict[str, Set[str]],
     ):
         self.__verification_filename: str = verification_filename
         self.__runtime_filename: str = runtime_filename
@@ -102,7 +103,7 @@ class Switch_{app_name}_{instance_name}():
                 device.name.upper() for device in group
             }
 
-        self.__manipulator = Manipulator(instances_names_per_app)
+        self.__manipulator = Manipulator(instances_names_per_app, filenames_per_app)
 
         self.__code: List[str] = []
         self.__imports: List[str] = []

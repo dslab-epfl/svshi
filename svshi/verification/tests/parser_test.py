@@ -19,6 +19,16 @@ def test_parser_parse_group_addresses():
     ]
 
 
+def test_parser_parse_filenames():
+    filenames = parser.parse_filenames()
+
+    assert filenames == {
+        "third_app": {"file1.json", "file2.csv"},
+        "first_app": {"file3.json", "file4.csv"},
+        "second_app": {"file5.json", "file6.csv"},
+    }
+
+
 def test_parser_parse_devices_instances():
     instances = parser.parse_devices_instances()
 
