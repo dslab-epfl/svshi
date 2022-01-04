@@ -194,14 +194,14 @@ To do so, this stage calls the `verification` module written in Python that tran
 
 The code modification consists, in a nutshell, in:
 
-- Adding a `PhysicalState` instance as argument of `iteration` and `invariant` functions
+- Adding a `PhysicalState` and `AppState` instances as argument of `iteration` and `invariant` functions
 - Adding an instance of the corresponding type as argument of `iteration` function for each `unchecked` function. The type used for the instance is the return type of the `unchecked` function.
 - Adding a CrossHair contract to `iteration` containing:
   - one precondition for all `invariant` function of installed or being installed applications
   - one precondition for all postconditions of the `unchecked` functions
-  - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value
+  - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value (containing the new `PhysicalState` and `AppState`)
 - Moving all used functions in one file (called either `verification_file.py` or `runtime_file.py`)
-- Adding to that file all the generated code (`PhysicalState`, devices' classes and instances, ...)
+- Adding to that file all the generated code (`PhysicalState`, `AppState`, devices' classes and instances, ...)
 
 The `verifier` then calls CrossHair on that file, and retrieves `std.out`. Each counterexample found by CrossHair is considered as an error and is returned by the `verifier` to be displayed.
 
