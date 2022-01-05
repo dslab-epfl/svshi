@@ -227,6 +227,10 @@ async def test_state_initialize():
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
     assert state._physical_state.GA_1_1_3 == False
     assert state._physical_state.GA_1_1_4 == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
 
 @pytest.mark.asyncio
@@ -245,11 +249,19 @@ async def test_state_periodic_apps_are_run():
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
     assert state._physical_state.GA_1_1_3 == False
     assert state._physical_state.GA_1_1_4 == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
     # We wait just to make sure the periodic app was called
     await asyncio.sleep(3)
 
     assert test_state_holder.app_four_called == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
 
 @pytest.mark.asyncio
@@ -290,6 +302,10 @@ async def test_state_on_telegram_update_state_and_notify():
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
 
 @pytest.mark.asyncio
@@ -323,6 +339,10 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
     assert test_state_holder.app_two.should_run == False
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
 
 @pytest.mark.asyncio
@@ -381,6 +401,10 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
 
 
 @pytest.mark.asyncio
