@@ -7,14 +7,14 @@ from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
-from .verification_file import PhysicalState
+from .verification_file import AppState, PhysicalState
 
 
 @dataclasses.dataclass
 class App:
     name: str
     directory: str
-    code: Callable[[PhysicalState], None]
+    code: Callable[[AppState, PhysicalState], None]
     is_privileged: bool = False
     should_run: bool = True
     timer: int = 0
@@ -33,11 +33,11 @@ class App:
     def __hash__(self) -> int:
         return hash(repr(self))
 
-    def notify(self, state: PhysicalState):
+    def notify(self, app_state: AppState, physical_state: PhysicalState):
         """
         Notifies the app, triggering an iteration.
         """
-        self.code(state)
+        self.code(app_state, physical_state)
 
     def stop(self):
         """

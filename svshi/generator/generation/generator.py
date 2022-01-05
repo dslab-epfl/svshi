@@ -62,9 +62,9 @@ def multiton(cls):
         with open(output_filename, "w+") as output_file:
             output_file.write(file)
 
-    def generate_device_instances(self):
+    def generate_instances(self):
         """
-        Generates the source code file for the device instances.
+        Generates the source code file for the device instances and the app state instance.
         """
         imports = ""
         devices_code = ""
@@ -88,25 +88,29 @@ def multiton(cls):
 ###
 
 {imports}
+from models.state import AppState
+
 {devices_code}
+app_state = AppState()
         """.strip()
 
-        output_filename = f"{self.__app_name}/devices.py"
+        output_filename = f"{self.__app_name}/instances.py"
         os.makedirs(os.path.dirname(output_filename), exist_ok=True)
         with open(output_filename, "w+") as output_file:
             output_file.write(file)
 
-    def add_device_instances_imports_to_main(self):
+    def add_instances_imports_to_main(self):
         """
         Writes import statements in `main.py` for the newly created instances.
         """
         with open(f"{self.__app_name}/main.py", "r+") as fp:
             lines = fp.readlines()
+            lines.insert(0, "from instances import app_state")
             nb_devices = len(self.__devices)
             for i, device in enumerate(self.__devices):
-                prefix = "from devices import " if i == 0 else ", "
                 suffix = "\n\n" if i == nb_devices - 1 else ""
-                lines.insert(i, f"{prefix}{device.name.upper()}{suffix}")
+                lines.insert(i + 1, f", {device.name.upper()}{suffix}")
+
             fp.seek(0)
             fp.writelines(lines)
 

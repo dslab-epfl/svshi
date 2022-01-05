@@ -1,0 +1,26 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "files": [],
+  "devices": [
+    {
+      "name": "binary_sensor_instance_name",
+      "deviceType": "binary"
+    },
+    {
+      "deviceType": "switch"
+    },
+    {
+      "name": "temperature_sensor_instance_name",
+      "deviceType": "temperature"
+    },
+    {
+      "name": "humidity_sensor_instance_name",
+      "deviceType": "humidity"
+    },
+    {
+      "name": "A_switch",
+      "deviceType": "switch"
+    }
+  ]
+}

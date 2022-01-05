@@ -1,6 +1,5 @@
 import ast
 import astor
-import os
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
 
@@ -34,8 +33,10 @@ class Manipulator:
     Python AST manipulator.
     """
 
-    __STATE_ARGUMENT: Final = "physical_state"
-    __STATE_TYPE: Final = "PhysicalState"
+    __PHYSICAL_STATE_ARGUMENT: Final = "physical_state"
+    __PHYSICAL_STATE_TYPE: Final = "PhysicalState"
+    __APP_STATE_ARGUMENT: Final = "app_state"
+    __APP_STATE_TYPE: Final = "AppState"
     __UNCHECKED_FUNC_PREFIX: Final = "unchecked"
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
@@ -256,7 +257,7 @@ class Manipulator:
 
             if f_name in accepted_names:
                 # If the function name is in the list of accepted names, add the state argument to the call
-                op.args.append(ast.Name(self.__STATE_ARGUMENT, ast.Load))
+                op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
 
                 # Rename the instance calling the function, adding the app name to it
                 new_name = f"{app_name.upper()}_{f_name}"
@@ -283,9 +284,18 @@ class Manipulator:
                 op.name == self.__INVARIANT_FUNC_NAME
                 or op.name == self.__ITERATION_FUNC_NAME
             ):
-                # Add the state argument to the function
-                annotation = ast.Name(self.__STATE_TYPE, ast.Load)
-                op.args.args.append(ast.arg(self.__STATE_ARGUMENT, annotation))
+                # Add the state arguments to the function
+                state_args = [
+                    ast.arg(
+                        self.__APP_STATE_ARGUMENT,
+                        ast.Name(self.__APP_STATE_TYPE, ast.Load),
+                    ),
+                    ast.arg(
+                        self.__PHYSICAL_STATE_ARGUMENT,
+                        ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
+                    ),
+                ]
+                op.args.args.extend(state_args)
 
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
@@ -305,7 +315,7 @@ class Manipulator:
         """
         pre_str = "pre: "
         post_str = "post: "
-        return_value_name_str = "__return__"
+        return_value_name_str = "**__return__"
 
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
             res = func_name + "("
@@ -337,7 +347,8 @@ class Manipulator:
         for app_name in sorted_app_names:
             invariant = pre_str
             invariant += construct_func_call(
-                app_name + "_" + self.__INVARIANT_FUNC_NAME, [self.__STATE_ARGUMENT]
+                app_name + "_" + self.__INVARIANT_FUNC_NAME,
+                [self.__APP_STATE_ARGUMENT, self.__PHYSICAL_STATE_ARGUMENT],
             )
             conditions.append(invariant)
 
@@ -371,11 +382,14 @@ class Manipulator:
             f.body.insert(0, new_doc_string_ast)
         return f
 
-    def __add_return_state(self, f: ast.FunctionDef) -> ast.FunctionDef:
+    def __add_return_states(self, f: ast.FunctionDef) -> ast.FunctionDef:
         """
-        Adds a "return physical_state" statement to the end of the body of the given function, returning it.
+        Adds a statement that returns app and physical states as a dict to the end of the body of the given function, returning it.
         """
-        f.body.append(ast.Return(ast.Name(self.__STATE_ARGUMENT, ast.Load)))
+        keys = [ast.Constant("app_state"), ast.Constant("physical_state")]
+        values = [ast.Name("app_state", ast.Load), ast.Name("physical_state", ast.Load)]
+        return_value = ast.Dict(keys, values)
+        f.body.append(ast.Return(return_value))
         return f
 
     def __check_if_func_call_is_applicable_and_replace(
@@ -823,7 +837,7 @@ class Manipulator:
             # We only keep invariant and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
                 map(
-                    lambda f: self.__add_return_state(
+                    lambda f: self.__add_return_states(
                         self.__add_doc_string(
                             f,
                             self.__construct_contracts(
@@ -867,7 +881,7 @@ class Manipulator:
                 filter(
                     lambda n: not verification
                     and isinstance(n, ast.ImportFrom)
-                    and n.module != "devices",
+                    and n.module != "instances",
                     module_body,
                 )
             )

@@ -9,4 +9,4 @@ def iteration():
     # Write your app code here
     # You CANNOT use external libraries here, encapsulate calls to those in functions whose names start
     # with "unchecked" and use these functions instead
-    print("Hello, world!")
+    pass
