@@ -40,7 +40,8 @@ object Bindings {
       existingAppLibrary.apps.map(appToAppBinding)
     }
 
-    AppLibraryBindings(existingBindingsList ++ newAppLibrary.apps.map(appToAppBinding))
+    // We remove the bindings if the application is not in the library anymore
+    AppLibraryBindings(existingBindingsList.filter(b => existingAppLibrary.apps.exists(a => a.name == b.name)) ++ newAppLibrary.apps.map(appToAppBinding))
 
   }
 

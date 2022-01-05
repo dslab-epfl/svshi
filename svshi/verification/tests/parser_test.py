@@ -1,4 +1,10 @@
-from ..parser import App, DeviceClass, DeviceInstance, GroupAddress, Parser
+from ..parser import (
+    App,
+    DeviceClass,
+    DeviceInstance,
+    GroupAddress,
+    Parser,
+)
 
 TESTS_DIRECTORY = "tests"
 

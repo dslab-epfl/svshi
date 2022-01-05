@@ -1,0 +1,62 @@
+
+
+PhysicalStructure(List(
+    PhysicalDevice("IP Interface/2.1a",("1","1","1"),List(
+    PhysicalDeviceNode("Channel - CH-0 - IP settings",List()))), 
+PhysicalDevice("Binary Input Display Heat 2f/1.3c",("1","1","7"),List(
+    PhysicalDeviceNode(Default,List(
+        PhysicalDeviceCommObject("Disable - Eingang A - Input A",DPT1,In,1959174619), 
+        PhysicalDeviceCommObject("Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A",DPTUnknown,InOut,-756455817), 
+        PhysicalDeviceCommObject("Disable - Eingang B - Input B",DPT1,In,-865240516), 
+        PhysicalDeviceCommObject("Control value (PWM) - Telegr. switch - Ausgang B - Output B - Input B",DPTUnknown,In,-1661778799))))), 
+PhysicalDevice("LUXORliving S1",("1","1","8"),List(
+    PhysicalDeviceNode("Channel - CH-1 - Channel C1",List(
+        PhysicalDeviceCommObject("Threshold as a percentage - Switch object - Channel C1",DPT1,In,-817189811), 
+        PhysicalDeviceCommObject("Feedback On/Off - Channel C1",DPT1,Out,-161541012))), 
+    PhysicalDeviceNode("Channel - CH-2 - Input I1",List(
+        PhysicalDeviceCommObject("Switching - Channel I1",DPT1,Out,-410193272))), 
+    PhysicalDeviceNode("Channel - CH-3 - Input I2",List(
+        PhysicalDeviceCommObject("Switching - Channel I2",DPT1,Out,1558614741))), 
+    PhysicalDeviceNode("Default",List(
+        PhysicalDeviceCommObject("Excess temperature - Alarm",DPT1,Out,349298327), 
+        PhysicalDeviceCommObject("ON - Central permanent",DPT1,In,1367623034), 
+        PhysicalDeviceCommObject("OFF - Central switching",DPT1,In,-1041256329))))), 
+PhysicalDevice("AMUN 716 S",("1","1","10"),List(
+    PhysicalDeviceNode("Channel - CH-0 - General",List(
+        PhysicalDeviceCommObject("Version - Firmware",DPTUnknown,Unknown,-1149579728), 
+        PhysicalDeviceCommObject("Send - CO2 value",DPT9,Unknown,-1715623085), 
+        PhysicalDeviceCommObject("Send - Relative humidity",DPT9,Unknown,-220932741), 
+        PhysicalDeviceCommObject("Send - Air pressure",DPT14,Unknown,-625364107), 
+        PhysicalDeviceCommObject("Send - Degree of comfort",DPT5,Unknown,886472792), 
+        PhysicalDeviceCommObject("Send - Temperature value",DPT9,Unknown,286869030), 
+        PhysicalDeviceCommObject("Measurement value offset - CO2 Offset",DPT9,InOut,1281072549), 
+        PhysicalDeviceCommObject("Receive measurement value - CO2 reference",DPT9,InOut,282852055))), 
+    PhysicalDeviceNode("Channel - CH-2 - CO2 sensor",List(
+        PhysicalDeviceCommObject("Switching - CO2 threshold 1",DPT5,Unknown,-1201302163), 
+        PhysicalDeviceCommObject("Switching - CO2 threshold 2",DPT5,Unknown,647874481), 
+        PhysicalDeviceCommObject("Switching - CO2 threshold 3",DPT5,Unknown,1043916218), 
+        PhysicalDeviceCommObject("Actuating value 0-100% - Ventilation of CO2",DPT5,Unknown,721385125), 
+        PhysicalDeviceCommObject("Send - CO2 scenes",DPT17,Unknown,-771578100))), 
+    PhysicalDeviceNode("Channel - CH-3 - Humidity sensor",List(
+        PhysicalDeviceCommObject("Switching - Humidity threshold 1",DPT5,Unknown,-127109455), 
+        PhysicalDeviceCommObject("Switching - Humidity threshold 2",DPT5,Unknown,-181252555), 
+        PhysicalDeviceCommObject("Switching - Humidity threshold 3",DPT5,Unknown,-2050021889), 
+        PhysicalDeviceCommObject("Actuating value 0-100% - Ventilating humidity",DPT5,Unknown,-473180387), 
+        PhysicalDeviceCommObject("Send - Humidity scenes",DPT17,Unknown,401257247))), 
+    PhysicalDeviceNode("Channel - CH-4 - RTR",List(
+        PhysicalDeviceCommObject("Send - Control actual value",DPT9,Unknown,172768836), 
+        PhysicalDeviceCommObject("Receive - Operating mode preset",DPT20,Unknown,1297804641), 
+        PhysicalDeviceCommObject("Receive - Presence",DPT1,Unknown,-2059706491), 
+        PhysicalDeviceCommObject("Closed=0, open=1 - Window status",DPT1,Unknown,1663999733), 
+        PhysicalDeviceCommObject("Save/call up - Operating mode as scene",DPT18,Unknown,858017662), 
+        PhysicalDeviceCommObject("Send - Current operating mode",DPT20,Unknown,-304369394), 
+        PhysicalDeviceCommObject("Send - Heating actuating value",DPT5,Unknown,-1017091829), 
+        PhysicalDeviceCommObject("Defining the set temperature - Base setpoint",DPT9,Unknown,1511691858), 
+        PhysicalDeviceCommObject("Send - Setpoint offset at rotary control",DPT9,Unknown,-476442847), 
+        PhysicalDeviceCommObject("Setting/sending - Current setpoint",DPT9,Unknown,-527793076))), 
+    PhysicalDeviceNode("Channel - CH-6 - External inputs",List()), 
+    PhysicalDeviceNode("Channel - CH-7 - Comparator",List(
+        PhysicalDeviceCommObject("Output - Comparator",DPT5,Out,-554394867))), 
+    PhysicalDeviceNode("Default",List(
+        PhysicalDeviceCommObject("Info - Alarm",DPTUnknown,Unknown,-2090508096), 
+        PhysicalDeviceCommObject("Error text - Alarm",DPT16,Unknown,-1556396781)))))))

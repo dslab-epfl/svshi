@@ -6,6 +6,7 @@ import ch.epfl.core.compiler.knxProgramming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical.AppLibraryBindings
 import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
@@ -29,7 +30,10 @@ object Compiler {
       physicalStructure: PhysicalStructure
   ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
     val appLibraryBindings = BindingsJsonParser.parse(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
-    val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, appLibraryBindings)
+
+    // Filter to make sure that there are no stale bindings that relate to applications not installed anymore
+    val filteredAppLibraryBindings = AppLibraryBindings(appLibraryBindings.appBindings.filter(b => (newAppsLibrary.apps ++ existingAppsLibrary.apps).exists(a => a.name == b.name)))
+    val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, filteredAppLibraryBindings)
 
     val filePath: os.Path = Constants.GENERATED_FOLDER_PATH / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
 
@@ -37,7 +41,6 @@ object Compiler {
 
     for (app <- existingAppsLibrary.apps.appendedAll(newAppsLibrary.apps)) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
-
       PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
 

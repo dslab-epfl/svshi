@@ -62,6 +62,9 @@ class Parser:
 
     def __get_apps(self) -> List[App]:
         def get_apps_from_directory(directory: str) -> List[App]:
+            if not os.path.exists(directory):
+                return []
+
             return [
                 App(f.name, directory)
                 for f in os.scandir(directory)

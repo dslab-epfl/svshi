@@ -200,12 +200,13 @@ You can run `svshi --help` to display the following:
 ```
 svshi
 Secure and Verified Smart Home Infrastructure
-  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'. The argument is not case sensitive.
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps' and 'version'. This argument is not case sensitive.
   -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
   -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
-  -n --app-name <str>      The app name to use for the task 'generateApp'
+  -n --app-name <str>      The app name to use for the tasks 'generateApp' and 'removeApp'
   -a --address <str>       The KNX address to use for the task 'run'. The correct format is 'address:port' (ex: 192.168.1.1:5555)
   --no-colors              The flag to disable output coloring
+  --all                    The flag to remove all apps for the task 'removeApp'
 ```
 
 Available commands are:
@@ -214,6 +215,7 @@ Available commands are:
 - `svshi compile -f ets.knxproj` to compile all the apps
 - `svshi generateBindings -f ets.knxproj` to generate the bindings for all the apps
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
+- `svshi removeApp -n app_name` to remove an installed app
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
 
@@ -223,6 +225,7 @@ Shorter aliases are also available:
 - `svshi c` for `svshi compile`
 - `svshi gb` for `svshi generateBindings`
 - `svshi ga` for `svshi generateApp`
+- `svshi ra` for `svshi removeApp`
 - `svshi la` for `svshi listApps`
 - `svshi v` for `svshi version`
 

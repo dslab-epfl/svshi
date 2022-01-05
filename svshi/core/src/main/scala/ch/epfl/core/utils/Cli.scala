@@ -26,6 +26,10 @@ object Cli {
     */
   case object GenerateApp extends Task
 
+  /** Task that removes an app
+    */
+  case object RemoveApp extends Task
+
   /** Task that lists all the installed apps
     */
   case object ListApps extends Task
@@ -43,6 +47,7 @@ object Cli {
             case "compile" | "c"                                => Right(Compile)
             case "generateBindings" | "generatebindings" | "gb" => Right(GenerateBindings)
             case "generateApp" | "generateapp" | "ga"           => Right(GenerateApp)
+            case "removeApp" | "removeapp" | "ra"               => Right(RemoveApp)
             case "listApps" | "listapps" | "la"                 => Right(ListApps)
             case "version" | "v"                                => Right(GetVersion)
             case token: String                                  => Left(token)
@@ -61,7 +66,7 @@ object Cli {
       @arg(
         name = "task",
         doc =
-          "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'listApps' and 'version'. This argument is not case sensitive.",
+          "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps' and 'version'. This argument is not case sensitive.",
         positional = true
       )
       task: Task,
@@ -69,11 +74,13 @@ object Cli {
       etsProjectFile: Option[String] = None,
       @arg(name = "devices-json", short = 'd', doc = "The devices prototypical structure JSON file to use for the task 'generateApp'")
       devicesPrototypicalStructureFile: Option[String] = None,
-      @arg(name = "app-name", short = 'n', doc = "The app name to use for the task 'generateApp'")
+      @arg(name = "app-name", short = 'n', doc = "The app name to use for the tasks 'generateApp' and 'removeApp'")
       appName: Option[String] = None,
       @arg(name = "address", short = 'a', doc = "The KNX address to use for the task 'run'. The correct format is 'address:port' (ex: 192.168.1.1:5555)")
       knxAddress: Option[String] = None,
       @arg(name = "no-colors", doc = "The flag to disable output coloring")
-      noColors: Flag
+      noColors: Flag,
+      @arg(name = "all", doc = "The flag to remove all apps for the task 'removeApp'")
+      all: Flag
   )
 }

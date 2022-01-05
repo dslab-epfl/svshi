@@ -28,11 +28,10 @@ object Verifier extends VerifierTr {
     val newAppPrototypicalStructures =
       newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME))).toMap
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
-    val returnValues = verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
+    verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++
       verifyBindingsPythonType(groupAddressAssignment) ++
       verifyBindingsMutualDPT(bindings)
-    returnValues
   }
 
   /** Verify that no group address is bound to channels with different datatypes in python
