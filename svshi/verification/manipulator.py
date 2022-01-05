@@ -881,7 +881,7 @@ class Manipulator:
                 filter(
                     lambda n: not verification
                     and isinstance(n, ast.ImportFrom)
-                    and n.module != "devices",
+                    and n.module != "instances",
                     module_body,
                 )
             )
