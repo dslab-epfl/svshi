@@ -1,5 +1,5 @@
 astor==0.8.1
 xknx==0.18.12
 pytest==6.2.5
-pytest-asyncio==0.15.1
+pytest-asyncio==0.16.0
 pytest-mock==3.6.1
