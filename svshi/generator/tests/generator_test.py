@@ -9,6 +9,7 @@ from ..parsing.device import Device
 TESTS_DIRECTORY = "tests"
 GENERATED_APP_DIRECTORY = "tests/test"
 EXPECTED_FILES_DIRECTORY = "tests/expected_files"
+DEVICES_FILE = f"{TESTS_DIRECTORY}/devices/devices.json"
 
 generator = Generator(
     GENERATED_APP_DIRECTORY,
@@ -18,8 +19,9 @@ generator = Generator(
         Device("temperature_sensor_instance_name", "TemperatureSensor", "temperature"),
         Device("humidity_sensor_instance_name", "HumiditySensor", "humidity"),
     ],
-    f"{TESTS_DIRECTORY}/devices.json",
+    DEVICES_FILE,
 )
+
 
 @pytest.fixture(autouse=True)
 def run_before_and_after_tests():
@@ -36,12 +38,16 @@ def run_before_and_after_tests():
 def test_generator_move_devices_json_to_generated_app():
     generator.move_devices_json_to_generated_app()
 
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/app_prototypical_structure.json") == True
-    assert os.path.exists("tests/devices.json") == False
+    assert (
+        os.path.exists(f"{GENERATED_APP_DIRECTORY}/app_prototypical_structure.json")
+        == True
+    )
+    assert os.path.exists(DEVICES_FILE) == False
 
     # More cleanup
     subprocess.run(
-        f"mv {GENERATED_APP_DIRECTORY}/app_prototypical_structure.json {TESTS_DIRECTORY}/devices.json", shell=True
+        f"mv {GENERATED_APP_DIRECTORY}/app_prototypical_structure.json {DEVICES_FILE}",
+        shell=True,
     )
 
 

@@ -1,0 +1,6 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "files": ["a"],
+  "devices": 42
+}
