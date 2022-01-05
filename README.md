@@ -117,11 +117,11 @@ def unchecked_function() -> int:
   return external_library_get_int()
 ```
 
-Application has access to a set of values they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an event base manner (either the KNX devices' state changes or the timer is  finished). All calls to `iteration()` are independent and thus SVSHI offers a way to store some state that will live in between calls.
+Furthermore, applications have access to a set of values they can use to keep track of state between calls . Indeed, the `iteration()` function is called in an [event-based manner](#execution) (either the KNX devices' state changes or a periodic app's timer is finished). All calls to `iteration()` are independent and thus SVSHI offers a way to store some state that will live in between calls. There is a local state _per app_.
 
-To do so, the `app_state` instance is imported along with the devices. This is a `dataclass` and it contains 4 values of each of the following types: `int`, `float`, `bool` and `str`. The values are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where equals 0, 1, 2 and 3.
+To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a [dataclass](https://docs.python.org/3/library/dataclasses.html) and it contains 4 fields of each of the following types: `int`, `float`, `bool` and `str`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where X equals 0, 1, 2 or 3.
 
-These values can be used in `iteration()` and `invariant()`. One should be careful while using it in `invariant()` or in a condition that will affect the KNX installation's state: the formal verification would fail if ANY possible values of the `app_state` leads to an invalid state after running `iteration()`.
+These values can be used in `iteration()` and `invariant()`. One should be careful while using it in `invariant()` or in a condition that will affect the KNX installation's state (the _physical_ state): the formal verification would fail if ANY possible value of the `app_state` leads to an invalid state after running `iteration()`.
 
 ### App example
 
@@ -132,7 +132,7 @@ from devices import app_state, BINARY_SENSOR, SWITCH
 
 
 def invariant() -> bool:
-    # The switch should be in the same state as the binary sensor
+    # The switch should be on when the binary sensor is on or when INT_0 == 42, off otherwise
     return ((BINARY_SENSOR.is_on() or app_state.INT_0 == 42) and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
 
 
@@ -254,7 +254,7 @@ Whenever an app wants to update the KNX system, SVSHI verifies whether the updat
 
 SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
 
-_Running an application_ concretely means that its `iteration()` function is executed on the current state of the system.
+_Running an application_ concretely means that its `iteration()` function is executed on the current physical state of the system and on the current app state.
 
 Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
 
