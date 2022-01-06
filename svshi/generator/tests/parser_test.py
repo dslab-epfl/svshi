@@ -6,6 +6,18 @@ import pytest
 DEVICES_FOLDER_PATH = "tests/devices"
 
 
+def test_parser_devices_equal():
+    device1 = Device("binary_sensor_instance_name", "BinarySensor", "binary")
+    device2 = Device("binary_sensor_instance_name", "BinarySensor", "binary")
+    assert device1 == device2
+
+
+def test_parser_devices_not_equal():
+    device1 = Device("binary_sensor_instance_name", "BinarySensor", "binary")
+    device2 = "a string"
+    assert device1.__eq__(device2) == False
+
+
 def test_parser_reads_devices():
     parser = Parser(f"{DEVICES_FOLDER_PATH}/devices.json")
     devices = parser.read_devices()

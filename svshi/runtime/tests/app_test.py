@@ -2,6 +2,20 @@ from ..app import App, get_addresses_listeners, get_apps
 from unittest.mock import Mock
 
 
+def test_app_equal():
+    app1 = App("test", "tests", Mock())
+    app2 = App("test", "tests", Mock())
+
+    assert app1 == app2
+
+
+def test_app_not_equal():
+    app1 = App("test", "tests", Mock())
+    app2 = "an app"
+
+    assert app1.__eq__(app2) == False
+
+
 def test_app_notify():
     app_called = [False]
 

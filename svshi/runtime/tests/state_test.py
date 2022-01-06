@@ -205,6 +205,7 @@ async def test_state_stop():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
     )
+    await state.initialize()
     await state.listen()
     await state.stop()
 

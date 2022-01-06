@@ -13,6 +13,11 @@ parser = Parser(
 )
 
 
+def test_parser_no_apps():
+    parser = Parser("no", "no")
+    assert len(parser.get_app_names()) == 0
+
+
 def test_parser_parse_group_addresses():
     group_addresses = parser.parse_group_addresses()
 
