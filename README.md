@@ -3,6 +3,7 @@
 <img src="res/logo.png" alt="logo" width="300"/>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dslab-epfl/smartinfra/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/smartinfra)
 ![Latest Stable Version](https://img.shields.io/github/v/release/dslab/smartinfra?label=version)
 ![License](https://img.shields.io/github/license/dslab/smartinfra)
 

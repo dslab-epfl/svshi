@@ -14,7 +14,12 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Build and Test
-        run: cd svshi/core && sbt -v +test
+        run: cd svshi/core && sbt -v clean coverage test coverageReport
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
   test-generator:
     runs-on: ubuntu-latest
     steps:
@@ -31,8 +36,13 @@ jobs:
         working-directory: svshi
       - name: Test with pytest
         run: |
-          pytest
+          pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: svshi/generator
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
   test-verification:
     runs-on: ubuntu-latest
     steps:
@@ -49,8 +59,13 @@ jobs:
         working-directory: svshi
       - name: Test with pytest
         run: |
-          pytest
+          pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: svshi/verification
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
   test-runtime:
     runs-on: ubuntu-latest
     steps:
@@ -67,5 +82,10 @@ jobs:
         working-directory: svshi
       - name: Test with pytest
         run: |
-          pytest
+          pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: svshi/runtime
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

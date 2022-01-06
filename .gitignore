@@ -6,6 +6,8 @@ svshi/app_library/**
 svshi/verification/conditions.py
 svshi/verification/runtime_file.py
 svshi/verification/verification_file.py
+**/.coverage
+**/coverage.xml
 
 
 # Compiled class file

@@ -1,0 +1,8 @@
+[run]
+omit = 
+    **/tests/*
+    conditions.py
+    runtime_file.py
+    verification_file.py
+
+parallel = True
