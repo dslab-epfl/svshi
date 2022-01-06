@@ -226,7 +226,7 @@ To run the tests of all the modules at once, execute `./run_tests.sh` inside `sv
 
 To run only Python (i.e. `generator`, `verification` and `runtime`) tests and get the coverage, execute `./get_python_coverage.sh` inside `svshi/`.
 
-To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test coverageReport` inside `svshi/`.
+To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test coverageReport` inside `svshi/core`.
 
 ## CI
 
