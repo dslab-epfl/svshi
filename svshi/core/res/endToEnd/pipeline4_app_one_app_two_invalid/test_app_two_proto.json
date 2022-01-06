@@ -1,0 +1,15 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "files": [],
+  "devices": [
+    {
+      "name": "temperature_sensor",
+      "deviceType": "temperature"
+    },
+    {
+      "name": "switch",
+      "deviceType": "switch"
+    }
+  ]
+}

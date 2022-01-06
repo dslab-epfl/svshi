@@ -16,6 +16,7 @@ sealed trait SupportedDeviceBinding {
   def getIOTypes: Map[Int, IOType]
   def getKNXDpt: Map[Int, KNXDatatype]
   def getPythonTypes: Map[Int, PythonType] = getKNXDpt.toList.map { case (id, typ) => (id, typ.toPythonType) }.toMap
+  def equivalent(other: SupportedDeviceBinding): Boolean
 }
 object SupportedDeviceBinding {
   implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)
@@ -25,6 +26,10 @@ case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends Su
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
   override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1))
+  override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
+    case BinarySensorBinding(_, _) => true
+    case _                         => false
+  }
 }
 object BinarySensorBinding {
   implicit val rw: ReadWriter[BinarySensorBinding] =
@@ -34,6 +39,10 @@ case class SwitchBinding(typeString: String, physDeviceId: Int) extends Supporte
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, In))
   override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1), (physDeviceId, DPT1))
+  override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
+    case SwitchBinding(_, _) => true
+    case _                   => false
+  }
 }
 object SwitchBinding {
   implicit val rw: ReadWriter[SwitchBinding] =
@@ -43,6 +52,10 @@ case class TemperatureSensorBinding(typeString: String, physDeviceId: Int) exten
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
   override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
+    case TemperatureSensorBinding(_, _) => true
+    case _                              => false
+  }
 }
 object TemperatureSensorBinding {
   implicit val rw: ReadWriter[TemperatureSensorBinding] =
@@ -52,25 +65,43 @@ case class HumiditySensorBinding(typeString: String, physDeviceId: Int) extends 
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
   override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
+    case HumiditySensorBinding(_, _) => true
+    case _                           => false
+  }
 }
 object HumiditySensorBinding {
   implicit val rw: ReadWriter[HumiditySensorBinding] =
     macroRW[HumiditySensorBinding]
 }
 
-case class DeviceInstanceBinding(name: String, binding: SupportedDeviceBinding)
+case class DeviceInstanceBinding(name: String, binding: SupportedDeviceBinding) {
+  def equivalent(other: DeviceInstanceBinding): Boolean = other match {
+    case DeviceInstanceBinding(otherName, otherBinding) => binding.equivalent(otherBinding) && name == otherName
+    case _                                              => false
+  }
+}
 object DeviceInstanceBinding {
   implicit val rw: ReadWriter[DeviceInstanceBinding] =
     macroRW[DeviceInstanceBinding]
 }
 
-case class AppPrototypeBindings(name: String, bindings: List[DeviceInstanceBinding])
+case class AppPrototypeBindings(name: String, bindings: List[DeviceInstanceBinding]) {
+  def equivalent(other: AppPrototypeBindings): Boolean = other match {
+    case AppPrototypeBindings(otherName, otherBindings) => name == otherName && bindings.forall(b => otherBindings.exists(ob => b.equivalent(ob)))
+    case _                                              => false
+  }
+}
 object AppPrototypeBindings {
   implicit val rw: ReadWriter[AppPrototypeBindings] =
     macroRW[AppPrototypeBindings]
 }
 
-case class AppLibraryBindings(appBindings: List[AppPrototypeBindings])
+case class AppLibraryBindings(appBindings: List[AppPrototypeBindings]) {
+  def equivalent(other: AppLibraryBindings): Boolean = other match {
+    case AppLibraryBindings(otherAppBindings) => appBindings.forall(bs => otherAppBindings.exists(obs => bs.equivalent(obs)))
+  }
+}
 object AppLibraryBindings {
   implicit val rw: ReadWriter[AppLibraryBindings] =
     macroRW[AppLibraryBindings]

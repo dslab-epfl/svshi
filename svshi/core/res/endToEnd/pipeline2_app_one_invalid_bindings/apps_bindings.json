@@ -1,0 +1,25 @@
+{
+  "appBindings": [
+    {
+      "name": "test_app_one",
+      "bindings": [
+        {
+          "name": "binary_sensor_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": -1
+          }
+        },
+        {
+          "name": "switch_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
+            "typeString": "switch",
+            "physDeviceId": -1
+          }
+        }
+      ]
+    }
+  ]
+}

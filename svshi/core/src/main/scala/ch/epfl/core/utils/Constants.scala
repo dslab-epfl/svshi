@@ -9,7 +9,9 @@ object Constants {
   def setSvshiHome(v: String): Unit = {
     SVSHI_HOME = v
   }
+  val SVSHI_HOME_PATH = os.Path(SVSHI_HOME)
   val SVSHI_FOLDER = s"$SVSHI_HOME/svshi"
+  val SVSHI_FOLDER_PATH = os.Path(SVSHI_FOLDER)
   val ASSIGNMENTS_DIRECTORY_NAME = s"$SVSHI_HOME/assignments"
   val PHYSICAL_STRUCTURE_JSON_FILE_NAME = "physical_structure.json"
   val APP_PROTO_BINDINGS_JSON_FILE_NAME = "apps_bindings.json"

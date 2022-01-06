@@ -1,5 +1,7 @@
 package ch.epfl.core
 
+import ch.epfl.core.compiler.IncompatibleBindingsException
+import ch.epfl.core.compiler.knxProgramming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.ets.EtsParser
@@ -23,6 +25,8 @@ object Main {
   private val ERROR_CODE = 1
 
   private val CLI_TOTAL_WIDTH = 200
+
+  private var systemExit: SystemExit = DefaultSystemExit
 
   def main(args: Array[String]): Unit = {
     val config = ParserForClass[Config].constructOrExit(args, totalWidth = CLI_TOTAL_WIDTH)
@@ -111,6 +115,12 @@ object Main {
       if (!os.exists(DELETED_APPS_FOLDER_PATH)) os.makeDir.all(DELETED_APPS_FOLDER_PATH)
       if (!existingAppsLibrary.apps.exists(a => a.name == name)) printErrorAndExit(s"The app '$name' is not installed!")
 
+      val answer = scala.io.StdIn.readLine(s"The app '$name' will be removed. Are you sure [y/n]? ")
+      if (!(answer != null && (answer.toLowerCase == "y" || answer.toLowerCase == "yes"))) {
+        info("Exiting...")
+        return
+      }
+
       // First check if it is the last app of the library, if yes, call removeAllApps
       if (existingAppsLibrary.apps.forall(a => a.name == name)) {
         info(s"Removing application '$name'...")
@@ -171,28 +181,16 @@ object Main {
           }
         }
       }
-
-    }
-
-    def promptUser(prompt: String, onYes: () => Unit): Unit = {
-      val answer = scala.io.StdIn.readLine(prompt)
-      if (answer != null && (answer.toLowerCase == "y" || answer.toLowerCase == "yes")) onYes()
-      else info("Exiting...")
     }
 
     if (allFlag) {
-      promptUser(
-        "All the apps will be removed. Are you sure [y/n]? ",
-        () => removeAllApps()
-      )
+      val answer = scala.io.StdIn.readLine("All the apps will be removed. Are you sure [y/n]? ")
+      if (answer != null && (answer.toLowerCase == "y" || answer.toLowerCase == "yes")) removeAllApps()
+      else info("Exiting...")
     } else {
       appName match {
-        case Some(name) =>
-          promptUser(
-            s"The app '$name' will be removed. Are you sure [y/n]? ",
-            () => removeApp(name)
-          )
-        case None => printErrorAndExit("The app name has to be provided to remove an app")
+        case Some(name) => removeApp(name)
+        case None       => printErrorAndExit("The app name has to be provided to remove an app")
       }
     }
   }
@@ -283,19 +281,36 @@ object Main {
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       newPhysicalStructure: PhysicalStructure
-  ): (Boolean, List[VerifierMessage]) = {
-    val (compiledNewApps, compiledExistingApps, gaAssignment) = compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)
-    val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
-    if (validateProgram(verifierMessages)) {
-      // Copy new app + all files in app_library
-      val appLibraryPath = existingAppsLibrary.path
-      FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
+  )(implicit style: Style): (Boolean, List[VerifierMessage]) = {
+    Try(compiler.Compiler.compile(newAppsLibrary, existingAppsLibrary, newPhysicalStructure)) match {
+      case Failure(exception) => {
+        exception match {
+          case IncompatibleBindingsException() =>
+            printErrorAndExit("The bindings are not compatible with the apps you want to install! Please run generateBindings again and fill them before compiling again.")
+          case _ => printErrorAndExit(s"The compiler produces an exception: ${exception.getLocalizedMessage}")
+        }
+        (false, Nil)
+      }
+      case Success((compiledNewApps, compiledExistingApps, gaAssignment)) => {
+        val verifierMessages = verifier.Verifier.verify(compiledNewApps, compiledExistingApps, gaAssignment)
+        if (validateProgram(verifierMessages)) {
+          // Copy new app + all files in app_library
+          val appLibraryPath = existingAppsLibrary.path
+          FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
-      // Copy verification_file.py, runtime_file.py and conditions.py in app_library
-      FileUtils.copyFiles(List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH), appLibraryPath)
-      (true, verifierMessages)
-    } else {
-      (false, verifierMessages)
+          // Copy verification_file.py, runtime_file.py and conditions.py in app_library
+          FileUtils.copyFiles(List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH), appLibraryPath)
+
+          // Call the KNX Programmer module
+          val programmer = Programmer(gaAssignment)
+          programmer.outputProgrammingFile()
+          programmer.outputGroupAddressesCsv()
+          
+          (true, verifierMessages)
+        } else {
+          (false, verifierMessages)
+        }
+      }
     }
   }
 
@@ -328,13 +343,23 @@ object Main {
     }
   }
 
+  def setSystemExit(newSystemExit: SystemExit): Unit = systemExit = newSystemExit
+
   private def printErrorAndExit(errorMessage: String)(implicit style: Style): Unit = {
     error(s"ERROR: $errorMessage")
-    sys.exit(ERROR_CODE)
+    systemExit.exit(ERROR_CODE)
   }
 
   private def runPythonModule(module: String, args: Seq[String], errorMessageBuilder: Int => String)(implicit style: Style): Unit = {
     val (exitCode, _) = ProcRunner.callPython(module, os.Path(SVSHI_FOLDER), args: _*)
     if (exitCode != SUCCESS_CODE) printErrorAndExit(errorMessageBuilder(exitCode))
   }
+}
+
+trait SystemExit {
+  def exit(errorCode: Int): Unit
+}
+
+object DefaultSystemExit extends SystemExit {
+  override def exit(errorCode: Int): Unit = sys.exit(errorCode)
 }

@@ -11,7 +11,7 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     os.remove.all(outputPath)
   }
   val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
-  val testFilePathUnzippedString = "svshi/core/res/ets_project_test"
+  val testFileRefPathUnzippedString = "svshi/core/res/ets_project_test"
   val wd: Path = os.pwd / os.up / os.up
   val outputPath: Path = os.Path("svshi/core/res/temp", wd)
 
@@ -21,14 +21,14 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     val inputPath = os.Path(testFilePathString, wd)
     FileUtils.unzip(inputPath, outputPath)
     val l = FileUtils.recursiveListFiles(outputPath)
-    val refPath = os.Path(testFilePathUnzippedString, wd)
+    val refPath = os.Path(testFileRefPathUnzippedString, wd)
     val lRef = FileUtils.recursiveListFiles(refPath)
     l.size shouldEqual lRef.size
     for (e <- l) {
-      lRef.map(f => f.relativeTo(inputPath)).contains(e.relativeTo(outputPath))
+      lRef.map(f => f.relativeTo(refPath)) should contain(e.relativeTo(outputPath))
     }
     for (e <- lRef) {
-      l.map(f => f.relativeTo(outputPath)).contains(e.relativeTo(inputPath))
+      l.map(f => f.relativeTo(outputPath)) should contain(e.relativeTo(refPath))
     }
     os.remove.all(outputPath)
   }

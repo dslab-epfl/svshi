@@ -31,6 +31,10 @@ object Compiler {
   ): (ApplicationLibrary, ApplicationLibrary, GroupAddressAssignment) = {
     val appLibraryBindings = BindingsJsonParser.parse(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
 
+    // Check that the bindings received are compatible (equivalent modulo the physical IDs) to a freshly generated copy
+    val freshBindings = Bindings.appLibraryBindingsFromLibrary(newAppsLibrary, existingAppsLibrary, physicalStructure, physicalStructure)
+    if (!appLibraryBindings.equivalent(freshBindings)) throw IncompatibleBindingsException()
+
     // Filter to make sure that there are no stale bindings that relate to applications not installed anymore
     val filteredAppLibraryBindings = AppLibraryBindings(appLibraryBindings.appBindings.filter(b => (newAppsLibrary.apps ++ existingAppsLibrary.apps).exists(a => a.name == b.name)))
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, filteredAppLibraryBindings)
@@ -43,11 +47,6 @@ object Compiler {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
       PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
-
-    val programmer = Programmer(gaAssignment)
-    programmer.outputProgrammingFile()
-    programmer.outputGroupAddressesCsv()
-
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
 
@@ -92,3 +91,5 @@ object Compiler {
   }
 
 }
+
+case class IncompatibleBindingsException() extends Exception
