@@ -1,5 +1,6 @@
 package ch.epfl.core.utils
 
+import ch.epfl.core.utils.Constants.SVSHI_HOME_PATH
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -7,13 +8,12 @@ import os.Path
 
 class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
-    Constants.setSvshiHome("../..")
     os.remove.all(outputPath)
   }
   val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
   val testFileRefPathUnzippedString = "svshi/core/res/ets_project_test"
-  val wd: Path = os.pwd / os.up / os.up
-  val outputPath: Path = os.Path("svshi/core/res/temp", wd)
+  val outputPath: Path = os.Path("svshi/core/res/temp", SVSHI_HOME_PATH)
+  val wd = SVSHI_HOME_PATH
 
   "unzip" should "unzip all files" in {
     val outputPath = os.Path("temp", wd)

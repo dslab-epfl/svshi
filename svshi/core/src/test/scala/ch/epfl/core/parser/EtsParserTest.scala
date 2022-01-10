@@ -2,19 +2,16 @@ package ch.epfl.core.parser
 
 import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.ets.EtsParser
-import ch.epfl.core.utils.Constants
+import ch.epfl.core.utils.Constants.SVSHI_HOME_PATH
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
-  override def beforeEach(): Unit = {
-    Constants.setSvshiHome(os.Path("../..", os.pwd).toString)
-  }
   val testFilePathString1 = "svshi/core/res/ets_project_test.knxproj"
-  val testFilePath1: os.Path = os.Path(testFilePathString1, os.pwd / os.up / os.up)
+  val testFilePath1: os.Path = os.Path(testFilePathString1, SVSHI_HOME_PATH)
   val testFilePathString2 = "svshi/core/res/DSLAB_proto.knxproj"
-  val testFilePath2: os.Path = os.Path(testFilePathString2, os.pwd / os.up / os.up)
+  val testFilePath2: os.Path = os.Path(testFilePathString2, SVSHI_HOME_PATH)
 
   "parseEtsProjectFile" should "return the correct structure on the test file 1" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePath1)

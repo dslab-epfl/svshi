@@ -7,8 +7,8 @@ from ..generation.generator import Generator
 from ..parsing.device import Device
 
 TESTS_DIRECTORY = "tests"
-GENERATED_APP_DIRECTORY = "tests/test"
-EXPECTED_FILES_DIRECTORY = "tests/expected_files"
+GENERATED_APP_DIRECTORY = f"{TESTS_DIRECTORY}/test"
+EXPECTED_FILES_DIRECTORY = f"{TESTS_DIRECTORY}/expected_files"
 DEVICES_FILE = f"{TESTS_DIRECTORY}/devices/devices.json"
 
 generator = Generator(

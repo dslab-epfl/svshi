@@ -148,3 +148,22 @@ def test_manipulator_manipulate_mains_raises_invalid_function_call_exception_bec
 
     with pytest.raises(InvalidFunctionCallException):
         manipulator.manipulate_mains(verification=True)
+
+
+def test_manipulator_manipulate_mains_edge_cases():
+    manipulator = Manipulator(
+        {
+            (f"{TESTS_DIRECTORY}/edge_cases_library", "edges"): set(
+                ["BINARY_SENSOR_INSTANCE_NAME", "SWITCH_INSTANCE_NAME"]
+            ),
+        },
+        {"edges": set()},
+        "",
+    )
+
+    imports, functions = manipulator.manipulate_mains(verification=True)
+
+    assert len(imports) == 0
+    assert functions == [
+        "def edges_invariant(app_state: AppState, physical_state: PhysicalState) ->bool:\n    return (EDGES_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state) or \n        app_state.INT_0 == 42) and EDGES_SWITCH_INSTANCE_NAME.is_on(\n        physical_state) or not (EDGES_BINARY_SENSOR_INSTANCE_NAME.is_on(\n        physical_state) or app_state.INT_0 == 42\n        ) and not EDGES_SWITCH_INSTANCE_NAME.is_on(physical_state)\n\n\ndef edges_iteration(app_state: AppState, physical_state: PhysicalState,\n    edges_unchecked_return_int: int):\n    \"\"\"\npre: edges_invariant(app_state, physical_state)\npost: edges_invariant(**__return__)\n\"\"\"\n\n    def yield_fun() ->Iterable[bool]:\n        yield not SWITCH_INSTANCE_NAME.is_on()\n\n    def return_fun() ->bool:\n        return not SWITCH_INSTANCE_NAME.is_on()\n    if EDGES_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state\n        ) or app_state.INT_0 == 42:\n        None\n        EDGES_SWITCH_INSTANCE_NAME.on(physical_state)\n    else:\n        EDGES_SWITCH_INSTANCE_NAME.off(physical_state)\n    a = app_state.INT_0 + 1\n    if edges_unchecked_return_int == 42:\n        b = [edges_unchecked_return_int, 2]\n        g = [x for x in b]\n    else:\n        c = (lambda d: d + 1)(a)\n    y = not edges_unchecked_return_int == 31\n    d = {'a': EDGES_SWITCH_INSTANCE_NAME.is_on(physical_state)}\n    {k: v for k, v in d.items()}\n    s = set(EDGES_SWITCH_INSTANCE_NAME.is_on(physical_state))\n    string = (\n        f'this is a beautiful string {EDGES_SWITCH_INSTANCE_NAME.is_on(physical_state)}'\n        )\n    None\n    return {'app_state': app_state, 'physical_state': physical_state}\n"
+    ]

@@ -1,16 +1,17 @@
 import argparse
 import re
 import os
+import sys
 from typing import Tuple, Final
-from generator.parsing.parser import Parser
-from generator.generation.generator import Generator
+from .parsing.parser import Parser
+from .generation.generator import Generator
 
 SVSHI_HOME: Final = os.environ["SVSHI_HOME"]
 GENERATED_APPS_FOLDER_NAME: Final = f"{SVSHI_HOME}/generated"
 SKELETON_PATH: Final = f"{SVSHI_HOME}/svshi/generator/skeleton"
 
 
-def parse_args() -> Tuple[str, str]:
+def parse_args(args) -> Tuple[str, str]:
     """
     Prepares the argument parser, parses the provided arguments and returns the retrieved information as a tuple.
     """
@@ -21,7 +22,7 @@ def parse_args() -> Tuple[str, str]:
         type=str,
         help="the devices prototypical structure JSON file of the app",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     name_regex = re.compile(r"^_*[a-z]+[a-z_]*_*$")
     app_name = args.app_name
@@ -33,8 +34,9 @@ def parse_args() -> Tuple[str, str]:
     return app_name, args.devices_json
 
 
-if __name__ == "__main__":
-    app_name, devices_json = parse_args()
+def main(
+    app_name: str, devices_json: str, generated_folder_name: str, skeleton_path: str
+):
     print("Welcome to the app generator!")
 
     print(f"Parsing the JSON file '{devices_json}'...")
@@ -42,14 +44,17 @@ if __name__ == "__main__":
     devices = parser.read_devices()
 
     print(f"Generating the app '{app_name}'...")
-    generator = Generator(
-        f"{GENERATED_APPS_FOLDER_NAME}/{app_name}", devices, devices_json
-    )
+    generator = Generator(f"{generated_folder_name}/{app_name}", devices, devices_json)
     generator.generate_instances()
     generator.generate_init_files()
-    generator.copy_skeleton_to_generated_app(SKELETON_PATH)
+    generator.copy_skeleton_to_generated_app(skeleton_path)
     generator.generate_multiton_class()
     generator.move_devices_json_to_generated_app()
     generator.add_instances_imports_to_main()
 
     print("Done!")
+
+
+if __name__ == "__main__":
+    app_name, devices_json = parse_args(sys.argv[1:])
+    main(app_name, devices_json, GENERATED_APPS_FOLDER_NAME, SKELETON_PATH)

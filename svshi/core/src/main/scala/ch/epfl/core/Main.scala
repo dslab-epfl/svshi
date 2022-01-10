@@ -27,6 +27,8 @@ object Main {
   private val CLI_TOTAL_WIDTH = 200
 
   private var systemExit: SystemExit = DefaultSystemExit
+  private var runtimeModule: String = RUNTIME_PYTHON_MODULE
+  private var runtimeModulePath: os.Path = RUNTIME_PYTHON_MODULE_PATH
 
   def main(args: Array[String]): Unit = {
     val config = ParserForClass[Config].constructOrExit(args, totalWidth = CLI_TOTAL_WIDTH)
@@ -98,7 +100,7 @@ object Main {
     }
 
     def removeApp(name: String): Unit = {
-      def moveToTempGenerated(): Unit = {
+      def backupGeneratedFolder(): Unit = {
         os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
         os.makeDir.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
         FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
@@ -106,11 +108,23 @@ object Main {
         os.remove.all(GENERATED_FOLDER_PATH)
         os.makeDir.all(GENERATED_FOLDER_PATH)
       }
-      def moveBackFromTempGenerated(): Unit = {
+      def restoreGeneratedFolder(): Unit = {
         os.remove.all(GENERATED_FOLDER_PATH)
         os.makeDir.all(GENERATED_FOLDER_PATH)
         FileUtils.moveAllFileToOtherDirectory(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH, GENERATED_FOLDER_PATH)
         os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
+      }
+      def backupAppLibrary(): Unit = {
+        os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
+        os.copy(APP_LIBRARY_FOLDER_PATH, APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
+      }
+      def restoreAppLibraryFromBackup(): Unit = {
+        os.remove.all(APP_LIBRARY_FOLDER_PATH)
+        os.copy(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH, APP_LIBRARY_FOLDER_PATH)
+        os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
+      }
+      def deleteFromDeletedApps(name: String): Unit = {
+        os.remove.all(DELETED_APPS_FOLDER_PATH / name)
       }
       if (!os.exists(DELETED_APPS_FOLDER_PATH)) os.makeDir.all(DELETED_APPS_FOLDER_PATH)
       if (!existingAppsLibrary.apps.exists(a => a.name == name)) printErrorAndExit(s"The app '$name' is not installed!")
@@ -136,7 +150,8 @@ object Main {
 
       // IMPORTANT: As the pipeline uses the GENERATED folder for doing its things, we need to first empty it by moving everything it contains in a temp folder
       // and we will copy everything back when the removing is done
-      moveToTempGenerated()
+      backupGeneratedFolder()
+      backupAppLibrary()
 
       val emptyApplibrary = ApplicationLibrary(Nil, GENERATED_FOLDER_PATH)
       val existingPhysicalStructure = PhysicalStructureJsonParser.parse(existingAppsLibrary.path / Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME)
@@ -155,28 +170,30 @@ object Main {
 
       Try(compileAppsOperations(newExistingLibrary, emptyApplibrary, existingPhysicalStructure)) match {
         case Failure(exception) => {
-          moveBackFromTempGenerated()
+          restoreGeneratedFolder()
+          restoreAppLibraryFromBackup()
+          deleteFromDeletedApps(name)
           printErrorAndExit(
-            s"Removing the application '$name' causes the verification of the remaining applications to fail. Compiler threw the exception: ${exception.getLocalizedMessage}\n\n The app '$appName' has not been removed.'"
+            s"Removing the application '$name' causes the verification of the remaining applications to fail. Compiler threw the exception: ${exception.getLocalizedMessage}\n\n The app '$name' has not been removed.'"
           )
         }
         case Success((ok, verifierMessages)) => {
-          moveToTempGenerated()
+          restoreGeneratedFolder()
           if (ok) {
             // Delete 'addresses.json' in all app we are moving
             os.remove(DELETED_APPS_FOLDER_PATH / name / APP_PYTHON_ADDR_BINDINGS_FILE_NAME)
 
-            // Delete temp generated folder
+            // Delete temp generated folder + backup app library
             os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
+            os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
             success(s"The app '$name' has been successfully removed!")
           } else {
             // Move the app back to revert
-            os.makeDir.all(existingAppsLibrary.path / name)
-            FileUtils.moveAllFileToOtherDirectory(DELETED_APPS_FOLDER_PATH / name, existingAppsLibrary.path / name)
-            os.remove.all(DELETED_APPS_FOLDER_PATH / name)
+            restoreAppLibraryFromBackup()
+            deleteFromDeletedApps(name)
             printTrace(verifierMessages)
             printErrorAndExit(
-              s"Removing the application '$name' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appName' has not been removed.'"
+              s"Removing the application '$name' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$name' has not been removed.'"
             )
           }
         }
@@ -203,10 +220,10 @@ object Main {
           info("Running the apps...")
           // Copy verification_file.py, runtime_file.py and conditions.py in runtime module
           val appLibraryPath = existingAppsLibrary.path
-          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), RUNTIME_PYTHON_MODULE_PATH)
+          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), runtimeModulePath)
 
           // Copy files used by each app
-          val filesDirPath = RUNTIME_PYTHON_MODULE_PATH / "files"
+          val filesDirPath = runtimeModulePath / "files"
           os.remove.all(filesDirPath)
           os.makeDir.all(filesDirPath)
 
@@ -220,7 +237,7 @@ object Main {
           }
 
           // Run the runtime module
-          runPythonModule(RUNTIME_PYTHON_MODULE, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
+          runPythonModule(runtimeModule, address.split(":"), exitCode => s"The runtime module failed with exit code $exitCode and above stdout")
 
           // Clear all files used by apps
           os.remove.all(filesDirPath)
@@ -274,12 +291,17 @@ object Main {
 
     info("Compiling and verifying the apps...")
 
-    val (ok, verifierMessages) = compileAppsOperations(existingAppsLibrary, newAppsLibrary, newPhysicalStructure)
-    printTrace(verifierMessages)
-    if (ok) {
-      success(s"The apps have been successfully compiled and verified!")
-    } else {
-      printErrorAndExit("Compilation/verification failed, see messages above")
+    Try(compileAppsOperations(existingAppsLibrary, newAppsLibrary, newPhysicalStructure)) match {
+      case Failure(exception: CompileErrorException) => printErrorAndExit(exception.msg)
+      case Failure(exception)                        => printErrorAndExit("Compilation/verification failed, see messages above")
+      case Success((ok, verifierMessages)) => {
+        printTrace(verifierMessages)
+        if (ok) {
+          success(s"The apps have been successfully compiled and verified!")
+        } else {
+          printErrorAndExit("Compilation/verification failed, see messages above")
+        }
+      }
     }
   }
 
@@ -299,8 +321,10 @@ object Main {
       case Failure(exception) => {
         exception match {
           case IncompatibleBindingsException() =>
-            printErrorAndExit("The bindings are not compatible with the apps you want to install! Please run generateBindings again and fill them before compiling again.")
-          case _ => printErrorAndExit(s"The compiler produces an exception: ${exception.getLocalizedMessage}")
+            throw CompileErrorException(
+              "The bindings are not compatible with the apps you want to install! Please run generateBindings again and fill them before compiling again."
+            )
+          case _ => throw CompileErrorException(s"The compiler produces an exception: $exception")
         }
         (false, Nil)
       }
@@ -345,7 +369,7 @@ object Main {
     messages match {
       case head :: tl => {
         head match {
-          case verifierError: VerifierError     => printErrorAndExit(verifierError.msg)
+          case verifierError: VerifierError     => error(verifierError.msg)
           case verifierWarning: VerifierWarning => warning(s"WARNING: ${verifierWarning.msg}")
           case verifierInfo: VerifierInfo       => info(s"INFO: ${verifierInfo.msg}")
           case _                                => ()
@@ -356,7 +380,12 @@ object Main {
     }
   }
 
+  case class CompileErrorException(msg: String) extends Exception(msg)
   def setSystemExit(newSystemExit: SystemExit): Unit = systemExit = newSystemExit
+
+  def setRuntimeModule(newRuntimeModule: String): Unit = runtimeModule = newRuntimeModule
+
+  def setRuntimeModulePath(newRuntimeModulePath: os.Path): Unit = runtimeModulePath = newRuntimeModulePath
 
   private def printErrorAndExit(errorMessage: String)(implicit style: Style): Unit = {
     error(s"ERROR: $errorMessage")

@@ -73,8 +73,6 @@ object KNXDatatype {
     if (dptSize.toLowerCase.contains("bit")) {
       if (dptSize.contains("1 ") || dptSize.toLowerCase.contains("one")) {
         Some(DPT1)
-//      } else if (dptSize.contains("2 ") || dptSize.toLowerCase.contains("two")) {
-//        Some(DPT2)
       } else {
         None
       }
