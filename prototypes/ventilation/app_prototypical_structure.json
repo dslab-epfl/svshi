@@ -1,0 +1,18 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 60,
+  "files": [
+    "credentials.json",
+    "token.pickle"
+  ],
+  "devices": [
+    {
+      "name": "presence_detector",
+      "deviceType": "binary"
+    },
+    {
+      "name": "ventilation",
+      "deviceType": "switch"
+    }
+  ]
+}

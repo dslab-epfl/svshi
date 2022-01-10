@@ -1,0 +1,17 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 60,
+  "addresses": [
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.BinarySensorAddressJson",
+      "name": "presence_detector",
+      "address": "0/0/2"
+    },
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.SwitchAddressJson",
+      "name": "ventilation",
+      "writeAddress": "0/0/4",
+      "readAddress": "0/0/4"
+    }
+  ]
+}

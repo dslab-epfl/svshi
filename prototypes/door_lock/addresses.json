@@ -1,0 +1,16 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 10,
+  "addresses": [
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.BinarySensorAddressJson",
+      "name": "door_lock_sensor",
+      "address": "0/0/1"
+    },
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.BinarySensorAddressJson",
+      "name": "presence_detector",
+      "address": "0/0/2"
+    }
+  ]
+}
