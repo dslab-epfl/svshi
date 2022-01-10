@@ -2,7 +2,6 @@ package ch.epfl.core.compiler
 
 import ch.epfl.core.compiler.bindings._
 import ch.epfl.core.compiler.bindings.groupAddressAssigner.GroupAddressAssigner
-import ch.epfl.core.compiler.knxProgramming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._

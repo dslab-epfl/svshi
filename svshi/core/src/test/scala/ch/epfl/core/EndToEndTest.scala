@@ -270,6 +270,75 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     }
   }
 
+  "compile" should "fail with an error message when compiling a new app with same name as another installed" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_one"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+
+    // Prepare for app two
+    os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline3Path / "apps_bindings_filled_one_two_invalid_1.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline3Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                s"""ERROR: An application with the name '$appTwoName' is already installed! You cannot install two apps with the same name!"""
+              )
+
+              // Library with only app one
+              val expectedLibraryPath = pipeline3Path / "expected_library_one"
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "generateBindings" should "fail with an error if an app with the same name as the one being installed is already installed" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_one"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+
+    // Copy files for app two
+    os.copy(pipeline3Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                s"""ERROR: An application with the name '$appTwoName' is already installed! You cannot install two apps with the same name!"""
+              )
+              os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe false
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The bindings generation should have failed!")
+      }
+    }
+  }
+
   "listApps" should "return app one and app two when both are installed" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -444,6 +513,5 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
   object MockSystemExit extends SystemExit {
     override def exit(errorCode: Int): Unit = throw new MockSystemExitException(errorCode)
   }
+  case class MockSystemExitException(errorCode: Int) extends Exception
 }
-
-case class MockSystemExitException(errorCode: Int) extends Exception

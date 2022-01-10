@@ -1,5 +1,4 @@
 package ch.epfl.core
-import org.scalatest._
 import org.scalatest.matchers._
 import os.Path
 

@@ -260,12 +260,18 @@ object Main {
       existingPhysicalStructure: PhysicalStructure,
       newPhysicalStructure: PhysicalStructure
   )(implicit style: Style): Unit = {
+    // First check that no app with the same name as any new apps is already installed
+    checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary)
+
     info("Generating the bindings...")
     compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
     success(s"The bindings have been successfully created!")
   }
 
   private def compileApps(existingAppsLibrary: ApplicationLibrary, newAppsLibrary: ApplicationLibrary, newPhysicalStructure: PhysicalStructure)(implicit style: Style): Unit = {
+    // First check that no app with the same name as any new apps is already installed
+    checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary)
+
     info("Compiling and verifying the apps...")
 
     val (ok, verifierMessages) = compileAppsOperations(existingAppsLibrary, newAppsLibrary, newPhysicalStructure)
@@ -275,6 +281,13 @@ object Main {
     } else {
       printErrorAndExit("Compilation/verification failed, see messages above")
     }
+  }
+
+  private def checkForAppDuplicates(existingAppsLibrary: ApplicationLibrary, newAppsLibrary: ApplicationLibrary)(implicit style: Style): Unit = {
+    newAppsLibrary.apps.foreach(a =>
+      if (existingAppsLibrary.apps.exists(existingA => existingA.name == a.name))
+        printErrorAndExit(s"An application with the name '${a.name}' is already installed! You cannot install two apps with the same name!")
+    )
   }
 
   private def compileAppsOperations(
@@ -305,7 +318,7 @@ object Main {
           val programmer = Programmer(gaAssignment)
           programmer.outputProgrammingFile()
           programmer.outputGroupAddressesCsv()
-          
+
           (true, verifierMessages)
         } else {
           (false, verifierMessages)
