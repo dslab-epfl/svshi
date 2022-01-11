@@ -19,7 +19,7 @@ sealed trait SupportedDeviceBinding {
   def equivalent(other: SupportedDeviceBinding): Boolean
 }
 object SupportedDeviceBinding {
-  implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw)
+  implicit val rw: ReadWriter[SupportedDeviceBinding] = ReadWriter.merge(BinarySensorBinding.rw, SwitchBinding.rw, TemperatureSensorBinding.rw, HumiditySensorBinding.rw, CO2SensorBinding.rw)
 }
 
 case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
