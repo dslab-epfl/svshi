@@ -2,6 +2,7 @@
 assignments
 generated
 deletedApps
+logs
 svshi/app_library/**
 svshi/verification/conditions.py
 svshi/verification/runtime_file.py

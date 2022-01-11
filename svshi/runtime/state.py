@@ -1,6 +1,9 @@
 import dataclasses
 import asyncio
+import datetime
 from asyncio.tasks import Task
+from io import TextIOWrapper
+import os
 from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
 from itertools import groupby
 from collections import defaultdict
@@ -21,7 +24,7 @@ class State:
     __GROUP_ADDRESS_PREFIX: Final = "GA_"
     __SLASH: Final = "/"
     __UNDERSCORE: Final = "_"
-    __ADDRESS_INITIALIZATION_TIMEOUT: Final = 20
+    __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
 
     def __init__(
         self,
@@ -30,14 +33,18 @@ class State:
         xknx_for_listening: XKNX,
         check_conditions_function: Callable,
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
+        logs_dir: str,
     ):
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
 
-        apps = set(app for apps in self.__addresses_listeners.values() for app in apps)
+        self.__apps = set(
+            app for apps in self.__addresses_listeners.values() for app in apps
+        )
 
         self._physical_state: PhysicalState
-        self._app_states = {app.name: AppState() for app in apps}
+        self._last_valid_physical_state: PhysicalState
+        self._app_states = {app.name: AppState() for app in self.__apps}
 
         # Used to access and modify the states
         self.__execution_lock = asyncio.Lock()
@@ -53,7 +60,7 @@ class State:
 
         periodic_apps = filter(
             lambda app: app.timer > 0,
-            apps,
+            self.__apps,
         )
 
         # Group the apps by timer
@@ -67,12 +74,24 @@ class State:
             )
         self.__periodic_apps_task: Optional[Task] = None
 
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+
+        self.__telegrams_received_log_file = open(
+            f"{logs_dir}/telegrams_received.log", "w"
+        )
+        self.__execution_log_file = open(f"{logs_dir}/execution.log", "w")
+
+    def __log(self, log_file: TextIOWrapper, text: str):
+        log_file.write(f"{datetime.datetime.now()} - {text}\n")
+
     async def __telegram_received_cb(self, telegram: Telegram):
         """
         Updates the state once a telegram is received.
         """
         payload = telegram.payload
         address = str(telegram.destination_address)
+        self.__log(self.__telegrams_received_log_file, str(telegram))
         if address in self.__addresses:
             # The telegram was for one of the addresses we use
             if isinstance(payload, GroupValueWrite):
@@ -102,7 +121,11 @@ class State:
         """
         if self.__periodic_apps_task:
             self.__periodic_apps_task.cancel()
+
         await self.__xknx_for_listening.stop()
+
+        self.__telegrams_received_log_file.close()
+        self.__execution_log_file.close()
 
     async def __send_value_to_knx(
         self, address: str, value: Union[bool, float, int, None]
@@ -191,22 +214,23 @@ class State:
             self.__UNDERSCORE, self.__SLASH
         )
 
+    def __read_physical_state_fields(
+        self, state: PhysicalState
+    ) -> Dict[str, Union[bool, float, int, None]]:
+        return {
+            k: v
+            for k, v in state.__dict__.items()
+            if k.startswith(self.__GROUP_ADDRESS_PREFIX)
+        }
+
     def __compare(
         self, new_state: PhysicalState, old_state: PhysicalState
     ) -> List[Tuple[str, Union[bool, float, int, None]]]:
         """
         Compares new and old state and returns a list of (address_updated, value) pairs.
         """
-
-        def read_fields(state: PhysicalState) -> Dict[str, str]:
-            return {
-                k: v
-                for k, v in state.__dict__.items()
-                if k.startswith(self.__GROUP_ADDRESS_PREFIX)
-            }
-
-        new_state_fields = read_fields(new_state)
-        old_state_fields = read_fields(old_state)
+        new_state_fields = self.__read_physical_state_fields(new_state)
+        old_state_fields = self.__read_physical_state_fields(old_state)
         updated_fields = []
         for field, value in new_state_fields.items():
             if value != old_state_fields[field]:
@@ -257,32 +281,67 @@ class State:
                     run_apps_with_lock(),
                 )
 
+    def __get_check_conditions_args(
+        self, physical_state: PhysicalState
+    ) -> Dict[str, Any]:
+        check_conditions_args: Dict[str, Any] = {
+            f"{app_name}_app_state": state
+            for app_name, state in self._app_states.items()
+        }
+        check_conditions_args["physical_state"] = physical_state
+        return check_conditions_args
+
+    async def __propagate_last_valid_state(self):
+        fields = self.__read_physical_state_fields(self._last_valid_physical_state)
+        for field, value in fields.items():
+            # Send to KNX
+            await self.__send_value_to_knx(
+                self.__field_name_to_group_addr(field), value
+            )
+
     async def __run_apps(self, apps: List[App]):
         """
         Executes all the given apps. Then, the physical state is updated, and the changes propagated to KNX.
         The execution lock needs to be acquired.
         """
         old_state = dataclasses.replace(self._physical_state)
-        new_states = {}
+
+        # Check if the last state was valid
+        check_conditions_args = self.__get_check_conditions_args(old_state)
+        is_last_state_valid = self.__check_conditions_function(**check_conditions_args)
+
         # We first execute all the apps
+        new_states = {}
         for app in apps:
+            self.__log(self.__execution_log_file, f"App to execute: {app}")
             if app.should_run:
                 # Copy the states before executing the app
                 app_local_state_copy = dataclasses.replace(self._app_states[app.name])
                 per_app_physical_state_copy = dataclasses.replace(old_state)
 
+                self.__log(
+                    self.__execution_log_file,
+                    f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}",
+                )
+                self.__log(
+                    self.__execution_log_file,
+                    f"With app state (app: '{app.name}'): {app_local_state_copy}",
+                )
+
                 # Notify the app to trigger execution
                 app.notify(app_local_state_copy, per_app_physical_state_copy)
 
                 # Build the check conditions args with all app states and the physical state
-                check_conditions_args: Dict[str, Any] = {
-                    f"{app_name}_app_state": state
-                    for app_name, state in self._app_states.items()
-                }
+                check_conditions_args = self.__get_check_conditions_args(
+                    per_app_physical_state_copy
+                )
+
+                # Update the conditions with the new app state
                 check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
-                check_conditions_args["physical_state"] = per_app_physical_state_copy
-                if not self.__check_conditions_function(**check_conditions_args):
-                    # If conditions are not preserved, we prevent the app from running again
+                if is_last_state_valid and not self.__check_conditions_function(
+                    **check_conditions_args
+                ):
+                    # If the last state was valid and conditions are not preserved after the app execution, we prevent the app from running again
                     app.stop()
                 else:
                     # If conditions are preserved, we keep the physical state to later propagate
@@ -293,17 +352,36 @@ class State:
 
         merged_state = self.__merge_states(old_state, new_states)
 
-        # Update the physical_state with the merged one
-        self._physical_state = merged_state
+        # Check if the merged state is valid
+        check_conditions_args = self.__get_check_conditions_args(merged_state)
+        if not self.__check_conditions_function(**check_conditions_args):
+            # Stop all apps
+            for app in self.__apps:
+                app.should_run = False
 
-        # Then we write to KNX for just the final values given to the updated fields
-        updated_fields = self.__compare(merged_state, old_state)
-        if updated_fields:
-            for address, value in updated_fields:
-                # Send to KNX
-                await self.__send_value_to_knx(address, value)
-                # Notify the listeners of the change
-                await self.__notify_listeners(address)
+            print(
+                "ERROR: the physical state is no longer valid! Propagating the last valid state to KNX... ",
+                end="",
+            )
+            await self.__propagate_last_valid_state()
+            print("done!")
+
+            await self.stop()
+            raise KeyboardInterrupt()
+        else:
+            # Update the physical_state and the last valid one with the merged one
+            self._last_valid_physical_state = dataclasses.replace(merged_state)
+            self._physical_state = dataclasses.replace(merged_state)
+
+            # Then we write to KNX for just the final values given to the updated fields
+            updated_fields = self.__compare(merged_state, old_state)
+            if updated_fields:
+                for address, value in updated_fields:
+                    # Send to KNX
+                    await self.__send_value_to_knx(address, value)
+
+                    # Notify the listeners of the change
+                    await self.__notify_listeners(address)
 
     async def __notify_listeners(self, address: str):
         """

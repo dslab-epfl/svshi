@@ -335,8 +335,8 @@ object Main {
           val appLibraryPath = existingAppsLibrary.path
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
-          // Copy verification_file.py, runtime_file.py and conditions.py in app_library
-          FileUtils.copyFiles(List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH), appLibraryPath)
+          // Move verification_file.py, runtime_file.py and conditions.py in app_library
+          List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH).foreach(p => os.move.into(p, appLibraryPath, replaceExisting = true))
 
           // Call the KNX Programmer module
           val programmer = Programmer(gaAssignment)

@@ -155,6 +155,8 @@ To run all the installed apps (with [runtime verification](#runtime) enabled):
 2. In ETS, do a basic configuration of the devices to make them have the correct basic behaviour (the amount of configuration depends on the particular device)
 3. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
 
+SVSHI logs which apps have been called during execution and which telegrams have been received. You can find the logs in `logs/`.
+
 ## App generator
 
 ### Prototypical structure

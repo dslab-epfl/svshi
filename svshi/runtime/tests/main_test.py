@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 from ..resetter import FileResetter
 from ..main import cleanup, main, parse_args
 
+LOGS_DIR = "tests/logs"
 APP_LIBRARY_DIR = "tests/fake_app_library"
 GROUP_ADDRESSES_PATH = "tests/fake_app_library/group_addresses.json"
 CONDITIONS_FILE_PATH = "cond"
@@ -129,6 +130,7 @@ async def test_main_listens_to_KNX_then_stops_and_resets_files(
         APP_LIBRARY_DIR,
         GROUP_ADDRESSES_PATH,
         RUNTIME_FILE_MODULE,
+        LOGS_DIR,
     )
 
     parser_spy.assert_called_once()

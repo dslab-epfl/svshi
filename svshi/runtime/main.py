@@ -1,4 +1,5 @@
 from typing import Tuple
+from datetime import datetime
 from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.xknx import XKNX
 from .app import get_addresses_listeners, get_apps
@@ -21,6 +22,7 @@ CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
 RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
 RUNTIME_FILE_MODULE = "runtime.runtime_file"
+LOGS_DIR = f"{SVSHI_HOME}/logs/{datetime.now()}"
 
 
 def parse_args(args) -> Tuple[str, int]:
@@ -67,6 +69,7 @@ async def main(
     app_library_path: str,
     group_addresses_path: str,
     runtime_file_module: str,
+    logs_dir: str,
 ):
     file_resetter = FileResetter(
         conditions_file_path, verification_file_path, runtime_file_path
@@ -75,8 +78,6 @@ async def main(
         print("Initializing state and listeners... ", end="")
         apps = get_apps(app_library_path, runtime_file_module)
         addresses_listeners = get_addresses_listeners(apps)
-        for app in apps:
-            app.install_requirements()
 
         connection_config = ConnectionConfig(
             connection_type=ConnectionType.TUNNELING,
@@ -95,6 +96,7 @@ async def main(
             xknx_for_listening,
             check_conditions,
             group_addresses_dpt,
+            logs_dir,
         )
         await state.initialize()
         print("done!")
@@ -127,5 +129,6 @@ if __name__ == "__main__":
             APP_LIBRARY_DIR,
             GROUP_ADDRESSES_PATH,
             RUNTIME_FILE_MODULE,
+            LOGS_DIR,
         )
     )

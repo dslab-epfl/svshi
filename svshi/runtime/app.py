@@ -45,7 +45,21 @@ class App:
         """
         self.should_run = False
 
-    def install_requirements(self):
+
+def __get_apps_names(app_library_dir: str) -> List[str]:
+    return [
+        f.name
+        for f in os.scandir(app_library_dir)
+        if f.is_dir() and f.name != "__pycache__"
+    ]
+
+
+def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
+    """
+    Gets the list of apps.
+    """
+
+    def install_requirements(dir: str, app_name: str):
         """
         Installs the app's requirements.
         """
@@ -56,24 +70,16 @@ class App:
                 "pip",
                 "install",
                 "-r",
-                f"{self.directory}/{self.name}/requirements.txt",
+                f"{dir}/{app_name}/requirements.txt",
             ]
         )
 
-
-def __get_apps_names(app_library_dir: str) -> Iterator[str]:
-    return (
-        f.name
-        for f in os.scandir(app_library_dir)
-        if f.is_dir() and f.name != "__pycache__"
-    )
-
-
-def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
-    """
-    Gets the list of apps.
-    """
     apps_names = __get_apps_names(app_library_dir)
+
+    # First install all the requirements
+    for app_name in apps_names:
+        install_requirements(app_library_dir, app_name)
+
     apps = []
     for app_name in apps_names:
         app_code = getattr(import_module(runtime_file_module), f"{app_name}_iteration")

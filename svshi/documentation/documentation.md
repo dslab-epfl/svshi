@@ -325,13 +325,11 @@ Another interesting work on the KNX standard was done by [Ruta et Al. (2011)](#2
 Publications concerning formal verification in smart buildings are more common. [Sun et Al. (2017)](#21) present a lightweight rule verification and resolution framework for verifying the correctness of rules used by wireless sensor-actuator networks. It uses knowledge bases and anomaly detection.  
 [Trimananda et Al. (2020)](#22) study conflicts between apps on Samsung SmartThings[^2], a platform for developing and deploying smart home IoT devices. Their findings suggest that the problem of conflicts between smart home apps is serious and can create potential safety risks. They also developed a conflict detection tool that uses model checking to automatically detect conflicts.
 
-[^2]:
-    https://www.smartthings.com/
+[^2]: https://www.smartthings.com/
 
 [Grobelna et Al. (2017)](#23) focus on the design and verification methods of distributed logic controllers supervising real-life processes. In their work, Petri Nets[^3] are used to model the control system with all the transitions. The resulting net is then formally verified with the application of model checking techniques against predefined behavioral requirements.
 
-[^3]:
-    https://en.wikipedia.org/wiki/Petri_net
+[^3]: https://en.wikipedia.org/wiki/Petri_net
 
 [Garcia-Constantino et Al. (2018)](#25) leverage Petri nets too. They use them to model elderly daily activities such as cooking pasta, making coffee and tea etc. Then, different scenarios are verified to understand whether they could possibly indicate an abnormal behavior, which can be used by the system to send alarms.  
 [Corno et Al. (2011)](#24) propose a design time methodology for the formal verification of Intelligent Domotic Environments. Their approach is based on modeling the system and its algorithms with UML 2 State Charts[^4] and formally verifying them by checking logical properties expressed in temporal logic by model checking tools.
@@ -485,6 +483,8 @@ To run all the installed apps (with [runtime verification](#4233-runtime-verific
 1. In [ETS](https://www.knx.org/knx-en/for-professionals/software/ets-professional/), import the file `assignments/assignment.csv` to create the group addresses, then assign to each communication object the right group address as presented in `assignments/assignment.txt`. The name of the group address should help understanding which device it is meant to.
 2. In ETS, do a basic configuration of the devices to make them have the correct basic behaviour (the amount of configuration depends on the particular device)
 3. Execute `svshi run -a address:port`, where address is the KNX IP gateway address and port is the KNX IP gateway port.
+
+SVSHI logs which apps have been called during execution and which telegrams have been received. You can find the logs in `logs/`.
 
 For more details on how apps are run, see [Section 4.2.4](#424-execution).
 
@@ -678,6 +678,26 @@ First of all, we need to define what are the properties that should be verified 
 
 When doing the verification, we have 2 sets of applications: the already installed one(s) and the one(s) being installed. The main idea is that we verify that the execution of the `iteration()` function of any application on a _valid state_ (i.e., the installation is in a state in which all `invariant()` functions of all applications of both sets are verified) returns a possibly different but still _valid_ state. This condition is more conservative than it could be. Indeed, it is possible that a particular set of applications is rejected even though the execution could be valid. This would occur if the execution of the `iteration()` functions in a particular order leads to a valid state but the state is in an _invalid state_ between two functions. We decide that this case should be rejected as well because of the event-based nature of our system. Indeed, it would lead to invalid states if the execution order changes. It also helps during the verification process using CrossHair and we will detail how. It is therefore possible to verify `iteration()` functions independently from each other.
 
+An important thing to note as this point is that we cannot verify that, given a valid state, an app produces a valid state. Indeed, for an app to produce a valid state from an invalid one, the invalid one must be from a particular subset of the universe of all states. This represents in fact the _functionality_ of the app.
+
+For example, let us take an application that turns a light on when a presence detector detects someone. The app would look like this:
+
+```python
+def invariant():
+  if PRESENCE.is_on():
+    return LIGHT.is_on()
+  else:
+    return not LIGHT.is_on()
+
+def iteration():
+  if PRESENCE.is_on():
+    LIGHT.on()
+  else:
+    LIGHT.off()
+```
+
+Here, at some point in the execution, the presence will be `on` because someone has just arrived but the light will be `off` because it is exactly _this_ app that should set it to `on`. Thus, the state is invalid before app execution but valid after. The described scenario however cannot be verified using CrossHair because only some of the invalid states lead to valid ones after executing the apps. Some of the invalid states will stay invalid and this is a normal behaviour. Therefore, to catch these errors, we implemented the [runtime verification](#4233-runtime-verification)).
+
 `iteration()` and `invariant()` functions are using instances of classes that represent the devices of the installation and that are communicating with KNX through the network. Given the nature of CrossHair, the code cannot use values that have to be read over the network. Moreover, as explained in the [section about CrossHair](#4232-CrossHair), the code must not have side effects. Therefore, we need to modify the code written by the user to make it verifiable. We list and explain in details all the modifications that we operate on the code.
 
 First of all, we need a way to pass the state of the installation and the AppState as argument. Indeed, we want to define contracts on the states and we want the states to be symbolically represented to explore all cases. We define a class `PhysicalState` that holds the state of the installation as abstract values. For example, if the physical installation contains a push button, a light and a temperature sensor, the `PhysicalState` will holds 2 `bool` values (for representing the current state of the light and the push button) and 1 `float` value (that represents the temperature measured by the temperature sensor). This `PhysicalState` is defined as a `dataclass` in Python. We do the same for the `AppState` which is a `dataclass` with a finite number of values for each supported basic type. We modify the Python code of the `iteration()` and `invariant()` functions using the Python AST module to take an instance of `PhysicalState` and an instance of `AppState` as argument. We also modify the code to pass the `PhysicalState` instance to all functions that act on devices, so that modifying the state of a device changes the instance of `PhysicalState` and getting the state of a device returns the value hold by it.
@@ -807,7 +827,11 @@ We verify the following properties:
 
 The runtime verification takes place in the `runtime` module. It leverages the `conditions.py` file, generated by the `verification` module and copied over to `runtime` by the `core` module. This file contains a function, `check_conditions()`, that given a `PhysicalState` and multiple `AppState` (one per installed app) returns a boolean representing whether the apps' conditions are preserved. It does so by constructing a conjunctive boolean expression with all the apps' `invariant()` functions.
 
-Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants by calling `check_conditions()` on the physical and app states that are modified by the app. If it is the case, the app is prevented from running and the modifications discarded, otherwise the physical updates are propagated to KNX and the app state is updated (see [Section 4.3.5](#435-execution)).
+Before calling an app `iteration()` function, SVSHI checks whether the physical state (along with its app state) is valid, namely whether it satisfies the invariants or not. If it is valid, the app is executed and if the produced state is invalid, then the app is stopped (it will not run anymore) and the state is not updated. If instead the state before running the app is not valid, the app is executed and the check is performed later.  
+The idea here is that some states are invalid because an event just occured in the physical world (e.g., a button was pressed or a presence was detected) and a particular app has as functionality to make it valid again (e.g., set a light to on or open a window). Thus, other apps that are running in parallel with this one will receive an invalid state and produce an invalid one because they will not make the changes that this particular app has to make to have a valid state again. This is why we can only kill apps that transform a valid state into an invalid one, and, if a state remains invalid, we have to stop all apps as we cannot know which one did not behave correctly.
+
+Once all apps have been called, the produced states is merged and SVSHI verifies that it satisfies the invariants. If it is not the case, SVSHI restores the physical state to the _last valid physical state_ and stops all the apps. The _last valid physical state_ is a copy of the physical state that SVSHI maintains internally: everytime the merge operation after executing the apps produces a valid physical state, it stores it as the _last valid physical state_.  
+When the physical state is valid, the physical updates are propagated to KNX and the app state is updated (see [Section 4.3.5](#435-execution)).
 
 #### 4.3.4 KNX Programming
 
@@ -901,7 +925,7 @@ For what concerns app states, they are initialized with default values: `0` for 
 Note that, since the state (both physical and app-specific) can be updated concurrently by periodic apps and by apps reacting to incoming telegrams, a lock is used to **synchronize** the modifications and avoid deadlocks and re-orderings.
 
 As explained previously, all apps are **executed** in the **same way** and in the **same order**: first non-privileged apps in alphabetical order, then privileged ones again in alphabetical order.  
-The execution happens in the following manner: first, we generate copies of the physical state and the app state for each app that needs to be executed. Then, sequentially, each app is run _on its own copy of the physical and app state_; if invariants are not preserved, we prevent the app from running again (see [Runtime verification](#4233-runtime-verification)), otherwise the app state is updated and the physical state is saved to later propagate it. Once the new physical states resulting from all the apps' executions have been recorded, we **merge** them together with the old state before execution, and we update the local physical state. Finally, we write to the KNX bus for just the final values given to the updated fields of the state, and we notify the listeners of the changes.  
+The execution happens in the following manner: first, we generate copies of the physical state and the app state for each app that needs to be executed. Then, sequentially, each app is run _on its own copy of the physical and app state_; if invariants are not preserved and the physical state was valid, we prevent the app from running again (see [Runtime verification](#4233-runtime-verification)), otherwise the app state is updated and the physical state is saved to later propagate it. Once the new physical states resulting from all the apps' executions have been recorded, we **merge** them together with the old state before execution, and we update the local physical state. Finally, we write to the KNX bus for just the final values given to the updated fields of the state, and we notify the listeners of the changes.  
 This execution plan has the advantage of sending **less data** through the KNX bus, as apps are executed in batches and state updates are coalesced to only take into account the latest value, discarding all intermediate states.  
 Moreover, apart from the initialization phase, **no reads** are sent to the KNX bus.  
 Furthermore, another benefit of keeping a local copy of the physical state is that it is possible for apps to read the state of devices that are usually **write-only** in a KNX-only usage, such as actuators.  
