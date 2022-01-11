@@ -8,7 +8,7 @@ def multiton(cls):
     a given name already exists, it is returned instead of creating a new object.
     """
     instances = {}
-    allowed_names = ['presence_detector', 'ventilation']
+    allowed_names = ['presence_detector', 'co_two_sensor', 'ventilation']
     def getinstance(name):
         if name not in allowed_names:
             raise ValueError(f"Name '{name}' not allowed")

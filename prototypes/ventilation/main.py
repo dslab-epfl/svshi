@@ -1,21 +1,17 @@
-from instances import app_state, PRESENCE_DETECTOR, VENTILATION
+from instances import app_state, PRESENCE_DETECTOR, CO_TWO_SENSOR, VENTILATION
 
-from gcsa.event import Event
 from gcsa.google_calendar import GoogleCalendar
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime
 
 def invariant() -> bool:
-    # Write the invariants of the app here
-    # It can be any boolean expressions containing the read properties of the devices and constants
-    # You CANNOT use external libraries here, nor unchecked functions
-    if PRESENCE_DETECTOR.is_on() and VENTILATION.is_on() != None:
+    if (PRESENCE_DETECTOR.is_on() and VENTILATION.is_on() != None) or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 600.0  and VENTILATION.is_on() != None):
         return VENTILATION.is_on()
     else:
         return True
 
 
 def iteration():
-    if PRESENCE_DETECTOR.is_on() or unchecked_in_meeting("sam.chassot@gmail.com"):
+    if PRESENCE_DETECTOR.is_on() or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 600.0) or unchecked_in_meeting("sam.chassot@gmail.com"):
         VENTILATION.on()
     else:
         VENTILATION.off()

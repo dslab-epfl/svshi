@@ -11,6 +11,10 @@
       "deviceType": "binary"
     },
     {
+      "name": "co_two_sensor",
+      "deviceType": "co2"
+    },
+    {
       "name": "ventilation",
       "deviceType": "switch"
     }
