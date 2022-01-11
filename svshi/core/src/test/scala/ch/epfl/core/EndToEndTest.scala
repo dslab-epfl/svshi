@@ -1,23 +1,17 @@
 package ch.epfl.core
 
 import ch.epfl.core.CustomMatchers._
-import ch.epfl.core.utils.Constants.{
-  APP_LIBRARY_FOLDER_PATH,
-  APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH,
-  GENERATED_FOLDER_PATH,
-  GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH,
-  SVSHI_FOLDER_PATH
-}
+import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.{Constants, FileUtils}
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import os.Path
 
 import java.io.{ByteArrayOutputStream, StringReader}
 import scala.util.{Failure, Success, Try}
 
-class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
+class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
   private val defaultIgnoredFiles = List(".DS_Store", ".gitkeep")
   private val endToEndResPath = Constants.SVSHI_FOLDER_PATH / "core" / "res" / "endToEnd"
   private val pipeline1Path = endToEndResPath / "pipeline1_app_one_valid"
@@ -32,28 +26,58 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
   private val runtimePath = SVSHI_FOLDER_PATH / "runtime_test"
   private val runtimeMainPath = runtimePath / "runtime_main.py"
 
+  private val backupLibraryPath = SVSHI_FOLDER_PATH / "backup_library_during_test"
+  private val backupGeneratedPath = SVSHI_FOLDER_PATH / "backup_generated_during_test"
+  private val backupInputPath = SVSHI_FOLDER_PATH / "backup_input_during_test"
+
+  override def beforeAll(): Unit = {
+    if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
+    if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
+    if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
+
+    if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.copy(APP_LIBRARY_FOLDER_PATH, backupLibraryPath)
+    if (os.exists(GENERATED_FOLDER_PATH)) os.copy(GENERATED_FOLDER_PATH, backupGeneratedPath)
+    if (os.exists(inputPath)) os.copy(inputPath, backupInputPath)
+  }
+
+  override def afterAll(): Unit = {
+    if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
+    if (os.exists(inputPath)) os.remove.all(inputPath)
+
+    if (os.exists(backupLibraryPath)) os.copy(backupLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    if (os.exists(backupGeneratedPath)) os.copy(backupGeneratedPath, GENERATED_FOLDER_PATH)
+    if (os.exists(backupInputPath)) os.copy(backupInputPath, inputPath)
+
+    if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
+    if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
+    if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
+  }
+
   override def beforeEach(): Unit = {
-    os.remove.all(GENERATED_FOLDER_PATH)
+    if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
     os.makeDir.all(GENERATED_FOLDER_PATH)
 
-    os.remove.all(inputPath)
+    if (os.exists(inputPath)) os.remove.all(inputPath)
     os.makeDir.all(inputPath)
 
-    os.remove.all(Constants.APP_LIBRARY_FOLDER_PATH)
-    os.makeDir.all(Constants.APP_LIBRARY_FOLDER_PATH)
+    if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.makeDir.all(APP_LIBRARY_FOLDER_PATH)
 
-    os.remove.all(runtimePath)
+    if (os.exists(runtimePath)) os.remove.all(runtimePath)
     os.makeDir.all(runtimePath)
 
     Main.setSystemExit(MockSystemExit)
   }
 
   override def afterEach(): Unit = {
-    os.remove.all(GENERATED_FOLDER_PATH)
+    if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
+    os.makeDir.all(GENERATED_FOLDER_PATH)
 
-    os.remove.all(inputPath)
+    if (os.exists(inputPath)) os.remove.all(inputPath)
 
-    os.remove.all(Constants.APP_LIBRARY_FOLDER_PATH)
+    if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.makeDir.all(APP_LIBRARY_FOLDER_PATH)
 
     if (os.exists(runtimeMainPath)) os.remove(runtimeMainPath)
   }

@@ -108,6 +108,14 @@
             "typeString": "humidity",
             "physDeviceId": -1
           }
+        },
+        {
+          "name": "co_two_sensor_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.CO2SensorBinding",
+            "typeString": "co2",
+            "physDeviceId": -1
+          }
         }
       ]
     }

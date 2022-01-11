@@ -20,6 +20,10 @@
       "deviceType": "humidity"
     },
     {
+      "name": "co_two_sensor_instance_name",
+      "deviceType": "co2"
+    },
+    {
       "name": "A_switch",
       "deviceType": "switch"
     }

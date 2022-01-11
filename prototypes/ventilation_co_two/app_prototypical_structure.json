@@ -1,0 +1,18 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 60,
+  "files": [
+    "credentials.json",
+    "token.pickle"
+  ],
+  "devices": [
+    {
+      "name": "co_two_detector",
+      "deviceType": "co2"
+    },
+    {
+      "name": "ventilation",
+      "deviceType": "switch"
+    }
+  ]
+}

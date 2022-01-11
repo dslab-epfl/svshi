@@ -45,7 +45,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
           List(
             PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
             PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
           )
         ),
         PhysicalDeviceNode(
@@ -66,7 +67,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
             DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
             DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
             DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device5", CO2SensorBinding(CO2Sensor.toString, 314))
           )
         )
       )
@@ -79,7 +81,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", TemperatureSensor),
-        AppPrototypicalDeviceInstance("device4", HumiditySensor)
+        AppPrototypicalDeviceInstance("device4", HumiditySensor),
+        AppPrototypicalDeviceInstance("device5", CO2Sensor)
       )
     )
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
@@ -120,7 +123,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
           List(
             PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
             PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, In, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, In, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
           )
         ),
         PhysicalDeviceNode(
@@ -141,7 +145,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
             DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
             DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
             DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device5", CO2SensorBinding(HumiditySensor.toString, 314))
           )
         )
       )
@@ -154,7 +159,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", TemperatureSensor),
-        AppPrototypicalDeviceInstance("device4", HumiditySensor)
+        AppPrototypicalDeviceInstance("device4", HumiditySensor),
+        AppPrototypicalDeviceInstance("device5", CO2Sensor)
       )
     )
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
@@ -1068,7 +1074,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
           List(
             PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
             PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
           )
         ),
         PhysicalDeviceNode(
@@ -1089,7 +1096,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
             DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
             DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
             DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device5", CO2SensorBinding(CO2Sensor.toString, 314))
           )
         )
       )
@@ -1102,7 +1110,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", TemperatureSensor),
-        AppPrototypicalDeviceInstance("device4", HumiditySensor)
+        AppPrototypicalDeviceInstance("device4", HumiditySensor),
+        AppPrototypicalDeviceInstance("device5", CO2Sensor)
       )
     )
     val appPrototypicalStructures: Map[String, AppPrototypicalStructure] = List(("app1", appPrototypicalStructure)).toMap
@@ -1526,7 +1535,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
             DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
             DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
             DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device5", CO2SensorBinding(CO2Sensor.toString, 313))
           )
         )
       )
@@ -1536,7 +1546,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       (311, GroupAddress(3, 1, 1)),
       (212, GroupAddress(2, 1, 2)),
       (322, GroupAddress(3, 2, 2)),
-      (313, GroupAddress(3, 1, 1))
+      (313, GroupAddress(3, 1, 1)),
+      (314, GroupAddress(3, 1, 4))
     ).toMap
     val groupAddressAssignment = GroupAddressAssignment(physicalStructure, appLibraryBindings, mapPhysIdToGa)
     verifyBindingsPythonType(groupAddressAssignment).isEmpty shouldBe true
@@ -1582,7 +1593,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
             DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
             DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
             DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
-            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313))
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device4", CO2SensorBinding(CO2Sensor.toString, 314))
           )
         )
       )
@@ -1640,5 +1652,39 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     res.last.msg.contains("device3") shouldBe true
     res.last.msg.contains("device5") shouldBe true
     res.last.msg.contains("322") shouldBe true
+  }
+
+  "verifyBindingsMutualDPT" should "return an error when conflicting DPT are bound to the same physical ID with CO2" in {
+    val appLibraryBindings = AppLibraryBindings(
+      List(
+        AppPrototypeBindings(
+          "app1",
+          List(
+            DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
+            DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
+            DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 313)),
+            DeviceInstanceBinding("device6", CO2SensorBinding(CO2Sensor.toString, 212))
+          )
+        )
+      )
+    )
+    val res = verifyBindingsMutualDPT(appLibraryBindings)
+    println(res)
+    res.length shouldEqual 2
+    res.head.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
+    res.last.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
+
+    res.head.msg.contains(DPT1.toString) shouldBe true
+    res.head.msg.contains(DPT9.toString) shouldBe true
+    res.head.msg.contains("device2") shouldBe true
+    res.head.msg.contains("device6") shouldBe true
+    res.head.msg.contains("212") shouldBe true
+
+    res.last.msg.contains(DPT1.toString) shouldBe true
+    res.last.msg.contains(DPT9.toString) shouldBe true
+    res.last.msg.contains("device2") shouldBe true
+    res.last.msg.contains("device6") shouldBe true
+    res.last.msg.contains("212") shouldBe true
   }
 }

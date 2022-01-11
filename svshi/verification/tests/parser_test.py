@@ -61,6 +61,7 @@ def test_parser_parse_devices_instances():
             DeviceInstance("third_app_switch_instance_name", "switch"),
             DeviceInstance("third_app_temperature_sensor_instance_name", "temperature"),
             DeviceInstance("third_app_humidity_sensor_instance_name", "humidity"),
+            DeviceInstance("third_app_co_two_sensor_instance_name", "co2"),
         ],
         key=sorting_function,
     )
@@ -118,6 +119,12 @@ def test_parser_parse_devices_classes():
                 "humidity_sensor_instance_name",
                 "humidity",
                 "0/0/4",
+            ),
+            DeviceClass(
+                third_app,
+                "co_two_sensor_instance_name",
+                "co2",
+                "0/0/5",
             ),
         ],
         key=sorting_function,

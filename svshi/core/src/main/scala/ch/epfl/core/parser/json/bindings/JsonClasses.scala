@@ -40,3 +40,9 @@ object HumiditySensorAddressJson {
   implicit val rw: ReadWriter[HumiditySensorAddressJson] =
     macroRW[HumiditySensorAddressJson]
 }
+
+case class CO2SensorAddressJson(name: String, address: String) extends DeviceAddressJson
+object CO2SensorAddressJson {
+  implicit val rw: ReadWriter[CO2SensorAddressJson] =
+    macroRW[CO2SensorAddressJson]
+}

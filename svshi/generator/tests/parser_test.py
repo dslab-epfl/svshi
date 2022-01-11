@@ -30,7 +30,8 @@ def test_parser_reads_devices():
     assert devices[3] == Device(
         "humidity_sensor_instance_name", "HumiditySensor", "humidity"
     )
-    assert devices[4] == Device("A_switch", "Switch", "switch")
+    assert devices[4] == Device("co_two_sensor_instance_name", "CO2Sensor", "co2")
+    assert devices[5] == Device("A_switch", "Switch", "switch")
 
 
 def test_parser_on_read_devices_throws_exceptions_on_wrong_device_type():

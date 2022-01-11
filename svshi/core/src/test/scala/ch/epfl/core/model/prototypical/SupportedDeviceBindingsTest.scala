@@ -1,5 +1,6 @@
 package ch.epfl.core.model.prototypical
 
+import ch.epfl.core.model.physical.{In, Out}
 import ch.epfl.core.model.python.{PythonBool, PythonFloat}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -10,6 +11,15 @@ class SupportedDeviceBindingsTest extends AnyFlatSpec with Matchers {
     SwitchBinding("", 123).getPythonTypes shouldEqual Map((123, PythonBool))
     HumiditySensorBinding("", 123).getPythonTypes shouldEqual Map((123, PythonFloat))
     TemperatureSensorBinding("", 123).getPythonTypes shouldEqual Map((123, PythonFloat))
+    CO2SensorBinding("", 123).getPythonTypes shouldEqual Map((123, PythonFloat))
+  }
+
+  "getIOTypes" should "return the correct map for the different bindings" in {
+    BinarySensorBinding("", 123).getIOTypes shouldEqual Map((123, Out))
+    SwitchBinding("", 123).getIOTypes shouldEqual Map((123, In))
+    HumiditySensorBinding("", 123).getIOTypes shouldEqual Map((123, Out))
+    TemperatureSensorBinding("", 123).getIOTypes shouldEqual Map((123, Out))
+    CO2SensorBinding("", 123).getIOTypes shouldEqual Map((123, Out))
   }
 
   "equivalent" should "return true if the supported devices bindings are equivalent" in {
@@ -17,6 +27,7 @@ class SupportedDeviceBindingsTest extends AnyFlatSpec with Matchers {
     SwitchBinding("", 123) equivalent SwitchBinding("", -1) shouldEqual true
     HumiditySensorBinding("", 123) equivalent HumiditySensorBinding("", -1) shouldEqual true
     TemperatureSensorBinding("", 123) equivalent TemperatureSensorBinding("", -1) shouldEqual true
+    CO2SensorBinding("", 123) equivalent CO2SensorBinding("", -1) shouldEqual true
   }
 
   "equivalent" should "return false if the supported devices bindings are not equivalent" in {
@@ -24,6 +35,7 @@ class SupportedDeviceBindingsTest extends AnyFlatSpec with Matchers {
     SwitchBinding("", 123) equivalent BinarySensorBinding("", -1) shouldEqual false
     HumiditySensorBinding("", 123) equivalent TemperatureSensorBinding("", -1) shouldEqual false
     TemperatureSensorBinding("", 123) equivalent HumiditySensorBinding("", -1) shouldEqual false
+    CO2SensorBinding("", 123) equivalent HumiditySensorBinding("", -1) shouldEqual false
   }
 
   "equivalent" should "return true if the device instance bindings are equivalent" in {

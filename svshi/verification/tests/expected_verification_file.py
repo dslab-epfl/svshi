@@ -184,6 +184,15 @@ class Humidity_sensor_third_app_humidity_sensor_instance_name():
         return physical_state.GA_0_0_4
     
 
+class CO2_sensor_third_app_co_two_sensor_instance_name():
+    def read(self, physical_state: PhysicalState) -> float:
+        """
+        pre:
+        post: physical_state.GA_0_0_5 == __return__
+        """
+        return physical_state.GA_0_0_5
+    
+
 
 FIRST_APP_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_first_app_binary_sensor_instance_name()
 FIRST_APP_HUMIDITY_SENSOR_INSTANCE_NAME = Humidity_sensor_first_app_humidity_sensor_instance_name()
@@ -194,6 +203,7 @@ SECOND_APP_HUMIDITY_SENSOR_INSTANCE_NAME = Humidity_sensor_second_app_humidity_s
 SECOND_APP_SWITCH_INSTANCE_NAME = Switch_second_app_switch_instance_name()
 SECOND_APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_second_app_temperature_sensor_instance_name()
 THIRD_APP_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_third_app_binary_sensor_instance_name()
+THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME = CO2_sensor_third_app_co_two_sensor_instance_name()
 THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME = Humidity_sensor_third_app_humidity_sensor_instance_name()
 THIRD_APP_SWITCH_INSTANCE_NAME = Switch_third_app_switch_instance_name()
 THIRD_APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_third_app_temperature_sensor_instance_name()
@@ -213,7 +223,9 @@ post: first_app_invariant(**__return__)
 post: second_app_invariant(**__return__)
 post: third_app_invariant(**__return__)
 """
-    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state) > 30:
+    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
+        ) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(physical_state
+        ) > 600.0:
         another_file = '/third_app/file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
     return {'app_state': app_state, 'physical_state': physical_state}

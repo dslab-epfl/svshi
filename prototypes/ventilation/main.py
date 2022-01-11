@@ -37,11 +37,17 @@ def unchecked_in_meeting(email: str) -> bool:
         diff_now_end_days = diff_end_now.days
         diff_now_end_minutes = diff_end_now.seconds // 60
 
+        diff_now_end = now - e.end
+        diff_now_end_days = diff_now_end.days
+        diff_now_end_minutes = diff_now_end.seconds // 60
+
         in_meeting = diff_start_now_days < 0 and diff_now_end_days >= 0 and diff_now_end_minutes >= 0
 
         meeting_in_next_fifteen_min = diff_start_now_days == 0 and diff_start_now_minutes <= 15
 
-        acc = acc or in_meeting or meeting_in_next_fifteen_min
+        meeting_in_past_thirty_min = diff_now_end_days == 0 and diff_now_end_minutes <= 30
+
+        acc = acc or in_meeting or meeting_in_next_fifteen_min or meeting_in_past_thirty_min
 
         if acc: 
             break

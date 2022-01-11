@@ -78,6 +78,18 @@ class Switch_{app_name}_{instance_name}():
     '''
     )
 
+    __CO2_SENSOR_TEMPLATE = (
+        lambda self, app_name, instance_name, group_address: f'''
+class CO2_sensor_{app_name}_{instance_name}():
+    def read(self, physical_state: PhysicalState) -> float:
+        """
+        pre:
+        post: physical_state.{group_address} == __return__
+        """
+        return physical_state.{group_address}
+    '''
+    )
+
     def __init__(
         self,
         verification_filename: str,
@@ -182,6 +194,10 @@ class AppState:
                 )
             elif type == "switch":
                 code.append(self.__SWITCH_TEMPLATE(app, name, formatted_group_address))
+            elif type == "co2":
+                code.append(
+                    self.__CO2_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                )
 
         self.__code.extend(code)
 
@@ -198,6 +214,8 @@ class AppState:
                 device_class = "Temperature_sensor_"
             elif type == "humidity":
                 device_class = "Humidity_sensor_"
+            elif type == "co2":
+                device_class = "CO2_sensor_"
 
             devices_code.append(f"{name.upper()} = {device_class}{name}()")
 

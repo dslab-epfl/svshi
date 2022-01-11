@@ -77,6 +77,7 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 - **Binary sensors** (deviceType = "binary")
 - **Temperature sensors** (deviceType = "temperature")
 - **Humidity sensors** (deviceType = "humidity")
+- **CO2 sensors** (deviceType = "co2")
 - **Switches** (deviceType = "switch")
 
 ## Developing an application

@@ -20,6 +20,10 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.humiditySensor shouldEqual "humidity"
   }
 
+  "co2Sensor" should "be 'co2'" in {
+    SupportedDevice.co2Sensor shouldEqual "co2"
+  }
+
   "fromString" should "return BinarySensor on String binary" in {
     SupportedDevice.fromString("binary") shouldEqual BinarySensor
   }
@@ -72,6 +76,19 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString(SupportedDevice.humiditySensor) shouldEqual HumiditySensor
   }
 
+  "fromString" should "return CO2Sensor on String co2" in {
+    SupportedDevice.fromString("co2") shouldEqual CO2Sensor
+  }
+  "fromString" should "return CO2Sensor on String Co2" in {
+    SupportedDevice.fromString("Co2") shouldEqual CO2Sensor
+  }
+  "fromString" should "return CO2Sensor on String CO2" in {
+    SupportedDevice.fromString("CO2") shouldEqual CO2Sensor
+  }
+  "fromString" should "return CO2Sensor on String val in SupportedDevice" in {
+    SupportedDevice.fromString(SupportedDevice.co2Sensor) shouldEqual CO2Sensor
+  }
+
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {
     an[MatchError] should be thrownBy SupportedDevice.fromString("switchhhh")
   }
@@ -87,6 +104,9 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
   "getDeviceBinding" should "return the correct binding for Switch" in {
     SupportedDevice.getDeviceBinding(Switch) shouldEqual SwitchBinding(Switch.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for CO2Sensor" in {
+    SupportedDevice.getDeviceBinding(CO2Sensor) shouldEqual CO2SensorBinding(CO2Sensor.toString, SupportedDevice.defaultPhysicalId)
   }
 
 }

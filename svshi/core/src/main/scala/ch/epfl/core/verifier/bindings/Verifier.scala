@@ -62,6 +62,7 @@ object Verifier extends VerifierTr {
       val appProtoStructure = appPrototypicalStructures(appName)
       binding.bindings.flatMap(deviceInstBinding => {
         val protoDevice = appProtoStructure.deviceInstances.find(d => d.name == deviceInstBinding.name).get
+        // We must do the match over all cases because at some point, there can be a binding with more than one physDeviceId
         deviceInstBinding.binding match {
           case BinarySensorBinding(_, physDeviceId) => {
             checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
@@ -73,6 +74,9 @@ object Verifier extends VerifierTr {
             checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
           case HumiditySensorBinding(_, physDeviceId) => {
+            checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
+          case CO2SensorBinding(_, physDeviceId) => {
             checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
         }
@@ -98,6 +102,7 @@ object Verifier extends VerifierTr {
       val appProtoStructure = appPrototypicalStructures(appName)
       binding.bindings.flatMap(deviceInstBinding => {
         val protoDevice = appProtoStructure.deviceInstances.find(d => d.name == deviceInstBinding.name).get
+        // We must do the match over all cases because at some point, there can be a binding with more than one physDeviceId
         deviceInstBinding.binding match {
           case BinarySensorBinding(_, physDeviceId) => {
             checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
@@ -109,6 +114,9 @@ object Verifier extends VerifierTr {
             checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
           case HumiditySensorBinding(_, physDeviceId) => {
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
+          case CO2SensorBinding(_, physDeviceId) => {
             checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
         }
@@ -123,6 +131,7 @@ object Verifier extends VerifierTr {
   def verifyBindingsMutualDPT(bindings: AppLibraryBindings): List[BindingsVerifierMessage] = {
     bindings.appBindings.flatMap(binding => {
       binding.bindings.flatMap(deviceInstBinding => {
+        // We must do the match over all cases because at some point, there can be a binding with more than one physDeviceId
         deviceInstBinding.binding match {
           case BinarySensorBinding(_, physDeviceId) => {
             checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
@@ -134,6 +143,9 @@ object Verifier extends VerifierTr {
             checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
           }
           case HumiditySensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case CO2SensorBinding(_, physDeviceId) => {
             checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
           }
         }

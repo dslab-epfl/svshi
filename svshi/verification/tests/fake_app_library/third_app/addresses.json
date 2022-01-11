@@ -20,6 +20,11 @@
       "$type": "ch.epfl.core.parsers.json.bindings.HumiditySensorAddressJson",
       "name": "humidity_sensor_instance_name",
       "address": "0/0/4"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.CO2SensorAddressJson",
+      "name": "co_two_sensor_instance_name",
+      "address": "0/0/5"
     }
   ]
 }

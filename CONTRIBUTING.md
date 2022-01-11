@@ -216,7 +216,7 @@ The types of device that SVSHI supports require specific code to be handled prop
 - update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
 - modify the `read_devices` method in `svshi/generator/parsing/parser.py`.
 - add a new Python file containing the device class in `svshi/generator/skeleton/models`
-- modify `generate_device_classes`, `generate_device_instances` and add a new device template in `svshi/verification/generator.py`
+- modify `__generate_device_classes`, `__generate_devices_instances` and add a new device template in `svshi/verification/generator.py`
 
 Don't forget to add new tests in all the modified modules!
 

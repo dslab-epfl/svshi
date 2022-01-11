@@ -18,6 +18,7 @@ generator = Generator(
         Device("switch_instance_name", "Switch", "switch"),
         Device("temperature_sensor_instance_name", "TemperatureSensor", "temperature"),
         Device("humidity_sensor_instance_name", "HumiditySensor", "humidity"),
+        Device("co_two_sensor_instance_name", "CO2Sensor", "co2"),
     ],
     DEVICES_FILE,
 )
@@ -59,6 +60,7 @@ def test_generator_copy_skeleton_to_generated_app():
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/binary.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/device.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/humidity.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/co2.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/switch.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/state.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/temperature.py") == True

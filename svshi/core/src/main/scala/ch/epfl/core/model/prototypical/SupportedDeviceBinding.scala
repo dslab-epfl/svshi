@@ -75,6 +75,20 @@ object HumiditySensorBinding {
     macroRW[HumiditySensorBinding]
 }
 
+case class CO2SensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
+  override def getBoundIds: List[Int] = List(physDeviceId)
+  override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
+    case CO2SensorBinding(_, _) => true
+    case _                      => false
+  }
+}
+object CO2SensorBinding {
+  implicit val rw: ReadWriter[CO2SensorBinding] =
+    macroRW[CO2SensorBinding]
+}
+
 case class DeviceInstanceBinding(name: String, binding: SupportedDeviceBinding) {
   def equivalent(other: DeviceInstanceBinding): Boolean = other match {
     case DeviceInstanceBinding(otherName, otherBinding) => binding.equivalent(otherBinding) && name == otherName
