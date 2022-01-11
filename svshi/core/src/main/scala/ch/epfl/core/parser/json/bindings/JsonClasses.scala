@@ -14,7 +14,7 @@ object AppPythonAddressesJson {
 sealed trait DeviceAddressJson
 object DeviceAddressJson {
   implicit val rw: ReadWriter[DeviceAddressJson] =
-    ReadWriter.merge(BinarySensorAddressJson.rw, SwitchAddressJson.rw, TemperatureSensorAddressJson.rw, HumiditySensorAddressJson.rw)
+    ReadWriter.merge(BinarySensorAddressJson.rw, SwitchAddressJson.rw, TemperatureSensorAddressJson.rw, HumiditySensorAddressJson.rw, CO2SensorAddressJson.rw)
 }
 
 case class BinarySensorAddressJson(name: String, address: String) extends DeviceAddressJson
