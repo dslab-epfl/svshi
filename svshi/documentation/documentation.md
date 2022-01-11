@@ -942,8 +942,11 @@ To demonstrate SVSHI's usage, we developed **3 app prototypes** in our lab, usin
 
 - An app to track **soil moisture level** of plants that sends messages on the lab **Slack** workspace if the level is below the recommended threshold.
 - An app that monitors the **lock state** of our office's door and that sends messages on **Slack** according to the **presence** detector installed in the room as well: the alert is sent if there is no one in the room and the door is not locked.
-- An app that monitors the conference room **presence** and the lab Google **Calendar** and that turns the **ventilation** on or off. Ventilation is turned on when someone is in the room, when a meeting is scheduled in the next 15 minutes, during a meeting and 30 minutes after the end of the meeting.
-- An app that monitors the **CO2 level** in the conference room and turns on the **ventilation** when the CO2 level is above 600ppm.
+- An app that monitors the conference room **presence**, the **CO2 level** and the lab Google **Calendar** and that turns the **ventilation** on or off. Ventilation is turned on:
+  - when someone is in the room
+  - when a meeting is scheduled in the next 15 minutes
+  - during a meeting (with respect to the calendar)
+  - when the CO2 level is above 900ppm
 
 The **KNX system** is made of various devices connected to the bus:
 
