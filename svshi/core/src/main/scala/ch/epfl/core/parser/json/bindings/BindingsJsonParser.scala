@@ -38,7 +38,6 @@ object BindingsJsonParser {
     */
   def writeToFile(filePath: os.Path, appLibraryBindings: AppLibraryBindings): Unit = {
     FileUtils.deleteIfExists(filePath)
-    println(appLibraryBindings)
     FileUtils.writeToFile(filePath, write(appLibraryBindings, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
