@@ -1,7 +1,13 @@
 package ch.epfl.core
 
 import ch.epfl.core.CustomMatchers._
-import ch.epfl.core.utils.Constants.{APP_LIBRARY_FOLDER_PATH, APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH, GENERATED_FOLDER_PATH, GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH, SVSHI_FOLDER_PATH}
+import ch.epfl.core.utils.Constants.{
+  APP_LIBRARY_FOLDER_PATH,
+  APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH,
+  GENERATED_FOLDER_PATH,
+  GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH,
+  SVSHI_FOLDER_PATH
+}
 import ch.epfl.core.utils.{Constants, FileUtils}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -193,6 +199,24 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     }
   }
 
+  "generateApp" should "fail when the prototypical file name is not absolute" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateApp", "-n", "test", "-d", "proto.json"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "The devices prototypical structure JSON file name has to be absolute"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
+  }
+
   "generateBindings" should "generate the correct bindings and physical_structure.json with only one app in generated and none installed - pipeline 1" in {
     // Prepare everything for the test
     val protoFileName = "test_app_one_proto.json"
@@ -216,6 +240,24 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAs(pipeline1Path / "apps_bindings.json")
   }
 
+  "generateBindings" should "fail when the ETS project file name is not absolute" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", "ets.knxproj"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "The ETS project file name has to be absolute"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
+  }
+
   "compile" should "install the app one when it is valid and verified" in {
     // Prepare everything for the test
     val appName = "test_app_one"
@@ -236,6 +278,24 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     val expectedLibraryPath = pipeline1Path / "expected_library"
 
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+  }
+
+  "compile" should "fail when the ETS project file name is not absolute" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", "ets.knxproj"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "The ETS project file name has to be absolute"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
   }
 
   // Pipeline 2 - valid app with no other installed apps but invalid bindings

@@ -18,6 +18,7 @@ import mainargs.ParserForClass
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
+import java.io.File
 
 object Main {
 
@@ -64,9 +65,13 @@ object Main {
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
         printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
-        compileApps(existingAppsLibrary, newAppsLibrary, extractPhysicalStructure(config.etsProjectFile.get))
+        val etsProjectFile = config.etsProjectFile.get
+        if (!new File(etsProjectFile).isAbsolute()) printErrorAndExit("The ETS project file name has to be absolute")
+        else compileApps(existingAppsLibrary, newAppsLibrary, extractPhysicalStructure(etsProjectFile))
       case GenerateBindings =>
-        generateBindings(existingAppsLibrary, newAppsLibrary, existingPhysicalStructure, extractPhysicalStructure(config.etsProjectFile.get))
+        val etsProjectFile = config.etsProjectFile.get
+        if (!new File(etsProjectFile).isAbsolute()) printErrorAndExit("The ETS project file name has to be absolute")
+        else generateBindings(existingAppsLibrary, newAppsLibrary, existingPhysicalStructure, extractPhysicalStructure(etsProjectFile))
       case GenerateApp =>
         generateApp(config.appName, config.devicesPrototypicalStructureFile)
       case RemoveApp =>
@@ -258,9 +263,10 @@ object Main {
     (appName, devicesPrototypicalStructureFile) match {
       case (Some(name), Some(devicesJson)) =>
         val nameRegex = "^_*[a-z]+[a-z_]*_*$".r
-        if (nameRegex.matches(name))
-          runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name, devicesJson), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
-        else printErrorAndExit("The app name has to contain only lowercase letters and underscores")
+        if (nameRegex.matches(name)) {
+          if (!new File(devicesJson).isAbsolute()) printErrorAndExit("The devices prototypical structure JSON file name has to be absolute")
+          else runPythonModule(APP_GENERATOR_PYTHON_MODULE, Seq(name, devicesJson), exitCode => s"The app generator failed with exit code $exitCode and above stdout")
+        } else printErrorAndExit("The app name has to contain only lowercase letters and underscores")
         success(s"The app '$name' has been successfully created!")
       case (None, Some(_)) =>
         printErrorAndExit("The app name has to be provided to generate a new app")
