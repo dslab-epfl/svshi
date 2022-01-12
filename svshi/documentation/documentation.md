@@ -11,9 +11,10 @@
       - [1.2.3 Functionality and group addresses](#123-functionality-and-group-addresses)
       - [1.2.4 KNX devices](#124-knx-devices)
       - [1.2.5 KNX Datatypes](#125-knx-datatypes)
-      - [1.2.5 Configuration and ETS](#125-configuration-and-ets)
-      - [1.2.6 KNX Pros and Cons](#126-knx-pros-and-cons)
-      - [1.2.7 Why KNX?](#127-why-knx)
+      - [1.2.5 KNX simulator](#125-knx-simulator)
+      - [1.2.6 Configuration and ETS](#126-configuration-and-ets)
+      - [1.2.7 KNX Pros and Cons](#127-knx-pros-and-cons)
+      - [1.2.8 Why KNX?](#128-why-knx)
     - [1.3 State-of-the-art](#13-state-of-the-art)
     - [1.4 Current issues](#14-current-issues)
       - [1.4.1 Time-consuming configuration](#141-time-consuming-configuration)
@@ -37,12 +38,13 @@
         - [4.3.1.1 Prototypical structure](#4311-prototypical-structure)
       - [4.3.2 Compilation](#432-compilation)
       - [4.3.3 Verification](#433-verification)
-        - [4.3.3.1 Symbolic execution](#4331-symbolic-execution)
-        - [4.3.3.2 CrossHair](#4332-crosshair)
-          - [4.3.3.3 AppState tradeoff](#4333-appstate-tradeoff)
-        - [4.3.3.4 CrossHair in SVSHI and code modification](#4334-crosshair-in-svshi-and-code-modification)
-        - [4.3.3.5 DPT and types](#4335-dpt-and-types)
-        - [4.3.3.6 Runtime verification](#4336-runtime-verification)
+        - [4.3.3.1 Background](#4331-background)
+          - [4.3.3.1.1 Symbolic execution](#43311-symbolic-execution)
+          - [4.3.3.1.2 CrossHair](#43312-crosshair)
+        - [4.3.3.2 CrossHair in SVSHI and code modification](#4332-crosshair-in-svshi-and-code-modification)
+        - [4.3.3.3 AppState tradeoff](#4333-appstate-tradeoff)
+        - [4.3.3.4 DPT and types](#4334-dpt-and-types)
+        - [4.3.3.5 Runtime verification](#4335-runtime-verification)
       - [4.3.4 KNX Programming](#434-knx-programming)
       - [4.3.5 Execution](#435-execution)
         - [4.3.5.1 Code manipulation](#4351-code-manipulation)
@@ -243,7 +245,22 @@ Here is the list of the most used DPTs:
 - 19.yyy = time + data
 - 20.yyy = 8-bit enumeration, e.g. HVAC mode ('auto', 'comfort', 'standby', 'economy', 'protection')
 
-#### 1.2.5 Configuration and ETS
+#### 1.2.5 KNX simulator
+
+The KNX Association offers a *simulator* for a KNX system named *KNX Virtual* [[31]](#31). It is a Windows-based application that emulates a KNX installation. It can be used to learn the KNX terminology and get familiar with the technology.\\
+It can be used to get used to ETS as well: ETS can connect to it and program the devices. Then a GUI lets the user play with the sensors and shows the result on the simulated actuator.
+
+The available devices are pre-installed and cannot be changed. The software GUI offers several views with different devices shown.
+
+The devices are available on ETS through a catalog similar to the ones offered by the "real" manufacturers.
+
+The main downside of this simulator is the fact that the devices are unique to KNX virtual. The devices available do not mirror real devices and thus the configuration is simplified with respect to a real device's one. Moreover, this cannot be used to simulate an existing installation, for example, to test the solution we developed.
+
+Other commercial solution exist like *KNX Simulator*[^16] but as they are not free, we did not explore them in detail.
+
+[^16]: https://www.knxsimulator.com
+
+#### 1.2.6 Configuration and ETS
 
 To configure KNX devices, the person installing a KNX system (we call her the "programmer") needs to use ETS. ETS is a software provided by the KNX association. It is closed source and not free.
 
@@ -265,7 +282,7 @@ After the application download is done, devices start sending and reacting to te
 
 One should never lose the ETS project file because it is impossible to infer it from the devices. Thus, if the project file is lost, everything has to be done again from scratch.
 
-#### 1.2.6 KNX Pros and Cons
+#### 1.2.7 KNX Pros and Cons
 
 In this section, we develop advantages and disadvantages of KNX as a smart buildings' backbone.
 
@@ -282,7 +299,7 @@ Configuration is also an issue: it must be done using ETS, which is time-consumi
 
 The KNX certifications are a good point for reliability but this leads to business exploitations that are a disadvantage for the hobbyists. The licensing and certifications are expensive and the association has the habit of giving them only to professional electricians [[4]](#4). Therefore, the public lacks some documentation and needs to use proprietary software to use an open protocol and system.
 
-#### 1.2.7 Why KNX?
+#### 1.2.8 Why KNX?
 
 In this section we develop why we decided to develop a solution around KNX.
 
@@ -619,7 +636,11 @@ The compiler also returns values that are used by the verifier to continue the p
 
 Verification is part of SVSHI's DNA. We want to verify as much as possible that the applications and the bindings are correct.
 
-##### 4.3.3.1 Symbolic execution
+##### 4.3.3.1 Background
+
+Here we expose some background needed to understand the verification done on the applications.
+
+###### 4.3.3.1.1 Symbolic execution
 
 Let us start with some background about symbolic execution.
 
@@ -640,7 +661,7 @@ For example, again in Fig. 5, in the `succ` function, the symbolic execution wil
   <figcaption>Fig. 5 - Absolute value and faulty successor functions (taken from [[9]](#9) ).</figcaption>
 </figure>
 
-##### 4.3.3.2 CrossHair
+###### 4.3.3.1.2 CrossHair
 
 CrossHair [[8]](#8) is a Python library that allows to analyse a Python program. It is based on the idea developed by Bruni et Al. in their paper [[9]](#9). They propose a way of implementing symbolic execution engines with few code by using the actual runtime engine of the language. In a nutshell, the main idea is to leverage primitive operation dispatching to implement proxy values that will be passed around in place of the concrete values (e.g., `int`, `bool`, ...). Python implements everything as method call: for example, `a + b` becomes `a.__add__(b)` so it is possible to "hijack" this method dispatching to replace primitive types by proxies. Doing so, it becomes possible to execute a function passing these proxy values instead of concrete values as arguments and record how these values are used.
 
@@ -663,15 +684,7 @@ CrossHair also requires the code to be typed. This is not really a limitation in
 
 CrossHair supports variables of type `int`, `bool`, `str` and `dict` at least [[18]](#18). We observe that it also supports `float`. CrossHair also supports `dataclasses` and custom classes if the attributes have one of the aforementioned types. During our experiments, we observe that counterexamples concerning `dict` were not found in almost all cases. We think that the available space is too large, accounting for the fact that Python dictionaries are heterogeneous and can have keys and values of any types (even different ones in the same dictionary).
 
-###### 4.3.3.3 AppState tradeoff
-
-As explained in [the section about how to write apps](#2211-writing-apps), applications have access to an `AppState` instance. This lets the applications store state that persists between calls to `iteration()` and `invariant()`.
-
-Given our observation about how CrossHair deals with arbitrary dictionaries, we decided to not allow an arbitrary key-value store as we originally thought. Indeed, having an abitrary dictionary as `AppState` would have lead to ineffective verification and thus bugs that would have not been caught. We thus decided to propose a register-like data structure, with a finite number of values of each type for the following types: `int`, `float`, `str`, `bool`. The number of values can be increased in future versions of the platform. The fact that the types are known and that keys (here attribute names) are fixed helps during verification.
-
-We think that the tradeoff is acceptable, as SVSHI gets effective verification of the applications at the cost of lesser free variable names and types.
-
-##### 4.3.3.4 CrossHair in SVSHI and code modification
+##### 4.3.3.2 CrossHair in SVSHI and code modification
 
 We develop here what we formally verify about applications written for SVSHI and how we modify them for the verification process to work.
 
@@ -751,7 +764,15 @@ post: ventilation_invariant(**__return__)
 
 As we can see, there are 3 applications installed in the system: `door_lock`, `plants` and `ventilation`, which are the 3 prototypes detailed in [Section 5.1](#51-lab-prototypes).
 
-##### 4.3.3.5 DPT and types
+##### 4.3.3.3 AppState tradeoff
+
+As explained in [the section about how to write apps](#2211-writing-apps), applications have access to an `AppState` instance. This lets the applications store state that persists between calls to `iteration()` and `invariant()`.
+
+Given our observation about how CrossHair deals with arbitrary dictionaries, we decided to not allow an arbitrary key-value store as we originally thought. Indeed, having an abitrary dictionary as `AppState` would have lead to ineffective verification and thus bugs that would have not been caught. We thus decided to propose a register-like data structure, with a finite number of values of each type for the following types: `int`, `float`, `str`, `bool`. The number of values can be increased in future versions of the platform. The fact that the types are known and that keys (here attribute names) are fixed helps during verification.
+
+We think that the tradeoff is acceptable, as SVSHI gets effective verification of the applications at the cost of lesser free variable names and types.
+
+##### 4.3.3.4 DPT and types
 
 This part of the verification concerns mainly the bindings. Developers indeed have to fill the `apps_bindings.json` to map physical device communication objects to prototypical device communication objects. For the system to work properly, it is crucial that these bindings are sound. Also, we cannot formally verify their correctness.  
 Therefore, we verify the most of the compatibility we can with the information we have.
@@ -824,7 +845,7 @@ We verify the following properties:
 
   This stage performs the KNX Datatype check just as the previous one but between prototypical device communication objects that are linked to the same physical device's communication object.
 
-##### 4.3.3.6 Runtime verification
+##### 4.3.3.5 Runtime verification
 
 The runtime verification takes place in the `runtime` module. It leverages the `conditions.py` file, generated by the `verification` module and copied over to `runtime` by the `core` module. This file contains a function, `check_conditions()`, that given a `PhysicalState` and multiple `AppState` (one per installed app) returns a boolean representing whether the apps' conditions are preserved. It does so by constructing a conjunctive boolean expression with all the apps' `invariant()` functions.
 
@@ -1068,3 +1089,5 @@ SVSHI is an **open-source** project that welcomes and encourages external contri
 <a id="29">[29]</a> <https://www.knx.org/knx-en/for-professionals/newsroom/en/press/Market-researchers-see-KNX-as-the-dominant-technology-in-the-rapidly-growing-smart-home-market/>
 
 <a id="30">[30]</a> <https://www.marketresearch.com/QYResearch-Group-v3531/Global-KNX-Products-Consumption-13107225/>
+
+<a id="31">[31]</a> <https://www.knx.org/knx-en/for-professionals/get-started/knx-virtual/>
