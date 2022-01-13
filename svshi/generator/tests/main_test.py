@@ -1,5 +1,4 @@
 import os
-import subprocess
 import shutil
 import pytest
 from ..main import main, parse_args
@@ -48,8 +47,8 @@ def test_main():
     )
 
     # Cleanup
-    subprocess.run(
-        f"mv {GENERATED_APP_DIRECTORY}/app_prototypical_structure.json {DEVICES_FILE}",
-        shell=True,
+    shutil.move(
+        f"{GENERATED_APP_DIRECTORY}/app_prototypical_structure.json",
+        DEVICES_FILE,
     )
     shutil.rmtree(GENERATED_APP_DIRECTORY)

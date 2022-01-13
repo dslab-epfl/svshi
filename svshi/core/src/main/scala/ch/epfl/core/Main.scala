@@ -299,7 +299,7 @@ object Main {
 
     Try(compileAppsOperations(existingAppsLibrary, newAppsLibrary, newPhysicalStructure)) match {
       case Failure(exception: CompileErrorException) => printErrorAndExit(exception.msg)
-      case Failure(exception)                        => printErrorAndExit("Compilation/verification failed, see messages above")
+      case Failure(exception)                        => printErrorAndExit(s"$exception\nCompilation/verification failed, see messages above")
       case Success((ok, verifierMessages)) => {
         printTrace(verifierMessages)
         if (ok) {

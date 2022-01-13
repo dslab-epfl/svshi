@@ -1,0 +1,24 @@
+{
+    "permissionLevel": "unknown",
+    "timer": 60,
+    "files":
+    [
+       "file1.txt",
+       "file2.png"
+    ],
+    "devices":
+    [
+       {
+         "name": "device1",
+         "deviceType": "binary"
+       },
+       {
+         "name": "device2",
+         "deviceType": "binary"
+       },
+       {
+         "name": "device3",
+         "deviceType": "switch"
+       }
+    ]
+}

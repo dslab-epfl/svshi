@@ -247,7 +247,7 @@ Here is the list of the most used DPTs:
 
 #### 1.2.5 KNX simulator
 
-The KNX Association offers a *simulator* for a KNX system named *KNX Virtual* [[31]](#31). It is a Windows-based application that emulates a KNX installation. It can be used to learn the KNX terminology and get familiar with the technology.\\
+The KNX Association offers a _simulator_ for a KNX system named _KNX Virtual_ [[31]](#31). It is a Windows-based application that emulates a KNX installation. It can be used to learn the KNX terminology and get familiar with the technology.\\
 It can be used to get used to ETS as well: ETS can connect to it and program the devices. Then a GUI lets the user play with the sensors and shows the result on the simulated actuator.
 
 The available devices are pre-installed and cannot be changed. The software GUI offers several views with different devices shown.
@@ -256,7 +256,7 @@ The devices are available on ETS through a catalog similar to the ones offered b
 
 The main downside of this simulator is the fact that the devices are unique to KNX virtual. The devices available do not mirror real devices and thus the configuration is simplified with respect to a real device's one. Moreover, this cannot be used to simulate an existing installation, for example, to test the solution we developed.
 
-Other commercial solution exist like *KNX Simulator*[^16] but as they are not free, we did not explore them in detail.
+Other commercial solution exist like _KNX Simulator_[^16] but as they are not free, we did not explore them in detail.
 
 [^16]: https://www.knxsimulator.com
 

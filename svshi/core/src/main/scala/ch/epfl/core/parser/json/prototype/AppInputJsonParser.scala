@@ -51,6 +51,6 @@ object AppInputJsonParser {
     upickle.default.read[PrototypicalStructureJson](jsonContent)
   } catch {
     case e: Exception =>
-      throw new JsonParsingException("The given Json is not parsable, it has either a syntax error or the wrong structure.")
+      throw new JsonParsingException(s"The given Json is not parsable, it has either a syntax error or the wrong structure.\nThe following exception was thrown $e")
   }
 }

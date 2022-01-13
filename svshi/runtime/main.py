@@ -13,7 +13,7 @@ import os
 import re
 import sys
 
-SVSHI_HOME = os.environ["SVSHI_HOME"]
+SVSHI_HOME = os.environ["SVSHI_HOME"].replace("\\", "/")
 SVSHI_FOLDER = f"{SVSHI_HOME}/svshi"
 
 APP_LIBRARY_DIR = f"{SVSHI_FOLDER}/app_library"
@@ -22,7 +22,8 @@ CONDITIONS_FILE_PATH = f"{SVSHI_FOLDER}/runtime/conditions.py"
 VERIFICATION_FILE_PATH = f"{SVSHI_FOLDER}/runtime/verification_file.py"
 RUNTIME_FILE_PATH = f"{SVSHI_FOLDER}/runtime/runtime_file.py"
 RUNTIME_FILE_MODULE = "runtime.runtime_file"
-LOGS_DIR = f"{SVSHI_HOME}/logs/{datetime.now()}"
+LOGS_DIR_NAME = str(datetime.now()).replace(" ", "__").replace(":", "_")
+LOGS_DIR = f"{SVSHI_HOME}/logs/{LOGS_DIR_NAME}"
 
 
 def parse_args(args) -> Tuple[str, int]:

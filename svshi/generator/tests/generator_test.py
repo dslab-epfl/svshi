@@ -1,6 +1,5 @@
 import os
 import shutil
-import subprocess
 import filecmp
 import pytest
 from ..generation.generator import Generator
@@ -46,9 +45,9 @@ def test_generator_move_devices_json_to_generated_app():
     assert os.path.exists(DEVICES_FILE) == False
 
     # More cleanup
-    subprocess.run(
-        f"mv {GENERATED_APP_DIRECTORY}/app_prototypical_structure.json {DEVICES_FILE}",
-        shell=True,
+    shutil.move(
+        f"{GENERATED_APP_DIRECTORY}/app_prototypical_structure.json",
+        DEVICES_FILE,
     )
 
 

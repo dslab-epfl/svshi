@@ -3,6 +3,7 @@ package ch.epfl.core.compiler.knxProgramming
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical._
+import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
 import com.github.tototoshi.csv.CSVReader
 import org.scalatest.flatspec.AnyFlatSpec
@@ -65,15 +66,7 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
   }
 
   "outputProgrammingFile" should "output the right file given the assignment" in {
-    val expectedFile = """
-device address '1.1.2'
-  node 'node2'
-    comm object 'commObject2' => group address '2/1/2'
-    comm object 'commObject3' => group address '2/1/3'
-device address '1.1.1'
-  node 'node1'
-    comm object 'commObject1' => group address '2/1/1'    
-    """.strip()
+    val expectedFilePath = Constants.SVSHI_FOLDER_PATH / "core" / "res" / "expected_assignment_test.txt"
 
     val filename = "assignment_test.txt"
     programmer.outputProgrammingFile(filename)
@@ -81,6 +74,8 @@ device address '1.1.1'
     val filePath = directoryPath / filename
 
     val file = os.read(filePath)
+
+    val expectedFile = os.read(expectedFilePath)
 
     file shouldEqual expectedFile
 

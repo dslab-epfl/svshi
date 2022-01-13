@@ -1,7 +1,7 @@
 from ..parsing.device import Device
 from typing import List
 import os
-import subprocess
+import shutil
 
 
 class Generator:
@@ -20,16 +20,13 @@ class Generator:
         """
         Copies the skeleton to the newly generated app. The skeleton path should have the form "$SVSHI_HOME/generator/skeleton".
         """
-        subprocess.run(f"cp -r {skeleton_path}/* {self.__app_name}", shell=True)
+        shutil.copytree(skeleton_path, self.__app_name, dirs_exist_ok=True)
 
     def move_devices_json_to_generated_app(self):
         """
         Moves the devices json to the newly generated app, renaming it `app_prototypical_structure.json`.
         """
-        subprocess.run(
-            f"mv {self.__devices_json_filename} {self.__app_name}/app_prototypical_structure.json",
-            shell=True,
-        )
+        shutil.move(self.__devices_json_filename, f"{self.__app_name}/app_prototypical_structure.json")
 
     def generate_multiton_class(self):
         """

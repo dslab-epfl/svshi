@@ -1,0 +1,7 @@
+device address '1.1.2'
+  node 'node2'
+    comm object 'commObject2' => group address '2/1/2'
+    comm object 'commObject3' => group address '2/1/3'
+device address '1.1.1'
+  node 'node1'
+    comm object 'commObject1' => group address '2/1/1'

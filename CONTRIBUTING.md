@@ -26,15 +26,14 @@
 
 ## Requirements
 
-- Unix-based OS (Linux or macOS).
-- [Python](https://www.python.org) 3.8 or newer.
+- [Python](https://www.python.org) 3.9 or newer.
 - [Java](https://www.oracle.com/java/) 11 or newer.
 - [Scala](https://www.scala-lang.org) 2.13.x or newer. Scala 3 is not yet supported.
 - [sbt](https://www.scala-sbt.org) 1.5.5 or newer.
 
 ## Setup
 
-Install SVSHI from sources as explained in the [README](/README.md), then install all the Python dependencies with `pip install -r requirements.txt` inside `svshi/`.
+Install SVSHI from sources as explained in the [README](/README.md).
 
 ## Python
 
@@ -237,8 +236,10 @@ We use [GitHub Actions](https://github.com/dslab-epfl/smartinfra/actions) to run
 
 To build a new release:
 
-1. Run `./build_release.sh` inside `svshi/` to build the archive.
-2. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `tar.gz` archive as an attachment. Make sure the release version and the svshi version are the same.
+1. Update the variable `VERSION` in `svshi/build_release.sh`.
+2. Update the CLI version in `svshi/core/build.sbt`. Do not include `SNAPSHOT` in the version.
+3. Run `./build_release.sh` inside `svshi/` to build the archive.
+4. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
 
 ## Code of Conduct
 

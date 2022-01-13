@@ -1,21 +1,21 @@
 #!/bin/sh
 echo "Running Python tests in 'generator'... \n"
 cd generator
-pytest
+python3 -m pytest
 
 sleep 1
 
 echo "\nRunning Python tests in 'runtime'... \n"
 cd ..
 cd runtime
-pytest
+python3 -m pytest
 
 sleep 1
 
 echo "\nRunning Python tests in 'verification'... \n"
 cd ..
 cd verification
-pytest
+python3 -m pytest
 
 sleep 1
 

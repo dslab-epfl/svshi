@@ -3,7 +3,7 @@ package ch.epfl.core.utils
 import os.Path
 
 object Constants {
-  private val DEFAULT_SVSHI_HOME = s"${sys.env("HOME")}/smartinfra"
+  lazy private val DEFAULT_SVSHI_HOME = if(sys.env.contains("HOME")) s"${sys.env("HOME")}/smartinfra" else if(sys.env.contains("HOMEPATH"))  s"${sys.env("HOME")}/smartinfra" else ""
   val SVSHI_HOME: String = if (sys.env.contains("SVSHI_HOME")) sys.env("SVSHI_HOME") else DEFAULT_SVSHI_HOME
 
   lazy val SVSHI_HOME_PATH = os.Path(SVSHI_HOME)

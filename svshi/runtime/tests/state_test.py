@@ -217,6 +217,9 @@ async def test_state_listen():
 
     assert test_state_holder.xknx_for_listening.listening == True
 
+    # Cleanup
+    await state.stop()
+
 
 @pytest.mark.asyncio
 async def test_state_stop():
@@ -257,6 +260,9 @@ async def test_state_initialize():
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
 
+    # Cleanup
+    await state.stop()
+
 
 @pytest.mark.asyncio
 async def test_state_periodic_apps_are_run():
@@ -289,6 +295,9 @@ async def test_state_periodic_apps_are_run():
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
     assert state._physical_state == state._last_valid_physical_state
+
+    # Cleanup
+    await state.stop()
 
 
 @pytest.mark.asyncio
@@ -335,6 +344,9 @@ async def test_state_on_telegram_update_state_and_notify():
     assert state._app_states[SECOND_APP_NAME] == AppState()
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
+
+    # Cleanup
+    await state.stop()
 
 
 @pytest.mark.asyncio
@@ -489,6 +501,9 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
 
+    # Cleanup
+    await state.stop()
+
 
 @pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify_and_update_again_and_notify_and_send_to_knx():
@@ -553,6 +568,9 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
 
+    # Cleanup
+    await state.stop()
+
 
 @pytest.mark.asyncio
 async def test_state_update_app_state():
@@ -609,3 +627,6 @@ async def test_state_update_app_state():
     )
     assert state._app_states[THIRD_APP_NAME] == AppState()
     assert state._app_states[FOURTH_APP_NAME] == AppState()
+
+    # Cleanup
+    await state.stop()

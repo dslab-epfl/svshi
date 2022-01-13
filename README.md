@@ -12,7 +12,11 @@
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
     - [From archive](#from-archive)
+      - [Unix (Linux / macOS)](#unix-linux--macos)
+      - [Windows](#windows)
     - [From sources](#from-sources)
+      - [Unix (Linux / macOS)](#unix-linux--macos-1)
+      - [Windows](#windows-1)
     - [Docker](#docker)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
@@ -31,6 +35,7 @@
       - [Runtime](#runtime)
     - [Execution](#execution)
   - [Contributing](#contributing)
+  - [White paper](#white-paper)
   - [License](#license)
 
 The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
@@ -41,29 +46,57 @@ With SVSHI, a user can develop and run Python applications interacting with [KNX
 
 ## Installation
 
-To work, SVSHI needs Python 3.8 (or newer) and Java 11 (or newer). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
+To work, SVSHI needs Python 3.9 (or newer) and Java 11 (or newer). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
 
 To check if the installation was successful, run `svshi version` in your terminal.
 
 ### From archive
 
-To install SVSHI:
+#### Unix (Linux / macOS)
 
-1. Download the latest version `tar.gz` archive from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
-2. Unzip it, then run `make install`
+To install SVSHI on Linux or macOS:
+
+1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
+2. Unzip it, move the folder to the desired installation site, then run `./install.sh` inside it.
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
-4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
+4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/the/svshi/folder` (a path example is `~/svshi-v1.1.0`) to your `.bash_profile`, `.zsh_profile`, etc.
 
-To update SVSHI, you just need to do the first two steps.
+To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `svshi` folder into the new one before replacing.
+
+#### Windows
+
+To install SVSHI on Windows:
+
+1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
+2. Unzip it, move the folder to the desired installation site, then run the following scripts inside it:
+   - `create_svshi_home_env_var.bat` to create the SVSHI_HOME environment variable
+   - `install.bat` to install the program
+
+> IMPORTANT! use Powershell or the new Windows Terminal to run these scripts!
+
+To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
 
 ### From sources
 
-To build from sources:
+#### Unix (Linux / macOS)
 
-1. Clone the repo
+To build from sources on Linux or macOS:
+
+1. Clone the repository
 2. Run `./build.sh`
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
+
+#### Windows
+
+To build from sources on Windows:
+
+1. Clone the repository
+2. Run `create_svshi_home_env_var.bat`
+3. Run `build.bat`
+4. Run `install.bat`
+
+> IMPORTANT! use Powershell or the new Windows Terminal to run these scripts!
 
 ### Docker
 
@@ -273,6 +306,10 @@ This execution model has been chosen for its ease of use: users do not need to w
 ## Contributing
 
 See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how to get started with the project.
+
+## White paper
+
+See [the white paper](/svshi/documentation/documentation.md) for an in-depth understanding about why SVSHI exists, what it does and how it does it.
 
 ## License
 

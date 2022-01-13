@@ -1,0 +1,49 @@
+{
+    "deviceInstances":
+    [
+       {
+         "name": "device1",
+         "address": "1.1.1",
+         "nodes":
+           [
+             {
+               "name" : "device1Node1",
+               "comObjects":
+                 [
+                   {
+                     "name": "device1Node1ComObj1",
+                     "datatype": "DPT-1",
+                     "ioType" : "in",
+                     "id": 111
+                   }
+                 ]
+             }
+           ]
+       },
+       {
+         "name": "device2",
+         "address": "1.1.2",
+         "nodes":
+           [
+             {
+               "name" : "device2Node1",
+               "comObjects":
+                 [
+                   {
+                     "name": "device2Node1ComObj1",
+                     "datatype": "DPT-1",
+                     "ioType" : "out",
+                     "id": 211
+                   },
+                   {
+                     "name": "device2Node1ComObj2",
+                     "datatype": "DPT-5",
+                     "ioType" : "in",
+                     "id": 212
+                   }
+                 ]
+             }
+           ]
+       }
+    ]
+}

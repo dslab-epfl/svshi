@@ -1,5 +1,7 @@
 #!/bin/sh
-echo "Building the svshi CLI...\n"
+echo "Building svshi...\n"
 cd svshi/core
 sbt "pack; packInstall"
-echo "\n...svshi building done!"
+cd ..
+pip3 install -r requirements.txt
+echo "\n...done!"

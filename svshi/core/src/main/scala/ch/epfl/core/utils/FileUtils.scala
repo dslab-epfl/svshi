@@ -24,7 +24,7 @@ object FileUtils {
         if (entry.isDirectory) {
           os.makeDir.all(path)
         } else {
-          val parentPath = os.Path("/" + path.segments.toList.reverse.tail.reverse.mkString("/"))
+          val parentPath = path / os.up
           os.makeDir.all(parentPath)
           os.write(path, zipFile.getInputStream(entry))
         }

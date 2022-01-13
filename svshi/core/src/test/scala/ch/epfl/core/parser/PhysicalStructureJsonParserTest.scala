@@ -3,65 +3,15 @@ package ch.epfl.core.parser
 import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser.parseJson
 import ch.epfl.core.parser.json.physical._
-import ch.epfl.core.utils.FileUtils
+import ch.epfl.core.utils.{Constants, FileUtils}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
+  val resPath = Constants.SVSHI_FOLDER_PATH / "core" / "res" / "physical_structure_json_parser"
   "parseJson" should "return the correct PhysicalStructureJson with correct input" in {
-    val json =
-      """
-        |{
-        |    "deviceInstances":
-        |    [
-        |       {
-        |         "name": "device1",
-        |         "address": "1.1.1",
-        |         "nodes":
-        |           [
-        |             {
-        |               "name" : "device1Node1",
-        |               "comObjects":
-        |                 [
-        |                   {
-        |                     "name": "device1Node1ComObj1",
-        |                     "datatype": "DPT-1",
-        |                     "ioType" : "in",
-        |                     "id": 111
-        |                   }
-        |                 ]
-        |             }
-        |           ]
-        |       },
-        |       {
-        |         "name": "device2",
-        |         "address": "1.1.2",
-        |         "nodes":
-        |           [
-        |             {
-        |               "name" : "device2Node1",
-        |               "comObjects":
-        |                 [
-        |                   {
-        |                     "name": "device2Node1ComObj1",
-        |                     "datatype": "DPT-1",
-        |                     "ioType" : "out",
-        |                     "id": 211
-        |                   },
-        |                   {
-        |                     "name": "device2Node1ComObj2",
-        |                     "datatype": "DPT-5",
-        |                     "ioType" : "in",
-        |                     "id": 212
-        |                   }
-        |                 ]
-        |             }
-        |           ]
-        |       }
-        |    ]
-        |}
-        |
-        |""".stripMargin
+    val json = os.read(resPath / "phys_struct.json")
+
 
     val device1 = PhysicalDeviceJson(
       "device1",
