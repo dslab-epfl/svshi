@@ -86,7 +86,7 @@ In this section, we present two risk stories that highlight potential problems d
 
 Water temperature inside domestic water heaters presents two conflicting risks: the risk of contracting _Legionella_, the bacteria responsible for Legionnaires’ disease[^1], and the risk of scalding.
 
-[^1]: <https://en.wikipedia.org/wiki/Legionnaires%27_disease>) (_pulmonary legionellosis_
+[^1]: <https://en.wikipedia.org/wiki/Legionnaires%27_disease> (_pulmonary legionellosis_)
 
 **Legionnaires' disease** is a dangerous illness, with death rates up to 12% [[10]](#10). The elderly, smokers, the immunocompromised and patients suffering from chronic respiratory illnesses are the main groups at risk, and they include a large share of the population at home.
 
