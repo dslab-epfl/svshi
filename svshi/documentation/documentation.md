@@ -85,7 +85,7 @@ KNX is one of the most widely used for large installations with thousands of dev
 [^20]: https://www.insteon.com
 [^21]: https://www.velbus.eu/domotica/
 
-Becoming increasingly similar to a computer, the building has to face analogous challenges in terms of security, safety, reliability, and correctness. Even the most stable, mature, and used standard [[29]](#29), KNX, is lacking in this area, with [severe issues](#13-current-issues) that hinder its usability and dependability when programming advanced systems.
+Becoming increasingly similar to a computer, the building has to face analogous challenges in terms of security, safety, reliability, and correctness. Even the most stable, mature, and used standard [[29]](#29), KNX, is lacking in this area, with severe issues (see [Section 1.3](#13-current-issues)) that hinder its usability and dependability when programming advanced systems.
 
 This project stems from the desire of solving these issues and demonstrating that reliable and complex applications can be easily written for smart buildings, with the end goal of offering a 100% secure and verified platform to program smart infrastructures.
 
