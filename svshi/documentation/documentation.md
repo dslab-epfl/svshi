@@ -492,11 +492,11 @@ An example with multiple post-conditions could be:
 
 ```python
 def unchecked_function() -> int:
- """
- post: __return__ > 0
- post: __return__ != 3
- """
- return external_library_get_int()
+  """
+  post: __return__ > 0
+  post: __return__ != 3
+  """
+  return external_library_get_int()
 ```
 
 Furthermore, applications have access to a set of variables (the _app state_) they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an event-based manner (either the KNX devices' state changes or a periodic app's timer is finished, see [Section 4.2.4 about execution](#424-execution)). All calls to `iteration()` are independent and thus SVSHI offers a way to store a state that will live in between calls. There is a local state instance _per app_.
@@ -516,15 +516,15 @@ from instances import app_state, BINARY_SENSOR, SWITCH
 
 
 def invariant() -> bool:
- # The switch should be on when the binary sensor is on or when INT_0 == 42, off otherwise
- return ((BINARY_SENSOR.is_on() or app_state.INT_0 == 42) and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
+  # The switch should be on when the binary sensor is on or when INT_0 == 42, off otherwise
+  return ((BINARY_SENSOR.is_on() or app_state.INT_0 == 42) and SWITCH.is_on()) or (not BINARY_SENSOR.is_on() and not SWITCH.is_on())
 
 
 def iteration():
- if BINARY_SENSOR.is_on() or app_state.INT_0 == 42:
- SWITCH.on()
- else:
- SWITCH.off()
+  if BINARY_SENSOR.is_on() or app_state.INT_0 == 42:
+    SWITCH.on()
+  else:
+    SWITCH.off()
 ```
 
 This application sets a switch "on" (a light for example) when a binary sensor is in the "on" state (a push-button for example) or when the `INT_0` value equals 42. The `invariant()` ensures that if these conditions are met, the switch is always in the "on" state and if they are not, it is set to "off".
@@ -631,15 +631,15 @@ Here is an example of a prototypical structure file:
 
 ```json
 {
- "permissionLevel": "notPrivileged",
- "timer": 60,
- "files": ["file1.txt", "file2.png"],
- "devices": [
- {
- "name": "name_of_the_instances",
- "deviceType": "type_of_the_devices"
- }
- ]
+  "permissionLevel": "notPrivileged",
+  "timer": 60,
+  "files": ["file1.txt", "file2.png"],
+  "devices": [
+    {
+      "name": "name_of_the_instances",
+      "deviceType": "type_of_the_devices"
+    }
+  ]
 }
 ```
 
@@ -737,16 +737,16 @@ For example, let us take an application that turns a light on when a presence de
 
 ```python
 def invariant():
- if PRESENCE.is_on():
- return LIGHT.is_on()
- else:
- return not LIGHT.is_on()
+  if PRESENCE.is_on():
+    return LIGHT.is_on()
+  else:
+    return not LIGHT.is_on()
 
 def iteration():
- if PRESENCE.is_on():
- LIGHT.on()
- else:
- LIGHT.off()
+  if PRESENCE.is_on():
+    LIGHT.on()
+  else:
+    LIGHT.off()
 ```
 
 Here, at some point in the execution, the presence will be `on` because someone has just arrived but the light will be `off` because it is exactly _this_ app that should set it to `on`. Thus, the state is invalid before app execution but valid after. The described scenario however cannot be verified using CrossHair because only some of the invalid states lead to valid ones after executing the apps. Some of the invalid states will stay invalid and this is normal behaviour. Therefore, to catch these errors, we implemented the [runtime verification (Section 4.2.3.3)](#4233-runtime-verification).
@@ -771,36 +771,36 @@ Before:
 
 ```python
 def iteration():
- if not PRESENCE_DETECTOR.is_on() and not DOOR_LOCK_SENSOR.is_on():
- if app_state.INT_0 > 5:
- unchecked_send_message("The door at office INN319 is still opened but nobody is there!")
- else:
- app_state.INT_0 += 1
- else:
- app_state.INT_0 = 0
+  if not PRESENCE_DETECTOR.is_on() and not DOOR_LOCK_SENSOR.is_on():
+    if app_state.INT_0 > 5:
+      unchecked_send_message("The door at office INN319 is still opened but nobody is there!")
+    else:
+      app_state.INT_0 += 1
+  else:
+    app_state.INT_0 = 0
 ```
 
 After:
 
 ```python
 def door_lock_iteration(app_state: AppState, physical_state: PhysicalState):
- """
-pre: door_lock_invariant(app_state, physical_state)
-pre: plants_invariant(app_state, physical_state)
-pre: ventilation_invariant(app_state, physical_state)
-post: door_lock_invariant(**__return__)
-post: plants_invariant(**__return__)
-post: ventilation_invariant(**__return__)
-"""
- if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state
- ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
- if app_state.INT_0 > 5:
- None
- else:
- app_state.INT_0 += 1
- else:
- app_state.INT_0 = 0
- return {'app_state': app_state, 'physical_state': physical_state}
+  """
+    pre: door_lock_invariant(app_state, physical_state)
+    pre: plants_invariant(app_state, physical_state)
+    pre: ventilation_invariant(app_state, physical_state)
+    post: door_lock_invariant(**__return__)
+    post: plants_invariant(**__return__)
+    post: ventilation_invariant(**__return__)
+  """
+  if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state
+    ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
+    if app_state.INT_0 > 5:
+      None
+    else:
+      app_state.INT_0 += 1
+  else:
+    app_state.INT_0 = 0
+  return {'app_state': app_state, 'physical_state': physical_state}
 ```
 
 As we can see, there are 3 applications installed in the system: `door_lock`, `plants`, and `ventilation`, which are the 3 prototypes detailed in [Section 5.1](#51-lab-prototypes).
@@ -936,11 +936,11 @@ Before:
 from instances import app_state, BINARY_SENSOR, SWITCH
 
 def iteration():
- if BINARY_SENSOR.is_on() or app_state.INT_0 == 42:
- unchecked_send_email('test@test.com')
- SWITCH.on()
- else:
- SWITCH.off()
+  if BINARY_SENSOR.is_on() or app_state.INT_0 == 42:
+    unchecked_send_email('test@test.com')
+    SWITCH.on()
+  else:
+    SWITCH.off()
 ```
 
 After:
@@ -950,13 +950,13 @@ APP_ONE_BINARY_SENSOR = Binary_sensor_app_one_binary_sensor()
 APP_ONE_SWITCH = Switch_app_one_switch()
 
 def app_one_iteration(app_state: AppState, physical_state: PhysicalState):
- if APP_ONE_BINARY_SENSOR.is_on(physical_state
- ) or app_state.INT_0 == 42:
- app_one_unchecked_send_email('test@test.com')
- APP_ONE_SWITCH.on(physical_state)
- else:
- APP_ONE_SWITCH.off(physical_state)
- return {'app_state': app_state, 'physical_state': physical_state}
+  if APP_ONE_BINARY_SENSOR.is_on(physical_state
+    ) or app_state.INT_0 == 42:
+    app_one_unchecked_send_email('test@test.com')
+    APP_ONE_SWITCH.on(physical_state)
+  else:
+    APP_ONE_SWITCH.off(physical_state)
+  return {'app_state': app_state, 'physical_state': physical_state}
 ```
 
 Here is an example of a device class:
@@ -964,18 +964,18 @@ Here is an example of a device class:
 ```python
 @dataclasses.dataclass
 class PhysicalState:
- GA_0_0_1: bool
- GA_0_0_2: bool
+  GA_0_0_1: bool
+  GA_0_0_2: bool
 
 class Switch_app_one_switch():
- def on(self, physical_state: PhysicalState):
- physical_state.GA_0_0_2 = True
+  def on(self, physical_state: PhysicalState):
+    physical_state.GA_0_0_2 = True
 
- def off(self, physical_state: PhysicalState):
- physical_state.GA_0_0_2 = False
+  def off(self, physical_state: PhysicalState):
+    physical_state.GA_0_0_2 = False
 
- def is_on(self, physical_state: PhysicalState) -> bool:
- return physical_state.GA_0_0_2
+  def is_on(self, physical_state: PhysicalState) -> bool:
+    return physical_state.GA_0_0_2
 ```
 
 As we can see, the classes are modified to update the physical state instead of directly sending and reading data from KNX. This feature is leveraged at runtime, which is the subject of the next section.
