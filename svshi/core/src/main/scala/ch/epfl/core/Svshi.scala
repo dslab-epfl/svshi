@@ -45,7 +45,7 @@ object Svshi {
             case (appName, appFiles) => {
               val appFilesPath = filesDirPath / appName
               if (!os.exists(appFilesPath)) os.makeDir.all(appFilesPath)
-              FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName), appFilesPath)
+              FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName).filter(fPath => os.exists(fPath)), appFilesPath)
             }
           }
 
@@ -259,7 +259,7 @@ object Svshi {
         newAppsLibrary = emptyApplibrary,
         existingPhysicalStructure = existingPhysicalStructure,
         newPhysicalStructure = existingPhysicalStructure
-      )(success = success, info = info, warning = warning, err = err)
+      )(success = s => (), info = s => (), warning = warning, err = err)
       if (genBindingCode != SUCCESS_CODE) {
         restoreGeneratedFolder()
         restoreAppLibraryFromBackup()

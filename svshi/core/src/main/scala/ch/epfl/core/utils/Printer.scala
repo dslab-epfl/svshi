@@ -8,7 +8,7 @@ object Printer {
     *
     * @param input
     */
-  def info(input: String)(implicit style: Style): Unit = println(style.info(s"INFO: $input"))
+  def info(input: String)(implicit style: Style): Unit = println(style.info(s"$input"))
 
   /** Print the given warning message
     *
@@ -26,5 +26,5 @@ object Printer {
     *
     * @param input
     */
-  def success(input: String)(implicit style: Style): Unit = println(style.success(s"SUCCESS: $input"))
+  def success(input: String)(implicit style: Style): Unit = println(style.success(s"$input"))
 }
