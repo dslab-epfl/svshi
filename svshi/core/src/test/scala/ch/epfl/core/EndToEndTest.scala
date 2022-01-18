@@ -118,7 +118,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     val newAppPath = GENERATED_FOLDER_PATH / appName
     os.exists(pathToProto) shouldBe false
-    out.toString.trim should include(s"SUCCESS: The app '$appName' has been successfully created!")
+    out.toString.trim should include(s"The app '$appName' has been successfully created!")
   }
 
   "generateApp" should "generate the correct app in generated folder when called on a valid json prototypical structure - pipeline 1" in {
@@ -141,7 +141,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Compare everything to the expected app
 
-    out.toString.trim should (include(s"SUCCESS: The app '$appName' has been successfully created!"))
+    out.toString.trim should (include(s"The app '$appName' has been successfully created!"))
 
     os.exists(newAppPath / appProtoFileName) shouldBe true
     newAppPath / appProtoFileName should beAFile
@@ -283,7 +283,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
     GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "apps_bindings.json")
 
-    out.toString.trim should (include("""SUCCESS: The bindings have been successfully created!"""))
+    out.toString.trim should (include("""The bindings have been successfully created!"""))
   }
 
   "generateBindings" should "fail when the ETS project file name is not absolute" in {
@@ -321,7 +321,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
     }
 
-    out.toString.trim should (include("SUCCESS: The apps have been successfully compiled and verified!") and
+    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
       include(
         "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
       ) and
@@ -412,8 +412,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
 
     os.exists(pathToExpectedFile) shouldBe true
-    out.toString.trim should (include("INFO: this a line of text printed by the runtime module on stdout") and
-      include("INFO: this is a line of text printed by runtime module on stdout after 3 sec") and
+    out.toString.trim should (include("this a line of text printed by the runtime module on stdout") and
+      include("this is a line of text printed by runtime module on stdout after 3 sec") and
       include("this a line of text printed by the runtime module on stderr"))
     err.toString.trim shouldEqual ""
   }
@@ -492,7 +492,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
 
     // Check
-    out.toString.trim should include("SUCCESS: The bindings have been successfully created!")
+    out.toString.trim should include("The bindings have been successfully created!")
     val expectedGenerated = pipeline3Path / "expected_generated_app_two"
     compareFolders(GENERATED_FOLDER_PATH, expectedGenerated, defaultIgnoredFiles)
   }
@@ -772,6 +772,31 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
+  "removeApp" should "not print info and success messages of the bindings, answer == y" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+
+    // Remove app two
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        Main.main(Array("removeApp", "-n", appTwoName))
+      }
+    }
+    // Check
+    out.toString.trim shouldNot include("The bindings have been successfully created!")
+    out.toString.trim shouldNot include("Generating the bindings...")
+    val expectedLibrary = pipeline3Path / "expected_library_one"
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+  }
+
   "removeApp" should "do nothing and keep installed apps as is if answer == n" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -838,7 +863,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       }
     }
     // Check
-    out.toString.trim should include(s"SUCCESS: The app '$appTwoName' has been successfully removed!")
+    out.toString.trim should include(s"The app '$appTwoName' has been successfully removed!")
     val expectedLibrary = pipeline3Path / "expected_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true

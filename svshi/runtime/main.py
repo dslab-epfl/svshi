@@ -12,6 +12,9 @@ import asyncio
 import os
 import re
 import sys
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 SVSHI_HOME = os.environ["SVSHI_HOME"].replace("\\", "/")
 SVSHI_FOLDER = f"{SVSHI_HOME}/svshi"

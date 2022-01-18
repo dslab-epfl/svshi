@@ -77,8 +77,8 @@ object FileUtils {
     * @param destinationDir the directory in which the file is copied
     */
   def copyFile(filePath: os.Path, destinationDir: os.Path): Unit = {
-    if (!os.exists(filePath)) throw new IllegalArgumentException("filePath must be an existing path!")
-    if (!os.isDir(destinationDir)) throw new IllegalArgumentException("destinationDir must be a path to a directory!")
+    if (!os.exists(filePath)) throw new IllegalArgumentException(s"filePath $filePath must be an existing path!")
+    if (!os.isDir(destinationDir)) throw new IllegalArgumentException(s"destinationDir $destinationDir must be a path to a directory!")
 
     os.copy.into(filePath, destinationDir, replaceExisting = true)
   }
