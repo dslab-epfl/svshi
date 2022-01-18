@@ -1,7 +1,7 @@
 # SVSHI - Secure and Verified Smart Home Infrastructure
 
 <p align="center">
-  <img src="res/logo.png" alt="logo" width="50%"/>
+  <img src="svshi/res/logo.png" alt="logo" width="50%"/>
 </p>
 
 ![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
@@ -34,6 +34,7 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
+  - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
   - [White paper](#white-paper)
   - [License](#license)
@@ -68,13 +69,15 @@ To update SVSHI, you just need to do the first two steps. However, do not forget
 To install SVSHI on Windows:
 
 1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
-2. Unzip it, move the folder to the desired installation site, then run the following scripts inside it:
-   - `create_svshi_home_env_var.bat` to create the SVSHI_HOME environment variable
-   - `install.bat` to install the program
+2. Setup `python3` by executing the script `setup-python3.ps1`. This sets up a `python3` alias if it does not exist and installs `pip`.
+> Make sure you add the path asked by `pip` to your `Path` environment variable!
+3. Reboot your computer.
+4. Unzip the SVSHI archive, move the folder to the desired installation site. Then run the `install.ps1` script inside the unzipped folder to install the program.
+5. Reboot your computer.
 
-> IMPORTANT! use Powershell or the new Windows Terminal to run these scripts!
+> IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
+To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
 
 ### From sources
 
@@ -92,11 +95,14 @@ To build from sources on Linux or macOS:
 To build from sources on Windows:
 
 1. Clone the repository
-2. Run `create_svshi_home_env_var.bat`
-3. Run `build.bat`
-4. Run `install.bat`
+2. Setup `python3` by executing the script `setup-python3.ps1`. This sets up a `python3` alias if it does not exist and installs `pip`.
+3. Reboot your computer.
+4. Unzip the SVSHI archive, move the folder to the desired installation site. Then run the `install.ps1 -build true` script inside the unzipped folder to build and install the program.
+5. Reboot your computer.
 
-> IMPORTANT! use Powershell or the new Windows Terminal to run these scripts!
+> IMPORTANT! use Powershell to execute the scripts!
+
+To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
 
 ### Docker
 
@@ -104,6 +110,8 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 
 1. Run `./build_docker.sh` to build the image
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
+3. In `/home/maki/svshi` is the repo copied
+4. `svshi` command is accessible
 
 ## Supported devices
 
@@ -302,6 +310,15 @@ _Running an application_ concretely means that its `iteration()` function is exe
 Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
+
+## KNX Virtual
+
+You do not necessarily need to build a KNX infrastructure to test your app. You can use *KNX Virtual* to run SVSHI. This a **Windows**-only program that is available on the KNX Association's website[^1]. Once you downloaded and installed it, you can use it exactly as a physical installation with SVSHI. Use the startup settings of KNX Virtual (address and port) when executing `svshi run`. Default values are `127.0.0.1:3671`.
+
+Please be careful and use the right devices inside ETS when configuring the project and refer to the KNX Help for KNX Virtual related issues[^2].
+
+[^1]: https://www.knx.org/knx-en/for-professionals/get-started/knx-virtual/
+[^2]: https://support.knx.org/hc/en-us/sections/360000827779-KNX-Virtual
 
 ## Contributing
 

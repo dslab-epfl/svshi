@@ -12,7 +12,6 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
   "parseJson" should "return the correct PhysicalStructureJson with correct input" in {
     val json = os.read(resPath / "phys_struct.json")
 
-
     val device1 = PhysicalDeviceJson(
       "device1",
       "1.1.1",

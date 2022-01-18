@@ -128,7 +128,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     os.exists(newAppPath / appProtoFileName) shouldBe true
     newAppPath / appProtoFileName should beAFile
-    newAppPath / appProtoFileName should haveSameContentAs(pipeline1Path / protoFileName)
+    newAppPath / appProtoFileName should haveSameContentAsIgnoringBlanks(pipeline1Path / protoFileName)
 
     compareFolders(newAppPath, expectedAppPath, defaultIgnoredFiles)
   }
@@ -257,11 +257,11 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     os.exists(GENERATED_FOLDER_PATH / "physical_structure.json") shouldBe true
     GENERATED_FOLDER_PATH / "physical_structure.json" should beAFile()
-    GENERATED_FOLDER_PATH / "physical_structure.json" should haveSameContentAs(pipeline1Path / "physical_structure.json")
+    GENERATED_FOLDER_PATH / "physical_structure.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "physical_structure.json")
 
     os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe true
     GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
-    GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAs(pipeline1Path / "apps_bindings.json")
+    GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "apps_bindings.json")
   }
 
   "generateBindings" should "fail when the ETS project file name is not absolute" in {
@@ -466,7 +466,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val expectedGenerated = pipeline3Path / "expected_generated_app_two_other_knxproj"
     os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe true
     GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
-    (GENERATED_FOLDER_PATH / "apps_bindings.json") should haveSameContentAs(expectedGenerated / "apps_bindings.json")
+    (GENERATED_FOLDER_PATH / "apps_bindings.json") should haveSameContentAsIgnoringBlanks(expectedGenerated / "apps_bindings.json")
 
   }
 
@@ -731,7 +731,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true
     GENERATED_FOLDER_PATH / "test_app_two_proto.json" should beAFile()
-    GENERATED_FOLDER_PATH / "test_app_two_proto.json" should haveSameContentAs(pipeline3Path / "test_app_two_proto.json")
+    GENERATED_FOLDER_PATH / "test_app_two_proto.json" should haveSameContentAsIgnoringBlanks(pipeline3Path / "test_app_two_proto.json")
   }
 
   "removeApp" should "remove temp generated and temps library folders" in {
@@ -880,13 +880,11 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Prepare everything for the test
     val appOneName = "test_app_one"
     val appTwoName = "test_app_two"
-    os.copy(pipeline4Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appOneName)
-    os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
-    os.copy(pipeline4Path / "apps_bindings_filled_one.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
     os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
 
     // Install app one
-    Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
 
     // Prepare for app two
     os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
@@ -894,20 +892,24 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.copy(pipeline4Path / "test_app_two_invalid_filled_violates", GENERATED_FOLDER_PATH / appTwoName)
 
     // Compile app two
-    Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
-      case Failure(exception) =>
-        exception match {
-          case MockSystemExitException(errorCode) => {
-            val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
-            os.exists(newAppPath) shouldBe false
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(s"""error: false when calling test_app_two_iteration"""))
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
+              os.exists(newAppPath) shouldBe false
 
-            // Library with only app one
-            val expectedLibraryPath = pipeline4Path / "expected_library_one"
-            compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              // Library with only app one
+              val expectedLibraryPath = pipeline4Path / "expected_library_one"
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
-          case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
-        }
-      case Success(_) => fail("The compilation should have failed!")
+        case Success(_) => fail("The compilation should have failed!")
+      }
     }
   }
 
@@ -966,6 +968,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 out.toString.trim should (include(
                   s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appTwoName' has not been removed."""
                 ))
+                out.toString.trim should (include("error: false when calling test_app_one_iteration("))
                 compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")
@@ -998,7 +1001,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true
     GENERATED_FOLDER_PATH / "test_app_two_proto.json" should beAFile()
-    GENERATED_FOLDER_PATH / "test_app_two_proto.json" should haveSameContentAs(pipeline3Path / "test_app_two_proto.json")
+    GENERATED_FOLDER_PATH / "test_app_two_proto.json" should haveSameContentAsIgnoringBlanks(pipeline3Path / "test_app_two_proto.json")
   }
 
   "removeApp" should "remove temps library and temp generated folders when failing" in {
@@ -1047,7 +1050,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         val fRel = f.relativeTo(folder1)
         val fIn2 = os.Path(fRel, folder2)
         fIn2 should beAFile()
-        f should haveSameContentAs(fIn2)
+        f should haveSameContentAsIgnoringBlanks(fIn2)
       }
     }
   }

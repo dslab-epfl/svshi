@@ -16,9 +16,9 @@ import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMe
 import ch.epfl.core.verifier.static.python.ProcRunner
 import mainargs.ParserForClass
 
+import java.io.File
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
-import java.io.File
 
 object Main {
 

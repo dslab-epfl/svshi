@@ -1,0 +1,20 @@
+PhysicalStructure(
+    List(     
+    PhysicalDevice("KliX (D4)",("1","1","1"),List(
+        PhysicalDeviceNode("Channel - MD-2_M-1_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-2_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-3_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-4_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-5_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-6_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-7_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))), 
+        PhysicalDeviceNode("Channel - MD-2_M-8_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} - Switching : OnOff",DPT1,Out,-235538808))))), 
+    PhysicalDevice("Switching Actuator (D7),(1,1,2),List(
+        PhysicalDeviceNode("Channel - MD-1_M-1_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-2_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-3_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-4_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-5_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-6_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-7_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368))), 
+        PhysicalDeviceNode("Channel - MD-1_M-8_MI-1_CH-argCH - CH-{{argCH}}",List(PhysicalDeviceCommObject("CH-{{argCH}} : OnOff",DPT1,In,264653368)))))))

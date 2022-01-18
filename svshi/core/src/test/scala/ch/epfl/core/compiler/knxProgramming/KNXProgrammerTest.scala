@@ -1,5 +1,6 @@
 package ch.epfl.core.compiler.knxProgramming
 
+import ch.epfl.core.CustomMatchers.haveSameContentAsIgnoringBlanks
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical._
@@ -73,11 +74,7 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
 
     val filePath = directoryPath / filename
 
-    val file = os.read(filePath)
-
-    val expectedFile = os.read(expectedFilePath)
-
-    file shouldEqual expectedFile
+    filePath should haveSameContentAsIgnoringBlanks(expectedFilePath)
 
     // Cleanup
     os.remove.all(filePath)

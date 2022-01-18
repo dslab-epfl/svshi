@@ -22,14 +22,14 @@ trait CustomMatchers {
       val content1 = os.read(left)
       val content2 = os.read(other)
       MatchResult(
-        sameContent(left, other),
+        sameContentIgnoreBlanks(left, other),
         s"""File $left did not have same content as $other.\nContent was:\n$content1\n but expected was:\n$content2 """,
         s"""File $left had same content as $other"""
       )
     }
-    private def sameContent(file1: os.Path, file2: os.Path): Boolean = {
-      val content1 = os.read.lines(file1)
-      val content2 = os.read.lines(file2)
+    private def sameContentIgnoreBlanks(file1: os.Path, file2: os.Path): Boolean = {
+      val content1 = os.read.lines(file1).filterNot(_.isBlank)
+      val content2 = os.read.lines(file2).filterNot(_.isBlank)
 
       for ((l, count) <- content1.zipWithIndex) {
         if (l != content2(count)) {
@@ -40,7 +40,7 @@ trait CustomMatchers {
     }
   }
 
-  def haveSameContentAs(expectedFile: os.Path) = new FilesHaveSameContentMatcher(other = expectedFile)
+  def haveSameContentAsIgnoringBlanks(expectedFile: os.Path) = new FilesHaveSameContentMatcher(other = expectedFile)
 }
 
 // Make them easy to import with:

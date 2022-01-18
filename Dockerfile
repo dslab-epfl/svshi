@@ -13,12 +13,13 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND noninteractive
 
 # Installing basic packages 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y software-properties-common  && \
-    add-apt-repository universe && \
-	apt-get install -y zip unzip build-essential jq curl wget rubygems gcc gdb python3 python3-pip python3-dev python3.9-venv wget git nano && \
-    apt-get install -y openjdk-11-jdk scala 
+RUN dpkg --add-architecture i386 
+RUN apt-get update 
+RUN apt-get install -y software-properties-common  
+RUN add-apt-repository universe 
+RUN apt-get install -y zip unzip build-essential jq curl wget rubygems gcc gdb python3 python3-pip python3-dev python3.9-venv wget git nano 
+RUN apt-get install -y openjdk-11-jdk scala
+RUN apt-get install sudo
 
 RUN apt-get update && \
     apt-get install apt-transport-https curl gnupg -yqq && \
@@ -47,33 +48,28 @@ RUN pip3 install -U pip
 ENV PATH="/home/maki/.local/lib/python3.9/site-packages:${PATH}"
 ENV PATH="/home/maki/.local/bin:${PATH}"
 ENV PATH="/home/maki/local/bin:${PATH}"
-ENV SVSHI_HOME="/home/maki/smartinfra"
+ENV SVSHI_HOME="/home/maki/svshi"
 
+RUN mkdir ${SVSHI_HOME}
 
-# Copy Smartinfra folder
-RUN mkdir /home/maki/smartinfra/
-COPY . /home/maki/smartinfra/
+# Copy the files
+COPY . ${SVSHI_HOME}/
 
-# Install crosshair from main branch of the repo
-RUN cd /home/maki/ && mkdir crosshair_local
-RUN cd /home/maki/crosshair_local && git clone https://github.com/pschanely/CrossHair.git
+## UNCOMMENT IF YOU WANT TO INSTALL CROSSHAIR FROM SOURCE and change the pip3 install below (e.g. if you forked the repo) -----------------------
+# # Install crosshair from main branch of the repo FROM SOURCE
+# RUN cd /home/maki/ && mkdir crosshair_local
+# RUN cd /home/maki/crosshair_local && git clone https://github.com/pschanely/CrossHair.git
 
-ENV VIRTUAL_ENV=/home/maki/sushi_python_env
+# ENV VIRTUAL_ENV=/home/maki/sushi_python_env
 
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN cd /home/maki/crosshair_local/CrossHair && pip3 install --editable .
+# RUN python3 -m venv $VIRTUAL_ENV
+# ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# RUN cd /home/maki/crosshair_local/CrossHair && pip3 install --editable .
+## UNCOMMENT IF YOU WANT TO INSTALL CROSSHAIR FROM SOURCE and change the pip3 install below (e.g. if you forked the repo) -----------------------
 
 
 # Install python requirements
-RUN cd /home/maki/smartinfra/svshi && [ -f requirements.txt  ] && pip3 install -r requirements_without_crosshair.txt
+RUN cd ${SVSHI_HOME}/svshi && [ -f requirements.txt  ] && pip3 install -r requirements.txt
 
 # Install SVSHI
-RUN cd /home/maki/ && mkdir temp
-# !! Change the link with new release number before releasing !!
-RUN cd /home/maki/temp && wget https://github.com/samuelchassot/test_svshi/releases/download/0.0.0/svshi-0.0.0-SNAPSHOT.tar.gz
-# !! Change the name with new release number before releasing !!
-RUN cd /home/maki/temp && tar -xf svshi-0.0.0-SNAPSHOT.tar.gz 
-RUN cd /home/maki/temp/svshi-0.0.0-SNAPSHOT && make install
-RUN rm -rf /home/maki/temp
-
+RUN cd ${SVSHI_HOME}/ && ./build.sh

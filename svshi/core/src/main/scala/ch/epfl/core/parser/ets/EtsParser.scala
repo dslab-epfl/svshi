@@ -77,7 +77,7 @@ object EtsParser {
       * @param parsedioPort
       * @return
       */
-    def ioPortToPhysicalChannel(parsedioPort: CommObject, physicalAddress: (String, String, String)): PhysicalDeviceCommObject = {
+    def ioPortToPhysicalChannel(parsedioPort: CommObject, physicalAddress: (String, String, String), deviceNodeName: String): PhysicalDeviceCommObject = {
       val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
       val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
       val datatype =
@@ -91,12 +91,12 @@ object EtsParser {
             s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}"
           )
       val ioType = IOType.fromString(parsedioPort.inOutType).get
-      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.getOrElse(DPTUnknown), ioType, physicalAddress)
+      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.getOrElse(DPTUnknown), ioType, physicalAddress, deviceNodeName)
     }
     physical.PhysicalDevice(
       parsedDevice.name,
       parsedDevice.address,
-      parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel(_, parsedDevice.address))))
+      parsedDevice.io.map(parsedNode => PhysicalDeviceNode(parsedNode.name, parsedNode.ioPorts.map(ioPortToPhysicalChannel(_, parsedDevice.address, parsedNode.name))))
     )
   }
 
@@ -255,7 +255,9 @@ object EtsParser {
           // Get IOPort info in xmls
           val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
           val catalogEntry = XML.loadFile(xmlPath.toIO)
-          val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(groupObjectInstanceId))
+          val refIdRegEx = "O-[0-9A-Za-z-_]+_R-[0-9A-Za-z-_]+".r
+          val refId = refIdRegEx.findAllIn(groupObjectInstanceId).toList.last
+          val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(refId))
           comObjectRef match {
             case Some(comObjectRef) => {
               val comObjectRefDPTString = comObjectRef \@ DATAPOINTTYPE_PARAM

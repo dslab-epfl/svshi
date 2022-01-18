@@ -54,6 +54,7 @@ For formatting and code style, we use [scalafmt](https://github.com/scalameta/sc
     ├── app_library - Contains installed apps, their bindings and the physical structure at the latest installation time
     ├── core - ETS project parser, bindings generator and apps compiler/verifier (Scala sbt project)
     ├── generator - Python app generator (Python module)
+    ├── res - Contains the resources for the README.md and CONTRIBUTING.md and the logos
     ├── runtime - Runs the installed apps and keeps the system in sync with KNX (Python module)
     ├── verification - Manipulates the apps' source code to generate a file useful for the verification and for the runtime (Python module)
     └── ...

@@ -1,6 +1,6 @@
 package ch.epfl.core.utils
 
-import ch.epfl.core.CustomMatchers.haveSameContentAs
+import ch.epfl.core.CustomMatchers.haveSameContentAsIgnoringBlanks
 import ch.epfl.core.utils.Constants.SVSHI_HOME_PATH
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -27,8 +27,8 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     l.size shouldEqual lRef.size
     for (e <- l) {
       lRef.map(f => f.relativeTo(refPath)) should contain(e.relativeTo(outputPath))
-      if(os.isFile(e)) {
-        e should haveSameContentAs(lRef.find(p => p.relativeTo(refPath) == e.relativeTo(outputPath)).get)
+      if (os.isFile(e)) {
+        e should haveSameContentAsIgnoringBlanks(lRef.find(p => p.relativeTo(refPath) == e.relativeTo(outputPath)).get)
       }
     }
     for (e <- lRef) {
