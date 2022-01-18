@@ -54,11 +54,11 @@ async def cleanup(file_resetter: FileResetter, error: bool = False):
     Resets the verification and the conditions files.
     """
     error_message = "An error occurred!\n" if error else ""
-    print(f"{error_message}Exiting... ", end="")
+    print(f"{error_message}Exiting... ", end="", flush=True)
     file_resetter.reset_verification_file()
     file_resetter.reset_runtime_file()
     file_resetter.reset_conditions_file()
-    print("bye!")
+    print("bye!", flush=True)
 
 
 async def main(
@@ -76,7 +76,7 @@ async def main(
         conditions_file_path, verification_file_path, runtime_file_path
     )
     try:
-        print("Initializing state and listeners... ", end="")
+        print("Initializing listeners...", flush=True)
         apps = get_apps(app_library_path, runtime_file_module)
         addresses_listeners = get_addresses_listeners(apps)
 
@@ -99,15 +99,15 @@ async def main(
             group_addresses_dpt,
             logs_dir,
         )
+        print("Initializing state...", flush=True)
         await state.initialize()
-        print("done!")
 
-        print("Connecting to KNX and listening to telegrams...")
+        print("Connecting to KNX and listening to telegrams...", flush=True)
         await state.listen()
 
-        print("Disconnecting from KNX... ", end="")
+        print("Disconnecting from KNX... ", end="", flush=True)
         await state.stop()
-        print("done!")
+        print("done!", flush=True)
 
         await cleanup(file_resetter)
 

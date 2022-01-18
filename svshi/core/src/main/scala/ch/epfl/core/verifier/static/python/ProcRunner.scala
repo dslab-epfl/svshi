@@ -6,12 +6,25 @@ import scala.util.{Failure, Success, Try}
   */
 object ProcRunner {
 
-  /** Execute the given python module as a new process and return the exit code along with the stdout lines
-    * @param pythonModule
+  /** Execute the given python module as a new process and return the exit code along with the stdout lines.
+    * It can optionally write stdOut and/or stdErr to some files. If defined, it redirects the corresponding output
+    * to the passed file
+    * @param stdOut: Optionally, a function to execute on each new line of stdOut
+    * @param stdErr: Optionally, a function to execute on each new line of stdErr
+    * @param pythonModule: The python module to call
+    * @param wd: The working directory from which to call the python module
+    * @param args: The args to pass to the python module
     * @return
     */
-  def callPython(pythonModule: String, wd: os.Path, args: String*): (Int, List[String]) = {
-    val invoked = Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd))
+  def callPython(stdOut: Option[String => Unit], stdErr: Option[String => Unit], pythonModule: String, wd: os.Path, args: String*): (Int, List[String]) = {
+    val invoked = (stdOut, stdErr) match {
+      case (None, None)                 => Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd))
+      case (Some(stdOutCallback), None) => Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd, stdout = os.ProcessOutput.Readlines(stdOutCallback)))
+      case (None, Some(stdErrCallback)) => Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd, stderr = os.ProcessOutput.Readlines(stdErrCallback)))
+      case (Some(stdOutCallback), Some(stdErrCallback)) =>
+        Try(os.proc("python3", "-m", pythonModule, args).call(cwd = wd, stdout = os.ProcessOutput.Readlines(stdOutCallback), stderr = os.ProcessOutput.Readlines(stdErrCallback)))
+    }
+
     invoked match {
       case Failure(exception: os.SubprocessException) =>
         val result = exception.result

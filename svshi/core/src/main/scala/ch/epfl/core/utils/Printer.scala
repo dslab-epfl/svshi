@@ -8,23 +8,23 @@ object Printer {
     *
     * @param input
     */
-  def info(input: String)(implicit style: Style): Unit = println(style.info(input))
+  def info(input: String)(implicit style: Style): Unit = println(style.info(s"INFO: $input"))
 
   /** Print the given warning message
     *
     * @param input
     */
-  def warning(input: String)(implicit style: Style): Unit = println(style.warning(input))
+  def warning(input: String)(implicit style: Style): Unit = println(style.warning(s"WARNING: $input"))
 
   /** Print the given error message
     *
     * @param input
     */
-  def error(input: String)(implicit style: Style): Unit = println(style.error(input))
+  def error(input: String)(implicit style: Style): Unit = println(style.error(s"ERROR: $input"))
 
   /** Print the given success message
     *
     * @param input
     */
-  def success(input: String)(implicit style: Style): Unit = println(style.success(input))
+  def success(input: String)(implicit style: Style): Unit = println(style.success(s"SUCCESS: $input"))
 }

@@ -19,7 +19,7 @@ object Verifier extends VerifierTr {
     * @return
     */
   override def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[PythonVerifierMessage] = {
-    val (_, stdOutLines) = ProcRunner.callPython(VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_FOLDER))
+    val (_, stdOutLines) = ProcRunner.callPython(None, None, VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_FOLDER))
     if (stdOutLines.length != 1) {
       // Error while creating the verification file, output
       if (stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))

@@ -3,15 +3,23 @@ package ch.epfl.core
 import ch.epfl.core.CustomMatchers._
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.{Constants, FileUtils}
+import org.scalatest.concurrent.{Signaler, TimeLimitedTests}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.Span
+import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import os.Path
 
 import java.io.{ByteArrayOutputStream, StringReader}
+import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
-class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
+class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with TimeLimitedTests {
+  def timeLimit: Span = 30 seconds
+
+  override val defaultTestSignaler: Signaler = (testThread: Thread) => testThread.stop()
+
   private val defaultIgnoredFiles = List(".DS_Store", ".gitkeep")
   private val endToEndResPath = Constants.SVSHI_FOLDER_PATH / "core" / "res" / "endToEnd"
   private val pipeline1Path = endToEndResPath / "pipeline1_app_one_valid"
@@ -103,10 +111,14 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val appName = "test_app_one"
 
     // Test
-    Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
+    }
 
     val newAppPath = GENERATED_FOLDER_PATH / appName
     os.exists(pathToProto) shouldBe false
+    out.toString.trim should include(s"SUCCESS: The app '$appName' has been successfully created!")
   }
 
   "generateApp" should "generate the correct app in generated folder when called on a valid json prototypical structure - pipeline 1" in {
@@ -117,7 +129,10 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     val appName = "test_app_one"
 
-    Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
+    }
 
     val expectedAppPath = pipeline1Path / "test_app_one_valid_fresh_generated"
 
@@ -125,6 +140,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.exists(newAppPath) shouldBe true
 
     // Compare everything to the expected app
+
+    out.toString.trim should (include(s"SUCCESS: The app '$appName' has been successfully created!"))
 
     os.exists(newAppPath / appProtoFileName) shouldBe true
     newAppPath / appProtoFileName should beAFile
@@ -231,7 +248,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The devices prototypical structure JSON file name has to be absolute"
+                "ERROR: The devices prototypical structure JSON file name has to be absolute"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -253,7 +270,10 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
 
     // Generate the bindings
-    Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))
+    }
 
     os.exists(GENERATED_FOLDER_PATH / "physical_structure.json") shouldBe true
     GENERATED_FOLDER_PATH / "physical_structure.json" should beAFile()
@@ -262,6 +282,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe true
     GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
     GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "apps_bindings.json")
+
+    out.toString.trim should (include("""SUCCESS: The bindings have been successfully created!"""))
   }
 
   "generateBindings" should "fail when the ETS project file name is not absolute" in {
@@ -272,7 +294,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The ETS project file name has to be absolute"
+                "ERROR: The ETS project file name has to be absolute"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -282,7 +304,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
   }
 
-  "compile" should "install the app one when it is valid and verified" in {
+  "compile" should "install the app one when it is valid and verified and show output warning and success messages" in {
     // Prepare everything for the test
     val appName = "test_app_one"
     val protoFileName = "test_app_one_proto.json"
@@ -294,7 +316,16 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
 
     // Compile the app
-    Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+    }
+
+    out.toString.trim should (include("SUCCESS: The apps have been successfully compiled and verified!") and
+      include(
+        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
+      ) and
+      include("info: Confirmed over all paths."))
     val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
     os.exists(newAppPath) shouldBe true
     os.isDir(newAppPath) shouldBe true
@@ -312,7 +343,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The ETS project file name has to be absolute"
+                "ERROR: The ETS project file name has to be absolute"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -335,20 +366,27 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.copy(pipeline2Path / etsProjectFileName, inputPath / etsProjectFileName)
 
     // Compile the app
-    Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
-      case Failure(exception) =>
-        exception match {
-          case MockSystemExitException(errorCode) => {
-            val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
-            os.exists(newAppPath) shouldBe false
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = Send - CO2 value, physicalId = -2092645687: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9'!"
+              ) and
+                include("ERROR: Compilation/verification failed, see messages above"))
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+              os.exists(newAppPath) shouldBe false
 
-            // Empty library
-            val expectedLibraryPath = pipeline2Path / "expected_library"
-            compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              // Empty library
+              val expectedLibraryPath = pipeline2Path / "expected_library"
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
-          case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
-        }
-      case Success(_) => fail("The compilation should have failed!")
+        case Success(_) => fail("The compilation should have failed!")
+      }
     }
   }
 
@@ -362,12 +400,22 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val pathToExpectedFile = inputPath / "ok.txt"
     os.copy(endToEndResPath / "runtime_main.py", runtimeMainPath)
 
-    Main.setRuntimeModulePath(runtimePath)
-    Main.setRuntimeModule(s"runtime_test.runtime_main")
+    Svshi.setRuntimeModulePath(runtimePath)
+    Svshi.setRuntimeModule(s"runtime_test.runtime_main")
 
-    Main.main(Array("run", "-a", "192.0.0.1:42"))
+    val out = new ByteArrayOutputStream()
+    val err = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Console.withErr(err) {
+        Main.main(Array("run", "-a", "192.0.0.1:42"))
+      }
+    }
 
     os.exists(pathToExpectedFile) shouldBe true
+    out.toString.trim should (include("INFO: this a line of text printed by the runtime module on stdout") and
+      include("INFO: this is a line of text printed by runtime module on stdout after 3 sec") and
+      include("this a line of text printed by the runtime module on stderr"))
+    err.toString.trim shouldEqual ""
   }
 
   "run" should "fail if no KNX address and port have been provided" in {
@@ -378,7 +426,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The KNX address and port need to be specified to run the apps"
+                "ERROR: The KNX address and port need to be specified to run the apps"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -396,7 +444,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
+                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -414,7 +462,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
+                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -438,9 +486,13 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.copy(pipeline3Path / "test_app_two_fresh_generated", GENERATED_FOLDER_PATH / appTwoName)
 
     // Generate the bindings
-    Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))
+    }
 
     // Check
+    out.toString.trim should include("SUCCESS: The bindings have been successfully created!")
     val expectedGenerated = pipeline3Path / "expected_generated_app_two"
     compareFolders(GENERATED_FOLDER_PATH, expectedGenerated, defaultIgnoredFiles)
   }
@@ -467,6 +519,38 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe true
     GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
     (GENERATED_FOLDER_PATH / "apps_bindings.json") should haveSameContentAsIgnoringBlanks(expectedGenerated / "apps_bindings.json")
+
+  }
+
+  "generateBindings" should "print an error if the ETS project path pointed to a non-existing file" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+    os.copy(pipeline3Path / "other_ets_project.knxproj", inputPath / "other_ets_project.knxproj")
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+
+    // Copy files for app two
+    os.copy(pipeline3Path / "test_app_two_fresh_generated", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / "non-existing_ets_project.knxproj").toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString.trim should include("ERROR: The ETS Project file does not exist!")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The bindings generation should have failed!")
+      }
+    }
 
   }
 
@@ -688,6 +772,30 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
+  "removeApp" should "do nothing and keep installed apps as is if answer == n" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+
+    // Remove app two
+    val inputStr = "n\n"
+    val in = new StringReader(inputStr)
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        Main.main(Array("removeApp", "-n", appTwoName))
+      }
+    }
+    // Check
+    out.toString.trim should include("Exiting...")
+    val expectedLibrary = pipeline3Path / "expected_app_library_one_two"
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+  }
+
   "removeApp" should "remove one app and keep the other installed with correct bindings, answer == yes" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -723,10 +831,14 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Remove app two
     val inputStr = "y\n"
     val in = new StringReader(inputStr)
+    val out = new ByteArrayOutputStream()
     Console.withIn(in) {
-      Main.main(Array("removeApp", "-n", appTwoName))
+      Console.withOut(out) {
+        Main.main(Array("removeApp", "-n", appTwoName))
+      }
     }
     // Check
+    out.toString.trim should include(s"SUCCESS: The app '$appTwoName' has been successfully removed!")
     val expectedLibrary = pipeline3Path / "expected_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true
@@ -796,14 +908,18 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Check
     val out = new ByteArrayOutputStream()
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
     Console.withOut(out) {
-      Try(Main.main(Array("removeApp", "-n", appTwoName))) match {
-        case Failure(exception) =>
-          exception match {
-            case MockSystemExitException(errorCode) => out.toString.trim should (include("""ERROR: The app 'test_app_two' is not installed!"""))
-            case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
-          }
-        case Success(_) => fail("The removing should have failed!")
+      Console.withIn(in) {
+        Try(Main.main(Array("removeApp", "-n", appTwoName))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => out.toString.trim should (include("""ERROR: The app 'test_app_two' is not installed!"""))
+              case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => fail("The removing should have failed!")
+        }
       }
     }
 
@@ -822,14 +938,18 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Check
     val out = new ByteArrayOutputStream()
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
     Console.withOut(out) {
-      Try(Main.main(Array("removeApp"))) match {
-        case Failure(exception) =>
-          exception match {
-            case MockSystemExitException(errorCode) => out.toString.trim should (include("""ERROR: The app name has to be provided to remove an app"""))
-            case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
-          }
-        case Success(_) => fail("The removing should have failed!")
+      Console.withIn(in) {
+        Try(Main.main(Array("removeApp"))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => out.toString.trim should (include("""ERROR: The app name has to be provided to remove an app"""))
+              case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => fail("The removing should have failed!")
+        }
       }
     }
 

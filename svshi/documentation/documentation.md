@@ -501,7 +501,7 @@ def unchecked_function() -> int:
 
 Furthermore, applications have access to a set of variables (the _app state_) they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an event-based manner (either the KNX devices' state changes or a periodic app's timer is finished, see [Section 4.2.4 about execution](#424-execution)). All calls to `iteration()` are independent and thus SVSHI offers a way to store a state that will live in between calls. There is a local state instance _per app_.
 
-To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a *dataclass*[^15] and it contains 4 fields of each of the following types: `int`, `float`, `bool`, and `str`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where X equals 0, 1, 2, or 3. We made this design choice to simplify the verification, as explained in [Section 4.2.3.3](#4233-crosshair-in-svshi-and-code-modification).
+To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a _dataclass_[^15] and it contains 4 fields of each of the following types: `int`, `float`, `bool`, and `str`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where X equals 0, 1, 2, or 3. We made this design choice to simplify the verification, as explained in [Section 4.2.3.3](#4233-crosshair-in-svshi-and-code-modification).
 
 [^15]: <https://docs.python.org/3/library/dataclasses.html>
 
@@ -731,7 +731,7 @@ First of all, we need to define what are the properties that should be verified 
 
 When performing the verification, we have 2 sets of applications: the already installed one(s) and the one(s) being installed. The main idea is that we verify that the execution of the `iteration()` function of any application on a _valid state_ (i.e., the installation is in a state in which all `invariant()` functions of all applications of both sets are verified) returns a possibly different but still _valid_ state. This condition is more conservative than it could be. Indeed, it is possible that a particular set of applications is rejected even though the execution could be valid. This would occur if the execution of the `iteration()` functions in a particular order leads to a valid state but the state is in an _invalid state_ between two functions. We decide that this case should be rejected as well because of the event-based nature of our system. Indeed, it would lead to invalid states if the execution order changes. It also helps during the verification process using CrossHair and we will detail how. It is therefore possible to verify `iteration()` functions independently from each other.
 
-An important thing to note at this point is that we cannot verify that, given an *invalid* state, an app produces a valid state. Indeed, for an app to produce a valid state from an invalid one, the invalid one must be from a particular subset of the universe of all states. This represents in fact the _functionality_ of the app.
+An important thing to note at this point is that we cannot verify that, given an _invalid_ state, an app produces a valid state. Indeed, for an app to produce a valid state from an invalid one, the invalid one must be from a particular subset of the universe of all states. This represents in fact the _functionality_ of the app.
 
 For example, let us take an application that turns a light on when a presence detector detects someone. The app would look like this:
 
@@ -821,11 +821,12 @@ Therefore, we verify most of the compatibility we can with the information we ha
 We verify the following properties:
 
 - **_IOTypes_**
- `IOType` can be `in`, `out` or `in/out`. `in` means that the prototypical (physical respectively) communication object can receive values from the bus and react accordingly. `out` means the opposite, i.e., that the communication object can write values to the bus. Lastly, `in/out` means that the communication object can do both simultaneously.
+  `IOType` can be `in`, `out` or `in/out`. `in` means that the prototypical (physical respectively) communication object can receive values from the bus and react accordingly. `out` means the opposite, i.e., that the communication object can write values to the bus. Lastly, `in/out` means that the communication object can do both simultaneously.
 
- Every prototypical device defined as a `SupportedDevice` provides the IO type for each of its communication objects (through the class `SupportedDeviceBinding`). The IO type of each physical device's communication object is read by the parser in the ETS project file. As the IO type is not always provided for physical devices, it can be `Unknown`.
+Every prototypical device defined as a `SupportedDevice` provides the IO type for each of its communication objects (through the class `SupportedDeviceBinding`). The IO type of each physical device's communication object is read by the parser in the ETS project file. As the IO type is not always provided for physical devices, it can be `Unknown`.
 
- Compatibility is defined as follows:
+Compatibility is defined as follows:
+
  <table class="tg">
  <thead>
  <tr>
@@ -863,29 +864,29 @@ We verify the following properties:
  </tbody>
  </table>
 
- As we abstract the physical state and run applications on the abstraction, it means that a prototypical device in an application can read a state that has only `out` type in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
+As we abstract the physical state and run applications on the abstraction, it means that a prototypical device in an application can read a state that has only `out` type in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
 
- With the `Unknown` type for physical devices, we cannot do more than giving a warning to the developer which has to really be sure that the connection is valid.
+With the `Unknown` type for physical devices, we cannot do more than giving a warning to the developer which has to really be sure that the connection is valid.
 
 - **Python types**
 
- As we abstract the state of the physical installation in a mirrored state, we assign a Python type (e.g., `int`, `float`, `bool`, ...) to each group address. For this to be valid, all prototypical communication objects linked to that group address must use values of the same type.
+As we abstract the state of the physical installation in a mirrored state, we assign a Python type (e.g., `int`, `float`, `bool`, ...) to each group address. For this to be valid, all prototypical communication objects linked to that group address must use values of the same type.
 
- Each device, just as for IO Types, has the Python type of the value it would read/write on the KNX bus encoded in the corresponding `SupportedDeviceBinding` class.
+Each device, just as for IO Types, has the Python type of the value it would read/write on the KNX bus encoded in the corresponding `SupportedDeviceBinding` class.
 
- This stage then checks that all communication objects connected to the same group address have the same Python type for their values.
+This stage then checks that all communication objects connected to the same group address have the same Python type for their values.
 
 - **KNX Datatypes (or DPT)**
 
- This stage does the same kind of verification as the IO Types one to check that the KNX datatypes of the values that the device would read/write on the bus are compatible.
+This stage does the same kind of verification as the IO Types one to check that the KNX datatypes of the values that the device would read/write on the bus are compatible.
 
- For each binding between a physical device's and a prototypical device's communication object, we check that the KNX datatype is the same. The KNX datatype of the physical device's communication object is parsed from the ETS project and the one for the prototypical's one is encoded in the corresponding `SupportedDeviceBinding` class.
+For each binding between a physical device's and a prototypical device's communication object, we check that the KNX datatype is the same. The KNX datatype of the physical device's communication object is parsed from the ETS project and the one for the prototypical's one is encoded in the corresponding `SupportedDeviceBinding` class.
 
- As for the IO Types, if the KNX datatype is not known for a particular physical communication object, the `Verifier` gives a warning to the developer. Otherwise, KNX datatypes must be **equal**. Here we compare the main type only, i.e., the number of bytes and type of data, not the interpretation. That means that two floats are compatible, even if one should represent a temperature and the other a CO2 level. This difference only exists for the ETS user to read data with the corresponding units.
+As for the IO Types, if the KNX datatype is not known for a particular physical communication object, the `Verifier` gives a warning to the developer. Otherwise, KNX datatypes must be **equal**. Here we compare the main type only, i.e., the number of bytes and type of data, not the interpretation. That means that two floats are compatible, even if one should represent a temperature and the other a CO2 level. This difference only exists for the ETS user to read data with the corresponding units.
 
 - **Mutual KNX Datatypes**
 
- This stage performs the KNX datatype check just as the previous one but between prototypical devices' communication objects that are linked to the same physical device's communication object.
+This stage performs the KNX datatype check just as the previous one but between prototypical devices' communication objects that are linked to the same physical device's communication object.
 
 ##### 4.3.3.5 Runtime verification
 

@@ -77,6 +77,7 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
     apps_names = __get_apps_names(app_library_dir)
 
     # First install all the requirements
+    print("Installing apps' requirements...", flush=True)
     for app_name in apps_names:
         install_requirements(app_library_dir, app_name)
 
