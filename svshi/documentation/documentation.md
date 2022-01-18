@@ -287,8 +287,6 @@ The main downside of this simulator is the fact that the devices are unique to K
 
 Other commercial solutions exist like _KNX Simulator_[^16] but as they are not free, we did not explore them in detail.
 
-Even with its limitations, KNX Virtual can be used with SVSHI to test applications and help developers that do not have access to a real KNX infrastructure.
-
 [^16]: https://www.knxsimulator.com
 
 KNX Virtual can be used to play with SVSHI though. A developer can test her application developed for SVSHI if the devices it uses are available on KNX Virtual. This does not fit all cases but it is useful to familiarize with the platform and for the SVSHI developers who just want to test manually the platform itself.
