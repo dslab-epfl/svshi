@@ -13,11 +13,13 @@
       - [1.2.3 Functionality and group addresses](#123-functionality-and-group-addresses)
       - [1.2.4 KNX devices](#124-knx-devices)
       - [1.2.5 KNX Datatypes](#125-knx-datatypes)
-      - [1.2.5 KNX simulator](#125-knx-simulator)
-      - [1.2.6 Configuration and ETS](#126-configuration-and-ets)
-      - [1.2.7 KNX Pros and Cons](#127-knx-pros-and-cons)
-      - [1.2.8 Why KNX?](#128-why-knx)
+      - [1.2.6 KNX simulator](#126-knx-simulator)
+      - [1.2.7 Configuration and ETS](#127-configuration-and-ets)
+      - [1.2.8 KNX Pros and Cons](#128-knx-pros-and-cons)
+      - [1.2.9 Why KNX?](#129-why-knx)
     - [1.3 State-of-the-art](#13-state-of-the-art)
+      - [1.3.1 Commercial and open-source software](#131-commercial-and-open-source-software)
+      - [1.3.2 Academic work](#132-academic-work)
     - [1.4 Current issues](#14-current-issues)
       - [1.4.1 Time-consuming configuration](#141-time-consuming-configuration)
       - [1.4.2 Cumbersome and error-prone project evolution](#142-cumbersome-and-error-prone-project-evolution)
@@ -89,9 +91,9 @@ Becoming increasingly similar to a computer, the building has to face analogous 
 
 This project stems from the desire of solving these issues and demonstrating that reliable and complex applications can be easily written for smart buildings, with the end goal of offering a 100% secure and verified platform to program smart infrastructures.
 
-In this work, we thus present **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure), a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+In this work, we thus present **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) (pronounced like "sushi"), a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
-Our main contributions consist of an open-source project that empowers KNX professionals and hobbyists to develop and run Python applications that are formally verified in smart infrastructure, together with 3 real-life prototypes that exemplify what is currently achievable. To our knowledge, this is one of the first works to investigate the formal verification of software running in smart buildings and to propose a platform to program KNX installations in a high-level language.
+Our main contributions consist of an open-source project that empowers KNX professionals and hobbyists to develop and run Python applications that are formally verified in smart infrastructures, together with 3 real-life prototypes that exemplify what is currently achievable. To our knowledge, this is the first work to investigate the formal verification of software running in smart buildings and to propose a platform to program KNX installations in a high-level language.
 
 ### 1.1 Risk stories
 
@@ -162,24 +164,26 @@ In binary, the individual address is therefore of the form: **AAAA.LLLL.DDDDDDDD
 Couplers always have the number 0 on their respective line (**A.L.0**).
 
 KNX over IP can be used in place of the main line and of area lines. Lines connected to devices must be twisted pairs (or radio frequencies for compatible devices). This is done using KNXnet/IP interfaces that have one Ethernet port and one connection to the bus.
-KNX over IP can be used to interconnect multiple buildings together, e.g. for public administrations.
-Most KNXnet/IP interfaces nowadays support tunneling mode which means that they can be used to program devices using ETS (see below).
+KNX over IP can be used to interconnect multiple buildings together, e.g. for public administrations (see Fig. 1).
+Most KNXnet/IP interfaces nowadays support tunneling mode which means that they can be used to program devices using ETS (see [Section 1.2.7](#127-configuration-and-ets)).
 
 <p align="center">
  <img src="res/KNX_IP_topology_examples.png" alt="Example of use of IP in KNXnet [[2]](#2)" width="60%"/>
+ <figcaption>Fig. 1 - Example of use of IP in KNXnet [2]</figcaption>
 </p>
 
-Here is an example of a KNX topology mixing up different technologies together:
+Fig. 2 shows an example of a KNX topology mixing up different technologies together.
 
 <p align="center">
  <img src="res/KNX_topology_example.png" alt="Example of a complete KNX topology [[2]](#2)" width="60%"/>
+ <figcaption>Fig. 2 - Example of a complete KNX topology [2]</figcaption>
 </p>
 
 #### 1.2.2 KNX telegram
 
 **KNX telegrams** are the information packets that transit on the KNX bus. Sensors send telegrams and actuators react to them.
-The telegrams' structure varies from a physical link to another. Here we develop only the structure of telegrams over twisted pairs.
-A telegram is structured in fields, each field is composed of a certain number of bytes:
+The telegrams' structure varies from one physical link to another. Here we develop only the structure of telegrams over twisted pairs.
+A telegram is structured in fields, each field is composed of a certain number of bytes (as shown in Fig. 3):
 
 - **Control field**: contains the priority of the telegram and whether or not it was repeated
 - **Address field**: specifies the **individual address** of the sender and the destination address (**individual address** or **group address**, see below)
@@ -187,7 +191,8 @@ A telegram is structured in fields, each field is composed of a certain number o
 - **Checksum field**: checksum for the parity check
 
 <p align="center">
- <img src="res/KNX_telegram_structure.png" alt="Structure of a KNX telegram [[2]](#2)" width="60%"/>
+ <img src="res/KNX_telegram_structure.png" alt="Structure of a KNX telegram" width="60%"/>
+ <figcaption>Fig. 3 - Structure of a KNX telegram over twisted pair [2]</figcaption>
 </p>
 
 #### 1.2.3 Functionality and group addresses
@@ -230,22 +235,22 @@ There exist two categories of end devices:
 
 A majority of devices nowadays fall in both categories. For example, an HVAC (Heating Ventilation Air Conditioning) controller can modify the HVAC system state and also retrieve information about the system like current water temperature and send it on the bus. Thus it is a sensor and an actuator at the same time.
 
-An end device is composed of two parts: the _Bus Coupling Unit_ (or BCU) and the _Bus Device_ (Fig. 3). The BCU is responsible for the communication on the bus and so of the KNX protocol implementation while the Bus Device is the device itself (e.g., a push-button, a light actuator, etc.). They are connected by a _Physical External Interface_ (or PEI) of generally 10-12 pins.
+An end device is composed of two parts: the _Bus Coupling Unit_ (or BCU) and the _Bus Device_ (Fig. 4). The BCU is responsible for the communication on the bus and thus of the KNX protocol implementation while the Bus Device is the device itself (e.g., a push-button, a light actuator, etc.). They are connected by a _Physical External Interface_ (or PEI) of generally 10-12 pins.
 
-The BCU itself is composed of a _Transmission module_ and a _Controller_ (Fig. 4). The Transmission module determines through which medium the device can be connected to the bus (i.e., it is different for each bus physical link technology); the controller is a microcontroller responsible for the implementation of the KNX protocol.
+The BCU itself is composed of a _Transmission module_ and a _Controller_ (Fig. 5). The Transmission module determines through which medium the device can be connected to the bus (i.e., it is different for each bus physical link technology); the controller is a microcontroller responsible for the implementation of the KNX protocol.
 
 <figure align="center">
  <img src="res/KNX_end_device_structure.png" alt="End device structure" width="60%"/>
- <figcaption>Fig. 3 - Structure of an end device (taken from [[2]](#2)).</figcaption>
+ <figcaption>Fig. 4 - Structure of an end device (taken from [[2]](#2)).</figcaption>
 </figure>
 
 <figure align="center">
  <img src="res/KNX_end_device_BCU_details.png" alt="Details of the Bus Coupling Unit" width="60%"/>
- <figcaption>Fig. 4 - Details of the Bus Coupling Unit (taken from [[2]](#2)).</figcaption>
+ <figcaption>Fig. 5 - Details of the Bus Coupling Unit (taken from [[2]](#2)).</figcaption>
 </figure>
 
-End devices are manufactured by a large variety of manufacturers and can be simple or advanced. A device of the same family (e.g., push button) can be very different from a manufacturer to another. Some devices offer multiple settings and features while others of the same nature are very basic.
-For example, a push-button can be just a simple on/off sensor but it can also provide additional options like a timer to delay the sending of the state change on the bus (e.g., to turn off basements' lights only when the user arrives at the top of the stairs when the button is at the bottom). Moreover, the structure of the settings in ETS (see next section) can be very different from a brand to another because there are no clear guidelines.
+End devices are manufactured by a large variety of manufacturers and can be simple or advanced. A device of the same family (e.g., push button) can be very different from one manufacturer to another. Some devices offer multiple settings and features while others of the same nature are very basic.
+For example, a push-button can be just a simple on/off sensor but it can also provide additional options like a timer to delay the sending of the state change on the bus (e.g., to turn off basements' lights only when the user arrives at the top of the stairs when the button is at the bottom). Moreover, the structure of the settings in ETS (see next section) can be very different from one brand to another because there are no clear guidelines.
 
 #### 1.2.5 KNX Datatypes
 
@@ -274,7 +279,7 @@ Here is the list of the most used DPTs:
 - 19.yyy = time + data
 - 20.yyy = 8-bit enumeration, e.g. HVAC mode ('auto', 'comfort', 'standby', 'economy', 'protection')
 
-#### 1.2.5 KNX simulator
+#### 1.2.6 KNX simulator
 
 The KNX Association offers a _simulator_ for a KNX system named _KNX Virtual_ [[31]](#31). It is a Windows-based application that emulates a KNX installation. It can be used to learn the KNX terminology and get familiar with the technology.
 Furthermore, it can be leveraged to get used to ETS as well: ETS can connect to it and program the devices. Then, a GUI lets the user play with the sensors and shows the result on the simulated actuators.
@@ -285,13 +290,13 @@ The devices are available on ETS through a catalog similar to the ones offered b
 
 The main downside of this simulator is the fact that the devices are unique to KNX Virtual. The devices available do not mirror real devices and thus the configuration is simplified compared to a real device's one. Moreover, this cannot be used to simulate an existing installation, for example, to test the solution we developed.
 
+KNX Virtual can be used to play with SVSHI though. A developer can test her application developed for SVSHI if the devices it uses are available on KNX Virtual. This does not fit all cases but it is useful to familiarize with the platform and for the SVSHI developers who just want to test manually the platform itself.
+
 Other commercial solutions exist like _KNX Simulator_[^16] but as they are not free, we did not explore them in detail.
 
 [^16]: https://www.knxsimulator.com
 
-KNX Virtual can be used to play with SVSHI though. A developer can test her application developed for SVSHI if the devices it uses are available on KNX Virtual. This does not fit all cases but it is useful to familiarize with the platform and for the SVSHI developers who just want to test manually the platform itself.
-
-#### 1.2.6 Configuration and ETS
+#### 1.2.7 Configuration and ETS
 
 To configure KNX devices, the person installing a KNX system (we call her the "programmer") needs to use ETS. **ETS** is a piece of software provided by the KNX Association. It is closed source and not free.
 
@@ -303,9 +308,10 @@ Once each device is entered in ETS, the programmer configures them to achieve th
 
 Each device exposes _communication objects_ that are like IO ports for the device. Each communication object can be linked to one or more group addresses.
 For example, a push-button will at least expose a communication object "on/off state" that is like an output port connected to the bus that writes to the configured group address every time the state changes. The communication objects can be input, output, or both.
+
 Devices also have settings that have to be modified in ETS. These settings can include parameters about the frequency at which updates are sent to the bus, whether or not the feedback should be sent (i.e., for an actuator sending its current state to the bus), complex settings about its behaviour, etc. These settings are, as explained by the domotic expert we met, the trickiest part about the configuration of a KNX installation. They are designed freely by the manufacturers, meaning that there is no uniformity across brands. Programmers must then learn how to configure each device by reading the documentation (also no uniformity there), which takes a lot of time.
 
-One important aspect to note is that the rules that dictate the behaviour are never represented or stored in ETS. The rules are generally written down in some documents the programmer receives from the client (or designs herself) but they do not have any machine-readable representation related to ETS. This means that only having the ETS project and configured devices, it is not possible to get back the rules. There is also no direct relation between the rules and the actual configuration in ETS, therefore errors can easily be made by doing the "translation", which can lead to unwanted behaviour of the final installation.
+One important aspect to note is that the rules that dictate the behaviour are never represented or stored in ETS. The rules are generally written down in some documents the programmer receives from the client (or designs herself) but they do not have any machine-readable representation related to ETS. This means that only having the ETS project and the configured devices, it is not possible to get back the rules. There is also no direct relation between the rules and the actual configuration in ETS, therefore errors can easily be made by doing the "translation", which can lead to unwanted behaviour of the final installation.
 
 Once the configuration in ETS is done, the programmer can download to each device its settings. The first time a device is configured, it must receive its individual address (see [Section 1.1.1](#111-KNX-topology)). For this step, a button must be physically pressed on the device to allow the individual address setting. For consequent application downloads, this is not necessary. ETS downloads the configuration to each device following the manufacturer's catalog entry by writing values in the device memory through commands sent on the bus.
 
@@ -313,7 +319,7 @@ After the application download is done, devices start sending and reacting to te
 
 One should never lose the ETS project file because it is impossible to infer it from the devices. Thus, if the project file is lost, everything has to be done again from scratch.
 
-#### 1.2.7 KNX Pros and Cons
+#### 1.2.8 KNX Pros and Cons
 
 In this section, we develop the advantages and disadvantages of KNX as a smart buildings' backbone.
 
@@ -327,25 +333,34 @@ The first major one is the price. Devices cost generally more than similar devic
 
 Even if the KNX bus over radio frequencies exists in the specification, in practice, there exist almost no compatible devices. The KNX system uses thus mainly cables. This can be a problem in some special buildings but it is mainly an obstacle to retrofitting. It is indeed painful to install the bus cable in a building where it was not done at construction time.
 
-Configuration is also an issue: it must be done using ETS, which is time-consuming and cumbersome to use. Moreover, the translation of the rules to devices settings is completely non-trivial. Experience with the system and devices is required to be able to exploit their full potential and to implement the desired functionality. Therefore, an expert is often required to configure even simple buildings like houses and thus, end users are not confident enough to do modifications to their own installations.
+Configuration is also an issue: it must be done using ETS, which is time-consuming and cumbersome to use. Moreover, the translation of the rules to devices settings is completely non-trivial. Experience with the system and the devices is required to be able to exploit their full potential and to implement the desired functionality. Therefore, an expert is often required to configure even simple buildings like houses and thus, end users are not confident enough to do modifications to their own installations.
 
-The KNX certifications are a good point for reliability but they lead to business exploitations that are a disadvantage for the hobbyists. The licensing and certifications are expensive and the association has the habit of giving them only to professional electricians [[4]](#4). Therefore, the public lacks documentation and needs to buy proprietary software to use an open protocol and system.
+The KNX certifications are a good point for reliability but they lead to business exploitations that are a disadvantage for the hobbyists. The licenses and certifications are expensive and the association has the habit of giving them only to professional electricians [[4]](#4). Therefore, the public lacks documentation and needs to buy proprietary software to use an open protocol and system.
 
-#### 1.2.8 Why KNX?
+#### 1.2.9 Why KNX?
 
 In this section, we develop why we decided to develop a solution around KNX.
 
-First of all, KNX is the most widely used system for smart buildings [[1]](#1). KNX market growth is a good indicator of its adoption and of the confidence that the industry has in this standard [[30]](#30). Moreover, as explained in [Section 1.1.6](#116-KNX-Pros-and-Cons), the system is simple and reliable, meaning that a current installation will still be usable in 10 or 20 years. The KNX standard has indeed existed since 1999 [[2]](#2) and inherits from the EIB (European Installation Bus) system which was created in 1987 [[5]](#5). KNX is thus "here to stay", especially compared to more consumer-based solutions like Google Home or Apple HomeKit which might not exist anymore in their current form (if at all) a few years from now. As we want our solution to evolve in the future to be a real contender for the industry and the public, we need to rely on stable technologies.
+Three main points of consideration make us argue that KNX is the protocol to use for such a project.
 
-Secondly, and related to the first point, since we want to develop a solution to provide reliable and verified smart infrastructures, we need to rely on a technology that is itself reliable. KNX is thus a good candidate.
+Firstly, KNX is the most widely used system for smart buildings [[1]](#1) [[33]](#33) and one of the oldest. The KNX standard has indeed existed since 1999 and inherits from the EIB (European Installation Bus) system which was created in 1987 [[2]](#2) [[5]](#5). Nowadays, KNX represents, for example, 56% of the market of smart buildings protocols in Germany, 42% in China, 34% in the Netherlands, and 27% in the UK [[33]](#33).
 
-We also want our solution to be used for industrial applications (e.g. hospitals, facilities, public administration, etc.). Therefore, consumer-based solutions are not an option.
+Secondly, as KNX is mainly a wired protocol built directly in the buildings' walls, we argue that the installations are meant to be used for many decades. The reliability and simplicity of the protocol also play a major role in the perenniality of the protocol.
 
-Finally, KNX is not a popular research subject. We could not find significant current research work and we, therefore, see an opportunity to propose something new and valuable for this technology.
+Finally, as we are aiming for reliable and verified smart buildings infrastructures, we need a reliable protocol on which to rely. As explained in [Section 1.1.6](#116-KNX-Pros-and-Cons), the KNX system is simple and reliable and thus represents a sane base for our new system.
+
+Given the adoption and features of the system, we argue that KNX is a central building block for the future of smart buildings. Moreover, its perenniality and reliability make KNX a better choice than consumer-grade technologies like Google Home[^28] or Apple HomeKit[^29] which might not exist anymore in their current form (if at all) a few years from now. This is even more important in the case of public administration or facilities buildings that our system is also targeting. For these types of buildings, consumer-grade systems are indeed not an option.
+
+[^28]: https://developers.google.com/assistant/smarthome/overview
+[^29]: https://developer.apple.com/homekit/
+
+On another front, KNX is not a popular research subject. We could not find significant current research work and we, therefore, see an opportunity to propose something new and valuable for this technology.
 
 ### 1.3 State-of-the-art
 
 This section contains a brief overview of the current smart infrastructures' state-of-the-art and SVSHI related work.
+
+#### 1.3.1 Commercial and open-source software
 
 Few modern programming languages support communication with KNX using external libraries: Java (and more generally the JVM ecosystem) with Calimero[^6], Python with XKNX[^7] (the library SVSHI uses), and Go with knx-go[^8]. They allow to interact with KNX mainly via KNXnet/IP and offer different degrees of abstraction.
 
@@ -365,13 +380,15 @@ SmartHomeNG[^5] is a metagateway that interconnects several things together. It 
 
 [^5]: https://www.smarthomeng.de
 
+#### 1.3.2 Academic work
+
 Fu et Al. (2021) [[32]](#32) work on _dSpace_, a programming framework for smart space applications, shares some similarities with SVSHI in being a platform that simplifies application development for smart infrastructures and that decouples software and hardware. Although, compared to SVSHI, _dSpace_ does not provide formal verification, does not apply to KNX, and automation policies are not written in Python.
 
 Research about KNX is rare and has been in decline in recent years. Even rarer is research involving KNX and formal verification; an exception is a paper by Shehata and Al. (2007) [[19]](#19), who propose a way to deal with policies that can interact badly and induce unexpected behavior. Their solution is a run-time policy interaction management module for detecting and resolving interactions among user policies in KNX-based smart homes. It runs in the ETS software and is used at programming time.
 
 Another interesting work on the KNX standard was done by Ruta et Al. (2011) [[20]](#20), who propose a modification of the KNX stack to add a microlayer for semantic and enable autonomous decisions by the devices rather than explicit user commands.
 
-Publications concerning formal verification in smart buildings are more common. Sun et Al. (2017) [[21]](#21) present a lightweight rule verification and resolution framework for verifying the correctness of rules used by wireless sensor-actuator networks. It uses knowledge bases and anomaly detection.
+Publications concerning formal verification in smart buildings are more common, compared to the KNX-related ones. Sun et Al. (2017) [[21]](#21) present a lightweight rule verification and resolution framework for verifying the correctness of rules used by wireless sensor-actuator networks. It uses knowledge bases and anomaly detection.
 
 Trimananda et Al. (2020) [[22]](#22) study conflicts between apps on Samsung SmartThings[^2], a platform for developing and deploying smart home IoT devices. Their findings suggest that the problem of conflicts between smart home apps is serious and can create potential safety risks. They also developed a conflict detection tool that uses model checking to automatically detect conflicts.
 
@@ -419,13 +436,13 @@ Old behaviours must be, of course, preserved and this is not trivial. The issue 
 
 #### 1.4.3 Lack of tools for complex behaviours
 
-Using ETS and KNX devices, the range of possible functionality is limited. One can only connect devices' communication objects using group addresses and configure devices settings (e.g., some delays, sensors' refresh frequency, repeating data sent, etc.).
+Using ETS and KNX devices, the range of possible functionalities is limited. One can only connect devices' communication objects using group addresses and configure devices settings (e.g., some delays, sensors' refresh frequency, repeating data sent, etc.).
 
 This is sufficient for a large number of situations like blinds automation with a weather station, lights management, etc. As long as a device exists to implement the intended behaviour, this method would work.
 
 However, what about Machine Learning based behaviours or functions that would connect to external services? For now, this is not possible using existing solutions. There exist servers (like _ComfortClick_ [[7]](#7)) that connect to the KNX bus and let the programmer develop more complex rules but the programming language is not a standard one and ML and external services are not available. These solutions are not numerous and some of the existing ones are in an end-of-life state (like _Lifedomus_ from DeltaDore [[6]](#6)).
 
-There also exists a logical module but these allow the programmer to design logic circuits using gates on a GUI inside ETS to connect in/out pins of the device to group addresses. This is cumbersome and extremely low level so these are not a viable option for advanced behaviours.
+There also exist logical modules but they allow the programmer to design logic circuits using gates on a GUI inside ETS to connect in/out pins of the device to group addresses. This is cumbersome and extremely low level so these are not a viable option for advanced behaviours.
 
 We think that the KNX ecosystem lacks a way to program in established programming languages or at least a way to enter complex sets of rules directly. It also lacks a way of verifying that a configuration is safe and implements the desired behaviour and does not provide a tool to check that this behaviour is preserved through updates of the installation.
 
@@ -447,7 +464,22 @@ SVSHI helps both smart home enthusiasts and hobbyists wishing to tinker with the
 
 ### 2.2 How?
 
-SVSHI allows to develop and run Python apps in a KNX system. On top of that, it verifies that the apps adhere to a set of invariants provided by the user. No formal verification background is needed, the only requirement is some Python programming knowledge.
+SVSHI acts like a KNX device, sending and reading telegrams from the bus. Fig. 6 shows its place in a KNX installation.
+
+<p align="center">
+ <img src="res/svshi_in_knx.png" alt="SVSHI's place in a KNX installation"
+ width="100%"/>
+  <figcaption>Fig. 6 - SVSHI's place in a KNX installation</figcaption>
+</p>
+
+Then, devices are configured to send all telegrams to SVSHI only and consequently, SVSHI sends telegrams to the devices to implement the functionality.
+
+In this way, SVSHI allows to develop and run Python applications in a KNX system. On top of that, it verifies that the apps adhere to a set of invariants provided by the user. No formal verification background is needed, the only requirement is some Python programming knowledge. Fig. 7 depicts a typical SVSHI workflow.
+
+<p align="center">
+ <img src="res/svshi_workflow.png" alt="Typical SVSHI workflow" width="55%"/>
+ <figcaption>Fig. 7 - Typical SVSHI workflow</figcaption>
+</p>
 
 Thus, with SVSHI smart home _aficionados_ can control their smart home KNX installation without having to rely necessarily on experts, and can add easily pieces of functionality by writing or downloading apps without the fear of breaking the system.
 
@@ -485,7 +517,7 @@ In addition, note that `invariant()` must return a boolean value, so any kind of
 **Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximize code that is indeed formally verified.
 Nonetheless, the user can help the verification deal with their presence by annotating their docstring with _post-conditions_.
 
-Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can use constants and other operations. You can add as many post-conditions as you like and need. Therefore, we encourage developers to avoid having conjunctions in post-conditions but rather to have multiple post-conditions. This does not make difference for the verification but helps the readability.
+Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can use constants and other operations. You can add as many post-conditions as you like and need. Therefore, we encourage developers to avoid having conjunctions in post-conditions but rather to have multiple post-conditions. This does not make a difference for the verification but helps the readability.
 However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
 
 An example with multiple post-conditions could be:
@@ -527,7 +559,7 @@ def iteration():
     SWITCH.off()
 ```
 
-This application sets a switch "on" (a light for example) when a binary sensor is in the "on" state (a push-button for example) or when the `INT_0` value equals 42. The `invariant()` ensures that if these conditions are met, the switch is always in the "on" state and if they are not, it is set to "off".
+This application sets a switch "on" (a lamp for example) when a binary sensor is in the "on" state (a push-button for example) or when the `INT_0` value equals 42. The `invariant()` ensures that if these conditions are met, the switch is always in the "on" state and if they are not, it is set to "off".
 
 #### 2.2.2 Running apps
 
@@ -547,7 +579,7 @@ For more details on how apps are run, see [Section 4.2.4](#424-execution).
 
 With SVSHI, one can use any Python library to **develop any kind of app**: machine learning and external services can be leveraged in a **few lines** of Python. This kind of system complexity is either not achievable or very time-consuming in an ETS-only setting. Updates are **easier**, **faster** and **safer** to do, as the user just needs to modify the Python script, and the modifications are **formally verified**. In a larger perspective, one can expect **fewer errors** during the configuration of a KNX installation and **less time spent on ETS**, since SVSHI does the heavy lifting for the user.
 
-Moreover, the SVSHI system provides a runtime verifier module. This module verifies during the execution that the invariants cannot be violated. If an app does a modification that violates at least one invariant, the modification is not applied to the KNX installation and the app (or all apps, depending on the error) is killed. As this verification works on real values known at runtime, it can detect problems with `unchecked` functions too, even if it violates a post-condition the developer added. This gives a superior safety level and can catch **all** errors.
+Moreover, the SVSHI system provides a runtime verifier module. This module verifies during the execution that the invariants cannot be violated. If an app does a modification that violates at least one invariant, the modification is not applied to the KNX installation and the app (or all apps, depending on the error) is killed. As this verification works on real values known at runtime, it can detect problems with `unchecked` functions too, even if the functions' results violate a post-condition the developer added. This gives a superior safety level and can catch **all** errors.
 
 [Section 1.5](#15-how-do-we-solve-them) contains more details on this subject.
 
@@ -557,7 +589,7 @@ This section discusses the **novelties** introduced by SVSHI.
 
 SVSHI is one of the first platforms that allow running Python applications in smart infrastructures. It provides the highest level of abstraction available at the moment for programming KNX systems, and it extends KNX possibilities beyond what was previously achievable: any behavior and complex integration are now possible.
 
-Applications are decoupled from the physical system they are installed on and can be developed independently. Only at installation time the binding between devices used in the app and real physical devices is established.
+Applications are decoupled from the physical system they are installed on and can be developed independently. Only at installation time, the binding between devices used in the app and real physical devices is established.
 
 Additionally, while preserving performance and developer productivity, SVSHI formally verifies applications, ensuring their invariants are always preserved. App developers need no verification expertise, and the verification process does not require their assistance.
 
@@ -571,9 +603,10 @@ In this section, we first describe how SVSHI is structured, concluding with an i
 
 <p align="center">
  <img src="res/structure.png" alt="Structure of the platform" width="60%"/>
+ <figcaption>Fig. 8 - Structure of the platform</figcaption>
 </p>
 
-SVSHI is made of different **Python** and **Scala** modules. In the above diagram, the Python modules are in blue and the Scala ones in red. Datastores are denoted in green.
+SVSHI is made of different **Python** and **Scala** modules. The Fig. 8 shows the structure of the SVSHI platform. In the structure diagram, the Python modules are in blue and the Scala ones in red. Datastores are denoted in green.
 
 We chose Python for the `generator`, `verification`, and `runtime` modules since we need to perform code generation, AST manipulation, code execution, and symbolic execution on Python files. Scala is used for all other tasks.
 
@@ -662,7 +695,7 @@ For now, the compilation that SVSHI performs happens in two steps. During the fi
 Let us describe more in-depth these two phases.
 
 During the first phase, the compiler generates a file containing bindings between physical and prototypical devices. The bindings file is a JSON file that contains one object for each application that is installed or that is being installed. This object in turn contains one object for each prototypical device used by the application. Each of these devices objects contains the name and the type of the device and, more importantly, one integer for each communication object it exposes. This integer is an ID that is used to map the communication object to a physical one (each physical communication object has some ID in the `physical_structure.json` file the compiler also produces). The developer must fill this file with the corresponding IDs before continuing.
-One important aspect is the compiler's behaviour when generating this bindings file in case some applications are already installed. Indeed, it would not make sense to wipe all existing bindings when installing a new application. However, if the devices installed in the physical installation have changed, it does not make sense to keep potentially stale mappings.
+One important aspect is the compiler's behaviour when generating this bindings file in case some applications are already installed. Indeed, it would not make sense to erase all existing bindings when installing a new application. However, if the devices installed in the physical installation have changed, it does not make sense to keep potentially stale mappings.
 Therefore, the compiler checks whether the passed physical structure at compile time (i.e., the ETS project file) produces a physical installation identical to the one stored in the currently installed application library or not. If the physical structures are identical, currently existing bindings are kept and one or more new objects for the application(s) being installed are added. The developer has only to fill the bindings for the applications being installed. If the physical structures are different, all bindings are generated from scratch, old IDs are replaced by `-1` and the developer has to fill everything again, even for previously installed applications.
 
 During the second phase, the compiler uses this bindings file that the developer filled to assign group addresses to physical devices' communication objects. Doing so, these group addresses are also assigned to prototypical devices communication objects that are mapped to physical ones.
@@ -682,21 +715,21 @@ Here we expose some background needed to understand the verification done on the
 
 Let us start with some background about symbolic execution.
 
-Symbolic execution is a different way of executing a program. Most interpreters run programs with concrete values (an integer would have the value 42, for example). When symbolically executing a piece of software, each variable takes a symbolic value which is a range of values that this variable could possibly take in a concrete execution. This way, a symbolic execution explores multiple (sometimes even all) possible concrete execution paths at once.
+Symbolic execution is a different way of executing a program. Most interpreters run programs with concrete values (an integer would have the value 42, for example). When symbolically executing a piece of software, each variable takes a symbolic value which is a range of values that this variable could take in a concrete execution. This way, a symbolic execution explores multiple (sometimes even all) possible concrete execution paths at once.
 
 To explore paths, a symbolic execution engine adds at each branch a _path constraint_ that represents the conditions that must hold for the symbolic values of variables for that path to be followed. An execution path in the program is feasible if the set of all paths constraint (called the _path condition_) is satisfiable.
 
-Let us take an example. In Figure 5, the `abs` function has one branch. The symbolic execution will generate two path constraints, one for the `then` branch which is `x >= 0`, and one for the `else` branch which is `x < 0`. This program also has two paths and both have a path condition that is satisfiable.
+Let us take an example. In Fig. 9, the `abs` function has one branch. The symbolic execution will generate two path constraints, one for the `then` branch which is `x >= 0`, and one for the `else` branch which is `x < 0`. This program also has two paths and both have a path condition that is satisfiable.
 
 A symbolic execution engine will choose different satisfiable paths until the whole paths space is covered.
 
 By using symbolic execution, it is possible to find faulty paths even if the probability of taking them during concrete execution is extremely low.
 
-For example, again in Figure 5, in the `succ` function, the symbolic execution will generate the path condition `x == 42768` and immediately detects that the path has a satisfiable path condition and therefore will directly find the faulty path. Whereas a concrete execution with a random value for argument `x` only has 1 chance over 2^32 of finding this faulty path.
+For example, again in Fig. 9, in the `succ` function, the symbolic execution will generate the path condition `x == 42768` and immediately detects that the path has a satisfiable path condition and therefore will directly find the faulty path. Whereas a concrete execution with a random value for argument `x` only has 1 chance over 2^32 of finding this faulty path.
 
 <figure align="center">
  <img src="res/symbolic_execution_example_functions.png" alt="Absolute value and faulty successor functions" width="60%"/>
- <figcaption>Fig. 5 - Absolute value and faulty successor functions (taken from [[9]](#9) ).</figcaption>
+ <figcaption>Fig. 9 - Absolute value and faulty successor functions [9].</figcaption>
 </figure>
 
 ###### 4.3.3.1.2 CrossHair
@@ -714,12 +747,12 @@ In `diffbehavior` mode, given two functions, CrossHair tries to find a set of ar
 
 Using `cover` mode, CrossHair uses symbolic execution and the SMT solver to find inputs that lead to high op-code-level test coverage.
 
-In `check` mode, CrossHair uses symbolic execution to find whether _contracts_ hold or not for functions. Contracts are annotations in Python docstrings and are in fact pre- and post-conditions expressed as booleans expressions. The pre-conditions can restrict the range of values of the arguments and the post-conditions express what should hold at the end of the function execution (the special value `__return__` can be used to represent the value returned by the function). CrossHair then tries to find counterexamples, i.e. arguments values that satisfy the pre-conditions but violate the post-conditions. If no such counterexamples are found after a timeout or if all _discovered paths_ are covered, CrossHair considers the contracts to be valid. Crosshair outputs a special message if contracts are _valid over all paths_ meaning that all discovered paths were analysed and not that the timeout was hit.
+In `check` mode, CrossHair uses symbolic execution to find whether _contracts_ hold or not for functions. Contracts are annotations in Python docstrings and are pre- and post-conditions expressed as booleans expressions. The pre-conditions can restrict the range of values of the arguments and the post-conditions express what should hold at the end of the function execution (the special value `__return__` can be used to represent the value returned by the function). CrossHair then tries to find counterexamples, i.e. arguments' values that satisfy the pre-conditions but violate the post-conditions. If no such counterexamples are found after a timeout or if all _discovered paths_ are covered, CrossHair considers the contracts to be valid. Crosshair outputs a special message if contracts are _valid over all paths_ meaning that all discovered paths were analysed and not that the timeout was hit.
 
 One caveat of CrossHair is the way it discovers paths. Indeed, as CrossHair discovers paths only by **executing** the function with these special proxy values as arguments, it only discovers feasible paths for programs that are _deterministic_. That means that branches should not depend on external values other than arguments to be discoverable. Also, if a program has side effects, it could cause problems as they would be visible during the verification process.
-Crosshair does not perform any AST analysis or similar, it really just executes the program with special proxy values as arguments.
+Crosshair does not perform any AST analysis or similar, it just executes the program with special proxy values as arguments: it performs _concolic_ execution.
 
-CrossHair also requires the code to be typed. This is not really a limitation in our case as most of the code is generated so we add types automatically. We only require the developers to type `unchecked` functions manually.
+CrossHair also requires the code to be typed. This is not a limitation in our case as most of the code is generated so we add types automatically. We only require the developers to type `unchecked` functions manually.
 
 CrossHair supports variables of type `int`, `bool`, `str` and `dict` at least [[18]](#18). We observe that it also supports `float`. CrossHair also supports `dataclasses` and custom classes if the attributes have one of the aforementioned types. During our experiments, we observe that counterexamples concerning `dict` were not found in almost all cases. We think that the universe of values is too large, accounting for the fact that Python dictionaries are heterogeneous and can have keys and values of any type (even different ones in the same dictionary).
 
@@ -729,9 +762,9 @@ We develop here what we formally verify about applications written for SVSHI and
 
 First of all, we need to define what are the properties that should be verified about the applications. As described in the [section about app generation (Section 4.2.1)](#421-app-generation), the developer writes mainly 2 functions in an application: `iteration()` and `invariant()`. The `iteration()` function is the function that modifies the state of the installation (i.e., what implements the behaviour) while the `invariant()` is a function that returns a `bool` and represents an invariant about the physical installation that must stay valid at all times.
 
-When performing the verification, we have 2 sets of applications: the already installed one(s) and the one(s) being installed. The main idea is that we verify that the execution of the `iteration()` function of any application on a _valid state_ (i.e., the installation is in a state in which all `invariant()` functions of all applications of both sets are verified) returns a possibly different but still _valid_ state. This condition is more conservative than it could be. Indeed, it is possible that a particular set of applications is rejected even though the execution could be valid. This would occur if the execution of the `iteration()` functions in a particular order leads to a valid state but the state is in an _invalid state_ between two functions. We decide that this case should be rejected as well because of the event-based nature of our system. Indeed, it would lead to invalid states if the execution order changes. It also helps during the verification process using CrossHair and we will detail how. It is therefore possible to verify `iteration()` functions independently from each other.
+When performing the verification, we have 2 sets of applications: the already installed one(s) and the one(s) being installed. The main idea is that we verify that the execution of the `iteration()` function of any application on a _valid state_ (i.e., the installation is in a state in which all `invariant()` functions of all applications of both sets are verified) returns a possibly different but still _valid_ state. This condition is more conservative than it could be. Indeed, a particular set of applications may be rejected even though the execution could be valid. This would occur if the execution of the `iteration()` functions in a particular order leads to a valid state but the state is in an _invalid state_ between two functions. We decide that this case should be rejected as well because of the event-based nature of our system. Indeed, it would lead to invalid states if the execution order changes. It also helps during the verification process using CrossHair and we will detail how. It is therefore possible to verify `iteration()` functions independently from each other.
 
-An important thing to note at this point is that we cannot verify that, given an _invalid_ state, an app produces a valid state. Indeed, for an app to produce a valid state from an invalid one, the invalid one must be from a particular subset of the universe of all states. This represents in fact the _functionality_ of the app.
+An important thing to note at this point is that we cannot verify that, given an _invalid_ state, an app produces a valid state. Indeed, for an app to produce a valid state from an invalid one, the invalid one must be from a particular subset of the universe of all states. This represents the _functionality_ of the app.
 
 For example, let us take an application that turns a light on when a presence detector detects someone. The app would look like this:
 
@@ -755,13 +788,13 @@ Here, at some point in the execution, the presence will be `on` because someone 
 
 First of all, we need a way to pass the state of the installation and the app state as arguments. Indeed, we want to define contracts on the states and we want the states to be symbolically represented to explore all cases. We define a class `PhysicalState` that holds the state of the installation as abstract values. For example, if the physical installation contains a push button, a light, and a temperature sensor, the `PhysicalState` will hold 2 `bool` values (representing the current state of the light and the push button) and 1 `float` value (representing the temperature measured by the temperature sensor). This `PhysicalState` is defined as a `dataclass` in Python. We do the same for the `AppState` which is a `dataclass` with a finite number of values for each supported basic type. We modify the Python code of the `iteration()` and `invariant()` functions using the Python AST module to take an instance of `PhysicalState` and an instance of `AppState` as arguments. We also modify the code to pass the `PhysicalState` instance to all functions that act on devices, so that modifying the state of a device changes the instance of `PhysicalState` and getting the state of a device returns the value held by it.
 
-We then modify `iteration()` to return a `dict` that contains the modified instances of `PhysicalState` and of `AppState` so that contracts can be written about them. We return a `dict` with, as keys, the strings that contain the respective names of arguments of the `invariant()` functions. By doing so, we can call `invariant()` functions more easily with the `fun(**dict_with_named_args)` notation[^25].
+We then modify `iteration()` to return a `dict` that contains the modified instances of `PhysicalState` and `AppState` so that contracts can be written about them. We return a `dict` with, as keys, the strings that contain the respective names of arguments of the `invariant()` functions. By doing so, we can call `invariant()` functions more easily with the `fun(**dict_with_named_args)` notation[^25].
 
 [^25]: https://book.pythontips.com/en/latest/args_and_kwargs.html#usage-of-kwargs
 
 As explained in the [previous section about CrossHair (Section 4.3.3.2)](#4332-CrossHair), functions passed to it must be _pure_, i.e. have _deterministic_ behaviour and no side effects. However, we want applications to be able to use external services. We, therefore, decided to ask developers to write all the code that contains external calls in functions whose names are prefixed with `unchecked`. These functions must have an explicit return type for the verification to work. During the code modification step, we pass to the `iteration()` function one new argument for each of those functions, of the corresponding type (if the return type is not `None`, in which case the call is just replaced by `None` directly). In this way, the values returned by those functions are represented by symbolic values during the verification and all cases are explored. To aid verification and avoid false negatives, developers can add `contracts` in the form of post-conditions to these `unchecked` functions. Developers must however be very careful with these contracts because, if they are not respected at runtime by the external call, errors might occur even though the formal verification passed. `invariant()`functions cannot use `unchecked` functions.
 
-Now that the `iteration()` function acts on an abstract representation of the states that can be symbolically represented and on `unchecked` functions corresponding arguments, we need to add contracts that CrossHair will verify. First, we add as pre-conditions all the invariants of all applications of both sets (to represent that the passed states are valid) and the post-conditions of the `unchecked` functions. Then, we add as post-conditions all the invariants of all applications of both sets but called on the return value of the `iteration()` function, to verify that, given a valid state and unchecked functions values, the return state is still valid.
+Now that the `iteration()` function acts on an abstract representation of the states that can be symbolically represented and on `unchecked` functions corresponding arguments, we need to add contracts that CrossHair will verify. First, we add as pre-conditions all the invariants of all applications of both sets (to represent that the passed states are valid) and the post-conditions of the `unchecked` functions. Then, we add as post-conditions all the invariants of all applications of both sets but called on the return value of the `iteration()` function, to verify that, given a valid state and unchecked functions' return values, the return state is still valid.
 
 We then call CrossHair to verify contracts for all `iteration()` functions. If CrossHair finds a counterexample for at least one of them, we reject the whole set of applications being installed.
 
@@ -792,8 +825,8 @@ def door_lock_iteration(app_state: AppState, physical_state: PhysicalState):
     post: plants_invariant(**__return__)
     post: ventilation_invariant(**__return__)
   """
-  if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state
-    ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
+  if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state)
+   and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
     if app_state.INT_0 > 5:
       None
     else:
@@ -815,7 +848,7 @@ We think that the tradeoff is acceptable, as SVSHI gets effective verification o
 
 ##### 4.3.3.4 DPT and types
 
-This part of the verification concerns mainly the bindings. Developers indeed have to fill the `apps_bindings.json` to map physical devices communication objects to prototypical devices communication objects. For the system to work properly, it is crucial that these bindings are sound. Also, we cannot formally verify their correctness.
+This part of the verification concerns mainly the bindings. Developers indeed have to fill the `apps_bindings.json` to map physical devices communication objects to prototypical devices communication objects. For the system to work properly, these bindings must be sound. Also, we cannot formally verify their correctness.
 Therefore, we verify most of the compatibility we can with the information we have.
 
 We verify the following properties:
@@ -866,7 +899,7 @@ Compatibility is defined as follows:
 
 As we abstract the physical state and run applications on the abstraction, it means that a prototypical device in an application can read a state that has only `out` type in the physical world (because its value is stored in the mirrored state kept by SVSHI). This is why `in` prototypical <-> `out` physical is permitted.
 
-With the `Unknown` type for physical devices, we cannot do more than giving a warning to the developer which has to really be sure that the connection is valid.
+With the `Unknown` type for physical devices, we cannot do more than giving a warning to the developer who has to be sure that the connection is valid.
 
 - **Python types**
 
@@ -910,7 +943,7 @@ The rest of the ETS configuration has to be done by hand for now. However, this 
 
 SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exceptions are apps that run every X seconds based on a timer. These apps not only react to state changes but are also executed _periodically_.
 
-_Running an application_ concretely means that its `iteration()` function is executed on the current physical state of the system and on the current app state.
+_Running an application_ concretely means that its `iteration()` function is executed on the current physical state of the system and the current app state.
 
 Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way, privileged applications can override the behavior of non-privileged ones.
 
@@ -920,14 +953,14 @@ This execution model has been chosen for its **ease of use**: users do not need 
 
 ##### 4.3.5.1 Code manipulation
 
-The app skeleton provided to the user when she generates an app contains classes modeling the devices the app can use. However, these classes are just stubs given for code auto-completion and linting, since they are not the ones executed by SVSHI. In fact, the `verification` module does not simply modify the code to ease verification, as explained in [Section 4.3.3.4](#4334-crosshair-in-svshi-and-code-modification): it also generates the file `runtime_file.py` that is used during execution by the `runtime` module (see next section, [Section 4.3.5.2](#4352-runtime)). This file is similar to `verification_file`, as it contains:
+The app skeleton provided to the user when she generates an app contains classes modeling the devices the app can use. However, these classes are just stubs given for code auto-completion and linting, since they are not the ones executed by SVSHI. The `verification` module does not simply modify the code to ease verification, as explained in [Section 4.3.3.4](#4334-crosshair-in-svshi-and-code-modification): it also generates the file `runtime_file.py` that is used during execution by the `runtime` module (see next section, [Section 4.3.5.2](#4352-runtime)). This file is similar to `verification_file.py`, as it contains:
 
 - The states: both `AppState` and `PhysicalState`
 - The actual device classes: one per each device instance in an app, as devices of the same type might access different group addresses (in a single app or across different apps)
 - The actual device instances used
 - The `iteration` functions of each installed app
 
-However, compared to the file generated for verification, it does not contain contracts or invariants, as they are not used during execution. Moreover, `unchecked` functions that perform side effects and all user-defined imports are kept. The file is internal to SVSHI and is not meant to be read by the developer.
+However, compared to the file generated for verification, it does not need to contain contracts or invariants, as they are not used during execution. Moreover, `unchecked` functions that perform side effects and all user-defined imports are kept. The file is internal to SVSHI and is not meant to be read by the developer.
 
 Here is an example of the `iteration()` function of the application `app_one` before (as written by the developer) and after AST manipulation (as passed to `runtime`):
 
@@ -996,7 +1029,7 @@ The execution happens in the following manner: first, we generate copies of the 
 
 This execution plan has the advantage of sending **less data** through the KNX bus, as apps are executed in batches and state updates are coalesced to only take into account the latest value, discarding all intermediate states. It also avoids sending unnecessary telegrams that would ask a device to change its state to its current value (e.g., send an "on" command to a light that is already in the "on" state).
 Moreover, apart from the initialization phase, **no reads** are sent to the KNX bus.
-Furthermore, another benefit of keeping a local copy of the physical state is that it is possible for apps to read the state of devices that are usually **write-only** in a KNX-only usage, such as some actuators.
+Furthermore, another benefit of keeping a local copy of the physical state is that apps can read the state of devices that are usually **write-only** in a KNX-only usage, such as some actuators.
 
 On the other hand, the distributed nature of KNX is lost, as most logic is **centralized** in SVSHI.
 
@@ -1011,21 +1044,42 @@ To demonstrate SVSHI's usage, we developed **3 app prototypes** in our lab, usin
 - An app to track **soil moisture level** of plants that sends messages on the lab **Slack** workspace if the level is below the recommended threshold.
 - An app that monitors the **lock state** of our office's door and that sends messages on **Slack** according to the **presence** detector installed in the room as well: the alert is sent if there is no one in the room and the door is not locked.
 - An app that monitors the conference room **presence**, the **CO2 level**, and the lab **Google Calendar** and that turns the **ventilation** "on" or "off". Ventilation is turned "on":
-- when someone is in the room
-- when a meeting is scheduled in the next 15 minutes
-- during a meeting (with respect to the calendar)
-- when the CO2 level is above 900 ppm
+  - when someone is in the room
+  - when a meeting is scheduled in the next 15 minutes
+  - during a meeting (with respect to the calendar)
+  - when the CO2 level is above 900 ppm
 
 The **KNX system** is made of various devices connected to the bus:
 
 - A KNX power supply.
 - A KNX USB interface.
 - A KNXnet/IP interface.
-- An actuator.
+- A switch.
 - A binary sensor.
 - A humidity sensor with a plant probe.
 - A door lock sensor (that connects to the binary sensor to communicate over KNX).
 - A room presence detector that can also measure the CO2, the temperature, and the brightness levels.
+
+Fig. 10 shows a technical diagram of the KNX setup we installed.
+
+<figure align="center">
+ <img src="res/knx_structure_prototypes.png" alt="KNX prototype installation" width="100%"/>
+ <figcaption>Fig. 10 - KNX prototype installation</figcaption>
+</figure>
+
+In Fig. 11, we can see a photo of the installation.
+
+<figure align="center">
+ <img src="res/Physical_structure_photo.jpeg" alt="KNX prototype physical installation" width="100%"/>
+ <figcaption>Fig. 11 - KNX prototype physical installation</figcaption>
+</figure>
+
+Fig. 12 shows the door lock sensor.
+
+<figure align="center">
+ <img src="res/Door_lock_sensor.jpeg" alt="Door lock sensor" width="50%"/>
+ <figcaption>Fig. 12 - Door lock sensor</figcaption>
+</figure>
 
 ### 5.2 Accomplishments
 
@@ -1042,9 +1096,9 @@ The prototypes exemplify SVSHI's main features and accomplishments:
 SVSHI is great, but it has some important **limitations**:
 
 - We lose the decentralized aspect of KNX, as most logic is _centralized_: if the host running SVSHI goes down, the KNX system does not work anymore.
-- We do not use the full potential of the devices: in Python, we implement sometimes behaviors that could be done by the device itself on its own with the right ETS configuration. This is due to the fact that two push-buttons do not necessarily have the same settings available, so SVSHI uses the most basic ones that are always available (see [Section 1.2.4](#124-knx-devices)).
+- We do not use the full potential of the devices: in Python, we implement sometimes behaviors that could be done by the device itself on its own with the right ETS configuration. This is since two push-buttons do not necessarily have the same settings available, so SVSHI uses the most basic ones that are always available (see [Section 1.2.4](#124-knx-devices)).
 - We still need to use ETS to program devices the first time an app is installed and this can be a cause of errors. However, this programming is mostly limited to group addresses assignment, which is aided by the `assignment.txt` and `assignment.csv` files that SVSHI outputs on a successful compilation.
-- SVSHI itself is not verified, so we do not yet provide 100% verified smart infrastructures.
+- SVSHI itself is not verified and thus stays for now in the Trusted Computing Base (TCB).
 
 ### 5.4 Future work
 
@@ -1061,13 +1115,13 @@ The centralization trend could also be countered by **clustering**: having SVSHI
 [^26]: https://kubernetes.io/
 [^27]: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 
-Moreover, a relatively simple improvement would be adding **support for more device types** than the four currently available, such as control units, brightness sensors, etc.
+Moreover, a relatively simple improvement would be adding **support for more device types** than the five currently available, such as control units, brightness sensors, etc.
 
 Furthermore, an **app marketplace** needs to be implemented to stimulate SVSHI's adoption and help users less keen on programming. It could be represented, for example, as a server on the cloud, with formal verification performed on-the-fly for app uploads and downloads performed via the CLI.
 
-Another important feature to provide is a **graphical user interface** (GUI) for SVSHI to replace the current CLI, as the user still needs to update manually some JSON configuration files: this could be done in a graphical way. The next step in this direction would be transitioning to a system in which SVSHI is used as a web app, with no installation required.
+Another important feature to provide is a **graphical user interface** (GUI) for SVSHI to replace the current CLI, as the user still needs to update manually some JSON configuration files: this could be done graphically. SVSHI already provides an interface in `Svshi.scala` with a singleton to be used, should one want to implement the GUI in Scala. Otherwise, we suggest developing it in another programming language and calling directly the CLI. The next step in this direction would be transitioning to a system in which SVSHI is used as a web app, with no installation required.
 
-Additionally, a **simulator** for KNX, based on real devices XML files, would be very useful for testing and development purposes. It could also be used by KNX professionals to perform demonstrations to customers, for example by building a virtual installation and running some apps. For now, the KNX Association offers a simulator they call _KNX Virtual_. This is a Windows program that offers some devices that can be programmed using ETS; the user can play with the GUI to change sensors states and see the reaction of the other devices. The main issue is that devices are ones that exist only in KNX Virtual. This means that the settings are simpler (from our experience) than real devices'. Moreover, if you want to simulate a known infrastructure (e.g., your own), you cannot. For this reason, we propose to write a simulator core that takes XML files provided by manufacturers (the ones ETS is using) to simulate real devices in the local LAN. In the beginning, not all settings have to be supported, even SVSHI does not. The simulator could evolve alongside SVSHI and support new settings when it does. It could also be completely separated. A separated simulator could serve many more purposes than just being a SVSHI companion.
+Additionally, a **simulator** for KNX, based on real devices XML files, would be very useful for testing and development purposes. It could also be used by KNX professionals to perform demonstrations to customers, for example by building a virtual installation and running some apps. For now, the KNX Association offers a simulator they call _KNX Virtual_ (see [Section 1.2.6](#126-knx-simulator)). This is a Windows program that offers some devices that can be programmed using ETS; the user can play with the GUI to change sensors states and see the reaction of the other devices. The main issue is that these devices only exist in KNX Virtual. This means that the settings are simpler (from our experience) than real devices'. Moreover, if you want to simulate a known infrastructure (e.g., your own), you cannot. For this reason, we propose to write a simulator core that takes XML files provided by manufacturers (the ones ETS is using) to simulate real devices in the local LAN. In the beginning, not all settings have to be supported, even SVSHI does not. The simulator could evolve alongside SVSHI and support new settings when it does. It could also be completely separated. A separated simulator could serve many more purposes than just being a SVSHI companion.
 
 For what concerns the applications' execution, a potential improvement could be running apps of the same permission level **in parallel** instead of sequentially, with a finer-grained and smarter ordering than the one currently implemented. This could improve the performance of the platform, which however should not be an immediate concern with a relatively small number of apps installed. Nevertheless, it could prove beneficial once users start to include machine learning models running locally in their applications and other long-lasting operations.
 In addition, it could be interesting for apps to communicate between them, either via message-passing or via a shared state. One could thus imagine hierarchies of apps (based on permission level or functionality), with high-ranked apps distributing work and coordinating "worker" apps.
@@ -1100,7 +1154,7 @@ In this thesis, we presented our work on formal verification in smart infrastruc
 
 <a id="8">[8]</a> CrossHair, "https://github.com/pschanely/CrossHair"
 
-<a id="9">[9]</a> Bruni, A. D., Disney, T., & Flanagan, C. (2011). A peer architecture for lightweight symbolic execution. Universidad de California, Santa Cruz.
+<a id="9">[9]</a> Bruni, A. D., Disney, T., & Flanagan, C. (2011). A peer architecture for lightweight symbolic execution. University of California, Santa Cruz.
 
 <a id="10">[10]</a> Lévesque, B., Lavoie, M., & Joly, J. (2004). Residential water heater temperature: 49 or 60 degrees Celsius?. _The Canadian journal of infectious diseases = Journal canadien des maladies infectieuses_, 15(1), 11–12. <https://doi.org/10.1155/2004/109051>
 
@@ -1147,3 +1201,5 @@ In this thesis, we presented our work on formal verification in smart infrastruc
 <a id="31">[31]</a> <https://www.knx.org/knx-en/for-professionals/get-started/knx-virtual/>
 
 <a id="32">[32]</a> Silvery Fu and Sylvia Ratnasamy. “dSpace: Composable Abstractions for Smart Spaces”. In: SOSP ’21: ACM SIGOPS 28th Symposium on Operating Systems Principles, Virtual Event / Koblenz, Germany, October 26-29, 2021. Ed. by Robbert van Renesse and Nickolai Zeldovich. ACM, 2021, pp. 295–310. DOI : 10.1145/3477132. 3483559. URL: <https://doi.org/10.1145/3477132.3483559>.
+
+<a id="33">[33]</a> <https://smartbuildingsmagazine.com/news/bsria-announces-survey-results/>

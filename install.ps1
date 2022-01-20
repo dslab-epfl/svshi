@@ -23,9 +23,11 @@ if(CommandExists("python3")){
 
     Write-Output "Setting SVSHI_HOME environment variable..."
     [System.Environment]::SetEnvironmentVariable('SVSHI_HOME', $PSScriptRoot,[System.EnvironmentVariableTarget]::User)
+
+    $Env:SVSHI_HOME = "$PSScriptRoot"
     
     Write-Output "Setting Path environment variable..."
-    [System.Environment]::SetEnvironmentVariable('Path', "$Env:Path;$Env:LOCALAPPDATA\Svshi",[System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('Path', "$Env:Path;$Env:LOCALAPPDATA\Svshi\bin",[System.EnvironmentVariableTarget]::User)
     
     if($build){
         if(-Not (CommandExists("sbt"))){

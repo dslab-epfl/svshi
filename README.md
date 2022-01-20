@@ -39,7 +39,7 @@
   - [White paper](#white-paper)
   - [License](#license)
 
-The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
+The **SVSHI** (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) (pronounced like "sushi") project is a platform/runtime/toolchain for developing and running formally verified smart infrastructures, such as smart buildings, smart cities, etc.
 
 It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
@@ -47,7 +47,7 @@ With SVSHI, a user can develop and run Python applications interacting with [KNX
 
 ## Installation
 
-To work, SVSHI needs Python 3.9 (or newer) and Java 11 (or newer). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
+To work, SVSHI needs Python 3.9 (or newer)([download here](https://www.python.org/downloads/)) and Java 11 (or newer)([download here](https://www.oracle.com/java/technologies/downloads/)). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
 
 To check if the installation was successful, run `svshi version` in your terminal.
 
@@ -62,22 +62,24 @@ To install SVSHI on Linux or macOS:
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/the/svshi/folder` (a path example is `~/svshi-v1.1.0`) to your `.bash_profile`, `.zsh_profile`, etc.
 
-To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `svshi` folder into the new one before replacing.
+To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `src` folder into the new one before replacing.
 
 #### Windows
 
 To install SVSHI on Windows:
 
 1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
-2. Setup `python3` by executing the script `setup-python3.ps1`. This sets up a `python3` alias if it does not exist and installs `pip`.
-> Make sure you add the path asked by `pip` to your `Path` environment variable!
-3. Reboot your computer.
-4. Unzip the SVSHI archive, move the folder to the desired installation site. Then run the `install.ps1` script inside the unzipped folder to install the program.
+2. Unzip the archive, move the unzipped folder to the desired installation site. The moved folder must contain (among other things) a `src` folder and some scripts.
+3. Open a Powershell instance a `CD` into the unzipped directory.
+4. Setup `python3` by executing the script `.\setup-python3.ps1`. This sets up a `python3` alias if it does not exist.
+   > The command `py`, `python` or `python3` must be available in your Powershell environment for this script to work!
 5. Reboot your computer.
+6. Execute `.\install-pip.ps1` to install pip on your computer
+7. Run the `.\install.ps1` script inside the unzipped folder to install the program.
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
+To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src` folder in the new one before replacing.
 
 ### From sources
 
@@ -95,14 +97,16 @@ To build from sources on Linux or macOS:
 To build from sources on Windows:
 
 1. Clone the repository
-2. Setup `python3` by executing the script `setup-python3.ps1`. This sets up a `python3` alias if it does not exist and installs `pip`.
-3. Reboot your computer.
-4. Unzip the SVSHI archive, move the folder to the desired installation site. Then run the `install.ps1 -build true` script inside the unzipped folder to build and install the program.
-5. Reboot your computer.
+2. Open a Powershell instance and `CD` into the unzipped directory.
+3. Setup `python3` by executing the script `.\setup-python3.ps1`. This sets up a `python3` alias if it does not exist.
+   > The command `py`, `python` or `python3` must be available in your Powershell environment for this script to work!
+4. Reboot your computer.
+5. Execute `.\install-pip.ps1` to install pip on your computer
+6. Run the `.\install.ps1` script inside the unzipped folder to install the program.
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `svshi` folder in the new one before replacing.
+To update SVSHI, you just need to do step 5. However, do not forget to move `app_library` inside the old `src` folder in the new one before replacing.
 
 ### Docker
 
@@ -313,7 +317,7 @@ This execution model has been chosen for its ease of use: users do not need to w
 
 ## KNX Virtual
 
-You do not necessarily need to build a KNX infrastructure to test your app. You can use *KNX Virtual* to run SVSHI. This a **Windows**-only program that is available on the KNX Association's website[^1]. Once you downloaded and installed it, you can use it exactly as a physical installation with SVSHI. Use the startup settings of KNX Virtual (address and port) when executing `svshi run`. Default values are `127.0.0.1:3671`.
+You do not necessarily need to build a KNX infrastructure to test your app. You can use _KNX Virtual_ to run SVSHI. This a **Windows**-only program that is available on the KNX Association's website[^1]. Once you downloaded and installed it, you can use it exactly as a physical installation with SVSHI. Use the startup settings of KNX Virtual (address and port) when executing `svshi run`. Default values are `127.0.0.1:3671`.
 
 Please be careful and use the right devices inside ETS when configuring the project and refer to the KNX Help for KNX Virtual related issues[^2].
 
