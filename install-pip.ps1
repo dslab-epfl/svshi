@@ -33,7 +33,7 @@ if(-Not (CommandExists("python3"))){
 
 Write-Output "Installing pip ..."
 
-Set-Location $currentDir\svshi
+Set-Location $currentDir\src
 
 InstallPip("python3")
 

@@ -27,7 +27,7 @@ if(CommandExists("python3")){
     $Env:SVSHI_HOME = "$PSScriptRoot"
     
     Write-Output "Setting Path environment variable..."
-    [System.Environment]::SetEnvironmentVariable('Path', "$Env:Path;$Env:LOCALAPPDATA\Svshi\bin",[System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('Path', "$Env:Path;$Env:LOCALAPPDATA\svshi\bin",[System.EnvironmentVariableTarget]::User)
     
     if($build){
         if(-Not (CommandExists("sbt"))){
@@ -35,7 +35,7 @@ if(CommandExists("python3")){
             exit
         }
         Write-Output "Building SVSHI ..."
-        Set-Location -Path $Env:SVSHI_HOME\svshi\core
+        Set-Location -Path $Env:SVSHI_HOME\src\core
         sbt pack
         Set-Location -Path $Env:SVSHI_HOME
 
@@ -43,10 +43,10 @@ if(CommandExists("python3")){
 
     Write-Output "Copying files ..."
     
-    robocopy $Env:SVSHI_HOME\svshi\core\target\pack "$Env:LOCALAPPDATA\Svshi" /E
+    robocopy $Env:SVSHI_HOME\svshi\core\target\pack "$Env:LOCALAPPDATA\svshi" /E
     
     Write-Output "Installing Python dependencies ..."
-    Set-Location -Path $Env:SVSHI_HOME\svshi
+    Set-Location -Path $Env:SVSHI_HOME\src
     python3 -m pip install -r requirements.txt
     
     Set-Location -Path $Env:SVSHI_HOME

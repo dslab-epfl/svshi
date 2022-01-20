@@ -14,7 +14,7 @@ GROUP_ADDRESSES_PATH = "tests/fake_app_library/group_addresses.json"
 CONDITIONS_FILE_PATH = "cond"
 VERIFICATION_FILE_PATH = "ver"
 RUNTIME_FILE_PATH = "run"
-RUNTIME_FILE_MODULE = "smartinfra.src.runtime.tests.expected.expected_runtime_file"
+RUNTIME_FILE_MODULE = "svshi.src.runtime.tests.expected.expected_runtime_file"
 
 
 @contextmanager

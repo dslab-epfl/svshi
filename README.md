@@ -1,13 +1,13 @@
 # SVSHI - Secure and Verified Smart Home Infrastructure
 
 <p align="center">
-  <img src="svshi/res/logo.png" alt="logo" width="50%"/>
+  <img src="src/res/logo.png" alt="logo" width="50%"/>
 </p>
 
-![CI](https://github.com/dslab-epfl/smartinfra/actions/workflows/ci.yml/badge.svg)
-[![codecov](https://codecov.io/gh/dslab-epfl/smartinfra/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/smartinfra)
-![Latest Stable Version](https://img.shields.io/github/v/release/dslab/smartinfra?label=version)
-![License](https://img.shields.io/github/license/dslab/smartinfra)
+![CI](https://github.com/dslab-epfl/svshi/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dslab-epfl/svshi/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/svshi)
+![Latest Stable Version](https://img.shields.io/github/v/release/dslab/svshi?label=version)
+![License](https://img.shields.io/github/license/dslab/svshi)
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
@@ -57,7 +57,7 @@ To check if the installation was successful, run `svshi version` in your termina
 
 To install SVSHI on Linux or macOS:
 
-1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
+1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/svshi/releases) page
 2. Unzip it, move the folder to the desired installation site, then run `./install.sh` inside it.
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/the/svshi/folder` (a path example is `~/svshi-v1.1.0`) to your `.bash_profile`, `.zsh_profile`, etc.
@@ -68,7 +68,7 @@ To update SVSHI, you just need to do the first two steps. However, do not forget
 
 To install SVSHI on Windows:
 
-1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/smartinfra/releases) page
+1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/svshi/releases) page
 2. Unzip the archive, move the unzipped folder to the desired installation site. The moved folder must contain (among other things) a `src` folder and some scripts.
 3. Open a Powershell instance a `CD` into the unzipped directory.
 4. Setup `python3` by executing the script `.\setup-python3.ps1`. This sets up a `python3` alias if it does not exist.
@@ -114,7 +114,7 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 
 1. Run `./build_docker.sh` to build the image
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
-3. In `/home/maki/svshi` is the repo copied
+3. You can find the repo copied in `/home/maki/svshi`
 4. `svshi` command is accessible
 
 ## Supported devices
@@ -330,8 +330,10 @@ See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how 
 
 ## White paper
 
-See [the white paper](/svshi/documentation/documentation.md) for an in-depth understanding about why SVSHI exists, what it does and how it does it.
+See [the white paper](/src/documentation/documentation.md) for an in-depth understanding about why SVSHI exists, what it does and how it does it.
 
 ## License
 
 SVSHI is licensed under the [MIT license](/LICENSE).
+
+Logo: Copyright @norafisler

@@ -5,7 +5,7 @@
 # BUILD:
 ## docker build -t svshi:ubuntu22.04 .
 
-# START AND RUN (execute from `smartinfra` folder):
+# START AND RUN (execute from `svshi` folder):
 ## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name svshi -i svshi:ubuntu22.04 && docker exec -it svshi /bin/bash'
 
 FROM ubuntu:22.04
@@ -69,7 +69,7 @@ COPY . ${SVSHI_HOME}/
 
 
 # Install python requirements
-RUN cd ${SVSHI_HOME}/svshi && [ -f requirements.txt  ] && pip3 install -r requirements.txt
+RUN cd ${SVSHI_HOME}/src && [ -f requirements.txt  ] && pip3 install -r requirements.txt
 
 # Install SVSHI
 RUN cd ${SVSHI_HOME}/ && ./build.sh

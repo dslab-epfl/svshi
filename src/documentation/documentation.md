@@ -70,7 +70,7 @@ Smart infrastructures uses are growing and with them the need for dependability 
 
 The paper is organized as follows. In [Section 1](#1-why-does-svshi-exist), we briefly describe what leads to the development of SVSHI. [Section 2](#2-who-is-svshi-for) explains who is SVSHI for and how it can be used. In [Section 3](#3-whats-new-in-svshi), we present what is new in SVSHI compared to existing solutions. In [Section 4](#4-how-does-svshi-work), we give an in-depth presentation of the project's structure and implementation. [Section 5](#5-prototype--evaluation) discusses the real-life prototypes we developed, evaluates what SVSHI offers in the current state and what can be added in the future. We conclude our work in [Section 6](#6-why-should-you-contribute-to-svshi) with motivation on why should one contribute to SVSHI.
 
-The source code is available [online](https://github.com/dslab-epfl/smartinfra).
+The source code is available [online](https://github.com/dslab-epfl/svshi).
 
 ## 1 Why does SVSHI exist?
 

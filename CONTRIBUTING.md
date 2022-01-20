@@ -148,9 +148,9 @@ Compatibility is defined as follows:
   </tr>
   <tr>
     <th class="tg-0pky">Unknown</th>
-    <td class="tg-x6qq">Yes but warning</td>
-    <td class="tg-x6qq">Yes but warning</td>
-    <td class="tg-x6qq">Yes but warning</td>
+    <td class="tg-x6qq">Warning</td>
+    <td class="tg-x6qq">Warning</td>
+    <td class="tg-x6qq">Warning</td>
   </tr>
 </tbody>
 </table>
@@ -173,7 +173,7 @@ This stage does the same kind of verification as the IO Types one but checking t
 
 For each binding between a physical device's communication object and a prototypical device channel, we check that the KNX datatype is the same. The KNX datatype of the physical device's communication object is parsed from the ETS project and the one for the prototypical device channel is encoded in the corresponding `SupportedDeviceBinding`.
 
-As for the IO Types, if the KNX Datatype is not known for a physical communication object, the `verifier` gives a warning to the developer. Otherwise, KNX Datatypes must be **equal**.
+As for the IO Types, if the KNX Datatype is not known for a physical communication object, the `verifier` gives a warning to the developer. Otherwise, KNX datatypes must be **equal**.
 
 ###### Mutual KNX datatypes
 
@@ -231,7 +231,7 @@ To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean c
 
 ## CI
 
-We use [GitHub Actions](https://github.com/dslab-epfl/smartinfra/actions) to run the whole test suite on every push and pull request. The workflows are defined in `.github/workflows/ci.yml`.
+We use [GitHub Actions](https://github.com/dslab-epfl/svshi/actions) to run the whole test suite on every push and pull request. The workflows are defined in `.github/workflows/ci.yml`.
 
 ## Releases
 
@@ -240,8 +240,8 @@ To build a new release:
 1. Update the variable `VERSION` in `src/build_release.sh`.
 2. Update the CLI version in `src/core/build.sbt`. Do not include `SNAPSHOT` in the version.
 3. Run `./build_release.sh` inside `src/` to build the archive.
-4. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
+4. Create a new release on [GitHub](https://github.com/dslab-epfl/svshi/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
 
 ## Code of Conduct
 
-Our Code of Conduct is [here](https://github.com/dslab-epfl/smartinfra/blob/main/CODE_OF_CONDUCT.md). By contributing to SVSHI, you implicitly accept it.
+Our Code of Conduct is [here](https://github.com/dslab-epfl/svshi/blob/main/CODE_OF_CONDUCT.md). By contributing to SVSHI, you implicitly accept it.

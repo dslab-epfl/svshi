@@ -3,10 +3,10 @@ assignments
 generated
 deletedApps
 logs
-svshi/app_library/**
-svshi/verification/conditions.py
-svshi/verification/runtime_file.py
-svshi/verification/verification_file.py
+src/app_library/**
+src/verification/conditions.py
+src/verification/runtime_file.py
+src/verification/verification_file.py
 **/.coverage
 **/coverage.xml
 
