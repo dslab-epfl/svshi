@@ -27,4 +27,4 @@ def iteration():
 def unchecked_send_message(msg: str) -> None:
     token = "xoxb-2702504146389-2876497796775-r21j0QnaGcyfjwEVDFrYpkYO"
     slack_client = WebClient(token=token)
-    slack_client.chat_postMessage(channel="test_python", text=msg)
+    slack_client.chat_postMessage(channel="inn319", text=msg)
