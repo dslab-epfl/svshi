@@ -62,7 +62,7 @@ To install SVSHI on Linux or macOS:
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/the/svshi/folder` (a path example is `~/svshi-v1.1.0`) to your `.bash_profile`, `.zsh_profile`, etc.
 
-To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `src` folder into the new one before replacing.
+To update SVSHI, you just need to do the first two steps. However, do not forget to move `app_library` inside the old `src/` folder into the new one before replacing.
 
 #### Windows
 
@@ -79,7 +79,7 @@ To install SVSHI on Windows:
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src` folder in the new one before replacing.
+To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
 
 ### From sources
 
@@ -106,7 +106,7 @@ To build from sources on Windows:
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 5. However, do not forget to move `app_library` inside the old `src` folder in the new one before replacing.
+To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
 
 ### Docker
 

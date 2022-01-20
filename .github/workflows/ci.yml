@@ -29,9 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        working-directory: svshi
+        working-directory: src
       - name: Build and Test
-        run: cd svshi/core && sbt -v clean coverage test coverageReport
+        run: cd src/core && sbt -v clean coverage test coverageReport
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
@@ -53,11 +53,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        working-directory: svshi
+        working-directory: src
       - name: Test with pytest
         run: |
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
-        working-directory: svshi/generator
+        working-directory: src/generator
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
@@ -79,11 +79,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        working-directory: svshi
+        working-directory: src
       - name: Test with pytest
         run: |
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
-        working-directory: svshi/verification
+        working-directory: src/verification
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
@@ -105,11 +105,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        working-directory: svshi
+        working-directory: src
       - name: Test with pytest
         run: |
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
-        working-directory: svshi/runtime
+        working-directory: src/runtime
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v2
         with:

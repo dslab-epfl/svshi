@@ -50,7 +50,7 @@ For formatting and code style, we use [scalafmt](https://github.com/scalameta/sc
 ```
 ┌── assignments - Contains group address assignments for KNX communication objects
 ├── generated - Contains generated but not yet installed apps, their bindings and the latest physical structure
-├── svshi - Contains all Python and Scala source code
+├── src - Contains all Python and Scala source code
     ├── app_library - Contains installed apps, their bindings and the physical structure at the latest installation time
     ├── core - ETS project parser, bindings generator and apps compiler/verifier (Scala sbt project)
     ├── generator - Python app generator (Python module)
@@ -215,19 +215,19 @@ The types of device that SVSHI supports require specific code to be handled prop
   > Once you added the new `SupportedDeviceBinding`, compiler warnings can guide you because the trait is sealed and thus match can be exhaustive.
 - update the function `assignmentToPythonAddressJson` in `ch.epfl.core.parser.json.bindings.PythonAddressJsonParser` (specially the `match`)
 - update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
-- modify the `read_devices` method in `svshi/generator/parsing/parser.py`.
-- add a new Python file containing the device class in `svshi/generator/skeleton/models`
-- modify `__generate_device_classes`, `__generate_devices_instances` and add a new device template in `svshi/verification/generator.py`
+- modify the `read_devices` method in `src/generator/parsing/parser.py`.
+- add a new Python file containing the device class in `src/generator/skeleton/models`
+- modify `__generate_device_classes`, `__generate_devices_instances` and add a new device template in `src/verification/generator.py`
 
 Don't forget to add new tests in all the modified modules!
 
 ## Tests
 
-To run the tests of all the modules at once, execute `./run_tests.sh` inside `svshi/`.
+To run the tests of all the modules at once, execute `./run_tests.sh` inside `src/`.
 
-To run only Python (i.e. `generator`, `verification` and `runtime`) tests and get the coverage, execute `./get_python_coverage.sh` inside `svshi/`.
+To run only Python (i.e. `generator`, `verification` and `runtime`) tests and get the coverage, execute `./get_python_coverage.sh` inside `src/`.
 
-To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test coverageReport` inside `svshi/core`.
+To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test coverageReport` inside `src/core`.
 
 ## CI
 
@@ -237,9 +237,9 @@ We use [GitHub Actions](https://github.com/dslab-epfl/smartinfra/actions) to run
 
 To build a new release:
 
-1. Update the variable `VERSION` in `svshi/build_release.sh`.
-2. Update the CLI version in `svshi/core/build.sbt`. Do not include `SNAPSHOT` in the version.
-3. Run `./build_release.sh` inside `svshi/` to build the archive.
+1. Update the variable `VERSION` in `src/build_release.sh`.
+2. Update the CLI version in `src/core/build.sbt`. Do not include `SNAPSHOT` in the version.
+3. Run `./build_release.sh` inside `src/` to build the archive.
 4. Create a new release on [GitHub](https://github.com/dslab-epfl/smartinfra/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
 
 ## Code of Conduct
