@@ -1,7 +1,7 @@
 import Dependencies._
 
 ThisBuild / scalaVersion     := "2.13.7"
-ThisBuild / version          := "1.3.1-SNAPSHOT"
+ThisBuild / version          := "1.3.2-SNAPSHOT"
 ThisBuild / organization     := "ch.epfl.core"
 ThisBuild / organizationName := "epfl"
 
