@@ -79,7 +79,7 @@ To install SVSHI on Windows:
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
+To update SVSHI, you just need to do steps 1, 2, 3 and 7. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
 
 ### From sources
 
@@ -102,11 +102,11 @@ To build from sources on Windows:
    > The command `py`, `python` or `python3` must be available in your Powershell environment for this script to work!
 4. Reboot your computer.
 5. Execute `.\install-pip.ps1` to install pip on your computer
-6. Run the `.\install.ps1` script inside the unzipped folder to install the program.
+6. Run the `.\install.ps1 -build $true` script inside the cloned folder to install the program.
 
 > IMPORTANT! use Powershell to execute the scripts!
 
-To update SVSHI, you just need to do step 4. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
+To update SVSHI, you just need to do steps 1, 2 and 6. However, do not forget to move `app_library` inside the old `src/` folder in the new one before replacing.
 
 ### Docker
 

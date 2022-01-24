@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Building the release... \n"
-VERSION=1.3.1 
+VERSION=1.3.2
 
 cd core
 rm -rf target/*.tar.gz
