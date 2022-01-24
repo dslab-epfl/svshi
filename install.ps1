@@ -43,7 +43,7 @@ if(CommandExists("python3")){
 
     Write-Output "Copying files ..."
     
-    robocopy $Env:SVSHI_HOME\svshi\core\target\pack "$Env:LOCALAPPDATA\svshi" /E
+    robocopy $Env:SVSHI_HOME\src\core\target\pack "$Env:LOCALAPPDATA\svshi" /E
     
     Write-Output "Installing Python dependencies ..."
     Set-Location -Path $Env:SVSHI_HOME\src
