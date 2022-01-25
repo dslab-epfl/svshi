@@ -1,6 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
-  "timer": 60,
+  "timer": 10,
   "files": [
     "credentials.json",
     "token.pickle"
