@@ -9,6 +9,8 @@ import ch.epfl.core.utils.Constants
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.bindings.exceptions._
 
+import scala.collection.parallel.immutable.ParVector
+
 /** Verifier that verifies properties about the bindings between prototypical devices and physical devices' communication objects
   */
 object Verifier extends VerifierTr {
@@ -28,10 +30,13 @@ object Verifier extends VerifierTr {
     val newAppPrototypicalStructures =
       newAppLibrary.apps.map(app => (app.name, AppInputJsonParser.parse(app.appFolderPath / Constants.APP_PROTO_STRUCT_FILE_NAME))).toMap
     val appPrototypicalStructures = existingAppPrototypicalStructures ++ newAppPrototypicalStructures
-    verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures) ++
-      verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures) ++
-      verifyBindingsPythonType(groupAddressAssignment) ++
-      verifyBindingsMutualDPT(bindings)
+
+    val ioTypeOp = () => verifyBindingsIoTypes(physicalStructure, bindings, appPrototypicalStructures)
+    val knxDPTOp = () => verifyBindingsKNXDatatypes(physicalStructure, bindings, appPrototypicalStructures)
+    val pythonTypeOp = () => verifyBindingsPythonType(groupAddressAssignment)
+    val mutualDPTOp = () => verifyBindingsMutualDPT(bindings)
+
+    ParVector(ioTypeOp, knxDPTOp, pythonTypeOp, mutualDPTOp).flatMap(_()).toList
   }
 
   /** Verify that no group address is bound to channels with different datatypes in python

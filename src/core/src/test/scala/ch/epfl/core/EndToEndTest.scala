@@ -1650,7 +1650,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       }
     }
   }
-
   // Pipeline - Regression
   "appState" should "not be shared among different apps" in {
     // Prepare everything for the test
@@ -1684,7 +1683,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         }
       }
     }
-
   }
 
   // Compare the two folder and assert that they contain the same files and that files are identical

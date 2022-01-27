@@ -20,6 +20,7 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.lihaoyi" %% "mainargs" % "0.2.2",
     libraryDependencies += "com.lihaoyi" %% "fansi" % "0.3.0",
     libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1",
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
     libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.10"
   )
 

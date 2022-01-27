@@ -4,7 +4,9 @@ import ch.epfl.core.model.physical
 import ch.epfl.core.model.physical._
 import ch.epfl.core.utils.FileUtils._
 
-import java.io.FileNotFoundException
+import java.io.{File, FileNotFoundException}
+import scala.collection.mutable
+import scala.collection.parallel.CollectionConverters._
 import scala.util.matching.Regex
 import scala.xml.{Elem, Node, XML}
 
@@ -55,6 +57,8 @@ object EtsParser {
   private val tempFolderPath = getPathFromSvshiHome("temp")
   private val defaultNodeName = "Default"
 
+  private val xmlFilesCache = mutable.Map[File, scala.xml.Elem]()
+
   /** Parse an ETS project and produce a PhysicalStructure instance
     * @param etsProjectPath
     * @return
@@ -63,8 +67,8 @@ object EtsParser {
     etsProjectPath,
     _ => {
       val deviceAddresses = explore0xmlFindListAddresses(etsProjectPath)
-      val parsedDevices = deviceAddresses.map(readDeviceFromEtsFile(etsProjectPath, _))
-      val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice))
+      val parsedDevices = deviceAddresses.par.map(readDeviceFromEtsFile(etsProjectPath, _))
+      val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice).toList)
       deleteUnzippedFiles(etsProjectPath)
       res
     }
@@ -124,14 +128,24 @@ object EtsParser {
     }
   )
 
+  private def takeFromCacheOrComputeAndUpdate(file: File): Elem = {
+    if (xmlFilesCache.contains(file)) xmlFilesCache(file)
+    else {
+      val xml = XML.loadFile(file)
+      xmlFilesCache.put(file, xml)
+      xml
+    }
+  }
+
   private def getDeviceInstanceIn0Xml(deviceAddress: (String, String, String), projectRootPath: os.Path): Option[Node] = {
     val file0XmlPath = recursiveListFiles(projectRootPath).find(file => file.toIO.getName == FILE_0_XML_NAME)
     if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
     val (areaN, lineN, deviceN) = deviceAddress
-    val doc0xml = XML.loadFile(file0XmlPath.get.toIO)
-    val deviceInstanceXMLOpt = (((doc0xml \\ AREA_TAG).find(a => a \@ ADDRESS_PARAM == areaN).get \\ LINE_TAG).find(l => l \@ ADDRESS_PARAM == lineN).get \\ DEVICE_TAG).find(d =>
-      d \@ ADDRESS_PARAM == deviceN
-    )
+    val doc0xml = takeFromCacheOrComputeAndUpdate(file0XmlPath.get.toIO)
+    val deviceInstanceXMLOpt =
+      (((doc0xml \\ AREA_TAG).par.find(a => a \@ ADDRESS_PARAM == areaN).get \\ LINE_TAG).par.find(l => l \@ ADDRESS_PARAM == lineN).get \\ DEVICE_TAG).par.find(d =>
+        d \@ ADDRESS_PARAM == deviceN
+      )
     deviceInstanceXMLOpt
   }
 
@@ -145,7 +159,7 @@ object EtsParser {
     etsProjectPath,
     projectRootPath => {
       val hardwareXmlPath = hardwareXmlFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-      val hardwareEntry = XML.loadFile(hardwareXmlPath.toIO)
+      val hardwareEntry = takeFromCacheOrComputeAndUpdate(hardwareXmlPath.toIO)
       val productEntryOpt = (hardwareEntry \\ PRODUCT_TAG).find(n => (n \@ ID_PARAM) == productRefId)
       val name = productEntryOpt match {
         case Some(value) => getTranslation(hardwareEntry, enUsLanguageCode, productRefId, TEXT_PARAM).getOrElse(value \@ TEXT_PARAM)
@@ -176,7 +190,7 @@ object EtsParser {
     projectRootPath => {
       def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
         val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-        val catalogEntry = XML.loadFile(xmlPath.toIO)
+        val catalogEntry = takeFromCacheOrComputeAndUpdate(xmlPath.toIO)
         val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
         val appProgramId = applicationProgram \@ ID_PARAM
         val refId = n \@ REFID_PARAM
@@ -194,7 +208,7 @@ object EtsParser {
           // Find groupObjectInstances id and search them in the files
           val groupObjectTreeInstance = deviceInstanceXML \\ GROUPOBJECTTREE_TAG
           val nodes = groupObjectTreeInstance \\ NODES_TAG
-          val nodesChannels = (nodes \\ NODE_TAG)
+          val nodesChannels = (nodes \\ NODE_TAG).par
             .map(n =>
               ChannelNode(
                 constructChannelNodeName(n, productRefId, hardware2programRefId),
@@ -254,15 +268,15 @@ object EtsParser {
         if (groupObjectInstanceId.nonEmpty) {
           // Get IOPort info in xmls
           val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-          val catalogEntry = XML.loadFile(xmlPath.toIO)
+          val catalogEntry = takeFromCacheOrComputeAndUpdate(xmlPath.toIO)
           val refIdRegEx = "O-[0-9A-Za-z-_]+_R-[0-9A-Za-z-_]+".r
           val refId = refIdRegEx.findAllIn(groupObjectInstanceId).toList.last
-          val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).find(n => (n \@ ID_PARAM).contains(refId))
+          val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).par.find(n => (n \@ ID_PARAM).contains(refId))
           comObjectRef match {
             case Some(comObjectRef) => {
               val comObjectRefDPTString = comObjectRef \@ DATAPOINTTYPE_PARAM
               val refId = comObjectRef \@ REFID_PARAM
-              val comObject = (catalogEntry \\ COMOBJECT_TAG).find(n => (n \@ ID_PARAM) == refId)
+              val comObject = (catalogEntry \\ COMOBJECT_TAG).par.find(n => (n \@ ID_PARAM) == refId)
               comObject match {
                 case Some(value) => {
                   val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
@@ -320,11 +334,11 @@ object EtsParser {
     * @return
     */
   private def getTranslation(xmlElem: Elem, languageIdentifier: String, refID: String, attributeName: String): Option[String] = {
-    val languageObjectOpt = (xmlElem \\ LANGUAGE_TAG).find(n => n \@ IDENTIFIER_PARAM == languageIdentifier)
+    val languageObjectOpt = (xmlElem \\ LANGUAGE_TAG).par.find(n => n \@ IDENTIFIER_PARAM == languageIdentifier)
     if (languageObjectOpt.isDefined) {
-      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).find(n => (n \@ REFID_PARAM) == refID)
+      val translationElementOpt = (languageObjectOpt.get \\ TRANSLATIONELEMENT_TAG).par.find(n => (n \@ REFID_PARAM) == refID)
       if (translationElementOpt.isDefined) {
-        (translationElementOpt.get \\ TRANSLATION_TAG).find(n => n \@ ATTRIBUTENAME_PARAM == attributeName) match {
+        (translationElementOpt.get \\ TRANSLATION_TAG).par.find(n => n \@ ATTRIBUTENAME_PARAM == attributeName) match {
           case Some(value) => Some(value \@ TEXT_PARAM)
           case None        => None
         }
@@ -381,9 +395,9 @@ object EtsParser {
     projectRootPath => {
       val file0XmlPath = recursiveListFiles(projectRootPath).find(file => file.toIO.getName == FILE_0_XML_NAME)
       if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
-      val doc0xml = XML.loadFile(file0XmlPath.get.toIO)
+      val doc0xml = takeFromCacheOrComputeAndUpdate(file0XmlPath.get.toIO)
       val areasXml = (doc0xml \\ AREA_TAG)
-      areasXml
+      areasXml.par
         .flatMap(area =>
           (area \\ LINE_TAG).flatMap(line => (line \\ DEVICE_TAG).flatMap(deviceInstance => (area \@ ADDRESS_PARAM, line \@ ADDRESS_PARAM, deviceInstance \@ ADDRESS_PARAM) :: Nil))
         )
