@@ -26,6 +26,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val pipeline2Path = endToEndResPath / "pipeline2_app_one_invalid_bindings"
   private val pipeline3Path = endToEndResPath / "pipeline3_app_one_app_two_valid"
   private val pipeline4Path = endToEndResPath / "pipeline4_app_one_app_two_invalid"
+  private val pipelinesRegressionPath = endToEndResPath / "pipelines_regression"
 
   private val inputPath = Constants.SVSHI_HOME_PATH / "input"
   private val appProtoFileName = "app_prototypical_structure.json"
@@ -897,7 +898,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
-              fail(s"The execution of the update command fails with error code = $errorCode")
+              fail(s"The execution of the update command fails with error code = $errorCode\nStdOut is:\n${out.toString}")
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
           }
@@ -1639,8 +1640,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               )
                 and
                   include(s"""ERROR: Compilation/verification failed, see messages above.""")
-                and
-                include("Compilation/verification failed, see messages above."))
+                  and
+                  include("Compilation/verification failed, see messages above."))
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -1648,6 +1649,42 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Success(_) => fail("The update should have failed!")
       }
     }
+  }
+
+  // Pipeline - Regression
+  "appState" should "not be shared among different apps" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    val thisTestResPath = pipelinesRegressionPath / "app_state_shared_bug"
+
+    os.copy(thisTestResPath / appOneName, GENERATED_FOLDER_PATH / appOneName)
+    os.copy(thisTestResPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(thisTestResPath / "apps_bindings.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(thisTestResPath / etsProjectFileName, inputPath / etsProjectFileName)
+
+    val expectedLibraryPath = thisTestResPath / "expected_app_library_one_two"
+
+    // Compile the apps
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(s"The compilation/verification failed with error code = $errorCode\nStdOut is:\n${out.toString}")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          // Check
+          out.toString.trim should include("""The apps have been successfully compiled and verified!""")
+          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+        }
+      }
+    }
+
   }
 
   // Compare the two folder and assert that they contain the same files and that files are identical

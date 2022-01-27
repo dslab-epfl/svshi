@@ -97,7 +97,7 @@ object Svshi {
       case Success((ok, verifierMessages)) => {
         outputTrace(verifierMessages)(success = success, info = info, warning = warning, err = err)
         if (ok) {
-          success(s"The apps have been successfully compiled and verified!")
+          success("The apps have been successfully compiled and verified!")
           SUCCESS_CODE
         } else {
           err("Compilation/verification failed, see messages above.")
@@ -191,7 +191,7 @@ object Svshi {
 
     info("Generating the bindings...")
     compiler.Compiler.generateBindingsFiles(newAppsLibrary, existingAppsLibrary, newPhysicalStructure, existingPhysicalStructure)
-    success(s"The bindings have been successfully created!")
+    success("The bindings have been successfully created!")
     SUCCESS_CODE
   }
 
@@ -456,7 +456,7 @@ object Svshi {
           (true, verifierMessages)
         } else {
           // Remove group_addresses.json
-          os.remove(GENERATED_FOLDER_PATH / GROUP_ADDRESSES_LIST_FILE_NAME) 
+          os.remove(GENERATED_FOLDER_PATH / GROUP_ADDRESSES_LIST_FILE_NAME)
 
           (false, verifierMessages)
         }

@@ -66,24 +66,19 @@ TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_test_app_one_binary_sen
 TEST_APP_ONE_SWITCH_INSTANCE_NAME = Switch_test_app_one_switch_instance_name()
 
 
-def test_app_one_invariant(app_state: AppState, physical_state: PhysicalState
+def test_app_one_invariant(test_app_one_app_state: AppState, physical_state: PhysicalState
     ) ->bool:
     return (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state) or
-        app_state.INT_0 == 42) and TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(
+        test_app_one_app_state.INT_0 == 42) and TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(
         physical_state) or not (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.
-        is_on(physical_state) or app_state.INT_0 == 42
+        is_on(physical_state) or test_app_one_app_state.INT_0 == 42
         ) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def test_app_one_iteration(app_state: AppState, physical_state: PhysicalState):
-    """
-pre: test_app_one_invariant(app_state, physical_state)
-post: test_app_one_invariant(**__return__)
-"""
+def test_app_one_iteration(test_app_one_app_state: AppState, physical_state: PhysicalState):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) or app_state.INT_0 == 42:
+        ) or test_app_one_app_state.INT_0 == 42:
         None
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)
-    return {'app_state': app_state, 'physical_state': physical_state}

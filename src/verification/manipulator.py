@@ -48,7 +48,12 @@ class Manipulator:
         filenames_per_app: Dict[str, Set[str]],
         files_folder_path: str,
     ):
-        self.__app_names = list(map(lambda t: t[1], instances_names_per_app.keys()))
+        self.__app_names = list(
+            sorted(map(lambda t: t[1], instances_names_per_app.keys()))
+        )
+        self.__app_states_names = list(
+            map(lambda n: f"{n}_{self.__APP_STATE_ARGUMENT}", self.__app_names)
+        )
         self.__instances_names_per_app = instances_names_per_app
         self.__filenames_per_app = filenames_per_app
         self.__files_folder_path = files_folder_path
@@ -123,86 +128,98 @@ class Manipulator:
         app_name: str,
         accepted_names: Set[str],
         unchecked_functions: List[UncheckedFunction],
+        verification: bool,
     ):
         """
         Renames the instances calling functions with name in accepted_names
         and unchecked_functions by adding the app_name in front of them. Additionally, it also adds the
         "state" argument to the calls with name in accepted_names.
-        Furthermore, "precond", "iteration" and "unchecked" functions are modified with the app_name added to them
-        and with the state parameter added for the first two.
+        Furthermore, "invariant", "iteration" and "unchecked" functions are modified with the app_name added to them
+        and with the state parameters added for the first two.
         """
         if isinstance(op, list) or isinstance(op, tuple):
             for v in list(op):
                 self.__rename_instances_add_state(
-                    v, app_name, accepted_names, unchecked_functions
+                    v, app_name, accepted_names, unchecked_functions, verification
                 )
         elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
             self.__rename_instances_add_state(
-                op.elts, app_name, accepted_names, unchecked_functions
+                op.elts, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.BoolOp):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions
+                op.values, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.UnaryOp):
             self.__rename_instances_add_state(
-                op.operand, app_name, accepted_names, unchecked_functions
+                op.operand, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions
+                op.value, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Lambda):
             self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions
+                op.body, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Assign):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions
+                op.targets, app_name, accepted_names, unchecked_functions, verification
+            )
+            self.__rename_instances_add_state(
+                op.value, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Return):
             if op.value:
                 self.__rename_instances_add_state(
-                    op.value, app_name, accepted_names, unchecked_functions
+                    op.value,
+                    app_name,
+                    accepted_names,
+                    unchecked_functions,
+                    verification,
                 )
         elif isinstance(op, ast.Compare):
             self.__rename_instances_add_state(
-                op.left, app_name, accepted_names, unchecked_functions
+                op.left, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.comparators, app_name, accepted_names, unchecked_functions
+                op.comparators,
+                app_name,
+                accepted_names,
+                unchecked_functions,
+                verification,
             )
         elif isinstance(op, ast.BinOp):
             self.__rename_instances_add_state(
-                op.left, app_name, accepted_names, unchecked_functions
+                op.left, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.right, app_name, accepted_names, unchecked_functions
+                op.right, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
             self.__rename_instances_add_state(
-                op.test, app_name, accepted_names, unchecked_functions
+                op.test, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions
+                op.body, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.orelse, app_name, accepted_names, unchecked_functions
+                op.orelse, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Dict):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions
+                op.values, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Set):
             self.__rename_instances_add_state(
-                op.elts, app_name, accepted_names, unchecked_functions
+                op.elts, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.comprehension):
             self.__rename_instances_add_state(
-                op.iter, app_name, accepted_names, unchecked_functions
+                op.iter, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.ifs, app_name, accepted_names, unchecked_functions
+                op.ifs, app_name, accepted_names, unchecked_functions, verification
             )
         elif (
             isinstance(op, ast.ListComp)
@@ -210,39 +227,55 @@ class Manipulator:
             or isinstance(op, ast.GeneratorExp)
         ):
             self.__rename_instances_add_state(
-                op.generators, app_name, accepted_names, unchecked_functions
+                op.generators,
+                app_name,
+                accepted_names,
+                unchecked_functions,
+                verification,
             )
         elif isinstance(op, ast.DictComp):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions
+                op.value, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.generators, app_name, accepted_names, unchecked_functions
+                op.generators,
+                app_name,
+                accepted_names,
+                unchecked_functions,
+                verification,
             )
         elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
             if op.value:
                 self.__rename_instances_add_state(
-                    op.value, app_name, accepted_names, unchecked_functions
+                    op.value,
+                    app_name,
+                    accepted_names,
+                    unchecked_functions,
+                    verification,
                 )
         elif isinstance(op, ast.FormattedValue):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions
+                op.value, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.JoinedStr):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions
+                op.values, app_name, accepted_names, unchecked_functions, verification
             )
         elif isinstance(op, ast.Return):
             if op.value:
                 self.__rename_instances_add_state(
-                    op.value, app_name, accepted_names, unchecked_functions
+                    op.value,
+                    app_name,
+                    accepted_names,
+                    unchecked_functions,
+                    verification,
                 )
         elif isinstance(op, ast.Call):
             self.__rename_instances_add_state(
-                op.args, app_name, accepted_names, unchecked_functions
+                op.args, app_name, accepted_names, unchecked_functions, verification
             )
             self.__rename_instances_add_state(
-                op.keywords, app_name, accepted_names, unchecked_functions
+                op.keywords, app_name, accepted_names, unchecked_functions, verification
             )
             f_name = ""
             if isinstance(op.func, ast.Attribute):
@@ -252,9 +285,8 @@ class Manipulator:
                 f_name = op.func.id
             else:
                 self.__rename_instances_add_state(
-                    op.func, app_name, accepted_names, unchecked_functions
+                    op.func, app_name, accepted_names, unchecked_functions, verification
                 )
-
             if f_name in accepted_names:
                 # If the function name is in the list of accepted names, add the state argument to the call
                 op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
@@ -273,8 +305,14 @@ class Manipulator:
                 cast(ast.Name, op.func).id = new_name
         elif isinstance(op, ast.keyword):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions
+                op.value, app_name, accepted_names, unchecked_functions, verification
             )
+        elif isinstance(op, ast.Attribute):
+            name = cast(ast.Name, op.value).id
+            if name == self.__APP_STATE_ARGUMENT:
+                # If it is the app_state variable, we rename it
+                new_name = f"{app_name}_{name}"
+                cast(ast.Name, op.value).id = new_name
         elif isinstance(op, ast.FunctionDef) and (
             op.name == self.__INVARIANT_FUNC_NAME
             or op.name == self.__ITERATION_FUNC_NAME
@@ -285,22 +323,43 @@ class Manipulator:
                 or op.name == self.__ITERATION_FUNC_NAME
             ):
                 # Add the state arguments to the function
-                state_args = [
-                    ast.arg(
-                        self.__APP_STATE_ARGUMENT,
-                        ast.Name(self.__APP_STATE_TYPE, ast.Load),
-                    ),
+                # For the verification file we pass all the app states, for the runtime one just one is enough
+                state_args = (
+                    list(
+                        map(
+                            lambda n: ast.arg(
+                                n,
+                                ast.Name(self.__APP_STATE_TYPE, ast.Load),
+                            ),
+                            filter(
+                                lambda n: n.startswith(app_name),
+                                self.__app_states_names,
+                            ),
+                        )
+                    )
+                    if not verification
+                    else list(
+                        map(
+                            lambda n: ast.arg(
+                                n,
+                                ast.Name(self.__APP_STATE_TYPE, ast.Load),
+                            ),
+                            self.__app_states_names,
+                        )
+                    )
+                )
+                state_args.append(
                     ast.arg(
                         self.__PHYSICAL_STATE_ARGUMENT,
                         ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
-                    ),
-                ]
+                    )
+                )
                 op.args.args.extend(state_args)
 
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions
+                op.body, app_name, accepted_names, unchecked_functions, verification
             )
 
     def __construct_contracts(
@@ -345,10 +404,16 @@ class Manipulator:
         conditions = []
         sorted_app_names = sorted(app_names)
         for app_name in sorted_app_names:
+            arg_names = (
+                list(filter(lambda n: n.startswith(app_name), self.__app_states_names))
+                if not verification
+                else list(self.__app_states_names)
+            )
+            arg_names.append(self.__PHYSICAL_STATE_ARGUMENT)
             invariant = pre_str
             invariant += construct_func_call(
                 app_name + "_" + self.__INVARIANT_FUNC_NAME,
-                [self.__APP_STATE_ARGUMENT, self.__PHYSICAL_STATE_ARGUMENT],
+                arg_names,
             )
             conditions.append(invariant)
 
@@ -386,8 +451,10 @@ class Manipulator:
         """
         Adds a statement that returns app and physical states as a dict to the end of the body of the given function, returning it.
         """
-        keys = [ast.Constant("app_state"), ast.Constant("physical_state")]
-        values = [ast.Name("app_state", ast.Load), ast.Name("physical_state", ast.Load)]
+        keys = list(map(lambda n: ast.Constant(n), self.__app_states_names))
+        keys.append(ast.Constant("physical_state"))
+        values = list(map(lambda n: ast.Name(n, ast.Load), self.__app_states_names))
+        values.append(ast.Name("physical_state", ast.Load))
         return_value = ast.Dict(keys, values)
         f.body.append(ast.Return(return_value))
         return f
@@ -847,7 +914,7 @@ class Manipulator:
                             ),
                         )
                     )
-                    if f.name == f"{app_name}_iteration"
+                    if f.name == f"{app_name}_iteration" and verification
                     else f,
                     cast(
                         List[ast.FunctionDef],
@@ -901,7 +968,7 @@ class Manipulator:
 
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(
-                module_body, app_name, accepted_names, unchecked_funcs
+                module_body, app_name, accepted_names, unchecked_funcs, verification
             )
 
             # Extract imports, invariant/iteration functions and add the contracts to them

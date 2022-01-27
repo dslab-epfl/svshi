@@ -8,13 +8,7 @@ import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical.AppLibraryBindings
 import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.utils.Constants.{
-  APP_PROTO_BINDINGS_JSON_FILE_NAME,
-  GENERATED_FOLDER_PATH,
-  PHYSICAL_STRUCTURE_JSON_FILE_NAME,
-  GROUP_ADDRESSES_LIST_FILE_NAME,
-  APP_PYTHON_ADDR_BINDINGS_FILE_NAME
-}
+import ch.epfl.core.utils.Constants._
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
