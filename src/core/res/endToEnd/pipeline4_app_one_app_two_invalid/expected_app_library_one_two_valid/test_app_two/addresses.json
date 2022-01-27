@@ -1,0 +1,17 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "addresses": [
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.TemperatureSensorAddressJson",
+      "name": "temperature_sensor",
+      "address": "0/0/3"
+    },
+    {
+      "$type": "ch.epfl.core.parser.json.bindings.SwitchAddressJson",
+      "name": "switch",
+      "writeAddress": "0/0/2",
+      "readAddress": "0/0/2"
+    }
+  ]
+}

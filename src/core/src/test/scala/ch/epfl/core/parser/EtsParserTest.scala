@@ -2,11 +2,11 @@ package ch.epfl.core.parser
 
 import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.ets.EtsParser
+import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants.SVSHI_HOME_PATH
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import ch.epfl.core.utils.Constants
 
 class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   val testFilePathString1 = s"${Constants.SVSHI_SRC_FOLDER}/core/res/ets_project_test.knxproj"

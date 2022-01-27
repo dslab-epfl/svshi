@@ -23,6 +23,7 @@
     - [Writing apps](#writing-apps)
     - [App example](#app-example)
   - [Running the applications](#running-the-applications)
+  - [Updating an application](#updating-an-application)
   - [App generator](#app-generator)
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
@@ -203,6 +204,20 @@ To run all the installed apps (with [runtime verification](#runtime) enabled):
 
 SVSHI logs which apps have been called during execution and which telegrams have been received. You can find the logs in `logs/`.
 
+## Updating an application
+
+If you want to update the code of an app that is already installed, SVSHI offers a simplified process. To be updated, an app must have the **same** prototypical structure as its previous version and be installed.
+  
+To update the app, you then:
+
+1. Put the new version of the app in the `generated` folder
+   > There must be NO other app in the folder
+2. Run `svshi updateApp -n app_name` where `app_name` is the app you want to update
+  
+Using this process, you do not need to generate or modify the bindings and you do not need to pass an ETS project.
+
+If the new version does not pass the verification stage, the update is aborted and the old set of apps is restored as before the operation.
+
 ## App generator
 
 ### Prototypical structure
@@ -268,6 +283,7 @@ Available commands are:
 - `svshi generateBindings -f ets.knxproj` to generate the bindings for all the apps
 - `svshi generateApp -d devices.json -n app_name` to generate a new Python app
 - `svshi removeApp -n app_name` to remove an installed app
+- `svshi updateApp -n app_name` to update the code of an app that is already installed
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
 
@@ -278,6 +294,7 @@ Shorter aliases are also available:
 - `svshi gb` for `svshi generateBindings`
 - `svshi ga` for `svshi generateApp`
 - `svshi ra` for `svshi removeApp`
+- `svshi ua` for `svshi updateApp`
 - `svshi la` for `svshi listApps`
 - `svshi v` for `svshi version`
 

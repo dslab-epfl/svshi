@@ -38,28 +38,38 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"
   private val backupInputPath = SVSHI_SRC_FOLDER_PATH / "backup_input_during_test"
 
+  private val backupInstalledAppsPath = SVSHI_SRC_FOLDER_PATH / "backup_installed_apps_during_test"
+
+  private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py")
+
   override def beforeAll(): Unit = {
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
     if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
     if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
+    if (os.exists(backupInstalledAppsPath)) os.remove.all(backupInstalledAppsPath)
 
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.copy(APP_LIBRARY_FOLDER_PATH, backupLibraryPath)
     if (os.exists(GENERATED_FOLDER_PATH)) os.copy(GENERATED_FOLDER_PATH, backupGeneratedPath)
     if (os.exists(inputPath)) os.copy(inputPath, backupInputPath)
+    if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.copy(INSTALLED_APPS_FOLDER_PATH, backupInstalledAppsPath)
+
   }
 
   override def afterAll(): Unit = {
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
     if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
     if (os.exists(inputPath)) os.remove.all(inputPath)
+    if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.remove.all(INSTALLED_APPS_FOLDER_PATH)
 
     if (os.exists(backupLibraryPath)) os.copy(backupLibraryPath, APP_LIBRARY_FOLDER_PATH)
     if (os.exists(backupGeneratedPath)) os.copy(backupGeneratedPath, GENERATED_FOLDER_PATH)
     if (os.exists(backupInputPath)) os.copy(backupInputPath, inputPath)
+    if (os.exists(backupInstalledAppsPath)) os.copy(backupInstalledAppsPath, INSTALLED_APPS_FOLDER_PATH)
 
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
     if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
     if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
+    if (os.exists(backupInstalledAppsPath)) os.remove.all(backupInstalledAppsPath)
   }
 
   override def beforeEach(): Unit = {
@@ -71,6 +81,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
     os.makeDir.all(APP_LIBRARY_FOLDER_PATH)
+
+    if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.remove.all(INSTALLED_APPS_FOLDER_PATH)
+    os.makeDir.all(INSTALLED_APPS_FOLDER_PATH)
 
     if (os.exists(runtimePath)) os.remove.all(runtimePath)
     os.makeDir.all(runtimePath)
@@ -86,6 +99,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
     os.makeDir.all(APP_LIBRARY_FOLDER_PATH)
+
+    if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.remove.all(INSTALLED_APPS_FOLDER_PATH)
+    os.makeDir.all(INSTALLED_APPS_FOLDER_PATH)
 
     if (os.exists(runtimeMainPath)) os.remove(runtimeMainPath)
   }
@@ -391,11 +407,14 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   }
 
   // Pipeline 3 - 2 valid apps: app one and then app two
+  private val pipeline3ExpectedLibraryAppOneTwoPath: Path = pipeline3Path / "expected_app_library_one_two"
 
   "run" should "execute the runtime module" in {
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     val pathToExpectedFile = inputPath / "ok.txt"
     os.copy(endToEndResPath / "runtime_main.py", runtimeMainPath)
@@ -480,7 +499,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Copy files for app two
     os.copy(pipeline3Path / "test_app_two_fresh_generated", GENERATED_FOLDER_PATH / appTwoName)
@@ -506,7 +527,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Copy files for app two
     os.copy(pipeline3Path / "test_app_two_fresh_generated", GENERATED_FOLDER_PATH / appTwoName)
@@ -531,7 +554,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Copy files for app two
     os.copy(pipeline3Path / "test_app_two_fresh_generated", GENERATED_FOLDER_PATH / appTwoName)
@@ -553,7 +578,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
 
   }
-
   "compile" should "install app two when both apps are valid, bindings are valid and no app violates invariants" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -562,7 +586,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Prepare for app two
     os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
@@ -573,7 +599,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
 
     // Check
-    val expectedLibrary = pipeline3Path / "expected_app_library_one_two"
+    val expectedLibrary = pipeline3ExpectedLibraryAppOneTwoPath
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
@@ -585,7 +611,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Prepare for app two
     os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
@@ -606,7 +634,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               os.exists(newAppPath) shouldBe false
 
               // Library with only app one
-              val expectedLibraryPath = pipeline3Path / "expected_library_one"
+              val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
               compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -624,7 +652,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Prepare for app two
     os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
@@ -643,7 +673,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               )
 
               // Library with only app one
-              val expectedLibraryPath = pipeline3Path / "expected_library_one"
+              val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
               compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -651,6 +681,172 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Success(_) => fail("The compilation should have failed!")
       }
     }
+  }
+
+  "update" should "fail when no app name is provided" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Update appThree
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should include(
+                s"""ERROR: The app name has to be provided to update an app"""
+              )
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The update should have failed!")
+      }
+    }
+
+  }
+
+  "update" should "fail when the app to update is not installed" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Update appThree
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", "appThree"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should include(
+                s"""ERROR: The app 'appThree' must be installed!"""
+              )
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The update should have failed!")
+      }
+    }
+
+  }
+
+  "update" should "fail when the app to update is not in the generatedFolder" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Update appTwo
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", appTwoName))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should include(
+                s"""ERROR: The app 'test_app_two' must be in the generated folder!"""
+              )
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The update should have failed!")
+      }
+    }
+
+  }
+
+  "update" should "fail when other apps are in the generatedFolder" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    os.copy.into(pipeline3ExpectedLibraryAppOneTwoPath / "test_app_two", GENERATED_FOLDER_PATH)
+    os.copy.into(pipeline3ExpectedLibraryAppOneTwoPath / "test_app_one", GENERATED_FOLDER_PATH)
+
+    // Update appTwo
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", appTwoName))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should include(
+                s"""ERROR: The app 'test_app_two' must be the only one in the generated folder! Other apps found: test_app_one"""
+              )
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The update should have failed!")
+      }
+    }
+  }
+
+  "update" should "update with the new version of the updated app when valid" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    os.copy(pipeline3Path / "test_app_two_update_valid", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Update appTwo
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", appTwoName))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(s"The execution of the update command fails with error code = $errorCode")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
+          }
+        case Success(_) => {
+          // Check
+          out.toString should include(
+            s"""The app 'test_app_two' has been successfully compiled and verified! Update successful!"""
+          )
+          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3Path / "expected_app_library_one_two_after_update", ignoredFileNames = defaultIgnoredFiles)
+        }
+      }
+    }
+
   }
 
   "generateBindings" should "fail with an error if an app with the same name as the one being installed is already installed" in {
@@ -661,7 +857,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Copy files for app two
     os.copy(pipeline3Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appTwoName)
@@ -742,7 +940,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Check
     val out = new ByteArrayOutputStream()
@@ -759,7 +959,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "y\n"
@@ -768,7 +970,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       Main.main(Array("removeApp", "-n", appTwoName))
     }
     // Check
-    val expectedLibrary = pipeline3Path / "expected_library_one"
+    val expectedLibrary = pipeline3Path / "expected_app_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
@@ -779,7 +981,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "y\n"
@@ -793,7 +997,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Check
     out.toString.trim shouldNot include("The bindings have been successfully created!")
     out.toString.trim shouldNot include("Generating the bindings...")
-    val expectedLibrary = pipeline3Path / "expected_library_one"
+    val expectedLibrary = pipeline3Path / "expected_app_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
@@ -804,7 +1008,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "n\n"
@@ -817,7 +1023,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     out.toString.trim should include("Exiting...")
-    val expectedLibrary = pipeline3Path / "expected_app_library_one_two"
+    val expectedLibrary = pipeline3ExpectedLibraryAppOneTwoPath
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
@@ -828,7 +1034,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "yes\n"
@@ -837,7 +1045,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       Main.main(Array("removeApp", "-n", appTwoName))
     }
     // Check
-    val expectedLibrary = pipeline3Path / "expected_library_one"
+    val expectedLibrary = pipeline3Path / "expected_app_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
@@ -848,7 +1056,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Populate generated folder
     os.copy.into(pipeline3Path / "test_app_two_proto.json", GENERATED_FOLDER_PATH)
@@ -864,7 +1074,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     out.toString.trim should include(s"The app '$appTwoName' has been successfully removed!")
-    val expectedLibrary = pipeline3Path / "expected_library_one"
+    val expectedLibrary = pipeline3Path / "expected_app_library_one"
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true
     GENERATED_FOLDER_PATH / "test_app_two_proto.json" should beAFile()
@@ -878,7 +1088,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Populate generated folder
     os.copy.into(pipeline3Path / "test_app_two_proto.json", GENERATED_FOLDER_PATH)
@@ -901,7 +1113,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "y\n"
@@ -929,7 +1143,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Check
     val out = new ByteArrayOutputStream()
@@ -959,7 +1175,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Check
     val out = new ByteArrayOutputStream()
@@ -987,7 +1205,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "y\n"
@@ -1007,7 +1227,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one and app two
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "yes\n"
@@ -1029,7 +1251,10 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Install app one
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
-    os.copy(pipeline3Path / "expected_library_one", APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Prepare for app two
     os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
@@ -1048,7 +1273,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               os.exists(newAppPath) shouldBe false
 
               // Library with only app one
-              val expectedLibraryPath = pipeline4Path / "expected_library_one"
               compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -1067,6 +1291,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
     val expectedLibraryPath = pipeline4Path / "expected_app_library_one_two_compile_error_invalid_bindings"
     os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "yes\n"
@@ -1099,6 +1325,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
     val expectedLibraryPath = pipeline4Path / "expected_app_library_one_two_verification_error"
     os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Remove app two
     val inputStr = "yes\n"
@@ -1133,6 +1361,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
     val expectedLibraryPath = pipeline4Path / "expected_app_library_one_two_compile_error_invalid_bindings"
     os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Populate generated folder
     os.copy.into(pipeline3Path / "test_app_two_proto.json", GENERATED_FOLDER_PATH)
@@ -1158,6 +1388,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
     val expectedLibraryPath = pipeline4Path / "expected_app_library_one_two_compile_error_invalid_bindings"
     os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Populate generated folder
     os.copy.into(pipeline3Path / "test_app_two_proto.json", GENERATED_FOLDER_PATH)
@@ -1172,6 +1404,42 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.exists(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH) shouldBe false
     os.exists(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH) shouldBe false
 
+  }
+
+  "update" should "fail if new version breaks invariant" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline4Path / "expected_app_library_one_two_valid"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    os.copy(pipeline4Path / "test_app_two_invalid_filled_violates", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Update appTwo
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", appTwoName))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should (include(
+                s"""ERROR: The compilation of the new version of 'test_app_two' failed. Rollbacking to the old set of apps..."""
+              )
+                and
+                  include(s"""ERROR: Compilation/verification failed, see messages above."""))
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The update should have failed!")
+      }
+    }
   }
 
   // Compare the two folder and assert that they contain the same files and that files are identical

@@ -25,7 +25,10 @@ object Svshi {
     success(s"svshi v$version")
     SUCCESS_CODE
   }
-  def run(knxAddress: Option[String], existingAppsLibrary: ApplicationLibrary)(success: String => Unit, info: String => Unit, err: String => Unit): Int = {
+  def run(
+      knxAddress: Option[String],
+      existingAppsLibrary: ApplicationLibrary
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     knxAddress match {
       case Some(address) =>
         val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
@@ -76,7 +79,7 @@ object Svshi {
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       newPhysicalStructure: PhysicalStructure
-  )(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
     checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
 
@@ -88,27 +91,98 @@ object Svshi {
         ERROR_CODE
       }
       case Failure(exception) => {
-        err(s"$exception\nCompilation/verification failed, see messages above")
+        err(s"$exception\nCompilation/verification failed, see messages above.")
         ERROR_CODE
       }
       case Success((ok, verifierMessages)) => {
-        outputTrace(verifierMessages)(success, info, warning, err)
+        outputTrace(verifierMessages)(success = success, info = info, warning = warning, err = err)
         if (ok) {
           success(s"The apps have been successfully compiled and verified!")
           SUCCESS_CODE
         } else {
-          err("Compilation/verification failed, see messages above")
+          err("Compilation/verification failed, see messages above.")
           ERROR_CODE
         }
       }
     }
   }
+
+  def updateApp(
+      existingAppsLibrary: ApplicationLibrary,
+      newAppsLibrary: ApplicationLibrary,
+      appToUpdateName: String,
+      existingPhysicalStructure: PhysicalStructure
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
+    if (!existingAppsLibrary.apps.exists(a => a.name == appToUpdateName)) {
+      err(s"The app '$appToUpdateName' must be installed!")
+      return ERROR_CODE
+    }
+    if (!newAppsLibrary.apps.exists(a => a.name == appToUpdateName)) {
+      err(s"The app '$appToUpdateName' must be in the generated folder!")
+      return ERROR_CODE
+    }
+    val otherAppsFound = newAppsLibrary.apps.filter(a => a.name != appToUpdateName)
+    if (otherAppsFound.nonEmpty) {
+      err(s"The app '$appToUpdateName' must be the only one in the generated folder! Other apps found: ${otherAppsFound.map(_.name).mkString(", ")}")
+      return ERROR_CODE
+    }
+    val oldProtoStructure = existingAppsLibrary.apps.find(a => a.name == appToUpdateName).get.appProtoStructure
+    val newProtoStructure = newAppsLibrary.apps.find(a => a.name == appToUpdateName).get.appProtoStructure
+    if (oldProtoStructure != newProtoStructure) {
+      err(s"The prototypical structure of the app '$appToUpdateName' has changed: the update cannot be performed!")
+      return ERROR_CODE
+    }
+
+    // Backup old appLibrary in case of error
+    backupAppLibrary(APP_LIBRARY_TEMP_FOLDER_DURING_UPDATE_PATH)
+
+    // Copy old bindings
+    os.copy.into(APP_LIBRARY_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH)
+
+    // Uninstall the app to update
+    val resRemove = removeApps(allFlag = false, appName = Some(appToUpdateName), existingAppsLibrary = existingAppsLibrary)()
+    if (resRemove != SUCCESS_CODE) {
+      err(s"An error occurred while removing the app to update. Please uninstall and reinstall it manually.")
+      return ERROR_CODE
+    }
+
+    val newExistingAppLibrary = ApplicationLibrary(existingAppsLibrary.apps.filter(a => a.name != appToUpdateName), existingAppsLibrary.path)
+
+    // Install the generated folder
+    Try(compileAppsOperations(newExistingAppLibrary, newAppsLibrary, existingPhysicalStructure)) match {
+      case Failure(exception: CompileErrorException) => {
+        err(exception.msg)
+        err(s"The compilation of the new version of '$appToUpdateName' failed. Rollbacking to the old set of apps...")
+        restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_UPDATE_PATH)
+        ERROR_CODE
+      }
+      case Failure(exception) => {
+        err(s"$exception\nCompilation/verification failed, see messages above.")
+        err(s"The compilation of the new version of '$appToUpdateName' failed. Rollbacking to the old set of apps...")
+        restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_UPDATE_PATH)
+        ERROR_CODE
+      }
+      case Success((ok, verifierMessages)) => {
+        outputTrace(verifierMessages)(success, info, warning, err)
+        if (ok) {
+          success(s"The app '$appToUpdateName' has been successfully compiled and verified! Update successful!")
+          SUCCESS_CODE
+        } else {
+          err("Compilation/verification failed, see messages above.")
+          err(s"The compilation of the new version of '$appToUpdateName' failed. Rollbacking to the old set of apps...")
+          restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_UPDATE_PATH)
+          ERROR_CODE
+        }
+      }
+    }
+  }
+
   def generateBindings(
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       existingPhysicalStructure: PhysicalStructure,
       newPhysicalStructure: PhysicalStructure
-  )(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
     val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
     if (d != SUCCESS_CODE) {
@@ -121,7 +195,10 @@ object Svshi {
     SUCCESS_CODE
   }
 
-  def generateApp(appName: Option[String], devicesPrototypicalStructureFile: Option[String])(success: String => Unit, info: String => Unit, err: String => Unit): Int = {
+  def generateApp(
+      appName: Option[String],
+      devicesPrototypicalStructureFile: Option[String]
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     info("Generating the app...")
     (appName, devicesPrototypicalStructureFile) match {
       case (Some(name), Some(devicesJson)) =>
@@ -164,7 +241,7 @@ object Svshi {
       allFlag: Boolean,
       appName: Option[String],
       existingAppsLibrary: ApplicationLibrary
-  )(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     def removeAllApps(verbose: Boolean = true): Int = {
       if (verbose) info(s"Removing all applications...")
       if (!os.exists(DELETED_APPS_FOLDER_PATH)) os.makeDir.all(DELETED_APPS_FOLDER_PATH)
@@ -205,15 +282,6 @@ object Svshi {
         FileUtils.moveAllFileToOtherDirectory(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH, GENERATED_FOLDER_PATH)
         os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
       }
-      def backupAppLibrary(): Unit = {
-        os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
-        os.copy(APP_LIBRARY_FOLDER_PATH, APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
-      }
-      def restoreAppLibraryFromBackup(): Unit = {
-        os.remove.all(APP_LIBRARY_FOLDER_PATH)
-        os.copy(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH, APP_LIBRARY_FOLDER_PATH)
-        os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
-      }
       def deleteFromDeletedApps(name: String): Unit = {
         os.remove.all(DELETED_APPS_FOLDER_PATH / name)
       }
@@ -244,7 +312,7 @@ object Svshi {
       // IMPORTANT: As the pipeline uses the GENERATED folder for doing its things, we need to first empty it by moving everything it contains in a temp folder
       // and we will copy everything back when the removing is done
       backupGeneratedFolder()
-      backupAppLibrary()
+      backupAppLibrary(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
 
       val emptyApplibrary = ApplicationLibrary(Nil, GENERATED_FOLDER_PATH)
       val existingPhysicalStructure = PhysicalStructureJsonParser.parse(existingAppsLibrary.path / Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME)
@@ -262,7 +330,7 @@ object Svshi {
       )(success = s => (), info = s => (), warning = warning, err = err)
       if (genBindingCode != SUCCESS_CODE) {
         restoreGeneratedFolder()
-        restoreAppLibraryFromBackup()
+        restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
         deleteFromDeletedApps(name)
         err(
           s"Removing the application '$name' causes the bindings generation of the remaining applications to fail.\nThe app '$name' has not been removed.'"
@@ -278,7 +346,7 @@ object Svshi {
       Try(compileAppsOperations(newExistingLibrary, emptyApplibrary, existingPhysicalStructure)) match {
         case Failure(exception) => {
           restoreGeneratedFolder()
-          restoreAppLibraryFromBackup()
+          restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
           deleteFromDeletedApps(name)
           err(
             s"Removing the application '$name' causes the verification of the remaining applications to fail. Compiler threw the exception: ${exception.getLocalizedMessage}\n\n The app '$name' has not been removed.'"
@@ -298,7 +366,7 @@ object Svshi {
             return SUCCESS_CODE
           } else {
             // Move the app back to revert
-            restoreAppLibraryFromBackup()
+            restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
             deleteFromDeletedApps(name)
             outputTrace(verifierMessages)(success = success, info = info, warning = warning, err = err)
             err(
@@ -320,12 +388,24 @@ object Svshi {
     }
   }
 
-  def listApps(existingAppsLibrary: ApplicationLibrary)(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+  def listApps(
+      existingAppsLibrary: ApplicationLibrary
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     info("Listing the apps...")
     val appNames = existingAppsLibrary.apps.map(app => s"'${app.name}'")
     if (appNames.isEmpty) warning("There are no installed applications!")
     else success(s"The installed apps are: ${appNames.mkString(", ")}")
     return SUCCESS_CODE
+  }
+
+  private def backupAppLibrary(destination: os.Path): Unit = {
+    if (os.exists(destination)) os.remove.all(destination)
+    os.copy.over(APP_LIBRARY_FOLDER_PATH, destination)
+  }
+  private def restoreAppLibraryFromBackup(source: os.Path): Unit = {
+    if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy.over(source, APP_LIBRARY_FOLDER_PATH)
+    os.remove.all(source)
   }
 
   private def compileAppsOperations(
@@ -404,7 +484,9 @@ object Svshi {
     if (exitCode != SUCCESS_CODE) err(errorMessageBuilder(exitCode))
   }
   @tailrec
-  private def outputTrace(messages: List[VerifierMessage])(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Unit = {
+  private def outputTrace(
+      messages: List[VerifierMessage]
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Unit = {
     messages match {
       case head :: tl => {
         head match {

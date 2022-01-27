@@ -93,6 +93,17 @@ object Main {
         if (Svshi.generateApp(appNameOpt, config.devicesPrototypicalStructureFile)(success = success, info = info, err = error) != SUCCESS_CODE) {
           printErrorAndExit("Exiting...")
         }
+
+      case UpdateApp =>
+        if (appNameOpt.isEmpty) {
+          printErrorAndExit("The app name has to be provided to update an app")
+        }
+        val appName = appNameOpt.get
+        if (
+          Svshi.updateApp(existingAppsLibrary, newAppsLibrary, appName, existingPhysicalStructure)(success = success, info = info, warning = warning, err = error) != SUCCESS_CODE
+        ) {
+          printErrorAndExit("Exiting...")
+        }
       case RemoveApp =>
         val allAppsFlag = config.all.value
         val answer = if (allAppsFlag) {

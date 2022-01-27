@@ -30,6 +30,10 @@ object Cli {
     */
   case object RemoveApp extends Task
 
+  /** Task that updates an app
+    */
+  case object UpdateApp extends Task
+
   /** Task that lists all the installed apps
     */
   case object ListApps extends Task
@@ -42,15 +46,16 @@ object Cli {
       extends TokensReader[Task](
         "command",
         strs =>
-          strs.head match {
-            case "run" | "r"                                    => Right(Run)
-            case "compile" | "c"                                => Right(Compile)
-            case "generateBindings" | "generatebindings" | "gb" => Right(GenerateBindings)
-            case "generateApp" | "generateapp" | "ga"           => Right(GenerateApp)
-            case "removeApp" | "removeapp" | "ra"               => Right(RemoveApp)
-            case "listApps" | "listapps" | "la"                 => Right(ListApps)
-            case "version" | "v"                                => Right(GetVersion)
-            case token: String                                  => Left(token)
+          strs.head.toLowerCase match {
+            case "run" | "r"               => Right(Run)
+            case "compile" | "c"           => Right(Compile)
+            case "generatebindings" | "gb" => Right(GenerateBindings)
+            case "generateapp" | "ga"      => Right(GenerateApp)
+            case "removeapp" | "ra"        => Right(RemoveApp)
+            case "updateapp" | "ua"        => Right(UpdateApp)
+            case "listapps" | "la"         => Right(ListApps)
+            case "version" | "v"           => Right(GetVersion)
+            case token: String             => Left(token)
           }
       )
 
