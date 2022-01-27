@@ -2,6 +2,7 @@
 assignments
 generated
 deletedApps
+installedApps
 logs
 src/app_library/**
 src/verification/conditions.py

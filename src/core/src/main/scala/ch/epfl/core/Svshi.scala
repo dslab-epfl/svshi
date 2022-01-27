@@ -256,6 +256,8 @@ object Svshi {
         GROUP_ADDRESSES_LIST_FILE_NAME
       ).foreach(filename => os.remove.all(existingAppsLibrary.path / filename))
 
+      os.remove.all(INSTALLED_APPS_FOLDER_PATH)
+
       // Delete 'addresses.json' in all apps we are moving
       FileUtils.getListOfFolders(existingAppsLibrary.path).foreach(p => os.remove(p / APP_PYTHON_ADDR_BINDINGS_FILE_NAME))
 
@@ -285,6 +287,7 @@ object Svshi {
       def deleteFromDeletedApps(name: String): Unit = {
         os.remove.all(DELETED_APPS_FOLDER_PATH / name)
       }
+
       if (!os.exists(DELETED_APPS_FOLDER_PATH)) os.makeDir.all(DELETED_APPS_FOLDER_PATH)
       if (!existingAppsLibrary.apps.exists(a => a.name == name)) {
         err(s"The app '$name' is not installed!")
@@ -301,7 +304,6 @@ object Svshi {
         } else {
           return removeAllCode
         }
-
       }
 
       info(s"Removing application '$name'...")
@@ -314,7 +316,7 @@ object Svshi {
       backupGeneratedFolder()
       backupAppLibrary(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
 
-      val emptyApplibrary = ApplicationLibrary(Nil, GENERATED_FOLDER_PATH)
+      val emptyAppLibrary = ApplicationLibrary(Nil, GENERATED_FOLDER_PATH)
       val existingPhysicalStructure = PhysicalStructureJsonParser.parse(existingAppsLibrary.path / Constants.PHYSICAL_STRUCTURE_JSON_FILE_NAME)
 
       // Remove the app from the library
@@ -324,7 +326,7 @@ object Svshi {
       // They will go in generated
       val genBindingCode = generateBindings(
         existingAppsLibrary = newExistingLibrary,
-        newAppsLibrary = emptyApplibrary,
+        newAppsLibrary = emptyAppLibrary,
         existingPhysicalStructure = existingPhysicalStructure,
         newPhysicalStructure = existingPhysicalStructure
       )(success = s => (), info = s => (), warning = warning, err = err)
@@ -343,7 +345,7 @@ object Svshi {
       FileUtils.moveAllFileToOtherDirectory(existingAppsLibrary.path / name, DELETED_APPS_FOLDER_PATH / name)
       os.remove.all(existingAppsLibrary.path / name)
 
-      Try(compileAppsOperations(newExistingLibrary, emptyApplibrary, existingPhysicalStructure)) match {
+      Try(compileAppsOperations(newExistingLibrary, emptyAppLibrary, existingPhysicalStructure)) match {
         case Failure(exception) => {
           restoreGeneratedFolder()
           restoreAppLibraryFromBackup(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
@@ -362,6 +364,10 @@ object Svshi {
             // Delete temp generated folder + backup app library
             os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
             os.remove.all(APP_LIBRARY_TEMP_FOLDER_DURING_REMOVING_PATH)
+
+            // Remove app from installedApps folder
+            os.remove.all(INSTALLED_APPS_FOLDER_PATH / name)
+
             success(s"The app '$name' has been successfully removed!")
             return SUCCESS_CODE
           } else {
@@ -383,7 +389,7 @@ object Svshi {
     } else {
       appName match {
         case Some(name) => removeApp(name)
-        case None       => throw new IllegalArgumentException("The app name has to be provided to remove an app when not all apps")
+        case None       => throw new IllegalArgumentException("The app name has to be provided to remove an app when the 'all' flag is not used")
       }
     }
   }
@@ -432,7 +438,15 @@ object Svshi {
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
           // Move verification_file.py, runtime_file.py and conditions.py in app_library
-          List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH).foreach(p => os.move.into(p, appLibraryPath, replaceExisting = true))
+          val generatedFiles = List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH)
+          generatedFiles.foreach(p => os.move.into(p, appLibraryPath, replaceExisting = true))
+
+          // Copy all installed applications, their bindings and their physical structure in installedFolder,
+          // without verification_file.py, runtime_file.py, conditions.py and group_addresses.json
+          if (!os.exists(INSTALLED_APPS_FOLDER_PATH)) os.makeDir(INSTALLED_APPS_FOLDER_PATH)
+          os.copy(appLibraryPath, INSTALLED_APPS_FOLDER_PATH, mergeFolders = true, replaceExisting = true)
+          generatedFiles.foreach(p => os.remove(INSTALLED_APPS_FOLDER_PATH / p.last))
+          os.remove(INSTALLED_APPS_FOLDER_PATH / GROUP_ADDRESSES_LIST_FILE_NAME)
 
           // Call the KNX Programmer module
           val programmer = Programmer(gaAssignment)
@@ -441,6 +455,9 @@ object Svshi {
 
           (true, verifierMessages)
         } else {
+          // Remove group_addresses.json
+          os.remove(GENERATED_FOLDER_PATH / GROUP_ADDRESSES_LIST_FILE_NAME) 
+
           (false, verifierMessages)
         }
       }

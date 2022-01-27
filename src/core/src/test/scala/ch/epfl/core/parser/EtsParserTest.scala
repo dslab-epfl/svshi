@@ -470,7 +470,6 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
 
   "parseEtsProjectFile" should "return the correct structure on the test file 3" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePath3)
-    print(structure)
 
     val device1 = PhysicalDevice(
       "KliX (D4)",

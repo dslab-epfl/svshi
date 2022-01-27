@@ -37,7 +37,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val backupLibraryPath = SVSHI_SRC_FOLDER_PATH / "backup_library_during_test"
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"
   private val backupInputPath = SVSHI_SRC_FOLDER_PATH / "backup_input_during_test"
-
   private val backupInstalledAppsPath = SVSHI_SRC_FOLDER_PATH / "backup_installed_apps_during_test"
 
   private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py")
@@ -603,6 +602,34 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
+  "compile" should "put new appLibrary content in installedApps when successful" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one"
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(appLibraryOnePipelineThree, APP_LIBRARY_FOLDER_PATH)
+    os.copy(appLibraryOnePipelineThree, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline3Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline3Path / "test_app_two_valid_filled", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+
+    // Check
+    val expectedLibrary = APP_LIBRARY_FOLDER_PATH
+    val installedApps = INSTALLED_APPS_FOLDER_PATH
+    expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
+    compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+  }
+
   "compile" should "fail with an error message when compiling a new app with bindings that are not compatible 1" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -813,6 +840,43 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
   }
 
+  "update" should "fail when the new version has a different prototypical structure" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    os.copy(pipeline3Path / "test_app_two_update_diff_proto", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Update appTwo
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("updateApp", "-n", appTwoName))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString should include(
+                s"""ERROR: The prototypical structure of the app 'test_app_two' has changed: the update cannot be performed!"""
+              )
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
+          }
+        case Success(_) => {
+          fail(s"The execution of the update command should have fail!")
+        }
+      }
+    }
+
+  }
+
   "update" should "update with the new version of the updated app when valid" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -974,6 +1038,52 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
+  "removeApp" should "modify installedApps to have the library when removing an app" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one_two"
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(appLibraryOnePipelineThree, APP_LIBRARY_FOLDER_PATH)
+    os.copy(appLibraryOnePipelineThree, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Remove app two
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
+    Console.withIn(in) {
+      Main.main(Array("removeApp", "-n", appTwoName))
+    }
+
+    // Check
+    val expectedLibrary = APP_LIBRARY_FOLDER_PATH
+    val installedApps = INSTALLED_APPS_FOLDER_PATH
+    expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
+    compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+  }
+
+  "removeApp" should "empty installedApps when removing the last installed app" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+
+    // Remove app one
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
+    Console.withIn(in) {
+      Main.main(Array("removeApp", "-n", appOneName))
+    }
+
+    // Check
+    if (!os.exists(INSTALLED_APPS_FOLDER_PATH)) os.makeDir.all(INSTALLED_APPS_FOLDER_PATH) // If it does not exist then the test will pass with a fresh one
+    os.list(INSTALLED_APPS_FOLDER_PATH).toList.isEmpty shouldEqual true
+  }
+
   "removeApp" should "not print info and success messages of the bindings, answer == y" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -994,6 +1104,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         Main.main(Array("removeApp", "-n", appTwoName))
       }
     }
+
     // Check
     out.toString.trim shouldNot include("The bindings have been successfully created!")
     out.toString.trim shouldNot include("Generating the bindings...")
@@ -1021,6 +1132,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         Main.main(Array("removeApp", "-n", appTwoName))
       }
     }
+
     // Check
     out.toString.trim should include("Exiting...")
     val expectedLibrary = pipeline3ExpectedLibraryAppOneTwoPath
@@ -1242,6 +1354,27 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
   }
 
+  "removeApp" should "empty installedApps when removing all apps with --all" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one_two", APP_LIBRARY_FOLDER_PATH)
+
+    // Remove app two
+    val inputStr = "y\n"
+    val in = new StringReader(inputStr)
+    Console.withIn(in) {
+      Main.main(Array("removeApp", "--all"))
+    }
+
+    // Check
+    if (!os.exists(INSTALLED_APPS_FOLDER_PATH)) os.makeDir.all(INSTALLED_APPS_FOLDER_PATH) // If it does not exist then the test will pass with a fresh one
+    os.list(INSTALLED_APPS_FOLDER_PATH).toList.isEmpty shouldEqual true
+  }
+
   // Pipeline 4 - 2 apps: app one valid and then app two that violates app one invariant
   "compile" should "not install app two when it can violate invariant of app 1" in {
     // Prepare everything for the test
@@ -1250,6 +1383,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
 
     // Install app one
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one"
     os.remove.all(APP_LIBRARY_FOLDER_PATH)
     val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
     os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
@@ -1280,6 +1414,78 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Success(_) => fail("The compilation should have failed!")
       }
     }
+  }
+
+  "compile" should "not modify installedApps when the compilation/verification fails" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one"
+    os.copy(appLibraryOnePipelineThree, APP_LIBRARY_FOLDER_PATH)
+    os.copy(appLibraryOnePipelineThree, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline4Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline4Path / "test_app_two_invalid_filled_violates", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              val expectedLibrary = APP_LIBRARY_FOLDER_PATH
+              val installedApps = INSTALLED_APPS_FOLDER_PATH
+
+              expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
+              compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "compile" should "not create group_addresses.json when the verification fails" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+
+    // Prepare for app two
+    os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline4Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline4Path / "test_app_two_invalid_filled_violates", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(_) => {
+              os.exists(GENERATED_FOLDER_PATH / "group_addresses.json") shouldEqual false
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+
+    os.exists(GENERATED_FOLDER_PATH / "group_addresses.json") shouldBe false
   }
 
   "removeApp" should "fail to remove an app when the remaining library cannot compile (invalid bindings), print an error and restore the library as before" in {
@@ -1432,7 +1638,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The compilation of the new version of 'test_app_two' failed. Rollbacking to the old set of apps..."""
               )
                 and
-                  include(s"""ERROR: Compilation/verification failed, see messages above."""))
+                  include(s"""ERROR: Compilation/verification failed, see messages above.""")
+                and
+                include("Compilation/verification failed, see messages above."))
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")

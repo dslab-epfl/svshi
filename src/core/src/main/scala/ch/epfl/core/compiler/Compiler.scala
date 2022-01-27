@@ -8,8 +8,13 @@ import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical.AppLibraryBindings
 import ch.epfl.core.parser.json.bindings.{BindingsJsonParser, PythonAddressJsonParser}
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
-import ch.epfl.core.utils.Constants
-import ch.epfl.core.utils.Constants.{APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
+import ch.epfl.core.utils.Constants.{
+  APP_PROTO_BINDINGS_JSON_FILE_NAME,
+  GENERATED_FOLDER_PATH,
+  PHYSICAL_STRUCTURE_JSON_FILE_NAME,
+  GROUP_ADDRESSES_LIST_FILE_NAME,
+  APP_PYTHON_ADDR_BINDINGS_FILE_NAME
+}
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -38,14 +43,13 @@ object Compiler {
     val filteredAppLibraryBindings = AppLibraryBindings(appLibraryBindings.appBindings.filter(b => (newAppsLibrary.apps ++ existingAppsLibrary.apps).exists(a => a.name == b.name)))
     val gaAssignment = GroupAddressAssigner.assignGroupAddressesToPhysical(physicalStructure, filteredAppLibraryBindings)
 
-    val filePath: os.Path = Constants.GENERATED_FOLDER_PATH / Constants.GROUP_ADDRESSES_LIST_FILE_NAME
-
-    generateGroupAddressesList(gaAssignment, filePath)
+    generateGroupAddressesList(gaAssignment, GENERATED_FOLDER_PATH / GROUP_ADDRESSES_LIST_FILE_NAME)
 
     for (app <- existingAppsLibrary.apps.appendedAll(newAppsLibrary.apps)) {
       val pythonAddr = PythonAddressJsonParser.assignmentToPythonAddressJson(app, gaAssignment)
-      PythonAddressJsonParser.writeToFile(app.appFolderPath / Constants.APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
+      PythonAddressJsonParser.writeToFile(app.appFolderPath / APP_PYTHON_ADDR_BINDINGS_FILE_NAME, pythonAddr)
     }
+
     (newAppsLibrary, existingAppsLibrary, gaAssignment)
   }
 
@@ -88,7 +92,6 @@ object Compiler {
     if (file.exists()) file.delete()
     Files.write(filePathNio, json getBytes StandardCharsets.UTF_8)
   }
-
 }
 
 case class IncompatibleBindingsException() extends Exception

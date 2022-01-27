@@ -1636,7 +1636,6 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       )
     )
     val res = verifyBindingsMutualDPT(appLibraryBindings)
-    println(res)
     res.length shouldEqual 2
     res.head.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
     res.last.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
@@ -1670,7 +1669,6 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       )
     )
     val res = verifyBindingsMutualDPT(appLibraryBindings)
-    println(res)
     res.length shouldEqual 2
     res.head.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
     res.last.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true

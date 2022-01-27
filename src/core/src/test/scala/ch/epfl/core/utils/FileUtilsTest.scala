@@ -59,5 +59,4 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     os.remove.all(firstTestFilePath)
     os.remove.all(secondTestFilePath)
   }
-
 }
