@@ -154,14 +154,7 @@ class Manipulator:
             self.__rename_instances_add_state(
                 op.operand, app_name, accepted_names, unchecked_functions, verification
             )
-        elif isinstance(op, ast.NamedExpr):
-            self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
-            )
-            self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
-            )
-        elif isinstance(op, ast.Expr):
+        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
             self.__rename_instances_add_state(
                 op.value, app_name, accepted_names, unchecked_functions, verification
             )
@@ -176,32 +169,6 @@ class Manipulator:
             self.__rename_instances_add_state(
                 op.value, app_name, accepted_names, unchecked_functions, verification
             )
-        elif isinstance(op, ast.AugAssign):
-            self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
-            )
-            self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
-            )
-        elif isinstance(op, ast.AnnAssign):
-            self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
-            )
-            self.__rename_instances_add_state(
-                op.annotation,
-                app_name,
-                accepted_names,
-                unchecked_functions,
-                verification,
-            )
-            if op.value:
-                self.__rename_instances_add_state(
-                    op.value,
-                    app_name,
-                    accepted_names,
-                    unchecked_functions,
-                    verification,
-                )
         elif isinstance(op, ast.Return):
             if op.value:
                 self.__rename_instances_add_state(
@@ -499,7 +466,6 @@ class Manipulator:
             ast.expr,
             ast.comprehension,
             ast.keyword,
-            ast.NamedExpr,
             List[ast.stmt],
             List[ast.expr],
             List[ast.comprehension],
@@ -511,7 +477,6 @@ class Manipulator:
         ast.expr,
         ast.comprehension,
         ast.keyword,
-        ast.NamedExpr,
         List[ast.stmt],
         List[ast.expr],
         List[ast.comprehension],
@@ -552,7 +517,6 @@ class Manipulator:
             ast.expr,
             ast.comprehension,
             ast.keyword,
-            ast.NamedExpr,
             List[ast.stmt],
             List[ast.expr],
             List[ast.comprehension],
@@ -582,16 +546,7 @@ class Manipulator:
                 op.operand, unchecked_functions
             )
             self.__change_unchecked_functions_to_var(op.operand, unchecked_functions)
-        elif isinstance(op, ast.NamedExpr):
-            op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
-            op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
-        elif isinstance(op, ast.Expr):
+        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
             op.value = self.__check_if_func_call_is_applicable_and_replace(
                 op.value, unchecked_functions
             )
@@ -602,32 +557,6 @@ class Manipulator:
             )
             self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
         elif isinstance(op, ast.Assign):
-            op.targets = self.__check_if_func_call_is_applicable_and_replace(
-                op.targets, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.targets, unchecked_functions)
-            op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
-        elif isinstance(op, ast.AugAssign):
-            op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
-            op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
-        elif isinstance(op, ast.AnnAssign):
-            op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
-            op.annotation = self.__check_if_func_call_is_applicable_and_replace(
-                op.annotation, unchecked_functions
-            )
-            self.__change_unchecked_functions_to_var(op.annotation, unchecked_functions)
             op.value = self.__check_if_func_call_is_applicable_and_replace(
                 op.value, unchecked_functions
             )
