@@ -1419,7 +1419,9 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
-              out.toString.trim should (include(s"""error: false when calling test_app_two_iteration"""))
+              out.toString.trim should (include(s"""ERROR: False when calling test_app_two_iteration"""))
+              out.toString.trim should (include(s"""ERROR: At line 115:  post: test_app_one_invariant(**__return__)"""))
+
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false
 
@@ -1564,7 +1566,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 out.toString.trim should (include(
                   s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appTwoName' has not been removed."""
                 ))
-                out.toString.trim should (include("error: false when calling test_app_one_iteration("))
+                out.toString.trim should (include("ERROR: False when calling test_app_one_iteration("))
+                out.toString.trim should (include("ERROR: At line 83:  post: test_app_one_invariant(**__return__)"))
                 compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")

@@ -17,4 +17,25 @@ object Utils {
       path
     )
   }
+
+  /** Return the n_th line of the given file, with the line number with the following format "n:  line_content".
+    * If the file has fewer lines than n or if the file does not exist, it returns None.
+    *
+    * WARNING: The line 1 is the first line of the file (it is NOT 0 base index).
+    * @param file
+    * @param n
+    * @return
+    */
+  def getLineNFile(file: os.Path, n: Int): Option[String] = {
+    if (!os.exists(file)) {
+      None
+    } else {
+      val lines = os.read.lines(file).toList
+      if (lines.length <= n) {
+        None
+      } else {
+        Some(s"$n:  ${lines(n - 1)}")
+      }
+    }
+  }
 }

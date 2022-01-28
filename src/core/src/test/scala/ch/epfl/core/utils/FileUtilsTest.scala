@@ -1,7 +1,7 @@
 package ch.epfl.core.utils
 
 import ch.epfl.core.CustomMatchers.haveSameContentAsIgnoringBlanks
-import ch.epfl.core.utils.Constants.SVSHI_HOME_PATH
+import ch.epfl.core.utils.Constants.SVSHI_SRC_FOLDER_PATH
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -11,15 +11,17 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   override def beforeEach(): Unit = {
     os.remove.all(outputPath)
   }
-  val testFilePathString = "svshi/core/res/ets_project_test.knxproj"
-  val testFileRefPathUnzippedString = "svshi/core/res/ets_project_test"
-  val outputPath: Path = os.Path("svshi/core/res/temp", SVSHI_HOME_PATH)
-  val wd = SVSHI_HOME_PATH
+
+  val testFilePathString = "core/res/ets_project_test.knxproj"
+  val testFileRefPathUnzippedString = "core/res/ets_project_test"
+  val outputPath: Path = os.Path("core/res/temp", SVSHI_SRC_FOLDER_PATH)
+  val wd = SVSHI_SRC_FOLDER_PATH
 
   "unzip" should "unzip all files" in {
     val outputPath = os.Path("temp", wd)
     os.remove.all(outputPath)
     val inputPath = os.Path(testFilePathString, wd)
+    if (!os.exists(inputPath)) fail("The input file does not exist!")
     FileUtils.unzip(inputPath, outputPath)
     val l = FileUtils.recursiveListFiles(outputPath)
     val refPath = os.Path(testFileRefPathUnzippedString, wd)
