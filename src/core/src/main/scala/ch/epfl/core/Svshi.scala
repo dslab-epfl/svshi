@@ -25,6 +25,7 @@ object Svshi {
     success(s"svshi v$version")
     SUCCESS_CODE
   }
+
   def run(
       knxAddress: Option[String],
       existingAppsLibrary: ApplicationLibrary
@@ -33,6 +34,11 @@ object Svshi {
       case Some(address) =>
         val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
         if (addressRegex.matches(address)) {
+          if (existingAppsLibrary.apps.isEmpty) {
+            err("No apps are installed!")
+            return ERROR_CODE
+          }
+
           info("Running the apps...")
           // Copy verification_file.py, runtime_file.py and conditions.py in runtime module
           val appLibraryPath = existingAppsLibrary.path
@@ -75,13 +81,17 @@ object Svshi {
       }
     }
   }
+
   def compileApps(
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       newPhysicalStructure: PhysicalStructure
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
-    checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (d != SUCCESS_CODE) {
+      return d
+    }
 
     info("Compiling and verifying the apps...")
 
@@ -117,15 +127,18 @@ object Svshi {
       err(s"The app '$appToUpdateName' must be installed!")
       return ERROR_CODE
     }
+
     if (!newAppsLibrary.apps.exists(a => a.name == appToUpdateName)) {
       err(s"The app '$appToUpdateName' must be in the generated folder!")
       return ERROR_CODE
     }
+
     val otherAppsFound = newAppsLibrary.apps.filter(a => a.name != appToUpdateName)
     if (otherAppsFound.nonEmpty) {
       err(s"The app '$appToUpdateName' must be the only one in the generated folder! Other apps found: ${otherAppsFound.map(_.name).mkString(", ")}")
       return ERROR_CODE
     }
+
     val oldProtoStructure = existingAppsLibrary.apps.find(a => a.name == appToUpdateName).get.appProtoStructure
     val newProtoStructure = newAppsLibrary.apps.find(a => a.name == appToUpdateName).get.appProtoStructure
     if (oldProtoStructure != newProtoStructure) {
@@ -278,12 +291,14 @@ object Svshi {
         os.remove.all(GENERATED_FOLDER_PATH)
         os.makeDir.all(GENERATED_FOLDER_PATH)
       }
+
       def restoreGeneratedFolder(): Unit = {
         os.remove.all(GENERATED_FOLDER_PATH)
         os.makeDir.all(GENERATED_FOLDER_PATH)
         FileUtils.moveAllFileToOtherDirectory(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH, GENERATED_FOLDER_PATH)
         os.remove.all(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH)
       }
+
       def deleteFromDeletedApps(name: String): Unit = {
         os.remove.all(DELETED_APPS_FOLDER_PATH / name)
       }
@@ -408,6 +423,7 @@ object Svshi {
     if (os.exists(destination)) os.remove.all(destination)
     os.copy.over(APP_LIBRARY_FOLDER_PATH, destination)
   }
+
   private def restoreAppLibraryFromBackup(source: os.Path): Unit = {
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.remove.all(APP_LIBRARY_FOLDER_PATH)
     os.copy.over(source, APP_LIBRARY_FOLDER_PATH)
@@ -523,5 +539,4 @@ object Svshi {
   def setRuntimeModule(newRuntimeModule: String): Unit = runtimeModule = newRuntimeModule
 
   def setRuntimeModulePath(newRuntimeModulePath: os.Path): Unit = runtimeModulePath = newRuntimeModulePath
-
 }

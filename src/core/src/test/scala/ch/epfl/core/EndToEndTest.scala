@@ -455,6 +455,22 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
   }
 
+  "run" should "fail if no apps are installed" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("run", "-a", "192.0.0.1:42"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include("ERROR: No apps are installed!")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The execution should have failed!")
+      }
+    }
+  }
+
   "run" should "fail if the KNX address has the wrong format" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
@@ -1715,6 +1731,61 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           out.toString.trim should include("""The apps have been successfully compiled and verified!""")
           compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
         }
+      }
+    }
+  }
+
+  "compile" should "not run the compilation when apps are already installed" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one and app two
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put app one and two in generated with the bindings
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appOneName, GENERATED_FOLDER_PATH / appOneName)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME, GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile the apps
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              // Check
+              out.toString.trim should (include(
+                """ERROR: An application with the name 'test_app_one' is already installed! You cannot install two apps with the same name!"""
+              ) and include("""ERROR: An application with the name 'test_app_two' is already installed! You cannot install two apps with the same name!"""))
+              out.toString.trim shouldNot (include("""Compiling and verifying the apps..."""))
+              out.toString.trim shouldNot (include("""The apps have been successfully compiled and verified!"""))
+
+              compareFolders(APP_LIBRARY_FOLDER_PATH, pipeline3ExpectedLibraryAppOneTwoPath, defaultIgnoredFiles)
+
+              os.exists(GENERATED_FOLDER_PATH / appOneName) shouldEqual true
+              os.exists(GENERATED_FOLDER_PATH / appTwoName) shouldEqual true
+              os.exists(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME) shouldEqual true
+              os.exists(GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME) shouldEqual true
+              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appOneName, GENERATED_FOLDER_PATH / appOneName, defaultIgnoredFiles)
+              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName, defaultIgnoredFiles)
+              GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME should haveSameContentAsIgnoringBlanks(
+                pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME
+              )
+              GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME should haveSameContentAsIgnoringBlanks(
+                pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME
+              )
+
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The compilation should have failed!\nout=\n${out.toString.trim}")
       }
     }
 
