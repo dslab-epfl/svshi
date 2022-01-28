@@ -786,7 +786,7 @@ Here, at some point in the execution, the presence will be `on` because someone 
 
 `iteration()` and `invariant()` functions are using instances of classes that represent the devices of the installation and that are communicating with KNX through the network. Given the nature of CrossHair, the code cannot use values that have to be read over the network. Moreover, as explained in the [section about CrossHair (Section 4.2.3.2)](#4232-CrossHair), the code must not have side effects. Therefore, we need to modify the code written by the user to make it verifiable. We list and explain in detail all the modifications that we operate on the code.
 
-First of all, we need a way to pass the state of the installation and the app state as arguments. Indeed, we want to define contracts on the states and we want the states to be symbolically represented to explore all cases. We define a class `PhysicalState` that holds the state of the installation as abstract values. For example, if the physical installation contains a push button, a light, and a temperature sensor, the `PhysicalState` will hold 2 `bool` values (representing the current state of the light and the push button) and 1 `float` value (representing the temperature measured by the temperature sensor). This `PhysicalState` is defined as a `dataclass` in Python. We do the same for the `AppState` which is a `dataclass` with a finite number of values for each supported basic type. We modify the Python code of the `iteration()` and `invariant()` functions using the Python AST module to take an instance of `PhysicalState` and an instance of `AppState` as arguments. We also modify the code to pass the `PhysicalState` instance to all functions that act on devices, so that modifying the state of a device changes the instance of `PhysicalState` and getting the state of a device returns the value held by it.
+First of all, we need a way to pass the state of the installation and the app state as arguments. Indeed, we want to define contracts on the states and we want the states to be symbolically represented to explore all cases. We define a class `PhysicalState` that holds the state of the installation as abstract values. For example, if the physical installation contains a push button, a light, and a temperature sensor, the `PhysicalState` will hold 2 `bool` values (representing the current state of the light and the push button) and 1 `float` value (representing the temperature measured by the temperature sensor). This `PhysicalState` is defined as a `dataclass` in Python. We do the same for the `AppState` which is a `dataclass` with a finite number of values for each supported basic type. We modify the Python code of the `iteration()` and `invariant()` functions using the Python AST module to take an instance of `PhysicalState` and instances of `AppState` as arguments. We also modify the code to pass the `PhysicalState` instance to all functions that act on devices, so that modifying the state of a device changes the instance of `PhysicalState` and getting the state of a device returns the value held by it.
 
 We then modify `iteration()` to return a `dict` that contains the modified instances of `PhysicalState` and `AppState` so that contracts can be written about them. We return a `dict` with, as keys, the strings that contain the respective names of arguments of the `invariant()` functions. By doing so, we can call `invariant()` functions more easily with the `fun(**dict_with_named_args)` notation[^25].
 
@@ -816,24 +816,27 @@ def iteration():
 After:
 
 ```python
-def door_lock_iteration(app_state: AppState, physical_state: PhysicalState):
+def door_lock_iteration(door_lock_app_state: AppState, plants_app_state: AppState, 
+ventilation_app_state: AppState, physical_state: PhysicalState):
   """
-    pre: door_lock_invariant(app_state, physical_state)
-    pre: plants_invariant(app_state, physical_state)
-    pre: ventilation_invariant(app_state, physical_state)
-    post: door_lock_invariant(**__return__)
-    post: plants_invariant(**__return__)
-    post: ventilation_invariant(**__return__)
+  pre: door_lock_invariant(door_lock_app_state, plants_app_state, ventilation_app_state, physical_state)
+  pre: plants_invariant(door_lock_app_state, plants_app_state, ventilation_app_state, physical_state)
+  pre: ventilation_invariant(door_lock_app_state, plants_app_state, ventilation_app_state, physical_state)
+  post: door_lock_invariant(**__return__)
+  post: plants_invariant(**__return__)
+  post: ventilation_invariant(**__return__)
   """
-  if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state)
-   and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
-    if app_state.INT_0 > 5:
+  if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state
+      ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
+    if door_lock_app_state.INT_0 > 5:
       None
     else:
-      app_state.INT_0 += 1
+      door_lock_app_state.INT_0 += 1
   else:
-    app_state.INT_0 = 0
-  return {'app_state': app_state, 'physical_state': physical_state}
+    door_lock_app_state.INT_0 = 0  
+  return {'door_lock_app_state': door_lock_app_state, 'plants_app_state':
+      plants_app_state, 'ventilation_app_state': ventilation_app_state,
+      'physical_state': physical_state}
 ```
 
 As we can see, there are 3 applications installed in the system: `door_lock`, `plants`, and `ventilation`, which are the 3 prototypes detailed in [Section 5.1](#51-lab-prototypes).
@@ -975,6 +978,9 @@ def iteration():
     SWITCH.on()
   else:
     SWITCH.off()
+
+def unchecked_send_email(addr: str) -> None:
+  # Black magic ...
 ```
 
 After:
@@ -983,19 +989,42 @@ After:
 APP_ONE_BINARY_SENSOR = Binary_sensor_app_one_binary_sensor()
 APP_ONE_SWITCH = Switch_app_one_switch()
 
-def app_one_iteration(app_state: AppState, physical_state: PhysicalState):
+def app_one_iteration(app_one_app_state: AppState, physical_state:
+  PhysicalState):
   if APP_ONE_BINARY_SENSOR.is_on(physical_state
-    ) or app_state.INT_0 == 42:
+    ) or app_one_app_state.INT_0 == 42:
     app_one_unchecked_send_email('test@test.com')
     APP_ONE_SWITCH.on(physical_state)
   else:
     APP_ONE_SWITCH.off(physical_state)
-  return {'app_state': app_state, 'physical_state': physical_state}
+
+
+def app_one_unchecked_send_email(addr: str) -> None:
+  # Black magic ...
 ```
 
-Here is an example of a device class:
+Here is an example of a device class with the `PhysicalState` and `AppState` class definitions:
 
 ```python
+@dataclasses.dataclass
+class AppState:
+    INT_0: int = 0
+    INT_1: int = 0
+    INT_2: int = 0
+    INT_3: int = 0
+    FLOAT_0: float = 0.0
+    FLOAT_1: float = 0.0
+    FLOAT_2: float = 0.0
+    FLOAT_3: float = 0.0
+    BOOL_0: bool = False
+    BOOL_1: bool = False
+    BOOL_2: bool = False
+    BOOL_3: bool = False
+    STR_0: str = ""
+    STR_1: str = ""
+    STR_2: str = ""
+    STR_3: str = ""
+
 @dataclasses.dataclass
 class PhysicalState:
   GA_0_0_1: bool
