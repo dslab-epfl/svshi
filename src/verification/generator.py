@@ -259,7 +259,7 @@ class AppState:
         """
         Generates the conditions file given the conditions of all the apps installed in the library.
         """
-        imports = "from .verification_file import "
+        imports = "from .runtime_file import "
         imports_code = []
         nb_apps = len(self.__app_names)
         app_state_arguments = []

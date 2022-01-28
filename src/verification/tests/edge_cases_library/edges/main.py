@@ -1,17 +1,23 @@
 from typing import Generator, Iterable
 from instances import app_state, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME
 
+
 def invariant() -> bool:
-    return ((BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42) and SWITCH_INSTANCE_NAME.is_on()) or (not (BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42) and not SWITCH_INSTANCE_NAME.is_on())
+    return (
+        (BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42)
+        and SWITCH_INSTANCE_NAME.is_on()
+    ) or (
+        not (BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42)
+        and not SWITCH_INSTANCE_NAME.is_on()
+    )
 
 
 def iteration():
-    def yield_fun()-> Iterable[bool]:
+    def yield_fun() -> Iterable[bool]:
         yield not SWITCH_INSTANCE_NAME.is_on()
 
-    def return_fun()-> bool:
+    def return_fun() -> bool:
         return not SWITCH_INSTANCE_NAME.is_on()
-    
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
         unchecked_send_email("test@test.com")
@@ -22,10 +28,13 @@ def iteration():
     a = app_state.INT_0 + 1
     if unchecked_return_int() == 42:
         b = [unchecked_return_int(), 2]
-        g = [x for x in b]
+        g: list = [x for x in b]
+        app_state.INT_2 += 5
     else:
         c = (lambda d: d + 1)(a)
-    
+
+    stuff = [[y := 2, x / y] for x in range(5)]
+
     y = not (unchecked_return_int() == 31)
     d = {"a": SWITCH_INSTANCE_NAME.is_on()}
     {k: v for k, v in d.items()}
@@ -36,14 +45,13 @@ def iteration():
 
     unchecked_send_email(addr="test")
 
-    
+
 def unchecked_iteration() -> None:
-    def yield_fun()-> Iterable[bool]:
+    def yield_fun() -> Iterable[bool]:
         yield not SWITCH_INSTANCE_NAME.is_on()
 
-    def return_fun()-> bool:
+    def return_fun() -> bool:
         return not SWITCH_INSTANCE_NAME.is_on()
-    
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
         unchecked_send_email("test@test.com")
@@ -57,7 +65,7 @@ def unchecked_iteration() -> None:
         g = [x for x in b]
     else:
         c = (lambda d: d + 1)(a)
-    
+
     y = not (unchecked_return_int() == 31)
     d = {"a": SWITCH_INSTANCE_NAME.is_on()}
     {k: v for k, v in d.items()}
@@ -67,13 +75,12 @@ def unchecked_iteration() -> None:
     string = f"this is a beautiful string {SWITCH_INSTANCE_NAME.is_on()}"
 
     unchecked_send_email(addr="test")
-    
 
-    
 
 def unchecked_send_email(addr: str) -> None:
     # do stuff
-    a = 1+1
-    
+    a = 1 + 1
+
+
 def unchecked_return_int() -> int:
     return 42

@@ -1,0 +1,15 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 10,
+  "files": [],
+  "devices": [
+    {
+      "name": "door_lock_sensor",
+      "deviceType": "binary"
+    },
+    {
+      "name": "presence_detector",
+      "deviceType": "binary"
+    }
+  ]
+}

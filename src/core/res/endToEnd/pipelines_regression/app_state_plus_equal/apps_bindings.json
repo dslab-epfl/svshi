@@ -1,0 +1,25 @@
+{
+  "appBindings": [
+    {
+      "name": "door_lock",
+      "bindings": [
+        {
+          "name": "door_lock_sensor",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": 1542297768
+          }
+        },
+        {
+          "name": "presence_detector",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": -562939223
+          }
+        }
+      ]
+    }
+  ]
+}

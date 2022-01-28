@@ -66,6 +66,7 @@ object EtsParser {
   def parseEtsProjectFile(etsProjectPath: os.Path): PhysicalStructure = extractIfNotExist(
     etsProjectPath,
     _ => {
+      xmlFilesCache.clear()
       val deviceAddresses = explore0xmlFindListAddresses(etsProjectPath)
       val parsedDevices = deviceAddresses.par.map(readDeviceFromEtsFile(etsProjectPath, _))
       val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice).toList)

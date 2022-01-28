@@ -1685,6 +1685,41 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
   }
 
+  "appState" should "be renamed even with +=" in {
+    // Prepare everything for the test
+    val appOneName = "door_lock"
+    val etsProjectFileNameDSLAB_Proto = "DSLAB_proto.knxproj"
+
+    val thisTestResPath = pipelinesRegressionPath / "app_state_plus_equal"
+
+    os.copy(thisTestResPath / appOneName, GENERATED_FOLDER_PATH / appOneName)
+    os.copy(thisTestResPath / "apps_bindings.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(thisTestResPath / "physical_structure.json", GENERATED_FOLDER_PATH / "physical_structure.json")
+    os.copy(thisTestResPath / etsProjectFileNameDSLAB_Proto, inputPath / etsProjectFileNameDSLAB_Proto)
+
+    val expectedLibraryPath = thisTestResPath / "expected_app_library"
+
+    // Compile the apps
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileNameDSLAB_Proto).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(s"The compilation/verification failed with error code = $errorCode\nStdOut is:\n${out.toString}")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          // Check
+          out.toString.trim should include("""The apps have been successfully compiled and verified!""")
+          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+        }
+      }
+    }
+
+  }
+
   // Compare the two folder and assert that they contain the same files and that files are identical
   private def compareFolders(folder1: Path, folder2: Path, ignoredFileNames: List[String]): Unit = {
     os.isDir(folder1) shouldBe true
