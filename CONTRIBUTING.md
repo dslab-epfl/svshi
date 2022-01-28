@@ -231,7 +231,7 @@ To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean c
 
 ## CI
 
-We use [GitHub Actions](https://github.com/dslab-epfl/svshi/actions) to run the whole test suite on every push and pull request. The workflows are defined in `.github/workflows/ci.yml`.
+We use [GitHub Actions](https://github.com/dslab-epfl/svshi/actions) to run the whole test suite on every push on `main` and on every pull request. The workflows are defined in `.github/workflows/ci.yml`.
 
 ## Releases
 
