@@ -5,7 +5,7 @@ import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.utils.Constants
-import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
+import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_PATH_STRING
 import com.github.tototoshi.csv.CSVReader
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -38,7 +38,7 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
     Map(1 -> GroupAddress(2, 1, 1), 2 -> GroupAddress(2, 1, 2), 3 -> GroupAddress(2, 1, 3))
   )
   private val programmer = Programmer(assignment)
-  private val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
+  private val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
 
   "outputGroupAddressesCsv" should "output the right file given the assignment" in {
     val expectedLines = List(

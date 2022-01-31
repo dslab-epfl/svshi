@@ -54,7 +54,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     if (os.exists(GENERATED_FOLDER_PATH)) os.copy(GENERATED_FOLDER_PATH, backupGeneratedPath)
     if (os.exists(inputPath)) os.copy(inputPath, backupInputPath)
     if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.copy(INSTALLED_APPS_FOLDER_PATH, backupInstalledAppsPath)
-    if (os.exists(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)) os.copy(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME, backupAssignmentsPath)
+    if (os.exists(ASSIGNMENTS_DIRECTORY_PATH)) os.copy(ASSIGNMENTS_DIRECTORY_PATH, backupAssignmentsPath)
 
   }
 
@@ -63,13 +63,13 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
     if (os.exists(inputPath)) os.remove.all(inputPath)
     if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.remove.all(INSTALLED_APPS_FOLDER_PATH)
-    if (os.exists(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)) os.remove.all(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)
+    if (os.exists(ASSIGNMENTS_DIRECTORY_PATH)) os.remove.all(ASSIGNMENTS_DIRECTORY_PATH)
 
     if (os.exists(backupLibraryPath)) os.copy(backupLibraryPath, APP_LIBRARY_FOLDER_PATH)
     if (os.exists(backupGeneratedPath)) os.copy(backupGeneratedPath, GENERATED_FOLDER_PATH)
     if (os.exists(backupInputPath)) os.copy(backupInputPath, inputPath)
     if (os.exists(backupInstalledAppsPath)) os.copy(backupInstalledAppsPath, INSTALLED_APPS_FOLDER_PATH)
-    if (os.exists(backupAssignmentsPath)) os.copy(backupAssignmentsPath, SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)
+    if (os.exists(backupAssignmentsPath)) os.copy(backupAssignmentsPath, ASSIGNMENTS_DIRECTORY_PATH)
 
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
     if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)

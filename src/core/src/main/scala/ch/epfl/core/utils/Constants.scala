@@ -10,7 +10,8 @@ object Constants {
   lazy val SVSHI_HOME_PATH = os.Path(SVSHI_HOME)
   val SVSHI_SRC_FOLDER = s"$SVSHI_HOME/src"
   lazy val SVSHI_SRC_FOLDER_PATH = os.Path(SVSHI_SRC_FOLDER)
-  val ASSIGNMENTS_DIRECTORY_NAME = s"$SVSHI_HOME/assignments"
+  val ASSIGNMENTS_DIRECTORY_PATH_STRING = s"$SVSHI_HOME/assignments"
+  val ASSIGNMENTS_DIRECTORY_PATH = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
   val PHYSICAL_STRUCTURE_JSON_FILE_NAME = "physical_structure.json"
   val APP_PROTO_BINDINGS_JSON_FILE_NAME = "apps_bindings.json"
   val APP_PYTHON_ADDR_BINDINGS_FILE_NAME = "addresses.json"

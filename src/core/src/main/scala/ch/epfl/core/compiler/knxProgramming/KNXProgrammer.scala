@@ -2,7 +2,7 @@ package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
-import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_NAME
+import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_PATH_STRING
 import ch.epfl.core.utils.FileUtils
 import com.github.tototoshi.csv.CSVWriter
 
@@ -47,7 +47,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
+    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
@@ -73,7 +73,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
         "Auto"
       )
 
-    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_NAME)
+    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
