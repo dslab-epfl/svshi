@@ -39,6 +39,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"
   private val backupInputPath = SVSHI_SRC_FOLDER_PATH / "backup_input_during_test"
   private val backupInstalledAppsPath = SVSHI_SRC_FOLDER_PATH / "backup_installed_apps_during_test"
+  private val backupAssignmentsPath = SVSHI_SRC_FOLDER_PATH / "backup_assignments"
 
   private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py")
 
@@ -47,11 +48,13 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
     if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
     if (os.exists(backupInstalledAppsPath)) os.remove.all(backupInstalledAppsPath)
+    if (os.exists(backupAssignmentsPath)) os.remove.all(backupAssignmentsPath)
 
     if (os.exists(APP_LIBRARY_FOLDER_PATH)) os.copy(APP_LIBRARY_FOLDER_PATH, backupLibraryPath)
     if (os.exists(GENERATED_FOLDER_PATH)) os.copy(GENERATED_FOLDER_PATH, backupGeneratedPath)
     if (os.exists(inputPath)) os.copy(inputPath, backupInputPath)
     if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.copy(INSTALLED_APPS_FOLDER_PATH, backupInstalledAppsPath)
+    if (os.exists(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)) os.copy(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME, backupAssignmentsPath)
 
   }
 
@@ -60,16 +63,19 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     if (os.exists(GENERATED_FOLDER_PATH)) os.remove.all(GENERATED_FOLDER_PATH)
     if (os.exists(inputPath)) os.remove.all(inputPath)
     if (os.exists(INSTALLED_APPS_FOLDER_PATH)) os.remove.all(INSTALLED_APPS_FOLDER_PATH)
+    if (os.exists(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)) os.remove.all(SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)
 
     if (os.exists(backupLibraryPath)) os.copy(backupLibraryPath, APP_LIBRARY_FOLDER_PATH)
     if (os.exists(backupGeneratedPath)) os.copy(backupGeneratedPath, GENERATED_FOLDER_PATH)
     if (os.exists(backupInputPath)) os.copy(backupInputPath, inputPath)
     if (os.exists(backupInstalledAppsPath)) os.copy(backupInstalledAppsPath, INSTALLED_APPS_FOLDER_PATH)
+    if (os.exists(backupAssignmentsPath)) os.copy(backupAssignmentsPath, SVSHI_HOME_PATH / ASSIGNMENTS_DIRECTORY_NAME)
 
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
     if (os.exists(backupGeneratedPath)) os.remove.all(backupGeneratedPath)
     if (os.exists(backupInputPath)) os.remove.all(backupInputPath)
     if (os.exists(backupInstalledAppsPath)) os.remove.all(backupInstalledAppsPath)
+    if (os.exists(backupAssignmentsPath)) os.remove.all(backupAssignmentsPath)
   }
 
   override def beforeEach(): Unit = {
