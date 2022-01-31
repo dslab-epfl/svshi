@@ -1,4 +1,4 @@
-package ch.epfl.core.verifier.static.python
+package ch.epfl.core.utils
 
 import scala.util.{Failure, Success, Try}
 

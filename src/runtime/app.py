@@ -59,27 +59,7 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
     Gets the list of apps.
     """
 
-    def install_requirements(dir: str, app_name: str):
-        """
-        Installs the app's requirements.
-        """
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "-r",
-                f"{dir}/{app_name}/requirements.txt",
-            ]
-        )
-
     apps_names = __get_apps_names(app_library_dir)
-
-    # First install all the requirements
-    print("Installing apps' requirements...", flush=True)
-    for app_name in apps_names:
-        install_requirements(app_library_dir, app_name)
 
     apps = []
     for app_name in apps_names:

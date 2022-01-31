@@ -6,9 +6,8 @@ import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
-import ch.epfl.core.utils.{Constants, FileUtils}
+import ch.epfl.core.utils.{Constants, FileUtils, ProcRunner}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
-import ch.epfl.core.verifier.static.python.ProcRunner
 
 import java.io.File
 import scala.annotation.tailrec
@@ -17,6 +16,7 @@ import scala.util.{Failure, Success, Try}
 object Svshi {
   val SUCCESS_CODE = 0
   val ERROR_CODE = 1
+  val PIP_SUCCESS_CODE = 0
   private var runtimeModule: String = RUNTIME_PYTHON_MODULE
   private var runtimeModulePath: os.Path = RUNTIME_PYTHON_MODULE_PATH
 
@@ -55,6 +55,18 @@ object Svshi {
               val appFilesPath = filesDirPath / appName
               if (!os.exists(appFilesPath)) os.makeDir.all(appFilesPath)
               FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName).filter(fPath => os.exists(fPath)), appFilesPath)
+            }
+          }
+
+          // Install apps' requirements
+          existingAppsLibrary.apps.foreach { app =>
+            info(s"Installing requirements of the app '${app.name}'")
+            val path = app.appFolderPath
+            val (i, msgs) = ProcRunner.callPython(None, None, "pip", path, "install", "-r", "requirements.txt")
+            if (i != PIP_SUCCESS_CODE) {
+              err(s"Cannot install requirements for app '${app.name}'. See pip outputs below:")
+              msgs.foreach(err)
+              return ERROR_CODE
             }
           }
 
