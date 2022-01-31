@@ -48,7 +48,7 @@ With SVSHI, a user can develop and run Python applications interacting with [KNX
 
 ## Installation
 
-To work, SVSHI needs Python 3.9 (or newer)([download here](https://www.python.org/downloads/)) and `pip` and Java 11 (or newer)([download here](https://www.oracle.com/java/technologies/downloads/)). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
+To work, SVSHI needs Python 3.9 (or newer)([download here](https://www.python.org/downloads/)) and `pip` (`pip` will be automatically installed by scripts on Windows and on Linux, simply use `sudp apt install python3-pip`) and Java 11 (or newer)([download here](https://www.oracle.com/java/technologies/downloads/)). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
 
 To check if the installation was successful, run `svshi version` in your terminal.
 
