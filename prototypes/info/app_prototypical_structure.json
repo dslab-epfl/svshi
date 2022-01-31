@@ -1,0 +1,15 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 1200,
+  "files": [],
+  "devices": [
+    {
+      "name": "CO_TWO",
+      "deviceType": "co2"
+    },
+    {
+      "name": "temperature",
+      "deviceType": "temperature"
+    }
+  ]
+}
