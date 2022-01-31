@@ -3,7 +3,7 @@ package ch.epfl.core.verifier.static.python
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.utils.Constants.{CROSSHAIR_TIMEOUT_SECONDS, SVSHI_SRC_FOLDER, VERIFICATION_PYTHON_MODULE}
-import ch.epfl.core.utils.Utils
+import ch.epfl.core.utils.{ProcRunner, Utils}
 import ch.epfl.core.verifier.VerifierTr
 import ch.epfl.core.verifier.static.python.exceptions.{PythonVerifierError, PythonVerifierInfo, PythonVerifierMessage}
 

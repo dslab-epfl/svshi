@@ -1,5 +1,6 @@
-import ch.epfl.core.utils.Constants
-import ch.epfl.core.verifier.static.python.ProcRunner.callPython
+package ch.epfl.core.utils
+
+import ch.epfl.core.utils.ProcRunner.callPython
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
