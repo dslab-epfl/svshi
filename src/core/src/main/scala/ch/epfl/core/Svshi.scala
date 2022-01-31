@@ -146,6 +146,8 @@ object Svshi {
       return ERROR_CODE
     }
 
+    info(s"Updating app '$appToUpdateName'...")
+
     // Backup old appLibrary in case of error
     backupAppLibrary(APP_LIBRARY_TEMP_FOLDER_DURING_UPDATE_PATH)
 

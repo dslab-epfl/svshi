@@ -749,6 +749,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString should include(
                 s"""ERROR: The app name has to be provided to update an app"""
               )
+              out.toString.trim shouldNot include(s"Updating app '")
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -771,9 +772,10 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
 
     // Update appThree
+    val appThreeName = "appThree"
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Try(Main.main(Array("updateApp", "-n", "appThree"))) match {
+      Try(Main.main(Array("updateApp", "-n", appThreeName))) match {
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
@@ -781,6 +783,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString should include(
                 s"""ERROR: The app 'appThree' must be installed!"""
               )
+              out.toString.trim shouldNot include(s"Updating app '$appThreeName'...")
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -813,6 +816,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString should include(
                 s"""ERROR: The app 'test_app_two' must be in the generated folder!"""
               )
+              out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -848,6 +852,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString should include(
                 s"""ERROR: The app 'test_app_two' must be the only one in the generated folder! Other apps found: test_app_one"""
               )
+              out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -881,6 +886,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString should include(
                 s"""ERROR: The prototypical structure of the app 'test_app_two' has changed: the update cannot be performed!"""
               )
+              out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
               compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
 
             }
@@ -920,9 +926,8 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           }
         case Success(_) => {
           // Check
-          out.toString should include(
-            s"""The app 'test_app_two' has been successfully compiled and verified! Update successful!"""
-          )
+          out.toString should include(s"""The app 'test_app_two' has been successfully compiled and verified! Update successful!""")
+          out.toString should include(s"Updating app '$appTwoName'...")
           compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3Path / "expected_app_library_one_two_after_update", ignoredFileNames = defaultIgnoredFiles)
         }
       }
