@@ -741,7 +741,7 @@ Then, the engine can construct path constraints and path conditions for the prog
 CrossHair proposes different "mode" of executions: `check`, `cover`, `diffbehavior` and `watch`.
 `watch` is simply an interactive version of `check` that runs in a terminal while one is coding in her favorite editor and gives live feedback and information every time she saves the file.
 
-We present each mode, starting with `diffbehavior` and `cover` that we do not use for SVSHI and then `cover` that is indeed useful for us.
+We present each mode, starting with `diffbehavior` and `cover` that we do not use for SVSHI and then `check` that is indeed useful for us.
 
 In `diffbehavior` mode, given two functions, CrossHair tries to find a set of arguments that make the two functions return different values. In other words, it tries to find whether two functions are identical in behaviour or not.
 
