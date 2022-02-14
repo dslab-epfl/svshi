@@ -1,5 +1,8 @@
 from ..app import App, get_addresses_listeners, get_apps
 from unittest.mock import Mock
+import os
+
+SVSHI_HOME = os.environ["SVSHI_HOME"].replace("\\", "/")
 
 
 def test_app_equal():
@@ -41,7 +44,7 @@ def test_app_get_apps():
     apps = sorted(
         get_apps(
             "tests/fake_app_library",
-            "svshi.src.runtime.tests.expected.expected_runtime_file",
+            f"{SVSHI_HOME.split('/')[-1]}.src.runtime.tests.expected.expected_runtime_file",
         ),
         key=lambda a: a.name,
     )
