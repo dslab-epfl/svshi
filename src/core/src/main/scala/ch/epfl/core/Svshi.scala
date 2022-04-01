@@ -60,7 +60,7 @@ object Svshi {
 
           // Install apps' requirements
           existingAppsLibrary.apps.foreach { app =>
-            info(s"Installing requirements of the app '${app.name}'")
+            info(s"Installing requirements of the app '${app.name}...'")
             val path = app.appFolderPath
             val (i, msgs) = ProcRunner.callPython(None, None, "pip", path, "install", "-r", "requirements.txt")
             if (i != PIP_SUCCESS_CODE) {
