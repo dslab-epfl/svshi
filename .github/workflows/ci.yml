@@ -21,7 +21,7 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Set up Python 3.10 for end to end tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3.1.0
         with:
           python-version: '3.10'
       - name: Install python dependencies
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3.1.0
         with:
           python-version: '3.10'
       - name: "Set environmental variables"
@@ -68,7 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3.1.0
         with:
           python-version: '3.10'
       - name: "Set environmental variables"
@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3.1.0
         with:
           python-version: '3.10'
       - name: "Set environmental variables"
