@@ -33,6 +33,9 @@ class App:
     def __hash__(self) -> int:
         return hash(repr(self))
 
+    def __str__(self) -> str:
+        return f'App(name="{self.name}", directory="{self.directory}", is_privileged={self.is_privileged}, should_run={self.should_run}, timer={self.timer})'
+
     def notify(self, app_state: AppState, physical_state: PhysicalState):
         """
         Notifies the app, triggering an iteration.

@@ -14,6 +14,8 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
+
+from .logger import Logger
 from .verification_file import AppState, PhysicalState
 from .app import App
 
@@ -31,6 +33,7 @@ class State:
     __SLASH: Final = "/"
     __UNDERSCORE: Final = "_"
     __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
+    __LOGGER_BUFFER_SIZE = 32
 
     def __init__(
         self,
@@ -80,31 +83,7 @@ class State:
             )
         self.__periodic_apps_task: Optional[Task] = None
 
-        if not os.path.exists(logs_dir):
-            os.makedirs(logs_dir)
-
-        self.__logs_dir = logs_dir
-        self.__telegrams_received_logs_buffer = []
-        self.__telegrams_received_logs_file = (
-            f"{self.__logs_dir}/telegrams_received.log"
-        )
-        self.__execution_logs_buffer = []
-        self.__execution_logs_file = f"{self.__logs_dir}/execution.log"
-
-    def __log(self, log_type: _LOG_TYPE, text: str):
-        if log_type == _LOG_TYPE.TELEGRAM:
-            logs_buffer = self.__telegrams_received_logs_buffer
-            logs_file = self.__telegrams_received_logs_file
-        else:
-            logs_buffer = self.__execution_logs_buffer
-            logs_file = self.__execution_logs_file
-
-        logs_buffer.append(f"{datetime.datetime.now()} - {text}\n")
-
-        if len(logs_buffer) > 32:
-            with open(logs_file, "a+") as f:
-                f.writelines(logs_buffer)
-                logs_buffer.clear()
+        self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -112,7 +91,7 @@ class State:
         """
         payload = telegram.payload
         address = str(telegram.destination_address)
-        self.__log(_LOG_TYPE.TELEGRAM, str(telegram))
+        self.__logger.log_received_telegram(str(telegram))
         if address in self.__addresses:
             # The telegram was for one of the addresses we use
             if isinstance(payload, GroupValueWrite):
@@ -146,13 +125,7 @@ class State:
         await self.__xknx_for_listening.stop()
 
         # Dump all logs
-        with open(self.__execution_logs_file, "a+") as f:
-            f.writelines(self.__execution_logs_buffer)
-            self.__execution_logs_buffer.clear()
-
-        with open(self.__telegrams_received_logs_file, "a+") as f:
-            f.writelines(self.__telegrams_received_logs_buffer)
-            self.__telegrams_received_logs_buffer.clear()
+        self.__logger.flush()
 
     async def __send_value_to_knx(
         self, address: str, value: Union[bool, float, int, None]
@@ -340,19 +313,17 @@ class State:
         # We first execute all the apps
         new_states = {}
         for app in apps:
-            self.__log(_LOG_TYPE.EXECUTION, f"App to execute: {app}")
+            self.__logger.log_execution(f"App to execute: {app}")
             if app.should_run:
                 # Copy the states before executing the app
                 app_local_state_copy = dataclasses.replace(self._app_states[app.name])
                 per_app_physical_state_copy = dataclasses.replace(old_state)
 
-                self.__log(
-                    _LOG_TYPE.EXECUTION,
-                    f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}",
+                self.__logger.log_execution(
+                    f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}"
                 )
-                self.__log(
-                    _LOG_TYPE.EXECUTION,
-                    f"With app state (app: '{app.name}'): {app_local_state_copy}",
+                self.__logger.log_execution(
+                    f"With app state (app: '{app.name}'): {app_local_state_copy}"
                 )
 
                 # Notify the app to trigger execution

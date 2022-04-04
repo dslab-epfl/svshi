@@ -1,6 +1,8 @@
 import asyncio
 import dataclasses
 import shutil
+import os
+from pyparsing import line
 import pytest
 from pytest_mock import MockerFixture
 from dataclasses import dataclass
@@ -630,3 +632,207 @@ async def test_state_update_app_state():
 
     # Cleanup
     await state.stop()
+
+
+@pytest.mark.asyncio
+async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_telegrams():
+    new_second_address_value = 8.1
+    new_third_address_value = True
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+        test_state_holder.app_two_called = True
+        physical_state.GA_1_1_2 = new_second_address_value
+        physical_state.GA_1_1_3 = new_third_address_value
+
+    test_state_holder.set_app_two_code(test_two_code)
+
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+    )
+    await state.initialize()
+
+    telegram1 = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+    telegram2 = Telegram(
+        GroupAddress(SECOND_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+    for _ in range(12):
+        await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+            telegram1
+        )
+    for _ in range(21):
+        await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+            telegram2
+        )
+
+    log_file_path = f"{LOGS_DIR}/telegrams_received.log"
+
+    with open(log_file_path, "r") as log_file:
+        lines = log_file.readlines()
+        assert len(lines) == 33
+        for i in range(12):
+            assert str(telegram1) in lines[i]
+        for i in range(12, 21):
+            assert str(telegram2) in lines[i]
+
+    # Cleanup
+    await state.stop()
+
+
+@pytest.mark.asyncio
+async def test_state_correct_execution_log_after_33_telegrams():
+    new_second_address_value = 8.1
+    new_third_address_value = True
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+        test_state_holder.app_two_called = True
+        physical_state.GA_1_1_2 = new_second_address_value
+        physical_state.GA_1_1_3 = new_third_address_value
+
+    test_state_holder.set_app_two_code(test_two_code)
+
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+    )
+    await state.initialize()
+
+    telegram1 = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+    telegram2 = Telegram(
+        GroupAddress(SECOND_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+    for _ in range(12):
+        await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+            telegram1
+        )
+    for _ in range(21):
+        await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+            telegram2
+        )
+
+    log_file_path = f"{LOGS_DIR}/execution.log"
+    expected_log_file_path = f"tests/expected/execution.log_expected"
+
+    with open(log_file_path, "r") as log_file, open(
+        expected_log_file_path, "r"
+    ) as expected_log_file:
+        expected_lines = expected_log_file.readlines()
+        lines = log_file.readlines()
+        n_lines = len(lines)
+        assert n_lines == len(expected_lines)
+
+        for i in range(n_lines):
+            assert expected_lines[i] in lines[i]
+
+    # Cleanup
+    await state.stop()
+
+
+@pytest.mark.asyncio
+async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
+
+    os.makedirs(LOGS_DIR)
+    shutil.copy("tests/fake_logs/execution.log_fake", f"{LOGS_DIR}/execution.log")
+
+    new_second_address_value = 8.1
+    new_third_address_value = True
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+        test_state_holder.app_two_called = True
+        physical_state.GA_1_1_2 = new_second_address_value
+        physical_state.GA_1_1_3 = new_third_address_value
+
+    test_state_holder.set_app_two_code(test_two_code)
+
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+    )
+    await state.initialize()
+
+    telegram1 = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        telegram1
+    )
+
+    # stops the state to flush logs
+    await state.stop()
+
+    log_file_path = f"{LOGS_DIR}/execution.log"
+
+    with open(log_file_path, "r") as log_file:
+        first_line = log_file.readline()
+        assert first_line.startswith("1001")
+
+
+@pytest.mark.asyncio
+async def test_state_log_files_are_bounded():
+
+    os.makedirs(LOGS_DIR)
+    shutil.copy("tests/fake_logs/execution.log_fake", f"{LOGS_DIR}/execution.log")
+    shutil.copy(
+        "tests/fake_logs/telegrams_received.log_fake", f"{LOGS_DIR}/telegrams_received.log"
+    )
+
+    new_second_address_value = 8.1
+    new_third_address_value = True
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+        test_state_holder.app_two_called = True
+        physical_state.GA_1_1_2 = new_second_address_value
+        physical_state.GA_1_1_3 = new_third_address_value
+
+    test_state_holder.set_app_two_code(test_two_code)
+
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+    )
+    await state.initialize()
+
+    telegram1 = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+    for _ in range(8000):
+        await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+            telegram1
+        )
+
+    # stops the state to flush logs
+    await state.stop()
+
+    execution_log_file_path = f"{LOGS_DIR}/execution.log"
+    telegrams_received_log_file_path = f"{LOGS_DIR}/telegrams_received.log"
+
+    max_size = 20 * 1024 * 1024
+    assert os.path.getsize(execution_log_file_path) < max_size
+    assert os.path.getsize(telegrams_received_log_file_path) < max_size
