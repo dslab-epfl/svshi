@@ -33,7 +33,7 @@ jobs:
       - name: Build and Test
         run: cd src/core && sbt -v clean coverage test coverageReport
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -59,7 +59,7 @@ jobs:
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: src/generator
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -85,7 +85,7 @@ jobs:
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: src/verification
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -111,7 +111,7 @@ jobs:
           pytest --cov-config=.coveragerc --cov=. --cov-report=xml
         working-directory: src/runtime
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
