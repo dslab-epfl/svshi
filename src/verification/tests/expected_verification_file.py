@@ -250,9 +250,9 @@ def first_app_iteration(first_app_app_state: AppState, second_app_app_state:
 pre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state)
 pre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state)
 pre: third_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state)
-pre: __return__ == False
-pre: __return__ > 0
-pre: __return__ != 3
+pre: first_app_uncheckedcompute_bool == False
+pre: first_app_unchecked_return_two > 0
+pre: first_app_unchecked_return_two != 3
 post: first_app_invariant(**__return__)
 post: second_app_invariant(**__return__)
 post: third_app_invariant(**__return__)

@@ -408,6 +408,7 @@ class Manipulator:
         pre_str = "pre: "
         post_str = "post: "
         return_value_name_str = "**__return__"
+        return_stmt_postcond = "__return__"
 
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
             res = func_name + "("
@@ -428,7 +429,7 @@ class Manipulator:
                     cond = (
                         pre_str
                         + l.replace(post_str_no_space, "")
-                        .replace(return_value_name_str, unchecked_func_name)
+                        .replace(return_stmt_postcond, unchecked_func_name)
                         .strip()
                     )
                     list_post_conds.append(cond)
