@@ -4,13 +4,23 @@ import ch.epfl.core.model.application.{NotPrivileged, Privileged}
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.JsonParsingException
 import ch.epfl.core.parser.json.prototype.{AppInputJsonParser, DeviceInstanceJson, PrototypicalStructureJson}
-import ch.epfl.core.utils.Constants
+import ch.epfl.core.utils.{Constants, FileUtils}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import os.Path
 
-class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
-  val protoJsonResDirectoryPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res" / "proto_json"
+class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
+  private val protoJsonResDirectoryPath: Path = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res" / "proto_json"
 
+  private val tempFilePath: Path = protoJsonResDirectoryPath / "temp_file.json"
+
+  override def beforeEach(): Unit = {
+    if (os.exists(tempFilePath)) os.remove(tempFilePath)
+  }
+  override def afterEach(): Unit = {
+    if (os.exists(tempFilePath)) os.remove(tempFilePath)
+  }
   "parseJson" should "return the correct ParsedStructure with correct input NotPrivileged" in {
     val json = os.read(protoJsonResDirectoryPath / "proto1.json")
 
@@ -79,6 +89,36 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers {
     an[JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
     )
+  }
+
+  "writeToFile" should "create a file that gives the same structure when parsed again" in {
+    val device1 = DeviceInstanceJson("device1", "binary")
+    val device2 = DeviceInstanceJson("device2", "binary")
+    val device3 = DeviceInstanceJson("device3", "switch")
+    val file1 = "file1.txt"
+    val file2 = "file2.png"
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
+
+    AppInputJsonParser.writeToFile(tempFilePath, app)
+
+    val json = os.read(tempFilePath)
+    AppInputJsonParser.parseJson(json) shouldEqual app
+  }
+
+  "writeToFile" should "create a file that gives the same structure when parsed again if file already exists" in {
+    val device1 = DeviceInstanceJson("device1", "binary")
+    val device2 = DeviceInstanceJson("device2", "binary")
+    val device3 = DeviceInstanceJson("device3", "switch")
+    val file1 = "file1.txt"
+    val file2 = "file2.png"
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
+
+    FileUtils.writeToFileOverwrite(tempFilePath, "Content".getBytes)
+
+    AppInputJsonParser.writeToFile(tempFilePath, app)
+
+    val json = os.read(tempFilePath)
+    AppInputJsonParser.parseJson(json) shouldEqual app
   }
 
 }

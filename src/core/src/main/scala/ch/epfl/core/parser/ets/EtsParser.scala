@@ -2,6 +2,7 @@ package ch.epfl.core.parser.ets
 
 import ch.epfl.core.model.physical
 import ch.epfl.core.model.physical._
+import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.FileUtils._
 
 import java.io.{File, FileNotFoundException}
@@ -54,7 +55,7 @@ object EtsParser {
   val etsDpstRegex: Regex = "DPST-[0-9]+".r
   val etsDptRegex: Regex = "DPT-[0-9]+".r
 
-  private val tempFolderPath = getPathFromSvshiHome("temp")
+  private val tempFolderPath = Constants.SVSHI_ETS_PARSER_TEMP_FOLDER_PATH
   private val defaultNodeName = "Default"
 
   private val xmlFilesCache = mutable.Map[File, scala.xml.Elem]()

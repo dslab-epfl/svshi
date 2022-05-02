@@ -1,8 +1,9 @@
 package ch.epfl.core
 
 import ch.epfl.core.CustomMatchers._
+import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
+import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants._
-import ch.epfl.core.utils.{Constants, FileUtils}
 import org.scalatest.concurrent.{Signaler, TimeLimitedTests}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -15,12 +16,11 @@ import java.io.{ByteArrayOutputStream, StringReader}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
-class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with TimeLimitedTests {
+class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with TimeLimitedTests {
   def timeLimit: Span = 30 seconds
 
   override val defaultTestSignaler: Signaler = (testThread: Thread) => testThread.stop()
 
-  private val defaultIgnoredFiles = List(".DS_Store", ".gitkeep")
   private val endToEndResPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res" / "endToEnd"
   private val pipeline1Path = endToEndResPath / "pipeline1_app_one_valid"
   private val pipeline2Path = endToEndResPath / "pipeline2_app_one_invalid_bindings"
@@ -110,6 +110,22 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     os.makeDir.all(INSTALLED_APPS_FOLDER_PATH)
 
     if (os.exists(runtimeMainPath)) os.remove(runtimeMainPath)
+
+    Main.coreApiServer.foreach(_.stop())
+    Main.coreApiServer = None
+  }
+
+  "gui" should f"start a server that serves among other things the http://localhost:${Constants.SVSHI_GUI_SERVER_PORT}" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("gui"))) match {
+        case Failure(exception) => fail(exception)
+        case Success(_) =>
+          val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_PORT}/")
+          r.statusCode shouldEqual 200
+          r.text() shouldEqual "API server for SVSHI interface"
+      }
+    }
   }
 
   "getVersion" should "print the CLI version" in {
@@ -169,7 +185,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     newAppPath / appProtoFileName should beAFile
     newAppPath / appProtoFileName should haveSameContentAsIgnoringBlanks(pipeline1Path / protoFileName)
 
-    compareFolders(newAppPath, expectedAppPath, defaultIgnoredFiles)
+    compareFolders(newAppPath, expectedAppPath, defaultIgnoredFilesAndDir)
   }
 
   "generateApp" should "fail when the name does not follow the rules - pipeline 1" in {
@@ -354,7 +370,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     val expectedLibraryPath = pipeline1Path / "expected_library"
 
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
   "compile" should "fail when the ETS project file name is not absolute" in {
@@ -403,7 +419,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
               // Empty library
               val expectedLibraryPath = pipeline2Path / "expected_library"
-              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -537,7 +553,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Check
     out.toString.trim should include("The bindings have been successfully created!")
     val expectedGenerated = pipeline3Path / "expected_generated_app_two"
-    compareFolders(GENERATED_FOLDER_PATH, expectedGenerated, defaultIgnoredFiles)
+    compareFolders(GENERATED_FOLDER_PATH, expectedGenerated, defaultIgnoredFilesAndDir)
   }
 
   "generateBindings" should "generate the bindings with -1 everywhere if physical structure changed" in {
@@ -622,7 +638,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     // Check
     val expectedLibrary = pipeline3ExpectedLibraryAppOneTwoPath
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "compile" should "put new appLibrary content in installedApps when successful" in {
@@ -650,7 +666,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val expectedLibrary = APP_LIBRARY_FOLDER_PATH
     val installedApps = INSTALLED_APPS_FOLDER_PATH
     expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
-    compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+    compareFolders(installedApps, expectedLibrary, defaultIgnoredFilesAndDir ++ expectedIgnoredFiles)
   }
 
   "compile" should "fail with an error message when compiling a new app with bindings that are not compatible 1" in {
@@ -685,7 +701,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
               // Library with only app one
               val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
-              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -724,7 +740,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
               // Library with only app one
               val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
-              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -756,7 +772,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The app name has to be provided to update an app"""
               )
               out.toString.trim shouldNot include(s"Updating app '")
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -790,7 +806,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The app 'appThree' must be installed!"""
               )
               out.toString.trim shouldNot include(s"Updating app '$appThreeName'...")
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -823,7 +839,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The app 'test_app_two' must be in the generated folder!"""
               )
               out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -859,7 +875,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The app 'test_app_two' must be the only one in the generated folder! Other apps found: test_app_one"""
               )
               out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -893,7 +909,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 s"""ERROR: The prototypical structure of the app 'test_app_two' has changed: the update cannot be performed!"""
               )
               out.toString.trim shouldNot include(s"Updating app '$appTwoName'...")
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3ExpectedLibraryAppOneTwoPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
 
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
@@ -934,7 +950,11 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
           // Check
           out.toString should include(s"""The app 'test_app_two' has been successfully compiled and verified! Update successful!""")
           out.toString should include(s"Updating app '$appTwoName'...")
-          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = pipeline3Path / "expected_app_library_one_two_after_update", ignoredFileNames = defaultIgnoredFiles)
+          compareFolders(
+            folder1 = APP_LIBRARY_FOLDER_PATH,
+            folder2 = pipeline3Path / "expected_app_library_one_two_after_update",
+            ignoredFileAndDirNames = defaultIgnoredFilesAndDir
+          )
         }
       }
     }
@@ -1041,7 +1061,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     Console.withOut(out) {
       Main.main(Array("listApps"))
     }
-    out.toString.trim should (include("""The installed apps are: 'test_app_one', 'test_app_two'""") and include("Listing the apps..."))
+    out.toString.trim should (include("The installed apps are: 'test_app_one', 'test_app_two'") and include("Listing the apps..."))
   }
 
   "removeApp" should "remove one app and keep the other installed with correct bindings, answer == y" in {
@@ -1063,7 +1083,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     val expectedLibrary = pipeline3Path / "expected_app_library_one"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "modify installedApps to have the library when removing an app" in {
@@ -1089,7 +1109,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val expectedLibrary = APP_LIBRARY_FOLDER_PATH
     val installedApps = INSTALLED_APPS_FOLDER_PATH
     expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
-    compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+    compareFolders(installedApps, expectedLibrary, defaultIgnoredFilesAndDir ++ expectedIgnoredFiles)
   }
 
   "removeApp" should "empty installedApps when removing the last installed app" in {
@@ -1137,7 +1157,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     out.toString.trim shouldNot include("The bindings have been successfully created!")
     out.toString.trim shouldNot include("Generating the bindings...")
     val expectedLibrary = pipeline3Path / "expected_app_library_one"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "do nothing and keep installed apps as is if answer == n" in {
@@ -1164,7 +1184,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Check
     out.toString.trim should include("Exiting...")
     val expectedLibrary = pipeline3ExpectedLibraryAppOneTwoPath
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "remove one app and keep the other installed with correct bindings, answer == yes" in {
@@ -1186,7 +1206,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     val expectedLibrary = pipeline3Path / "expected_app_library_one"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "remove one app and preserve the content of the Generated folder" in {
@@ -1215,7 +1235,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     // Check
     out.toString.trim should include(s"The app '$appTwoName' has been successfully removed!")
     val expectedLibrary = pipeline3Path / "expected_app_library_one"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
     os.exists(GENERATED_FOLDER_PATH / "test_app_two_proto.json") shouldBe true
     GENERATED_FOLDER_PATH / "test_app_two_proto.json" should beAFile()
     GENERATED_FOLDER_PATH / "test_app_two_proto.json" should haveSameContentAsIgnoringBlanks(pipeline3Path / "test_app_two_proto.json")
@@ -1271,7 +1291,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     val expectedLibrary = pipeline3Path / "expected_empty_library"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "write an error message when the given app name is not installed" in {
@@ -1357,7 +1377,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     val expectedLibrary = pipeline3Path / "expected_empty_library"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "remove all apps when called with --all answer == yes" in {
@@ -1379,7 +1399,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     }
     // Check
     val expectedLibrary = pipeline3Path / "expected_empty_library"
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFiles)
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibrary, defaultIgnoredFilesAndDir)
   }
 
   "removeApp" should "empty installedApps when removing all apps with --all" in {
@@ -1437,7 +1457,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               os.exists(newAppPath) shouldBe false
 
               // Library with only app one
-              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -1476,7 +1496,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               val installedApps = INSTALLED_APPS_FOLDER_PATH
 
               expectedIgnoredFiles.foreach(f => os.exists(INSTALLED_APPS_FOLDER_PATH / f) shouldEqual false)
-              compareFolders(installedApps, expectedLibrary, defaultIgnoredFiles ++ expectedIgnoredFiles)
+              compareFolders(installedApps, expectedLibrary, defaultIgnoredFilesAndDir ++ expectedIgnoredFiles)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -1542,7 +1562,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               case MockSystemExitException(errorCode) => {
                 out.toString.trim should (include(s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail."""))
                 out.toString.trim should (include(s"""The app '$appTwoName' has not been removed."""))
-                compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+                compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")
             }
@@ -1579,7 +1599,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                 ))
                 out.toString.trim should (include("ERROR: False when calling test_app_one_iteration("))
                 out.toString.trim should (include("ERROR: At line 83:  post: test_app_one_invariant(**__return__)"))
-                compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+                compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")
             }
@@ -1672,7 +1692,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
                   include(s"""ERROR: Compilation/verification failed, see messages above.""")
                   and
                   include("Compilation/verification failed, see messages above."))
-              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+              compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -1709,7 +1729,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Success(_) => {
           // Check
           out.toString.trim should include("""The apps have been successfully compiled and verified!""")
-          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
         }
       }
     }
@@ -1743,7 +1763,7 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
         case Success(_) => {
           // Check
           out.toString.trim should include("""The apps have been successfully compiled and verified!""")
-          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileNames = defaultIgnoredFiles)
+          compareFolders(folder1 = APP_LIBRARY_FOLDER_PATH, folder2 = expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
         }
       }
     }
@@ -1781,14 +1801,14 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
               out.toString.trim shouldNot (include("""Compiling and verifying the apps..."""))
               out.toString.trim shouldNot (include("""The apps have been successfully compiled and verified!"""))
 
-              compareFolders(APP_LIBRARY_FOLDER_PATH, pipeline3ExpectedLibraryAppOneTwoPath, defaultIgnoredFiles)
+              compareFolders(APP_LIBRARY_FOLDER_PATH, pipeline3ExpectedLibraryAppOneTwoPath, defaultIgnoredFilesAndDir)
 
               os.exists(GENERATED_FOLDER_PATH / appOneName) shouldEqual true
               os.exists(GENERATED_FOLDER_PATH / appTwoName) shouldEqual true
               os.exists(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME) shouldEqual true
               os.exists(GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME) shouldEqual true
-              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appOneName, GENERATED_FOLDER_PATH / appOneName, defaultIgnoredFiles)
-              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName, defaultIgnoredFiles)
+              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appOneName, GENERATED_FOLDER_PATH / appOneName, defaultIgnoredFilesAndDir)
+              compareFolders(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName, defaultIgnoredFilesAndDir)
               GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME should haveSameContentAsIgnoringBlanks(
                 pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME
               )
@@ -1803,32 +1823,6 @@ class EndToEndTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       }
     }
 
-  }
-
-  // Compare the two folder and assert that they contain the same files and that files are identical
-  private def compareFolders(folder1: Path, folder2: Path, ignoredFileNames: List[String]): Unit = {
-    os.isDir(folder1) shouldBe true
-    os.isDir(folder2) shouldBe true
-
-    // Compare content of the folder
-    val folder1Content = FileUtils.recursiveListFiles(folder1).filterNot(p => ignoredFileNames.contains(p.segments.toList.last))
-    val folder2Content = FileUtils.recursiveListFiles(folder2).filterNot(p => ignoredFileNames.contains(p.segments.toList.last))
-
-    for (e <- folder1Content) {
-      folder2Content.map(f => f.relativeTo(folder2)) should contain(e.relativeTo(folder1))
-    }
-    for (e <- folder2Content) {
-      folder1Content.map(f => f.relativeTo(folder1)) should contain(e.relativeTo(folder2))
-    }
-
-    for (f <- folder1Content) {
-      if (os.isFile(f)) {
-        val fRel = f.relativeTo(folder1)
-        val fIn2 = os.Path(fRel, folder2)
-        fIn2 should beAFile()
-        f should haveSameContentAsIgnoringBlanks(fIn2)
-      }
-    }
   }
 
   object MockSystemExit extends SystemExit {

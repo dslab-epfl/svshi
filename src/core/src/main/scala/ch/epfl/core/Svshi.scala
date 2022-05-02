@@ -4,6 +4,7 @@ import ch.epfl.core.compiler.IncompatibleBindingsException
 import ch.epfl.core.compiler.knxProgramming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.prototypical.SupportedDevice
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.{Constants, FileUtils, ProcRunner}
@@ -13,30 +14,31 @@ import java.io.File
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
-object Svshi {
+object Svshi extends SvshiTr {
   val SUCCESS_CODE = 0
   val ERROR_CODE = 1
   val PIP_SUCCESS_CODE = 0
   private var runtimeModule: String = RUNTIME_PYTHON_MODULE
   private var runtimeModulePath: os.Path = RUNTIME_PYTHON_MODULE_PATH
 
-  def getVersion(success: String => Unit): Int = {
+  override def getVersion(success: String => Unit): Int = {
     val version = getClass.getPackage.getImplementationVersion
     success(s"svshi v$version")
     SUCCESS_CODE
   }
 
-  def run(
+  override def run(
       knxAddress: Option[String],
-      existingAppsLibrary: ApplicationLibrary
-  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
+      existingAppsLibrary: ApplicationLibrary,
+      blocking: Boolean
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): SvshiRunResult = {
     knxAddress match {
       case Some(address) =>
         val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
         if (addressRegex.matches(address)) {
           if (existingAppsLibrary.apps.isEmpty) {
             err("No apps are installed!")
-            return ERROR_CODE
+            return new SvshiRunResult(None, ERROR_CODE)
           }
 
           info("Running the apps...")
@@ -62,39 +64,51 @@ object Svshi {
           existingAppsLibrary.apps.foreach { app =>
             info(s"Installing requirements of the app '${app.name}...'")
             val path = app.appFolderPath
-            val (i, msgs) = ProcRunner.callPython(None, None, "pip", path, "install", "-r", "requirements.txt")
+            val (i, msgs) = ProcRunner.callPythonBlocking(None, None, "pip", path, "install", "-r", "requirements.txt")
             if (i != PIP_SUCCESS_CODE) {
               err(s"Cannot install requirements for app '${app.name}'. See pip outputs below:")
               msgs.foreach(err)
-              return ERROR_CODE
+              return new SvshiRunResult(None, ERROR_CODE)
             }
           }
 
-          // Run the runtime module
-          runPythonModule(
-            module = runtimeModule,
-            args = address.split(":"),
-            errorMessageBuilder = exitCode => s"The runtime module failed with exit code $exitCode and above stdout",
-            success = success,
-            info = info,
-            err = err
-          )
+          if (blocking) {
+            // Run the runtime module
+            runPythonModule(
+              module = runtimeModule,
+              args = address.split(":"),
+              blocking = true,
+              errorMessageBuilderOpt = Some(exitCode => s"The runtime module failed with exit code $exitCode and above stdout"),
+              success = success,
+              info = info,
+              err = err
+            )
 
-          // Clear all files used by apps
-          os.remove.all(filesDirPath)
-          SUCCESS_CODE
+            // Clear all files used by apps
+            os.remove.all(filesDirPath)
+            new SvshiRunResult(None, SUCCESS_CODE)
+          } else {
+            runPythonModule(
+              module = runtimeModule,
+              args = address.split(":"),
+              blocking = false,
+              success = success,
+              info = info,
+              err = err
+            ).get
+          }
         } else {
           err("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
-          ERROR_CODE
+          new SvshiRunResult(None, ERROR_CODE)
         }
       case None => {
         err("The KNX address and port need to be specified to run the apps")
-        ERROR_CODE
+        new SvshiRunResult(None, ERROR_CODE)
       }
     }
   }
 
-  def compileApps(
+  override def compileApps(
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       newPhysicalStructure: PhysicalStructure
@@ -129,7 +143,7 @@ object Svshi {
     }
   }
 
-  def updateApp(
+  override def updateApp(
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       appToUpdateName: String,
@@ -204,7 +218,7 @@ object Svshi {
     }
   }
 
-  def generateBindings(
+  override def generateBindings(
       existingAppsLibrary: ApplicationLibrary,
       newAppsLibrary: ApplicationLibrary,
       existingPhysicalStructure: PhysicalStructure,
@@ -222,7 +236,7 @@ object Svshi {
     SUCCESS_CODE
   }
 
-  def generateApp(
+  override def generateApp(
       appName: Option[String],
       devicesPrototypicalStructureFile: Option[String]
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
@@ -236,9 +250,10 @@ object Svshi {
             return ERROR_CODE
           } else
             runPythonModule(
-              APP_GENERATOR_PYTHON_MODULE,
-              Seq(name, devicesJson),
-              exitCode => s"The app generator failed with exit code $exitCode and above stdout",
+              module = APP_GENERATOR_PYTHON_MODULE,
+              args = Seq(name, devicesJson),
+              blocking = true,
+              errorMessageBuilderOpt = Some(exitCode => s"The app generator failed with exit code $exitCode and above stdout"),
               success = success,
               info = info,
               err = err
@@ -264,7 +279,7 @@ object Svshi {
     }
   }
 
-  def removeApps(
+  override def removeApps(
       allFlag: Boolean,
       appName: Option[String],
       existingAppsLibrary: ApplicationLibrary
@@ -423,15 +438,12 @@ object Svshi {
     }
   }
 
-  def listApps(
+  override def listApps(
       existingAppsLibrary: ApplicationLibrary
-  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
-    info("Listing the apps...")
-    val appNames = existingAppsLibrary.apps.map(app => s"'${app.name}'")
-    if (appNames.isEmpty) warning("There are no installed applications!")
-    else success(s"The installed apps are: ${appNames.mkString(", ")}")
-    return SUCCESS_CODE
+  ): List[String] = {
+    existingAppsLibrary.apps.map(app => app.name)
   }
+  override def getAvailableProtoDevices(): List[String] = SupportedDevice.getAvailableDevices
 
   private def backupAppLibrary(destination: os.Path): Unit = {
     if (os.exists(destination)) os.remove.all(destination)
@@ -526,10 +538,38 @@ object Svshi {
       .fold(SUCCESS_CODE)((x1, x2) => if (x1 == ERROR_CODE || x2 == ERROR_CODE) ERROR_CODE else SUCCESS_CODE)
   }
 
-  private def runPythonModule(module: String, args: Seq[String], errorMessageBuilder: Int => String, success: String => Unit, info: String => Unit, err: String => Unit): Unit = {
-    val (exitCode, _) = ProcRunner.callPython(Some(info), Some(err), module, os.Path(SVSHI_SRC_FOLDER), args: _*)
-    if (exitCode != SUCCESS_CODE) err(errorMessageBuilder(exitCode))
+  /** Run the python module with the arguments.
+    * If blocking = true, the errorMessageBuilder must be provided and the function returns None
+    * If blocking = false, the errorMessageBuilder is ignored and the function returns a SvshiRunResult wrapped in an Option
+    * @param module
+    * @param args
+    * @param blocking
+    * @param errorMessageBuilder
+    * @param success
+    * @param info
+    * @param err
+    */
+  private def runPythonModule(
+      module: String,
+      args: Seq[String],
+      blocking: Boolean,
+      errorMessageBuilderOpt: Option[Int => String] = None,
+      success: String => Unit,
+      info: String => Unit,
+      err: String => Unit
+  ): Option[SvshiRunResult] = {
+    if (blocking) {
+      if (errorMessageBuilderOpt.isEmpty) throw new IllegalArgumentException("The errorMessageBuilder must be defined when blocking")
+      val errorMessageBuilder = errorMessageBuilderOpt.get
+      val (exitCode, _) = ProcRunner.callPythonBlocking(Some(info), Some(err), module, os.Path(SVSHI_SRC_FOLDER), args: _*)
+      if (exitCode != SUCCESS_CODE) err(errorMessageBuilder(exitCode))
+      None
+    } else {
+      val svshiSubProcess = ProcRunner.callPythonNonBlocking(Some(info), Some(err), module, os.Path(SVSHI_SRC_FOLDER), args: _*)
+      Some(new SvshiRunResult(Some(svshiSubProcess), SUCCESS_CODE))
+    }
   }
+
   @tailrec
   private def outputTrace(
       messages: List[VerifierMessage]
@@ -553,4 +593,5 @@ object Svshi {
   def setRuntimeModule(newRuntimeModule: String): Unit = runtimeModule = newRuntimeModule
 
   def setRuntimeModulePath(newRuntimeModulePath: os.Path): Unit = runtimeModulePath = newRuntimeModulePath
+
 }

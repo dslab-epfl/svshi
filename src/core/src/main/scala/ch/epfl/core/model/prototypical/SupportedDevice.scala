@@ -9,15 +9,15 @@ object SupportedDevice {
   val defaultPhysicalId: Int = -1
   final val binarySensorString = "binary"
   final val switchString = "switch"
-  final val temperatureSensor = "temperature"
-  final val humiditySensor = "humidity"
-  final val co2Sensor = "co2"
+  final val temperatureSensorString = "temperature"
+  final val humiditySensorString = "humidity"
+  final val co2SensorString = "co2"
   def fromString(s: String): SupportedDevice = s.toLowerCase match {
-    case SupportedDevice.binarySensorString => BinarySensor
-    case SupportedDevice.switchString       => Switch
-    case SupportedDevice.temperatureSensor  => TemperatureSensor
-    case SupportedDevice.humiditySensor     => HumiditySensor
-    case SupportedDevice.co2Sensor          => CO2Sensor
+    case SupportedDevice.binarySensorString      => BinarySensor
+    case SupportedDevice.switchString            => Switch
+    case SupportedDevice.temperatureSensorString => TemperatureSensor
+    case SupportedDevice.humiditySensorString    => HumiditySensor
+    case SupportedDevice.co2SensorString         => CO2Sensor
   }
   def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
     case BinarySensor      => BinarySensorBinding(deviceType.toString, defaultPhysicalId)
@@ -26,6 +26,7 @@ object SupportedDevice {
     case HumiditySensor    => HumiditySensorBinding(deviceType.toString, defaultPhysicalId)
     case CO2Sensor         => CO2SensorBinding(deviceType.toString, defaultPhysicalId)
   }
+  def getAvailableDevices: List[String] = List(binarySensorString, switchString, temperatureSensorString, humiditySensorString, co2SensorString)
 }
 
 case object BinarySensor extends SupportedDevice {
@@ -35,13 +36,13 @@ case object Switch extends SupportedDevice {
   override def toString: String = SupportedDevice.switchString
 }
 case object TemperatureSensor extends SupportedDevice {
-  override def toString: String = SupportedDevice.temperatureSensor
+  override def toString: String = SupportedDevice.temperatureSensorString
 }
 case object HumiditySensor extends SupportedDevice {
-  override def toString: String = SupportedDevice.humiditySensor
+  override def toString: String = SupportedDevice.humiditySensorString
 }
 case object CO2Sensor extends SupportedDevice {
-  override def toString: String = SupportedDevice.co2Sensor
+  override def toString: String = SupportedDevice.co2SensorString
 }
 
 class UnsupportedDeviceException(msg: String) extends Exception(msg)

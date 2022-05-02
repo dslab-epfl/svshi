@@ -15,4 +15,6 @@ object ColorsStyle extends Style {
 
   override def success(input: String): Str = fansi.Color.Green(input)
 
+  override def debug(input: String): Str = fansi.Color.Cyan(input)
+
 }

@@ -46,7 +46,7 @@ object PhysicalStructureJsonParser {
 
   def writeToFile(filePath: os.Path, physicalStructure: PhysicalStructure): Unit = {
     FileUtils.deleteIfExists(filePath)
-    FileUtils.writeToFile(filePath, write(physicalStructureToJson(physicalStructure), indent = 2) getBytes StandardCharsets.UTF_8)
+    FileUtils.writeToFileOverwrite(filePath, write(physicalStructureToJson(physicalStructure), indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   def physicalStructureToJson(struct: PhysicalStructure): PhysicalStructureJson = {

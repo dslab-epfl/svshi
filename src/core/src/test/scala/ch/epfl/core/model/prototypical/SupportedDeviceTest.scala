@@ -13,15 +13,15 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
 
   "temperatureSensor" should "be 'temperature'" in {
-    SupportedDevice.temperatureSensor shouldEqual "temperature"
+    SupportedDevice.temperatureSensorString shouldEqual "temperature"
   }
 
   "humiditySensor" should "be 'humidity'" in {
-    SupportedDevice.humiditySensor shouldEqual "humidity"
+    SupportedDevice.humiditySensorString shouldEqual "humidity"
   }
 
   "co2Sensor" should "be 'co2'" in {
-    SupportedDevice.co2Sensor shouldEqual "co2"
+    SupportedDevice.co2SensorString shouldEqual "co2"
   }
 
   "fromString" should "return BinarySensor on String binary" in {
@@ -60,7 +60,7 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString("TEMPERATURE") shouldEqual TemperatureSensor
   }
   "fromString" should "return TemperatureSensor on String val in SupportedDevice" in {
-    SupportedDevice.fromString(SupportedDevice.temperatureSensor) shouldEqual TemperatureSensor
+    SupportedDevice.fromString(SupportedDevice.temperatureSensorString) shouldEqual TemperatureSensor
   }
 
   "fromString" should "return HumiditySensor on String humidity" in {
@@ -73,7 +73,7 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString("HUMIDITY") shouldEqual HumiditySensor
   }
   "fromString" should "return HumiditySensor on String val in SupportedDevice" in {
-    SupportedDevice.fromString(SupportedDevice.humiditySensor) shouldEqual HumiditySensor
+    SupportedDevice.fromString(SupportedDevice.humiditySensorString) shouldEqual HumiditySensor
   }
 
   "fromString" should "return CO2Sensor on String co2" in {
@@ -86,7 +86,7 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString("CO2") shouldEqual CO2Sensor
   }
   "fromString" should "return CO2Sensor on String val in SupportedDevice" in {
-    SupportedDevice.fromString(SupportedDevice.co2Sensor) shouldEqual CO2Sensor
+    SupportedDevice.fromString(SupportedDevice.co2SensorString) shouldEqual CO2Sensor
   }
 
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {

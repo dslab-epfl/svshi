@@ -42,6 +42,10 @@ object Cli {
     */
   case object GetVersion extends Task
 
+  /** Task that launches svshi in GUI mode
+    */
+  case object Gui extends Task
+
   implicit object TaskRead
       extends TokensReader[Task](
         "command",
@@ -55,6 +59,7 @@ object Cli {
             case "updateapp" | "ua"        => Right(UpdateApp)
             case "listapps" | "la"         => Right(ListApps)
             case "version" | "v"           => Right(GetVersion)
+            case "gui"                     => Right(Gui)
             case token: String             => Left(token)
           }
       )

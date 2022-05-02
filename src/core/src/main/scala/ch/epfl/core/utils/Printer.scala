@@ -27,4 +27,6 @@ object Printer {
     * @param input
     */
   def success(input: String)(implicit style: Style): Unit = println(style.success(s"$input"))
+
+  def debug(input: String)(implicit style: Style): Unit = println(style.debug(s"$input"))
 }

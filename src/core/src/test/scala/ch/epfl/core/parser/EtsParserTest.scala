@@ -16,6 +16,12 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   val testFilePathString3 = s"${Constants.SVSHI_SRC_FOLDER}/core/res/SVSHI_Virtual.knxproj"
   val testFilePath3: os.Path = os.Path(testFilePathString3, SVSHI_HOME_PATH)
 
+  override def beforeEach(): Unit = {
+    if (os.exists(Constants.SVSHI_ETS_PARSER_TEMP_FOLDER_PATH)) os.remove.all(Constants.SVSHI_ETS_PARSER_TEMP_FOLDER_PATH)
+  }
+  override def afterEach(): Unit = {
+    if (os.exists(Constants.SVSHI_ETS_PARSER_TEMP_FOLDER_PATH)) os.remove.all(Constants.SVSHI_ETS_PARSER_TEMP_FOLDER_PATH)
+  }
   "parseEtsProjectFile" should "return the correct structure on the test file 1" in {
     val structure = EtsParser.parseEtsProjectFile(testFilePath1)
     val device1 = PhysicalDevice(

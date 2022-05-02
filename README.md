@@ -35,6 +35,8 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
+  - [GUI](#gui)
+    - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
   - [White paper](#white-paper)
@@ -333,6 +335,150 @@ _Running an application_ concretely means that its `iteration()` function is exe
 Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
+
+## GUI
+
+To provide a GUI in the form of a web application (coming soon), SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
+
+### JSON API
+
+Except otherwise specified, requests reply with a JSON body with the following structure:
+
+```json
+{
+  "status": true,
+  "output": 
+    [
+      "first line of the output text",
+      "second line of the output text"
+    ]
+}
+```
+
+where the `status` represents whether the request succeeded and `output` contains the output specific to each request.
+
+Here are the available endpoints:
+
+- GET `/version`
+
+  Corresponds to `svshi version` of the CLI.
+
+  Returns the current version of `svshi` in the first line of `output`.
+
+- GET `/listApps`
+
+  Corresponds to `svshi listApps` of the CLI.
+
+  Replies with one app name per element in `output`
+
+- GET `/availableProtoDevices`
+
+  Does not correspond to any CLI function.
+
+  Replies with one device type per element in `output`. These are the [Supported devices](#supported-devices).
+
+- POST `/generateApp/:appName`
+
+  Corresponds to the `svshi generateApp` of the CLI.
+
+  The name of the new app is passed in the endpoint path. The body of the request must contain the prototypical structure as a JSON (same structure as created manually for the CLI).
+
+- POST `/compile`
+
+  Corresponds to the `svshi compile` of the CLI.
+
+  Runs the `compile` operation of `svshi`, replying with the `status` representating whether the compilation was successful or not and the `output` contains the messages returned by `svshi`.
+
+  The body must be a `.zip` archive containing the `.knxproj` file used to compile.
+
+- POST `/updateApp/:appName`
+
+  Corresponds to the `svshi updateApp -n appName` of the CLI.
+
+  Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representating whether the update was successful or not and the `output` contains the messages returned by `svshi`.
+
+  The body must be a `.zip` archive containing the `.knxproj` file used to compile.
+
+- POST `/generateBindings`
+
+  Corresponds to the `svshi generateBindings` of the CLI.
+
+  Runs the `generateBindings` operation of `svshi`, replying with the `status` representating whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
+
+  The body must be a `.zip` archive containing the `.knxproj` file used to generate the bindings.
+
+- POST `/removeApp/:appName`
+
+  Corresponds to the `svshi removeApp -n appName` of the CLI.
+
+  Runs the `removeApp -n appName` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+
+- POST `/removeAllApps`
+
+  Corresponds to the `svshi removeApp --all` of the CLI.
+
+  Runs the `removeApp --all` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+
+- POST `/run/:ipPort`
+
+  Corresponds to the `svshi run -a ip:port` of the CLI.
+
+  Launches `svshi` run replying with the `status = true` and the `output` containing a fixed message that indicates that the server started. 
+
+  It stores all the outputs of `svshi` running in a file, to be retrieved by `/runStatus`.
+
+- GET `/runStatus`
+
+  Replies with the standard body JSON with `status` representing whether `svshi` is running or not, and empty `output`.
+
+- GET `/runLogs`
+
+ If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the output lines of `svshi` running, truncated if the log file goes beyond a given size (e.g., 20MB).
+
+- POST `/stopRun`
+
+  Stops the instance of `svshi` running if it was indeed running, does nothing otherwise. Replies with the standard body JSON with `status=true` and `output` containing a standard message.
+
+- GET `/newApps`
+  
+  Replies with the standard body JSON with `status=true` and `output` containing the names of the apps currently in the `generated` folder (i.e., to be installed if calling `compile`).
+
+- GET `/bindings`
+
+  Replies with the bindings and physical structure currently in the `generated` folder.
+
+  This endpoint replies with a different body. It is a JSON body containing the physical structure and the generated bindings in the following form:
+
+  ```json
+    {
+      "physicalStructure": {...},
+      "bindings": {...}
+    }
+  ```
+
+  If no bindings or physical structure json are available in generated folder, error message is sent with a 404 error code.
+
+- POST `/generated`
+
+  Allows to add/overwrite files in the `generated` folder. The body must be a `.zip` archive containing files and folders that must go into `generated`. If a file already exists in `generated`, it is overwritten. If a folder already exists in `generated` it is merged (i.e., files with same names are overwritten, files that exist only in one of the two are kept).
+
+  Replies with the standard body JSON with `status` representing whether the copy worked and `output` containing errors or the names of folders and files that were added in case of success.
+
+- GET `/generated`
+
+  Replies with the `generated` folder in a `.zip` archive as body.
+
+- POST `/deleteGenerated`
+
+  Deletes the content of the `generated` folder.
+
+  Replies with the standard body JSON with `status` representing whether the removal worked and `output` containing errors or a standard message in case of success.
+
+- GET `/installedApp/:appName`
+
+  Replies with the requested app folder in a `.zip` archive as body if the requested app name corresponds to an installed app, 404 error otherwise.
+
+
 
 ## KNX Virtual
 

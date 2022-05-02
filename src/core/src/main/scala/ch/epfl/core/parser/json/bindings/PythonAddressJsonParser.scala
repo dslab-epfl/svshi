@@ -19,7 +19,7 @@ object PythonAddressJsonParser {
     */
   def writeToFile(filePath: os.Path, pythonAddress: AppPythonAddressesJson): Unit = {
     FileUtils.deleteIfExists(filePath)
-    FileUtils.writeToFile(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
+    FileUtils.writeToFileOverwrite(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 
   /** Produce the group addresses for the python runtime

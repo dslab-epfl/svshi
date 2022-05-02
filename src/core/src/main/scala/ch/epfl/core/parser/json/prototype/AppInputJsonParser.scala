@@ -4,6 +4,9 @@ import ch.epfl.core.model.application.{NotPrivileged, PermissionLevel, Privilege
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.JsonParsingException
 import ch.epfl.core.utils.FileUtils
+import upickle.default.write
+
+import java.nio.charset.StandardCharsets
 
 /** Parser used to read JSON file containing the structure of applications (i.e., the prototypical devices they use)
   */
@@ -52,5 +55,14 @@ object AppInputJsonParser {
   } catch {
     case e: Exception =>
       throw new JsonParsingException(s"The given Json is not parsable, it has either a syntax error or the wrong structure.\nThe following exception was thrown $e")
+  }
+
+  /** Write the prototypical structure JSON to a JSON file, if the filePath already exist, it is replaced
+    * @param filePath
+    * @param protoStructJson
+    */
+  def writeToFile(filePath: os.Path, protoStructJson: PrototypicalStructureJson): Unit = {
+    FileUtils.deleteIfExists(filePath)
+    FileUtils.writeToFileOverwrite(filePath, write(protoStructJson, indent = 2) getBytes StandardCharsets.UTF_8)
   }
 }

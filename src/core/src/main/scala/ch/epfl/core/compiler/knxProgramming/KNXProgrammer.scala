@@ -52,7 +52,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
     val filePath = directoryPath / filename
 
     if (os.exists(filePath)) os.remove(filePath)
-    FileUtils.writeToFile(filePath, text.toCharArray.map(_.toByte))
+    FileUtils.writeToFileOverwrite(filePath, text.toCharArray.map(_.toByte))
   }
 
   /** Outputs the CSV file with the group address assignments for each communication object.

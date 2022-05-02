@@ -15,4 +15,6 @@ object NoColorsStyle extends Style {
 
   override def success(input: String): Str = Str(input)
 
+  override def debug(input: String): Str = Str(input)
+
 }

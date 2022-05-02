@@ -1,6 +1,7 @@
 package ch.epfl.core
 
 import ch.epfl.core.Svshi.{ERROR_CODE, SUCCESS_CODE}
+import ch.epfl.core.api.server.CoreApiServer
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
@@ -21,15 +22,20 @@ object Main {
 
   private var systemExit: SystemExit = DefaultSystemExit
 
+  var coreApiServer: Option[CoreApiServer] = None
+
   def main(args: Array[String]): Unit = {
     val config = ParserForClass[Config].constructOrExit(args, totalWidth = CLI_TOTAL_WIDTH)
     implicit val style: Style = if (config.noColors.value) NoColorsStyle else ColorsStyle
 
-    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
-    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
-
     // Check if app_library folder exists and if not, create it
     if (!os.exists(APP_LIBRARY_FOLDER_PATH)) os.makeDir.all(APP_LIBRARY_FOLDER_PATH)
+
+    // Check if generated folder exists and if not, create it
+    if (!os.exists(GENERATED_FOLDER_PATH)) os.makeDir.all(GENERATED_FOLDER_PATH)
+
+    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
+    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
 
     val existingPhysStructPath = existingAppsLibrary.path / PHYSICAL_STRUCTURE_JSON_FILE_NAME
     val existingPhysicalStructure = if (os.exists(existingPhysStructPath)) PhysicalStructureJsonParser.parse(existingPhysStructPath) else PhysicalStructure(Nil)
@@ -51,10 +57,18 @@ object Main {
 
     val appNameOpt = config.appName
     config.task match {
+      case Gui =>
+        coreApiServer = Some(CoreApiServer(debug = debug))
+        coreApiServer.get.start()
       case GetVersion =>
         Svshi.getVersion(success = info)
       case Run =>
-        if (Svshi.run(knxAddress = config.knxAddress, existingAppsLibrary = existingAppsLibrary)(success = success, info = info, err = error) != SUCCESS_CODE) {
+        if (
+          Svshi
+            .run(knxAddress = config.knxAddress, existingAppsLibrary = existingAppsLibrary, blocking = true)(success = success, info = info, err = error)
+            .exitCode
+            .get != SUCCESS_CODE
+        ) {
           printErrorAndExit("Exiting...")
         }
       case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
@@ -120,8 +134,16 @@ object Main {
         } else if (Svshi.removeApps(allAppsFlag, appNameOpt, existingAppsLibrary)(success = success, info = info, warning = warning, err = error) != SUCCESS_CODE) {
           printErrorAndExit("Exiting...")
         }
-      case ListApps =>
-        Svshi.listApps(existingAppsLibrary)(success = success, info = info, warning = warning, err = error)
+      case ListApps => {
+        info("Listing the apps...")
+        val installedAppNames = Svshi.listApps(existingAppsLibrary)
+        if (installedAppNames.isEmpty) warning("There are no installed applications!")
+        else {
+          val namesString = installedAppNames.map(s => f"'$s'").mkString(", ")
+          success(s"The installed apps are: $namesString")
+        }
+      }
+
     }
   }
 

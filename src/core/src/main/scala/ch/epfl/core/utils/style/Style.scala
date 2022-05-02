@@ -33,4 +33,11 @@ trait Style {
     * @return the colored string
     */
   def success(input: String): Str
+
+  /** Color the given string with cyan
+    *
+    * @param input
+    * @return the colored string
+    */
+  def debug(input: String): Str
 }
