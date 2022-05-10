@@ -1,6 +1,7 @@
 import dataclasses
 import asyncio
 import datetime
+import time
 from asyncio.tasks import Task
 from io import TextIOWrapper
 import os
@@ -16,7 +17,7 @@ from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 
 from .logger import Logger
-from .verification_file import AppState, PhysicalState
+from .verification_file import AppState, PhysicalState, InternalState
 from .app import App
 
 
@@ -54,6 +55,8 @@ class State:
         self._physical_state: PhysicalState
         self._last_valid_physical_state: PhysicalState
         self._app_states = {app.name: AppState() for app in self.__apps}
+
+        self._internal_state: InternalState = InternalState(0)
 
         # Used to access and modify the states
         self.__execution_lock = asyncio.Lock()
@@ -191,6 +194,7 @@ class State:
                     fields[field_address_name] = None
 
         self._physical_state = PhysicalState(**fields)
+        self._update_internal_state()
 
         # Start executing the periodic apps in a background task
         if self.__periodic_apps:
@@ -299,12 +303,20 @@ class State:
                 self.__field_name_to_group_addr(field), value
             )
 
+    def _update_internal_state(self,simulated_time=False):
+        if not simulated_time:
+            self._set_internal_time(int(time.time())-time.altzone)
+
+    def _set_internal_time(self, time:int):
+        self._internal_state.time = time
+
     async def __run_apps(self, apps: List[App]):
         """
         Executes all the given apps. Then, the physical state is updated, and the changes propagated to KNX.
         The execution lock needs to be acquired.
         """
         old_state = dataclasses.replace(self._physical_state)
+        self._update_internal_state()
 
         # Check if the last state was valid
         check_conditions_args = self.__get_check_conditions_args(old_state)
@@ -318,6 +330,7 @@ class State:
                 # Copy the states before executing the app
                 app_local_state_copy = dataclasses.replace(self._app_states[app.name])
                 per_app_physical_state_copy = dataclasses.replace(old_state)
+                internal_state_copy = dataclasses.replace(self._internal_state)
 
                 self.__logger.log_execution(
                     f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}"
@@ -325,9 +338,12 @@ class State:
                 self.__logger.log_execution(
                     f"With app state (app: '{app.name}'): {app_local_state_copy}"
                 )
+                self.__logger.log_execution(
+                    f"With internal state (app: '{app.name}: {internal_state_copy}"
+                )
 
                 # Notify the app to trigger execution
-                app.notify(app_local_state_copy, per_app_physical_state_copy)
+                app.notify(app_local_state_copy, per_app_physical_state_copy, internal_state_copy)
 
                 # Build the check conditions args with all app states and the physical state
                 check_conditions_args = self.__get_check_conditions_args(
@@ -345,8 +361,9 @@ class State:
                     # If conditions are preserved, we keep the physical state to later propagate
                     new_states[app] = per_app_physical_state_copy
 
-                    # We update the app local state
+                    # We update the app local state and internal state
                     self._app_states[app.name] = app_local_state_copy
+                    self._internal_state = internal_state_copy
 
         merged_state = self.__merge_states(old_state, new_states)
 

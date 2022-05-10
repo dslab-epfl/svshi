@@ -35,6 +35,8 @@ class Manipulator:
 
     __PHYSICAL_STATE_ARGUMENT: Final = "physical_state"
     __PHYSICAL_STATE_TYPE: Final = "PhysicalState"
+    __INTERNAL_STATE_ARGUMENT: Final = "internal_state"
+    __INTERNAL_STATE_TYPE: Final = "InternalState"
     __APP_STATE_ARGUMENT: Final = "app_state"
     __APP_STATE_TYPE: Final = "AppState"
     __UNCHECKED_FUNC_PREFIX: Final = "unchecked"
@@ -314,6 +316,10 @@ class Manipulator:
             if isinstance(op.func, ast.Attribute):
                 # op.func.value is a ast.Name in this case
                 f_name = cast(ast.Name, op.func.value).id
+                f = op.func
+                if isinstance(f.value, ast.Name) and f.value.id in {"svshi_api"}:
+                    #functions of the svshi_api object is called
+                    op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
             else:
@@ -323,6 +329,8 @@ class Manipulator:
             if f_name in accepted_names:
                 # If the function name is in the list of accepted names, add the state argument to the call
                 op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
+                if(verification):
+                    op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
 
                 # Rename the instance calling the function, adding the app name to it
                 new_name = f"{app_name.upper()}_{f_name}"
@@ -387,6 +395,12 @@ class Manipulator:
                         ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
                     )
                 )
+                state_args.append(
+                        ast.arg(
+                            self.__INTERNAL_STATE_ARGUMENT,
+                            ast.Name(self.__INTERNAL_STATE_TYPE, ast.Load),
+                        )
+                    )
                 op.args.args.extend(state_args)
 
             # Rename the function, adding the app name to it
@@ -444,6 +458,8 @@ class Manipulator:
                 else list(self.__app_states_names)
             )
             arg_names.append(self.__PHYSICAL_STATE_ARGUMENT)
+            if(verification):
+                arg_names.append(self.__INTERNAL_STATE_ARGUMENT)
             invariant = pre_str
             invariant += construct_func_call(
                 app_name + "_" + self.__INVARIANT_FUNC_NAME,
@@ -483,12 +499,14 @@ class Manipulator:
 
     def __add_return_states(self, f: ast.FunctionDef) -> ast.FunctionDef:
         """
-        Adds a statement that returns app and physical states as a dict to the end of the body of the given function, returning it.
+        Adds a statement that returns app, internal and physical states as a dict to the end of the body of the given function, returning it.
         """
         keys = list(map(lambda n: ast.Constant(n), self.__app_states_names))
         keys.append(ast.Constant("physical_state"))
+        keys.append(ast.Constant("internal_state"))
         values = list(map(lambda n: ast.Name(n, ast.Load), self.__app_states_names))
         values.append(ast.Name("physical_state", ast.Load))
+        values.append(ast.Name("internal_state", ast.Load))
         return_value = ast.Dict(keys, values)
         f.body.append(ast.Return(return_value))
         return f

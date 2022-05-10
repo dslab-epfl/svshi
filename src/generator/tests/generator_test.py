@@ -63,6 +63,7 @@ def test_generator_copy_skeleton_to_generated_app():
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/switch.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/state.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/temperature.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/SvshiApi.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/__init__.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/main.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/requirements.txt") == True

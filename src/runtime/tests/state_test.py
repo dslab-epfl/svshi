@@ -2,6 +2,9 @@ import asyncio
 import dataclasses
 import shutil
 import os
+import sys
+import time
+
 from pyparsing import line
 import pytest
 from pytest_mock import MockerFixture
@@ -14,7 +17,7 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.xknx import XKNX
 
-from ..verification_file import AppState, PhysicalState
+from ..verification_file import AppState, PhysicalState, InternalState
 from ..app import App
 from ..state import State
 
@@ -137,16 +140,16 @@ class StateHolder:
         self.xknx_for_initialization = MockXKNX(MockTelegramQueue())
         self.xknx_for_listening = MockXKNX(MockTelegramQueue())
 
-    def app_one_code(self, state1: AppState, state2: PhysicalState):
+    def app_one_code(self, state1: AppState, state2: PhysicalState, internal_state: InternalState):
         self.app_one_called = True
 
-    def app_two_code(self, state1: AppState, state: PhysicalState):
+    def app_two_code(self, state1: AppState, state: PhysicalState, internal_state: InternalState):
         self.app_two_called = True
 
-    def app_three_code(self, state1: AppState, state: PhysicalState):
+    def app_three_code(self, state1: AppState, state: PhysicalState, internal_state: InternalState):
         self.app_three_called = True
 
-    def app_four_code(self, state1: AppState, state: PhysicalState):
+    def app_four_code(self, state1: AppState, state: PhysicalState, internal_state: InternalState):
         self.app_four_called = True
 
     def reset(self):
@@ -267,6 +270,79 @@ async def test_state_initialize():
 
 
 @pytest.mark.asyncio
+async def test_internal_state_is_updated():
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+    )
+    NEW_SECOND_ADRESS_VALUE = 8.1
+    NEW_THIRD_ADDRESS_VALUE = True
+    start_test_time = int(time.time()-time.altzone)
+
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
+        test_state_holder.app_two_called = True
+
+        if start_test_time - 5 <= internal_state.time:
+            physical_state.GA_1_1_2 = NEW_SECOND_ADRESS_VALUE
+            physical_state.GA_1_1_3 = NEW_THIRD_ADDRESS_VALUE
+
+
+    test_state_holder.set_app_two_code(test_two_code)
+    await state.initialize()
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(FIRST_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+        )
+    )
+
+    assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
+    assert state._physical_state.GA_1_1_2 == NEW_SECOND_ADRESS_VALUE
+    assert state._physical_state.GA_1_1_3 == NEW_THIRD_ADDRESS_VALUE
+    assert state._physical_state.GA_1_1_4 == True
+    assert state._physical_state == state._last_valid_physical_state
+    assert start_test_time <= state._internal_state.time <= start_test_time + 5
+    assert test_state_holder.app_one_called == True
+    assert test_state_holder.app_two_called == True
+    assert test_state_holder.app_three_called == True
+    assert test_state_holder.app_four_called == False
+    assert test_state_holder.xknx_for_listening.telegrams.empty() == False
+    assert await test_state_holder.xknx_for_listening.telegrams.get() == Telegram(
+        destination_address=GroupAddress(SECOND_GROUP_ADDRESS),
+        payload=GroupValueWrite(
+            DPTArray(
+                cast(
+                    DPT2ByteFloat,
+                    test_state_holder.group_address_to_dpt[SECOND_GROUP_ADDRESS],
+                ).to_knx(NEW_SECOND_ADRESS_VALUE)
+            )
+        ),
+    )
+    assert await test_state_holder.xknx_for_listening.telegrams.get() == Telegram(
+        destination_address=GroupAddress(THIRD_GROUP_ADDRESS),
+        payload=GroupValueWrite(DPTBinary(1)),
+    )
+    await asyncio.sleep(5)
+    current_test_time = int(time.time()-time.altzone)
+    assert test_state_holder.app_four_called == True
+    assert current_test_time -2 <= state._internal_state.time <= current_test_time + 2
+    assert test_state_holder.app_one.should_run == True
+    assert test_state_holder.app_two.should_run == True
+    assert test_state_holder.app_three.should_run == True
+    assert test_state_holder.app_four.should_run == True
+    assert state._app_states[FIRST_APP_NAME] == AppState()
+    assert state._app_states[SECOND_APP_NAME] == AppState()
+    assert state._app_states[THIRD_APP_NAME] == AppState()
+    assert state._app_states[FOURTH_APP_NAME] == AppState()
+
+    # Cleanup
+    await state.stop()
+@pytest.mark.asyncio
 async def test_state_periodic_apps_are_run():
     state = State(
         test_state_holder.addresses_listeners,
@@ -277,6 +353,7 @@ async def test_state_periodic_apps_are_run():
         LOGS_DIR,
     )
     await state.initialize()
+
 
     assert state._physical_state != None
     assert state._physical_state.GA_1_1_1 == VALUE_READER_RETURN_VALUE
@@ -300,6 +377,7 @@ async def test_state_periodic_apps_are_run():
 
     # Cleanup
     await state.stop()
+
 
 
 @pytest.mark.asyncio
@@ -462,7 +540,7 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
 @pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_conditions():
     def app_two_code_that_violates_conditions(
-        app_state: AppState, physical_state: PhysicalState
+        app_state: AppState, physical_state: PhysicalState, internal_state: InternalState
     ):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = 8
@@ -512,7 +590,7 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = new_second_address_value
         physical_state.GA_1_1_3 = new_third_address_value
@@ -581,7 +659,7 @@ async def test_state_update_app_state():
     new_bool_2_value = True
     new_str_3_value = "the answer to everything is 42"
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         app_state.INT_0 = new_int_0_value
         app_state.FLOAT_1 = new_float_1_value
@@ -639,7 +717,7 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = new_second_address_value
         physical_state.GA_1_1_3 = new_third_address_value
@@ -692,7 +770,7 @@ async def test_state_correct_execution_log_after_33_telegrams():
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = new_second_address_value
         physical_state.GA_1_1_3 = new_third_address_value
@@ -738,7 +816,7 @@ async def test_state_correct_execution_log_after_33_telegrams():
         assert n_lines == len(expected_lines)
 
         for i in range(n_lines):
-            assert expected_lines[i] in lines[i]
+            assert expected_lines[i][:-1] in lines[i][:-1]
 
     # Cleanup
     await state.stop()
@@ -753,7 +831,7 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = new_second_address_value
         physical_state.GA_1_1_3 = new_third_address_value
@@ -801,7 +879,7 @@ async def test_state_log_files_are_bounded():
     new_second_address_value = 8.1
     new_third_address_value = True
 
-    def test_two_code(app_state: AppState, physical_state: PhysicalState):
+    def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
         physical_state.GA_1_1_2 = new_second_address_value
         physical_state.GA_1_1_3 = new_third_address_value

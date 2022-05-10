@@ -16,9 +16,9 @@ class Generator:
     __UNDERSCORE: Final = "_"
 
     __BINARY_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f'''
+        lambda self, app_name, instance_name, group_address, verification: f'''
 class Binary_sensor_{app_name}_{instance_name}():
-    def is_on(self, physical_state: PhysicalState) -> bool:
+    def is_on(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> bool:
         """
         pre:
         post: physical_state.{group_address} == __return__
@@ -28,9 +28,9 @@ class Binary_sensor_{app_name}_{instance_name}():
     )
 
     __HUMIDITY_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f'''
+        lambda self, app_name, instance_name, group_address, verification: f'''
 class Humidity_sensor_{app_name}_{instance_name}():
-    def read(self, physical_state: PhysicalState) -> float:
+    def read(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> float:
         """
         pre:
         post: physical_state.{group_address} == __return__
@@ -40,9 +40,9 @@ class Humidity_sensor_{app_name}_{instance_name}():
     )
 
     __TEMPERATURE_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f'''
+        lambda self, app_name, instance_name, group_address, verification: f'''
 class Temperature_sensor_{app_name}_{instance_name}():
-    def read(self, physical_state: PhysicalState) -> float:
+    def read(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> float:
         """
         pre:
         post: physical_state.{group_address} == __return__
@@ -52,9 +52,9 @@ class Temperature_sensor_{app_name}_{instance_name}():
     )
 
     __SWITCH_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f'''
+        lambda self, app_name, instance_name, group_address, verification: f'''
 class Switch_{app_name}_{instance_name}():
-    def on(self, physical_state: PhysicalState):
+    def on(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}):
         """
         pre: 
         post: physical_state.{group_address}  == True
@@ -62,14 +62,14 @@ class Switch_{app_name}_{instance_name}():
         physical_state.{group_address} = True
         
 
-    def off(self, physical_state: PhysicalState):
+    def off(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}):
         """
         pre: 
         post: physical_state.{group_address}  == False
         """
         physical_state.{group_address} = False
 
-    def is_on(self, physical_state: PhysicalState) -> bool:
+    def is_on(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> bool:
         """
         pre: 
         post: physical_state.{group_address}  == __return__
@@ -79,9 +79,9 @@ class Switch_{app_name}_{instance_name}():
     )
 
     __CO2_SENSOR_TEMPLATE = (
-        lambda self, app_name, instance_name, group_address: f'''
+        lambda self, app_name, instance_name, group_address, verification: f'''
 class CO2_sensor_{app_name}_{instance_name}():
-    def read(self, physical_state: PhysicalState) -> float:
+    def read(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> float:
         """
         pre:
         post: physical_state.{group_address} == __return__
@@ -89,6 +89,59 @@ class CO2_sensor_{app_name}_{instance_name}():
         return physical_state.{group_address}
     '''
     )
+    __SVSHI_API_IMPL_VRF = f'''
+class SvshiApi():
+
+    def __init__(self):
+        pass
+
+    def set_time(self, internal_state: InternalState, time: int):
+        """
+        pre:time>=0
+        post:internal_state.time == time
+        """
+        internal_state.time = time
+
+    def get_time(self, internal_state: InternalState) -> int:
+        """
+        pre:internal_state.time>=0
+        post:internal_state.time>=0
+        """
+        return internal_state.time
+
+    def get_hour_of_the_day(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 23
+        """
+        time = internal_state.time
+        q = time // (60 * 60)
+        tmp = q // 24
+
+        return q - tmp * 24
+    '''
+    __SVSHI_API_IMPL_RUN = f'''
+class SvshiApi():
+
+    def __init__(self):
+        pass
+
+    def get_time(self, internal_state: InternalState) -> int:
+        """
+        pre:internal_state.time>=0
+        post:internal_state.time>=0
+        """
+        return internal_state.time
+
+    def get_hour_of_the_day(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 23
+        """
+        time = internal_state.time
+        q = time // (60 * 60)
+        tmp = q // 24
+
+        return q - tmp * 24
+    '''
 
     def __init__(
         self,
@@ -147,6 +200,17 @@ class PhysicalState:
         self.__code.append(code)
         self.__imports.append("import dataclasses")
 
+    def __generate_internal_state_class(self):
+        code = f"""
+@dataclasses.dataclass
+class InternalState:
+ \"\"\"
+ inv: self.time>=0
+ \"\"\"
+ time: int #time in seconds
+"""
+        self.__code.append(code)
+
     def __generate_app_state_class(self):
         code = f"""
 @dataclasses.dataclass
@@ -170,7 +234,7 @@ class AppState:
 """
         self.__code.append(code)
 
-    def __generate_device_classes(self):
+    def __generate_device_classes(self,verification):
         code = []
         for device in sorted(self.__devices_classes, key=lambda c: c.app.name):
             app = device.app.name
@@ -180,30 +244,34 @@ class AppState:
             formatted_group_address = self.__group_addr_to_field_name(address)
             if type == "binary":
                 code.append(
-                    self.__BINARY_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                    self.__BINARY_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
                 )
             elif type == "temperature":
                 code.append(
                     self.__TEMPERATURE_SENSOR_TEMPLATE(
-                        app, name, formatted_group_address
+                        app, name, formatted_group_address, verification
                     )
                 )
             elif type == "humidity":
                 code.append(
-                    self.__HUMIDITY_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                    self.__HUMIDITY_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
                 )
             elif type == "switch":
-                code.append(self.__SWITCH_TEMPLATE(app, name, formatted_group_address))
+                code.append(self.__SWITCH_TEMPLATE(app, name, formatted_group_address, verification))
             elif type == "co2":
                 code.append(
-                    self.__CO2_SENSOR_TEMPLATE(app, name, formatted_group_address)
+                    self.__CO2_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
                 )
-
+        if verification:
+            code.append(self.__SVSHI_API_IMPL_VRF)
+        else:
+            code.append(self.__SVSHI_API_IMPL_RUN)
         self.__code.extend(code)
 
     def __generate_devices_instances(self):
         self.__code.append("\n")
         devices_code = []
+        devices_code.append("svshi_api = SvshiApi()")
         for instance in sorted(self.__devices_instances, key=lambda i: i.name):
             name = instance.name
             type = instance.type
@@ -232,7 +300,8 @@ class AppState:
         with open(filename, "w") as file:
             self.__generate_app_state_class()
             self.__generate_physical_state_class()
-            self.__generate_device_classes()
+            self.__generate_internal_state_class()
+            self.__generate_device_classes(verification)
             self.__generate_devices_instances()
             self.__generate_invariant_and_iteration_functions(verification)
             file.write("\n".join((sorted(set(self.__imports)))))

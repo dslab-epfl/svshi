@@ -7,14 +7,14 @@ from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
-from .verification_file import AppState, PhysicalState
+from .verification_file import AppState, PhysicalState, InternalState
 
 
 @dataclasses.dataclass
 class App:
     name: str
     directory: str
-    code: Callable[[AppState, PhysicalState], None]
+    code: Callable[[AppState, PhysicalState, InternalState], None]
     is_privileged: bool = False
     should_run: bool = True
     timer: int = 0
@@ -36,11 +36,11 @@ class App:
     def __str__(self) -> str:
         return f'App(name="{self.name}", directory="{self.directory}", is_privileged={self.is_privileged}, should_run={self.should_run}, timer={self.timer})'
 
-    def notify(self, app_state: AppState, physical_state: PhysicalState):
+    def notify(self, app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         """
         Notifies the app, triggering an iteration.
         """
-        self.code(app_state, physical_state)
+        self.code(app_state, physical_state, internal_state)
 
     def stop(self):
         """

@@ -86,8 +86,10 @@ def multiton(cls):
 
 {imports}
 from models.state import AppState
+from models.SvshiApi import SvshiApi
 
 {devices_code}
+svshi_api = SvshiApi()
 app_state = AppState()
         """.strip()
 
@@ -102,7 +104,7 @@ app_state = AppState()
         """
         with open(f"{self.__app_name}/main.py", "r+") as fp:
             lines = fp.readlines()
-            lines.insert(0, "from instances import app_state")
+            lines.insert(0, "from instances import app_state, svshi_api")
             nb_devices = len(self.__devices)
             for i, device in enumerate(self.__devices):
                 suffix = "\n\n" if i == nb_devices - 1 else ""

@@ -210,6 +210,14 @@ To do so, in `main.py` the `app_state` instance is imported along with the devic
 
 These values can be used in `iteration()` and `invariant()`. One should be careful while using it in `invariant()` or in a condition that will affect the KNX installation's state (the _physical_ state): the formal verification would fail if ANY possible value of the `app_state` leads to an invalid state after running `iteration()` even if this case should not occur because of previous calls to `iteration()` that would have set the values.
 
+#### SVSHI built-in functions
+
+A `svshi_api` instance is imported in every app, like the `app_state`.
+This instance offers two functions `get_time` and `get_hour_of_the_day` used to track the system's time in applications.
+`get_time` returns the UNIX time of the system and `get_hour_of_the_day` returns an integer between 0 and 23.
+Example: `get_time` returns `1649865437` for Wed Apr 13 15:57:17 2022 UTC and `get_hour_of_the_day` `15`.
+This allows to put time constraints into the invariant and to write and verify time sensitive applications . Therefore, it can be used for the code of `iteration`, in `invariant` and in pre- and post- conditions.
+
 ### App example
 
 In `main.py`:

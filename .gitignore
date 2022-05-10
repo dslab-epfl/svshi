@@ -13,6 +13,8 @@ src/verification/verification_file.py
 
 **/svshi_private_input
 
+#IntelliJ
+.idea
 
 # Compiled class file
 *.class

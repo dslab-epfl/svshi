@@ -22,12 +22,12 @@ def test_app_not_equal():
 def test_app_notify():
     app_called = [False]
 
-    def app_code(s1, s2):
+    def app_code(s1, s2, s3):
         app_called[0] = True
 
-    app = App("test", "tests", app_code)
+    app = App("test", "tests", app_code, "test")
 
-    app.notify(Mock(), Mock())
+    app.notify(Mock(), Mock(), Mock())
 
     assert app_called[0] == True
 

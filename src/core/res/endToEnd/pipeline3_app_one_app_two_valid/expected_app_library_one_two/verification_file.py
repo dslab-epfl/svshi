@@ -29,8 +29,16 @@ class PhysicalState:
 
 
 
+@dataclasses.dataclass
+class InternalState:
+ """
+ inv: self.time>=0
+ """
+ time: int #time in seconds
+
+
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
-    def is_on(self, physical_state: PhysicalState) -> bool:
+    def is_on(self, physical_state: PhysicalState, internal_state: InternalState) -> bool:
         """
         pre:
         post: physical_state.GA_0_0_1 == __return__
@@ -39,7 +47,7 @@ class Binary_sensor_test_app_one_binary_sensor_instance_name():
     
 
 class Switch_test_app_one_switch_instance_name():
-    def on(self, physical_state: PhysicalState):
+    def on(self, physical_state: PhysicalState, internal_state: InternalState):
         """
         pre: 
         post: physical_state.GA_0_0_2  == True
@@ -47,14 +55,14 @@ class Switch_test_app_one_switch_instance_name():
         physical_state.GA_0_0_2 = True
         
 
-    def off(self, physical_state: PhysicalState):
+    def off(self, physical_state: PhysicalState, internal_state: InternalState):
         """
         pre: 
         post: physical_state.GA_0_0_2  == False
         """
         physical_state.GA_0_0_2 = False
 
-    def is_on(self, physical_state: PhysicalState) -> bool:
+    def is_on(self, physical_state: PhysicalState, internal_state: InternalState) -> bool:
         """
         pre: 
         post: physical_state.GA_0_0_2  == __return__
@@ -63,7 +71,7 @@ class Switch_test_app_one_switch_instance_name():
     
 
 class Temperature_sensor_test_app_two_temperature_sensor():
-    def read(self, physical_state: PhysicalState) -> float:
+    def read(self, physical_state: PhysicalState, internal_state: InternalState) -> float:
         """
         pre:
         post: physical_state.GA_0_0_3 == __return__
@@ -71,58 +79,93 @@ class Temperature_sensor_test_app_two_temperature_sensor():
         return physical_state.GA_0_0_3
     
 
+class SvshiApi():
 
+    def __init__(self):
+        pass
+
+    def set_time(self, internal_state: InternalState, time: int):
+        """
+        pre:time>=0
+        post:internal_state.time == time
+        """
+        internal_state.time = time
+
+    def get_time(self, internal_state: InternalState) -> int:
+        """
+        pre:internal_state.time>=0
+        post:internal_state.time>=0
+        """
+        return internal_state.time
+
+    def get_hour_of_the_day(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 23
+        """
+        time = internal_state.time
+        q = time // (60 * 60)
+        tmp = q // 24
+
+        return q - tmp * 24
+    
+
+
+svshi_api = SvshiApi()
 TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_test_app_one_binary_sensor_instance_name()
 TEST_APP_ONE_SWITCH_INSTANCE_NAME = Switch_test_app_one_switch_instance_name()
 TEST_APP_TWO_TEMPERATURE_SENSOR = Temperature_sensor_test_app_two_temperature_sensor()
 
 
 def test_app_two_invariant(test_app_one_app_state: AppState,
-    test_app_two_app_state: AppState, physical_state: PhysicalState) ->bool:
+    test_app_two_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState) ->bool:
     return True
 
 
 def test_app_two_iteration(test_app_one_app_state: AppState,
-    test_app_two_app_state: AppState, physical_state: PhysicalState):
+    test_app_two_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState):
     """
-pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
-pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
+pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
+pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
 post: test_app_one_invariant(**__return__)
 post: test_app_two_invariant(**__return__)
 """
-    if TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state
-        ) != None and TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state
-        ) > 22:
+    if TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state, internal_state
+        ) != None and TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state,
+        internal_state) > 22:
         None
     return {'test_app_one_app_state': test_app_one_app_state,
         'test_app_two_app_state': test_app_two_app_state, 'physical_state':
-        physical_state}
+        physical_state, 'internal_state': internal_state}
 
 def test_app_one_invariant(test_app_one_app_state: AppState,
-    test_app_two_app_state: AppState, physical_state: PhysicalState) ->bool:
-    return (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state) or
-        test_app_one_app_state.INT_0 == 42
-        ) and TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state) or not (
-        TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state) or 
-        test_app_one_app_state.INT_0 == 42
-        ) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state)
+    test_app_two_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState) ->bool:
+    return (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+        internal_state) or test_app_one_app_state.INT_0 == 42
+        ) and TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state,
+        internal_state) or not (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.
+        is_on(physical_state, internal_state) or test_app_one_app_state.
+        INT_0 == 42) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(
+        physical_state, internal_state)
 
 
 def test_app_one_iteration(test_app_one_app_state: AppState,
-    test_app_two_app_state: AppState, physical_state: PhysicalState):
+    test_app_two_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState):
     """
-pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
-pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
+pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
+pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
 post: test_app_one_invariant(**__return__)
 post: test_app_two_invariant(**__return__)
 """
-    if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) or test_app_one_app_state.INT_0 == 42:
+    if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+        internal_state) or test_app_one_app_state.INT_0 == 42:
         None
-        TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
     else:
-        TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
     return {'test_app_one_app_state': test_app_one_app_state,
         'test_app_two_app_state': test_app_two_app_state, 'physical_state':
-        physical_state}
-
+        physical_state, 'internal_state': internal_state}
