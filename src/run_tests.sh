@@ -23,3 +23,4 @@ echo "\nRunning Scala tests in 'core'... \n"
 cd ..
 cd core
 sbt test
+sbt it:test

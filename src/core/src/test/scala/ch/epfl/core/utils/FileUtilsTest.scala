@@ -17,6 +17,8 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
   }
 
   val testFilePathString = "core/res/ets_project_test.knxproj"
+  val macosxZipFilePathString = "core/res/fileUtilsTest/zipWithMACOSX.zip"
+  val macosxZipFileUnzippedWithoutMacosxPathString = "core/res/fileUtilsTest/zipWithMACOSX.zip"
   val testFileRefPathUnzippedString = "core/res/ets_project_test"
   val outputPath: Path = os.Path("core/res/temp", SVSHI_SRC_FOLDER_PATH)
   val resFolderPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res" / "fileUtilsTest"
@@ -42,6 +44,16 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     for (e <- lRef) {
       l.map(f => f.relativeTo(outputPath)) should contain(e.relativeTo(refPath))
     }
+  }
+
+  "unzip" should "unzip all files except __MACOSX" in {
+    os.remove.all(outputPath)
+    val inputPath = os.Path(macosxZipFilePathString, wd)
+    if (!os.exists(inputPath)) fail("The input file does not exist!")
+    FileUtils.unzip(inputPath, outputPath)
+    os.list(outputPath).toList.length shouldEqual 1
+    os.list(outputPath).toList.exists(p => p.segments.toList.contains("__MACOSX")) shouldBe false
+
   }
 
   "unzip" should "create the output folder even if the zip is empty" in {

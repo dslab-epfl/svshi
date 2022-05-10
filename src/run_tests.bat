@@ -23,3 +23,4 @@ echo Running Scala tests in 'core'...
 cd ..
 cd core
 sbt test
+sbt it:test

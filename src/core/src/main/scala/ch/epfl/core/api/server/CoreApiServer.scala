@@ -1,6 +1,7 @@
 package ch.epfl.core.api.server
 
 import cask.{Request, Response, get, post}
+import ch.epfl.core.Svshi.runtimeModuleApplicationFilesPath
 import ch.epfl.core.api.server.json.{BindingsResponse, ResponseBody}
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.PhysicalStructure
@@ -8,24 +9,39 @@ import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.parser.json.prototype.AppInputJsonParser
-import ch.epfl.core.utils.Constants.{APP_LIBRARY_FOLDER_PATH, GENERATED_FOLDER_PATH, PHYSICAL_STRUCTURE_JSON_FILE_NAME}
+import ch.epfl.core.utils.Constants.{
+  APP_LIBRARY_FOLDER_PATH,
+  GENERATED_FOLDER_PATH,
+  PHYSICAL_STRUCTURE_JSON_FILE_NAME,
+  PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME,
+  PYTHON_RUNTIME_LOGS_FOLDER_PATH,
+  PYTHON_RUNTIME_LOGS_RECEIVED_TELEGRAMS_LOG_FILE_NAME
+}
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.{Constants, FileUtils}
 import ch.epfl.core.{Svshi, SvshiRunResult, SvshiTr}
 import io.undertow.Undertow
 import os.Path
 
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.{Lock, ReentrantLock}
 import scala.util.{Failure, Success, Try}
 
-case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _ => ()) extends cask.MainRoutes {
+case class CoreApiServer(
+    svshiSystem: SvshiTr = Svshi,
+    debug: String => Unit = _ => (),
+    override val host: String = "localhost",
+    override val port: Int = Constants.SVSHI_GUI_SERVER_DEFAULT_PORT
+) extends cask.MainRoutes {
   // Config of Cask
-  override def port: Int = Constants.SVSHI_GUI_SERVER_PORT
-
+  override def verbose: Boolean = true
   private lazy val server = Undertow.builder.addHttpListener(port, host).setHandler(defaultHandler).build
+
   private val BAD_REQUEST_CODE = 400
   private val SUCCESS_REQUEST_CODE = 200
   private val NOT_FOUND_ERROR_CODE = 404
   private val INTERNAL_ERROR_CODE = 500
+  private val LOCKED_ERROR_CODE = 423
 
   private val localRunLogFileName = "private_run_logs.log"
   private val localRunLogFilePath = Constants.PRIVATE_SERVER_LOG_FOLDER_PATH / localRunLogFileName
@@ -51,6 +67,7 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   private val GENERATED_FOLDER_DELETED_MESSAGE = "The generated folder was successfully emptied!"
   private val REQUESTED_APP_NOT_INSTALLED_MESSAGE = "The requested app is not installed!"
   private val ZIPPING_ERROR_MESSAGE = "An error occurred while zipping the content!"
+  private val LOCKED_ERROR_MESSAGE = "An operation is already running on SVSHI, please retry later!"
 
   private val HEADERS_AJAX = Seq("Access-Control-Allow-Origin" -> "*")
 
@@ -58,6 +75,11 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   private def runStateRunning: Boolean = svshiRunResult.isDefined && svshiRunResult.get.isAlive
 
   val MAX_LOG_LINES_SENT = 10000
+
+  private val lock: Lock = new ReentrantLock()
+
+  private val defaultResponseStringIfLocked = Response(data = LOCKED_ERROR_MESSAGE, statusCode = LOCKED_ERROR_CODE, headers = HEADERS_AJAX)
+  private val defaultResponseBytesIfLocked: Response[Array[Byte]] = Response(data = Array(), statusCode = LOCKED_ERROR_CODE, headers = HEADERS_AJAX)
 
   /** Load the existingAppLibrary, newAppsLibrary and existingPhysicalStructure from file system
     * @return (existingAppLibrary, newAppsLibrary, existingPhysicalStructure)
@@ -98,14 +120,15 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   def forceKillSvshiRun(): Unit = if (svshiRunResult.isDefined) {
     svshiRunResult.get.forceStop()
     svshiRunResult = None
+    // Clear all files used by apps
+    os.remove.all(runtimeModuleApplicationFilesPath)
   }
 
   @get("/")
-  def welcomeRoot() = "API server for SVSHI interface"
+  def welcomeRoot() = Response(data = "API server for SVSHI interface\n", headers = HEADERS_AJAX)
 
   @get("/version")
   def getVersion() = {
-    cleanTempFolders()
     var output: List[String] = List()
     val resCode = svshiSystem.getVersion(s => output = output ::: List(s))
     Response(data = ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
@@ -113,7 +136,6 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
 
   @get("/listApps")
   def listApps() = {
-    cleanTempFolders()
     val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
     val installedApps = svshiSystem.listApps(existingAppsLibrary)
     Response(ResponseBody(status = true, installedApps).toString, headers = HEADERS_AJAX)
@@ -126,194 +148,251 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   }
 
   @post("/generateApp/:appName")
-  def generateApp(appName: String, request: Request) = {
-    cleanTempFolders()
-    val protoJsonString = request.text()
-    debug(f"Received generateNewApp for $appName with json = $protoJsonString")
-    Try(AppInputJsonParser.parseJson(protoJsonString)) match {
-      case Failure(exception) => Response(exception.toString, statusCode = BAD_REQUEST_CODE)
-      case Success(protoJson) => {
+  def generateApp(appName: String, request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      val protoJsonString = request.text()
+      debug(f"Received generateNewApp for $appName with json = $protoJsonString")
+      Try(AppInputJsonParser.parseJson(protoJsonString)) match {
+        case Failure(exception) => Response(exception.toString, statusCode = BAD_REQUEST_CODE)
+        case Success(protoJson) => {
+          var output: List[String] = List()
+          val protoJsonFile = Constants.PRIVATE_INPUT_FOLDER_PATH / Constants.APP_PROTO_STRUCT_FILE_NAME
+          AppInputJsonParser.writeToFile(protoJsonFile, protoJson)
+          def outputFunc(s: String, prefix: String): Unit = {
+            debug(createStrMessagePrefix(s, prefix))
+            output = output ::: List(createStrMessagePrefix(s, prefix))
+          }
+          val resCode = svshiSystem.generateApp(appName = Some(appName), Some(protoJsonFile.toString()))(
+            success = s => outputFunc(s, ""),
+            info = s => outputFunc(s, infoPrefix),
+            warning = s => outputFunc(s, warningPrefix),
+            err = s => outputFunc(s, errorPrefix)
+          )
+          Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
+        }
+      }
+    },
+    defaultResponseStringIfLocked
+  )
+
+  @post("/compile")
+  def compile(request: Request) = acquireLockAndExecute(
+    () => {
+      debug("Received a compile request")
+      cleanTempFolders()
+      val (existingAppsLibrary, newAppsLibrary, _) = loadCurrentSVSHIState
+      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
-        val protoJsonFile = Constants.PRIVATE_INPUT_FOLDER_PATH / Constants.APP_PROTO_STRUCT_FILE_NAME
-        AppInputJsonParser.writeToFile(protoJsonFile, protoJson)
         def outputFunc(s: String, prefix: String): Unit = {
           debug(createStrMessagePrefix(s, prefix))
           output = output ::: List(createStrMessagePrefix(s, prefix))
         }
-        val resCode = svshiSystem.generateApp(appName = Some(appName), Some(protoJsonFile.toString()))(
+        val resCode = svshiSystem.compileApps(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, newPhysicalStructure = newPhysicalStructure)(
           success = s => outputFunc(s, ""),
           info = s => outputFunc(s, infoPrefix),
           warning = s => outputFunc(s, warningPrefix),
           err = s => outputFunc(s, errorPrefix)
         )
         Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-      }
-    }
-  }
-
-  @post("/compile")
-  def compile(request: Request) = {
-    debug("Received a compile request")
-    cleanTempFolders()
-    val (existingAppsLibrary, newAppsLibrary, _) = loadCurrentSVSHIState
-    extractKnxprojFileAndExec(request)(newPhysicalStructure => {
-      var output: List[String] = List()
-      def outputFunc(s: String, prefix: String): Unit = {
-        debug(createStrMessagePrefix(s, prefix))
-        output = output ::: List(createStrMessagePrefix(s, prefix))
-      }
-      val resCode = svshiSystem.compileApps(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, newPhysicalStructure = newPhysicalStructure)(
-        success = s => outputFunc(s, ""),
-        info = s => outputFunc(s, infoPrefix),
-        warning = s => outputFunc(s, warningPrefix),
-        err = s => outputFunc(s, errorPrefix)
-      )
-      Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-    })
-  }
+      })
+    },
+    defaultResponseStringIfLocked
+  )
 
   @post("/updateApp/:appName")
-  def updateApp(appName: String) = {
-    cleanTempFolders()
-    val (existingAppsLibrary, newAppsLibrary, existingPhysStruct) = loadCurrentSVSHIState
-    if (existingAppsLibrary.apps.exists(a => a.name == appName)) {
-      var output: List[String] = List()
-      def outputFunc(s: String, prefix: String): Unit = {
-        debug(createStrMessagePrefix(s, prefix))
-        output = output ::: List(createStrMessagePrefix(s, prefix))
+  def updateApp(appName: String) = acquireLockAndExecute(
+    () => {
+      debug(f"Received an update app request for app '$appName'")
+      cleanTempFolders()
+      val (existingAppsLibrary, newAppsLibrary, existingPhysStruct) = loadCurrentSVSHIState
+      if (existingAppsLibrary.apps.exists(a => a.name == appName)) {
+        var output: List[String] = List()
+        def outputFunc(s: String, prefix: String): Unit = {
+          debug(createStrMessagePrefix(s, prefix))
+          output = output ::: List(createStrMessagePrefix(s, prefix))
+        }
+        val resCode =
+          svshiSystem.updateApp(
+            existingAppsLibrary = existingAppsLibrary,
+            newAppsLibrary = newAppsLibrary,
+            appToUpdateName = appName,
+            existingPhysicalStructure = existingPhysStruct
+          )(
+            success = s => outputFunc(s, ""),
+            info = s => outputFunc(s, infoPrefix),
+            warning = s => outputFunc(s, warningPrefix),
+            err = s => outputFunc(s, errorPrefix)
+          )
+        Response(ResponseBody(status = resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
+      } else {
+        Response(REQUESTED_APP_NOT_INSTALLED_MESSAGE, statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
       }
-      val resCode =
-        svshiSystem.updateApp(
+    },
+    defaultResponseStringIfLocked
+  )
+
+  @post("/generateBindings")
+  def generateBindings(request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      val (existingAppsLibrary, newAppsLibrary, existingPhysicalStructure) = loadCurrentSVSHIState
+      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+        var output: List[String] = List()
+        def outputFunc(s: String, prefix: String): Unit = {
+          debug(createStrMessagePrefix(s, prefix))
+          output = output ::: List(createStrMessagePrefix(s, prefix))
+        }
+        val resCode = svshiSystem.generateBindings(
           existingAppsLibrary = existingAppsLibrary,
           newAppsLibrary = newAppsLibrary,
-          appToUpdateName = appName,
-          existingPhysicalStructure = existingPhysStruct
+          existingPhysicalStructure = existingPhysicalStructure,
+          newPhysicalStructure = newPhysicalStructure
         )(
           success = s => outputFunc(s, ""),
           info = s => outputFunc(s, infoPrefix),
           warning = s => outputFunc(s, warningPrefix),
           err = s => outputFunc(s, errorPrefix)
         )
-      Response(ResponseBody(status = resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-    } else {
-      Response(REQUESTED_APP_NOT_INSTALLED_MESSAGE, statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
-    }
-  }
+        Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
+      })
+    },
+    defaultResponseStringIfLocked
+  )
 
-  @post("/generateBindings")
-  def generateBindings(request: Request) = {
-    cleanTempFolders()
-    val (existingAppsLibrary, newAppsLibrary, existingPhysicalStructure) = loadCurrentSVSHIState
-    extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+  @post("/removeApp/:appName")
+  def removeApp(appName: String) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
       var output: List[String] = List()
       def outputFunc(s: String, prefix: String): Unit = {
         debug(createStrMessagePrefix(s, prefix))
         output = output ::: List(createStrMessagePrefix(s, prefix))
       }
-      val resCode = svshiSystem.generateBindings(
-        existingAppsLibrary = existingAppsLibrary,
-        newAppsLibrary = newAppsLibrary,
-        existingPhysicalStructure = existingPhysicalStructure,
-        newPhysicalStructure = newPhysicalStructure
-      )(
+      val resCode = svshiSystem.removeApps(allFlag = false, appName = Some(appName), existingAppsLibrary = existingAppsLibrary)(
         success = s => outputFunc(s, ""),
         info = s => outputFunc(s, infoPrefix),
         warning = s => outputFunc(s, warningPrefix),
         err = s => outputFunc(s, errorPrefix)
       )
       Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-    })
-  }
-
-  @post("/removeApp/:appName")
-  def removeApp(appName: String) = {
-    cleanTempFolders()
-    val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
-    var output: List[String] = List()
-    def outputFunc(s: String, prefix: String): Unit = {
-      debug(createStrMessagePrefix(s, prefix))
-      output = output ::: List(createStrMessagePrefix(s, prefix))
-    }
-    val resCode = svshiSystem.removeApps(allFlag = false, appName = Some(appName), existingAppsLibrary = existingAppsLibrary)(
-      success = s => outputFunc(s, ""),
-      info = s => outputFunc(s, infoPrefix),
-      warning = s => outputFunc(s, warningPrefix),
-      err = s => outputFunc(s, errorPrefix)
-    )
-    Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-  }
+    },
+    defaultResponseStringIfLocked
+  )
 
   @post("/removeAllApps")
-  def removeAllApps() = {
-    cleanTempFolders()
-    val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
-    var output: List[String] = List()
-    def outputFunc(s: String, prefix: String): Unit = {
-      debug(createStrMessagePrefix(s, prefix))
-      output = output ::: List(createStrMessagePrefix(s, prefix))
-    }
-    val resCode = svshiSystem.removeApps(allFlag = true, appName = None, existingAppsLibrary = existingAppsLibrary)(
-      success = s => outputFunc(s, ""),
-      info = s => outputFunc(s, infoPrefix),
-      warning = s => outputFunc(s, warningPrefix),
-      err = s => outputFunc(s, errorPrefix)
-    )
-    Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
-  }
+  def removeAllApps() = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
+      var output: List[String] = List()
+      def outputFunc(s: String, prefix: String): Unit = {
+        debug(createStrMessagePrefix(s, prefix))
+        output = output ::: List(createStrMessagePrefix(s, prefix))
+      }
+      val resCode = svshiSystem.removeApps(allFlag = true, appName = None, existingAppsLibrary = existingAppsLibrary)(
+        success = s => outputFunc(s, ""),
+        info = s => outputFunc(s, infoPrefix),
+        warning = s => outputFunc(s, warningPrefix),
+        err = s => outputFunc(s, errorPrefix)
+      )
+      Response(ResponseBody(resCode == Svshi.SUCCESS_CODE, output).toString, headers = HEADERS_AJAX)
+    },
+    defaultResponseStringIfLocked
+  )
 
   @post("/run/:ipPort")
-  def run(ipPort: String) = {
-    cleanTempFolders()
-    val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
+  def run(ipPort: String) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      val (existingAppsLibrary, _, _) = loadCurrentSVSHIState
 
-    def successLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = "", message = s)
-    def infoLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = infoPrefix, message = s)
-    def warningLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = warningPrefix, message = s)
-    def errorLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = errorPrefix, message = s)
+      def successLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = "", message = s)
+      def infoLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = infoPrefix, message = s)
+      def warningLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = warningPrefix, message = s)
+      def errorLog(s: String): Unit = Logger.log(file = localRunLogFilePath, prefix = errorPrefix, message = s)
 
-    // Reset the log file
-    FileUtils.deleteIfExists(localRunLogFilePath)
+      // Reset the log file
+      FileUtils.deleteIfExists(localRunLogFilePath)
 
-    svshiRunResult = Some(
-      svshiSystem.run(knxAddress = Some(ipPort), existingAppsLibrary = existingAppsLibrary, blocking = false)(
-        success = successLog,
-        info = infoLog,
-        warning = warningLog,
-        err = errorLog
+      svshiRunResult = Some(
+        svshiSystem.run(knxAddress = Some(ipPort), existingAppsLibrary = existingAppsLibrary, blocking = false)(
+          success = successLog,
+          info = infoLog,
+          warning = warningLog,
+          err = errorLog
+        )
       )
-    )
 
-    Response(ResponseBody(status = true, List(RUN_CALLED_MESSAGE)).toString, headers = HEADERS_AJAX)
-  }
+      Response(ResponseBody(status = true, List(RUN_CALLED_MESSAGE)).toString, headers = HEADERS_AJAX)
+    },
+    defaultResponseStringIfLocked
+  )
 
   @get("/runStatus")
   def getRunStatus() = {
-    cleanTempFolders()
     Response(ResponseBody(status = runStateRunning, output = Nil).toString, headers = HEADERS_AJAX)
   }
 
-  @get("/runLogs")
+  @get("/logs/run")
   def getRunLogs() = {
-    cleanTempFolders()
     if (os.exists(localRunLogFilePath)) {
       val logContentLines = os.read.lines(localRunLogFilePath).toList
       Response(ResponseBody(status = true, logContentLines).toString, headers = HEADERS_AJAX)
     } else {
       Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
     }
+  }
 
+  @get("/logs/receivedTelegrams")
+  def getReceivedTelegramsLogs() = {
+    val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
+    if (logsFolders.nonEmpty) {
+      // We take the latest
+      val latestFolder = logsFolders.max
+      val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_RECEIVED_TELEGRAMS_LOG_FILE_NAME
+      if (os.exists(logFilePath)) {
+        val content = os.read.lines(logFilePath).toList
+        Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+      } else {
+        Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+      }
+    } else {
+      Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+    }
+  }
+
+  @get("/logs/execution")
+  def getExecutionLogs() = {
+    val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
+    if (logsFolders.nonEmpty) {
+      // We take the latest
+      val latestFolder = logsFolders.max
+      val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME
+      if (os.exists(logFilePath)) {
+        val content = os.read.lines(logFilePath).toList
+        Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+      } else {
+        Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+      }
+    } else {
+      Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+    }
   }
 
   @post("/stopRun")
-  def stopRun() = {
-    cleanTempFolders()
-    forceKillSvshiRun()
-    Response(ResponseBody(status = true, output = List(RUN_STOPPED_MESSAGE)).toString, headers = HEADERS_AJAX)
-  }
+  def stopRun() = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      forceKillSvshiRun()
+      Response(ResponseBody(status = true, output = List(RUN_STOPPED_MESSAGE)).toString, headers = HEADERS_AJAX)
+    },
+    defaultResponseStringIfLocked
+  )
 
   @get("/newApps")
   def getNewApps() = {
-    cleanTempFolders()
     val foldersList = FileUtils.getListOfFolders(Constants.GENERATED_FOLDER_PATH)
     val appsList = foldersList.map(p => p.segments.toList.last)
     Response(ResponseBody(status = true, output = appsList).toString, headers = HEADERS_AJAX)
@@ -321,7 +400,6 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
 
   @get("/bindings")
   def getGeneratedBindings() = {
-    cleanTempFolders()
     if (os.exists(appsBindingsGeneratedFilePath) && os.exists(physicalStructureJsonGeneratedFilePath)) {
       val bindings = BindingsJsonParser.parse(appsBindingsGeneratedFilePath)
       val physStruct = PhysicalStructureJsonParser.parseJson(os.read(physicalStructureJsonGeneratedFilePath))
@@ -332,23 +410,25 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   }
 
   @post("/generated")
-  def postNewInGenerated(request: Request) = {
-    cleanTempFolders()
-    if (os.exists(privateTempFolderPath)) os.remove.all(privateTempFolderPath)
-    os.makeDir.all(privateTempFolderPath)
-    unzipContentAndExec(request)(
-      privateTempFolderPath,
-      path => {
-        val moved = FileUtils.recursiveListFiles(path).map(p => p.toString())
-        FileUtils.moveAllFileToOtherDirectory(path, Constants.GENERATED_FOLDER_PATH)
-        Response(ResponseBody(status = true, output = moved).toString, headers = HEADERS_AJAX)
-      }
-    )
-  }
+  def postNewInGenerated(request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      if (os.exists(privateTempFolderPath)) os.remove.all(privateTempFolderPath)
+      os.makeDir.all(privateTempFolderPath)
+      unzipContentAndExec(request)(
+        privateTempFolderPath,
+        path => {
+          val moved = FileUtils.recursiveListFiles(path).map(p => p.toString())
+          FileUtils.moveAllFileToOtherDirectory(path, Constants.GENERATED_FOLDER_PATH)
+          Response(ResponseBody(status = true, output = moved).toString, headers = HEADERS_AJAX)
+        }
+      )
+    },
+    defaultResponseStringIfLocked
+  )
 
   @get("/generated")
   def getGenerated() = {
-    cleanTempFolders()
     val toZip = os.list(Constants.GENERATED_FOLDER_PATH).toList
     FileUtils.zip(toZip, privateTempZipFilePath) match {
       case Some(zippedPath) => {
@@ -360,28 +440,62 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   }
 
   @post("/deleteGenerated")
-  def deleteGenerated() = {
-    cleanTempFolders()
-    Try({
-      if (os.exists(Constants.GENERATED_FOLDER_PATH)) os.remove.all(Constants.GENERATED_FOLDER_PATH)
-      os.makeDir.all(Constants.GENERATED_FOLDER_PATH)
-    }) match {
-      case Failure(exception) =>
-        val responseBody = ResponseBody(status = false, output = exception.getLocalizedMessage.split("\n").toList)
-        Response(responseBody.toString, headers = HEADERS_AJAX)
-      case Success(_) =>
-        val responseBody = ResponseBody(status = true, output = List(GENERATED_FOLDER_DELETED_MESSAGE))
-        Response(responseBody.toString, headers = HEADERS_AJAX)
-    }
+  def deleteGenerated() = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      Try({
+        if (os.exists(Constants.GENERATED_FOLDER_PATH)) os.remove.all(Constants.GENERATED_FOLDER_PATH)
+        os.makeDir.all(Constants.GENERATED_FOLDER_PATH)
+      }) match {
+        case Failure(exception) =>
+          val responseBody = ResponseBody(status = false, output = exception.getLocalizedMessage.split("\n").toList)
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+        case Success(_) =>
+          val responseBody = ResponseBody(status = true, output = List(GENERATED_FOLDER_DELETED_MESSAGE))
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+      }
 
-  }
+    },
+    defaultResponseStringIfLocked
+  )
 
   @get("/installedApp/:appName")
   def getInstalledApp(appName: String) = {
-    cleanTempFolders()
     val appPath = Constants.INSTALLED_APPS_FOLDER_PATH / appName
     if (os.exists(appPath)) {
       FileUtils.zip(List(appPath), privateTempZipFilePath) match {
+        case Some(zippedPath) => {
+          val data = os.read.bytes(zippedPath)
+          Response(data = data, headers = HEADERS_AJAX)
+        }
+        case None => Response(data = Array[Byte](), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+      }
+    } else {
+      Response(data = Array[Byte](), statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+  }
+
+  @get("/allInstalledApps")
+  def getInstalledApp() = {
+    val folderPath = Constants.INSTALLED_APPS_FOLDER_PATH
+    if (os.exists(folderPath)) {
+      FileUtils.zip(List(folderPath), privateTempZipFilePath) match {
+        case Some(zippedPath) => {
+          val data = os.read.bytes(zippedPath)
+          Response(data = data, headers = HEADERS_AJAX)
+        }
+        case None => Response(data = Array[Byte](), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+      }
+    } else {
+      Response(data = Array[Byte](), statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+  }
+
+  @get("/assignments")
+  def getAssignments() = {
+    val assignmentsPath = Constants.ASSIGNMENTS_DIRECTORY_PATH
+    if (os.exists(assignmentsPath) && os.list(assignmentsPath).nonEmpty) {
+      FileUtils.zip(List(assignmentsPath), privateTempZipFilePath) match {
         case Some(zippedPath) => {
           val data = os.read.bytes(zippedPath)
           Response(data = data, headers = HEADERS_AJAX)
@@ -400,6 +514,15 @@ case class CoreApiServer(svshiSystem: SvshiTr = Svshi, debug: String => Unit = _
   }
   private def createStrMessagePrefix(s: String, prefix: String) = if (prefix.isBlank) s else f"$prefix: $s"
 
+  private def acquireLockAndExecute[B](exec: () => B, otherwise: B): B = {
+    if (lock.tryLock()) {
+      try {
+        exec()
+      } finally {
+        lock.unlock()
+      }
+    } else { otherwise }
+  }
   private def unzipContentAndExec(request: Request)(outputPath: Path, withUnzipped: Path => Response[String]): Response[String] = {
     val receivedData = request.data.readAllBytes()
     FileUtils.writeToFileOverwrite(privateTempZipFilePath, receivedData)

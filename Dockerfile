@@ -13,13 +13,25 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND noninteractive
 
 # Installing basic packages 
-RUN dpkg --add-architecture i386 
-RUN apt-get update 
+RUN apt-get update --fix-missing
 RUN apt-get install -y software-properties-common  
 RUN add-apt-repository universe 
-RUN apt-get install -y zip unzip build-essential jq curl wget rubygems gcc gdb python3 python3-pip python3-dev python3.9-venv wget git nano 
+RUN apt-get install -y zip 
+RUN apt-get install -y unzip 
+RUN apt-get install -y build-essential 
+RUN apt-get install -y jq 
+RUN apt-get install -y curl 
+RUN apt-get install -y wget 
+RUN apt-get install -y rubygems 
+RUN apt-get install -y gcc 
+RUN apt-get install -y gdb 
+RUN apt-get install -y python3.9 
+RUN apt-get install -y wget 
+RUN apt-get install -y git 
+RUN apt-get install -y nano 
 RUN apt-get install -y openjdk-11-jdk scala
 RUN apt-get install sudo
+RUN apt install net-tools
 
 RUN apt-get update && \
     apt-get install apt-transport-https curl gnupg -yqq && \
@@ -30,12 +42,21 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install sbt
 
+# Install npm
+RUN apt-get -yqq install nodejs npm
+RUN npm install -g serve 
+
+# Install pip3
+RUN apt-get install -yqq python3-distutils
+RUN apt-get install -yqq python3-pip
+
 # Change root's password
 RUN echo 'root:nigiri' | chpasswd
 
 
 # Add non-root user
 RUN useradd -rm -d /home/maki -s /bin/bash -g root -G sudo -u 1001 maki
+RUN echo 'maki:maki' | chpasswd
 USER maki
 WORKDIR /home/maki
 
@@ -67,9 +88,12 @@ COPY . ${SVSHI_HOME}/
 # RUN cd /home/maki/crosshair_local/CrossHair && pip3 install --editable .
 ## UNCOMMENT IF YOU WANT TO INSTALL CROSSHAIR FROM SOURCE and change the pip3 install below (e.g. if you forked the repo) -----------------------
 
-
-# Install python requirements
-RUN cd ${SVSHI_HOME}/src && [ -f requirements.txt  ] && pip3 install -r requirements.txt
-
+USER root
 # Install SVSHI
-RUN cd ${SVSHI_HOME}/ && ./build.sh
+RUN cd ${SVSHI_HOME}/ && ./build.sh 
+RUN cp -r /root/local/ /home/maki
+
+USER maki
+
+EXPOSE 3000
+EXPOSE 4242

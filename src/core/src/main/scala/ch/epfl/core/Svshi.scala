@@ -7,8 +7,9 @@ import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.model.prototypical.SupportedDevice
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
-import ch.epfl.core.utils.{Constants, FileUtils, ProcRunner}
+import ch.epfl.core.utils.{Constants, FileUtils, ProcRunner, Utils}
 import ch.epfl.core.verifier.exceptions.{VerifierError, VerifierInfo, VerifierMessage, VerifierWarning}
+import os.Path
 
 import java.io.File
 import scala.annotation.tailrec
@@ -20,6 +21,7 @@ object Svshi extends SvshiTr {
   val PIP_SUCCESS_CODE = 0
   private var runtimeModule: String = RUNTIME_PYTHON_MODULE
   private var runtimeModulePath: os.Path = RUNTIME_PYTHON_MODULE_PATH
+  val runtimeModuleApplicationFilesPath: Path = runtimeModulePath / "files"
 
   override def getVersion(success: String => Unit): Int = {
     val version = getClass.getPackage.getImplementationVersion
@@ -34,8 +36,7 @@ object Svshi extends SvshiTr {
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): SvshiRunResult = {
     knxAddress match {
       case Some(address) =>
-        val addressRegex = """^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$""".r
-        if (addressRegex.matches(address)) {
+        if (Utils.validAddressPortString(address)) {
           if (existingAppsLibrary.apps.isEmpty) {
             err("No apps are installed!")
             return new SvshiRunResult(None, ERROR_CODE)
@@ -47,7 +48,7 @@ object Svshi extends SvshiTr {
           FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), runtimeModulePath)
 
           // Copy files used by each app
-          val filesDirPath = runtimeModulePath / "files"
+          val filesDirPath = runtimeModuleApplicationFilesPath
           os.remove.all(filesDirPath)
           os.makeDir.all(filesDirPath)
 

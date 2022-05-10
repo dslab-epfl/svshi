@@ -38,4 +38,25 @@ class UtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
     Utils.getLineNFile(testFilePath, 42) shouldEqual None
   }
 
+  "validAddressPortString" should "return true for correct examples" in {
+    Utils.validAddressPortString("127.0.0.1:4242") shouldBe true
+    Utils.validAddressPortString("0.0.0.1:4242") shouldBe true
+    Utils.validAddressPortString("127.0.123.1:32") shouldBe true
+    Utils.validAddressPortString("127.0.89.1:132") shouldBe true
+    Utils.validAddressPortString("localhost:4312") shouldBe true
+    Utils.validAddressPortString("localhost:43") shouldBe true
+  }
+
+  "validAddressPortString" should "return false for incorrect examples" in {
+    Utils.validAddressPortString("0.0.1:4242") shouldBe false
+    Utils.validAddressPortString("0.0.0.1") shouldBe false
+    Utils.validAddressPortString("127.0.123.1:32fdsa") shouldBe false
+    Utils.validAddressPortString("127.0f.89.1:132") shouldBe false
+    Utils.validAddressPortString("127.0999.89.1:132") shouldBe false
+    Utils.validAddressPortString("a") shouldBe false
+    Utils.validAddressPortString("123") shouldBe false
+    Utils.validAddressPortString("localhost:asdf") shouldBe false
+    Utils.validAddressPortString("localhostt:asdf") shouldBe false
+  }
+
 }

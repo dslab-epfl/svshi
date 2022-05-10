@@ -10,6 +10,7 @@ import scala.util.Using
 object FileUtils {
 
   private val LINES_TO_REMOVE_TO_GAIN_SPACE = 2000
+  private val FILES_OR_DIRS_NAMES_TO_REMOVE = List("__MACOSX")
 
   /** The suffix appended to the end of a ETS project file name when unzipped
     * @return
@@ -24,13 +25,15 @@ object FileUtils {
     Using(new ZipFile(zipPath.toIO)) { zipFile =>
       os.makeDir.all(outputFolderPath) // In case the zip is empty, the folder is created nonetheless
       for (entry <- zipFile.entries.asScala) {
-        val path = os.Path(entry.getName, outputFolderPath)
-        if (entry.isDirectory) {
-          os.makeDir.all(path)
-        } else {
-          val parentPath = path / os.up
-          os.makeDir.all(parentPath)
-          os.write(path, zipFile.getInputStream(entry))
+        if (!FILES_OR_DIRS_NAMES_TO_REMOVE.exists(n => entry.getName.contains(n))) {
+          val path = os.Path(entry.getName, outputFolderPath)
+          if (entry.isDirectory) {
+            os.makeDir.all(path)
+          } else {
+            val parentPath = path / os.up
+            os.makeDir.all(parentPath)
+            os.write(path, zipFile.getInputStream(entry))
+          }
         }
       }
       Some(outputFolderPath)

@@ -8,7 +8,7 @@ import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Cli._
 import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
-import ch.epfl.core.utils.Style
+import ch.epfl.core.utils.{Constants, Style, Utils}
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
 import mainargs.ParserForClass
@@ -58,7 +58,25 @@ object Main {
     val appNameOpt = config.appName
     config.task match {
       case Gui =>
-        coreApiServer = Some(CoreApiServer(debug = debug))
+        val addrPort = config.knxAddress
+        val (address, port) =
+          if (addrPort.isDefined) {
+            val addrPortStr = addrPort.get
+            if (Utils.validAddressPortString(addrPortStr)) {
+              val addrPortList = addrPort.get.split(":")
+              if (addrPortList.length != 2) {
+                printErrorAndExit(f"Malformed address:port args: $addrPortStr")
+                // The printErrorAndExit call exists anyway ...
+              }
+              (addrPortList.head, addrPortList.last.toInt)
+            } else {
+              printErrorAndExit(f"Malformed address:port args: $addrPortStr")
+              ("", 0)
+            }
+          } else {
+            (Constants.SVSHI_GUI_SERVER_DEFAULT_HOST, Constants.SVSHI_GUI_SERVER_DEFAULT_PORT)
+          }
+        coreApiServer = Some(CoreApiServer(debug = debug, host = address, port = port))
         coreApiServer.get.start()
       case GetVersion =>
         Svshi.getVersion(success = info)

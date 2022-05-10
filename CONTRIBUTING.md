@@ -228,7 +228,7 @@ To run the tests of all the modules at once, execute `./run_tests.sh` inside `sr
 
 To run only Python (i.e. `generator`, `verification` and `runtime`) tests and get the coverage, execute `./get_python_coverage.sh` inside `src/`.
 
-To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test coverageReport` inside `src/core`.
+To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test && sbt coverage it:test && sbt coverageReport` inside `src/core`.
 
 ## CI
 

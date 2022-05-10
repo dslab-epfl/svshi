@@ -18,6 +18,9 @@
       - [Unix (Linux / macOS)](#unix-linux--macos-1)
       - [Windows](#windows-1)
     - [Docker](#docker)
+  - [GUI](#gui)
+    - [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine)
+    - [Unix (Linux / macOS)](#unix-linux--macos-2)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
     - [Writing apps](#writing-apps)
@@ -35,7 +38,7 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
-  - [GUI](#gui)
+  - [GUI](#gui-1)
     - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
@@ -49,6 +52,8 @@ It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
 
 ## Installation
+
+We strongly recommend to use SVSHI on Docker with the GUI, see [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine).
 
 To work, SVSHI needs Python 3.9 (or newer)([download here](https://www.python.org/downloads/)), `pip` (`pip` will be automatically installed by scripts on Windows, on Linux simply use `sudo apt install python3-pip` and on MacOS use `python3 -m ensurepip`) and Java 11 (or newer)([download here](https://www.oracle.com/java/technologies/downloads/)). Optionally, [sbt](https://www.scala-sbt.org) 1.5.5 (or newer) is needed to build from sources.
 
@@ -121,6 +126,33 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
 3. You can find the repo copied in `/home/maki/svshi`
 4. `svshi` command is accessible
+
+## GUI
+
+SVSHI comes with a GUI in the form of a web application. For this usage, we strongly recommend to use the provided Docker image.
+
+### Docker (can be used on Windows or Unix machine)
+
+Here the SVSHI system and the frontend server run on the same Docker image. To use it:
+
+- Run `./build_docker.sh` (Windows: `.ps1`) to build the image
+- Run `./run_docker.sh` to run the docker container
+- Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
+- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
+
+### Unix (Linux / macOS)
+
+You need to have `npm` installed on your system!
+
+To use the GUI:
+
+- run `svshi gui` in a terminal to start SVSHI
+- run the script `start_ui.sh` in another terminal
+- connect to [http://localhost:3000](http://localhost:3000) in your favorite browser
+
+When you want to stop, kill both processes running in terminals.
+
+> If you are running SVSHI on a smart building infrastructure, DO NOT kill `svshi gui`, it would stop running on your building installation! You can however stop the `start-ui.sh` process.
 
 ## Supported devices
 
@@ -431,9 +463,17 @@ Here are the available endpoints:
 
   Replies with the standard body JSON with `status` representing whether `svshi` is running or not, and empty `output`.
 
-- GET `/runLogs`
+- GET `/logs/run`
 
  If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the output lines of `svshi` running, truncated if the log file goes beyond a given size (e.g., 20MB).
+
+- GET `/logs/receivedTelegrams`
+
+ If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the received telegrams log file of the latest execution, truncated if the log file goes beyond a given size (e.g., 20MB).
+
+- GET `/logs/execution`
+
+ If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the complete execution log file of the latest execution, truncated if the log file goes beyond a given size (e.g., 20MB).
 
 - POST `/stopRun`
 
@@ -478,7 +518,16 @@ Here are the available endpoints:
 
   Replies with the requested app folder in a `.zip` archive as body if the requested app name corresponds to an installed app, 404 error otherwise.
 
+- GET `/allInstalledApps`
 
+  Replies with the requested installedApps folder in a `.zip` archive as body if at least one app is installed, 404 error otherwise.
+  The folder contains all installed apps and the bindings and physical structure. It can be uploaded to generated and be compiled as is.
+
+- GET `/assignments`
+
+  Replies with a `.zip` archive as body containing the `assignments` folder if assignments are created, 404 error if no assignments are created.
+
+The POST endpoints functions cannot be ran in parallel. These endpoints then acquire a "lock" and reply with a 423 error code if the lock is already aquired by another endpoint currently running.
 
 ## KNX Virtual
 

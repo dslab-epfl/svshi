@@ -115,15 +115,41 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     Main.coreApiServer = None
   }
 
-  "gui" should f"start a server that serves among other things the http://localhost:${Constants.SVSHI_GUI_SERVER_PORT}" in {
+  "gui" should f"start a server that serves among other things the http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
       Try(Main.main(Array("gui"))) match {
         case Failure(exception) => fail(exception)
         case Success(_) =>
-          val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_PORT}/")
+          val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/")
           r.statusCode shouldEqual 200
-          r.text() shouldEqual "API server for SVSHI interface"
+          r.text() shouldEqual "API server for SVSHI interface\n"
+      }
+    }
+  }
+
+  "gui 0.0.0.0:4243" should f"start a server that serves among other things the http://0.0.0.0:4243" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("gui", "-a", "0.0.0.0:4243"))) match {
+        case Failure(exception) => fail(exception)
+        case Success(_) =>
+          val r = requests.get(f"http://0.0.0.0:4243/")
+          r.statusCode shouldEqual 200
+          r.text() shouldEqual "API server for SVSHI interface\n"
+      }
+    }
+  }
+
+  "gui localhost:4244" should f"start a server that serves among other things the http://localhost:4244" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("gui", "-a", "localhost:4244"))) match {
+        case Failure(exception) => fail(exception)
+        case Success(_) =>
+          val r = requests.get(f"http://localhost:4244/")
+          r.statusCode shouldEqual 200
+          r.text() shouldEqual "API server for SVSHI interface\n"
       }
     }
   }

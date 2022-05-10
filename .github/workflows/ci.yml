@@ -33,7 +33,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         working-directory: src
       - name: Build and Test
-        run: cd src/core && sbt -v clean coverage test coverageReport
+        run: cd src/core && sbt -v clean coverage test && sbt -v coverage it:test && sbt coverageReport
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v3
         with:

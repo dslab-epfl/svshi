@@ -11,6 +11,8 @@ src/verification/verification_file.py
 **/.coverage
 **/coverage.xml
 
+**/svshi_private_input
+
 
 # Compiled class file
 *.class

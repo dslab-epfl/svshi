@@ -7,13 +7,18 @@ ThisBuild / organizationName := "epfl"
 
 Test / parallelExecution := false
 
+lazy val DeepIntegrationTest = IntegrationTest.extend(Test)
+
 enablePlugins(PackPlugin)
 
 val appName = "svshi"
 
 lazy val root = (project in file("."))
+  .configs(DeepIntegrationTest)
   .settings(
     name := appName,
+    Defaults.itSettings,
+    libraryDependencies += scalaTest % DeepIntegrationTest,
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.8.1",
     libraryDependencies += "com.lihaoyi" %% "upickle" % "1.5.0",

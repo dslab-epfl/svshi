@@ -1,0 +1,376 @@
+<script lang="js">
+import * as http from "http";
+import GenerateApp from './components/GenerateApp.vue'
+import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
+import FileManagement from './components/FileManagement.vue'
+import Run from './components/Run.vue'
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+import { Tabs, Tab } from 'vue3-tabs-component';
+
+let defaultBackendServerAddress = "http://localhost:4242"
+export default {
+  components: {
+    "tabs": Tabs,
+    "tab": Tab,
+    GenerateApp,
+    GenerationAndCompilation,
+    FileManagement,
+    PulseLoader,
+    Run
+  },
+  data() {
+    return {
+      apiReachable: false,
+      installedApps: [
+        { id: 1, name: "notLoadedYet", deleting: false }
+      ],
+      isRunning: false,
+      uninstallInProgress: false,
+      backendServerAddress: defaultBackendServerAddress,
+      polling: "",
+      colourOrangeSvshi: '#e05a06'
+    }
+  },
+  methods: {
+    async getAppsList() {
+      try {
+        let res = await fetch(this.backendServerAddress + "/listApps");
+        let responseBody = await res.json();
+        let array = responseBody.output
+        let currentId = 0
+        let ret = []
+        array.forEach(element => {
+          ret.push({ id: currentId++, name: element })
+        });
+        return ret
+      } catch (error) {
+        console.log(error);
+        return []
+      }
+    },
+    async loadAppsList() {
+      this.installedApps = await this.getAppsList()
+    },
+    async deleteApp(appName) {
+      if (await this.isSvshiRunning()) {
+        alert("You cannot remove apps while SVSHI is running!")
+        return
+      }
+      if (this.installedApps.some(a => a.name === appName)) {
+        if (confirm("Are you sure you want to uninstall '" + appName + "'?")) {
+          try {
+            this.installedApps = this.installedApps.map(a =>
+              a.name === appName
+                ? { ...a, deleting: true }
+                : a
+            );
+            const requestOptions = {
+              method: "POST"
+            };
+            this.uninstallInProgress = true
+            let res = await fetch(this.backendServerAddress + "/removeApp/" + appName, requestOptions);
+            let responseBody = await res.json();
+            if (responseBody.status) {
+              console.log("Removing the app '" + appName + "' was successful!")
+            } else {
+              console.log("An error occurred while removing '" + appName + "'! Please see the following logs: ")
+              let array = responseBody.output
+              array.forEach(element => {
+                console.log(element)
+              });
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }
+      this.uninstallInProgress = false
+
+    },
+    isNumber(evt) {
+      evt = (evt) ? evt : window.event;
+      var charCode = (evt.which) ? evt.which : evt.keyCode;
+      if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+        evt.preventDefault();;
+      } else {
+        return true;
+      }
+    },
+    async refresh() {
+      if (!this.uninstallInProgress) {
+        this.checkApiLiveness()
+        if (this.apiReachable) {
+          this.loadAppsList()
+          this.isSvshiRunning()
+          if (this.$refs.fileManagementComp !== null) {
+            this.$refs.fileManagementComp.refresh()
+          }
+          if (this.$refs.generateAppComp !== null) {
+            this.$refs.generateAppComp.refresh()
+          }
+          if (this.$refs.generationAndCompilationComp !== null) {
+            this.$refs.generationAndCompilationComp.refresh()
+          }
+          this.goToRunIfRunning()
+        } else {
+          clearInterval(this.polling)
+        }
+      }
+    },
+    async isSvshiRunning() {
+      try {
+        let res = await fetch(this.backendServerAddress + "/runStatus")
+        let responseBody = await res.json()
+        this.isRunning = responseBody.status
+        return this.isRunning
+      }
+      catch (error) {
+        console.log(error)
+        return false
+      }
+    },
+    async goToRunIfRunning() {
+      if (this.isRunning) {
+      }
+    },
+    async checkApiLiveness() {
+      try {
+        let req = await fetch(this.backendServerAddress + "/version")
+        let res = await req.json()
+        this.apiReachable = res.status
+      } catch (error) {
+        this.apiReachable = false
+      }
+      return this.apiReachable
+
+    },
+    startPolling() {
+      this.polling = setInterval(() => {
+        this.refresh()
+      }, 1000)
+
+    },
+    async checkNewAddress() {
+      if (await this.checkApiLiveness()) {
+        this.startPolling()
+      } else {
+        alert("Cannot connect to the given address!")
+      }
+    }
+  },
+  mounted() {
+    this.refresh()
+    this.startPolling()
+  }
+}
+</script>
+
+<template>
+  <img class="logo_img" src="./assets/logo.png" width="300">
+  <div v-if="!this.apiReachable">
+    <div class="warning_not_connected_box">
+      <p>SVSHI API Server unreachable</p>
+    </div>
+    <p>Please enter the address and port of the machine running SVSHI: </p>
+    <input v-model="this.backendServerAddress" placeholder="http://localhost:4242" />
+    <button @Click="this.checkNewAddress">Connect</button>
+  </div>
+  <div v-else>
+    <tabs>
+      <tab name="Installed Apps">
+        <h2>Installed apps</h2>
+        <ul style="list-style-type:none;">
+          <li v-for='app in installedApps' :key="app.id">
+            <table>
+              <tr>
+                <td>
+                  {{ app.name }}
+                </td>
+                <td>
+                  <button v-if="!app.deleting && !this.isRunning" @Click="deleteApp(app.name)">Uninstall</button>
+                  <div v-if="app.deleting">
+                    <PulseLoader :color="this.colourOrangeSvshi" v-if="app.deleting" />
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </li>
+        </ul>
+      </tab>
+      <tab name="Generate" :is-disabled="this.isRunning">
+        <GenerateApp ref="generateAppComp" />
+      </tab>
+      <tab name="File management" :is-disabled="this.isRunning">
+        <FileManagement ref="fileManagementComp" />
+      </tab>
+      <tab name="Bindings and compilation" :is-disabled="this.isRunning">
+        <GenerationAndCompilation ref="generationAndCompilationComp" />
+      </tab>
+      <tab name="Run">
+        <Run ref="runComp" />
+      </tab>
+    </tabs>
+  </div>
+
+</template>
+
+<style>
+@import './assets/base.css';
+
+.logo_img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.warning_not_connected_box {
+  align-items: center;
+  background-color: #dd2323;
+  color: white;
+  display: flex;
+  justify-content: center;
+  height: 110px;
+  position: relative;
+  width: 580px;
+  font-size: 30px;
+}
+
+#app {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  font-weight: normal;
+}
+
+header {
+  line-height: 1.5;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 2rem;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+}
+
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    /* grid-template-columns: 1fr 2fr; */
+    padding: 0 2rem;
+  }
+
+  header {
+    display: flex;
+    place-items: center;
+    padding-right: calc(var(--section-gap) / 2);
+  }
+
+  header .wrapper {
+    display: flex;
+    place-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    margin: 0 2rem 0 0;
+  }
+}
+
+.tabs-component {
+  margin: auto auto;
+  width: 1600;
+}
+
+.tabs-component-tabs {
+  border: solid 1px #ddd;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+
+@media (min-width: 700px) {
+  .tabs-component-tabs {
+    border: 0;
+    align-items: stretch;
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: -1px;
+  }
+}
+
+.tabs-component-tab {
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 0;
+  list-style: none;
+}
+
+.tabs-component-tab:not(:last-child) {
+  border-bottom: dotted 1px #ddd;
+}
+
+.tabs-component-tab:hover {
+  color: #666;
+}
+
+.tabs-component-tab.is-active {
+  color: #000;
+}
+
+.tabs-component-tab.is-disabled * {
+  color: #cdcdcd;
+  cursor: not-allowed !important;
+}
+
+@media (min-width: 700px) {
+  .tabs-component-tab {
+    background-color: #fff;
+    border: solid 1px #ddd;
+    border-radius: 3px 3px 0 0;
+    margin-right: .5em;
+    transform: translateY(2px);
+    transition: transform .3s ease;
+  }
+
+  .tabs-component-tab.is-active {
+    border-bottom: solid 1px #fff;
+    z-index: 2;
+    transform: translateY(0);
+  }
+}
+
+.tabs-component-tab-a {
+  align-items: center;
+  color: inherit;
+  display: flex;
+  padding: .75em 1em;
+  text-decoration: none;
+}
+
+.tabs-component-panels {
+  padding: 4em 0;
+}
+
+@media (min-width: 700px) {
+  .tabs-component-panels {
+    background-color: #fff;
+    border: solid 1px #ddd;
+    border-radius: 0 6px 6px 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .05);
+    padding: 4em 2em;
+  }
+}
+</style>
