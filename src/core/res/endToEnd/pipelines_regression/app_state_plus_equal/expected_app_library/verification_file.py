@@ -121,3 +121,27 @@ post: door_lock_invariant(**__return__)
             door_lock_app_state.BOOL_0 = False
     return {'door_lock_app_state': door_lock_app_state, 'physical_state':
         physical_state, 'internal_state': internal_state}
+
+def system_behaviour(door_lock_app_state: AppState, physical_state:
+    PhysicalState, internal_state: InternalState):
+    if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state, internal_state
+        ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state,
+        internal_state):
+        if not door_lock_app_state.BOOL_0:
+            if door_lock_app_state.INT_0 > 1:
+                None
+                door_lock_app_state.BOOL_0 = True
+            else:
+                door_lock_app_state.INT_0 += 1
+    else:
+        door_lock_app_state.INT_0 = 0
+        if door_lock_app_state.BOOL_0:
+            if DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state, internal_state
+                ):
+                None
+            elif DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state,
+                internal_state):
+                None
+            door_lock_app_state.BOOL_0 = False
+    return {'door_lock_app_state': door_lock_app_state, 'physical_state':
+        physical_state, 'internal_state': internal_state}

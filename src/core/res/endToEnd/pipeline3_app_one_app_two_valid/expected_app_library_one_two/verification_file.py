@@ -169,3 +169,20 @@ post: test_app_two_invariant(**__return__)
     return {'test_app_one_app_state': test_app_one_app_state,
         'test_app_two_app_state': test_app_two_app_state, 'physical_state':
         physical_state, 'internal_state': internal_state}
+
+def system_behaviour(test_app_one_app_state: AppState,
+    test_app_two_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState):
+    if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+        internal_state) or test_app_one_app_state.INT_0 == 42:
+        None
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+    else:
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
+    if TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state, internal_state
+        ) != None and TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state,
+        internal_state) > 22:
+        None
+    return {'test_app_one_app_state': test_app_one_app_state,
+        'test_app_two_app_state': test_app_two_app_state, 'physical_state':
+        physical_state, 'internal_state': internal_state}

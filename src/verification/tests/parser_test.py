@@ -16,6 +16,7 @@ parser = Parser(
 def test_parser_no_apps():
     parser = Parser("no", "no")
     assert len(parser.get_app_names()) == 0
+    assert len(parser.get_app_priorities().keys()) == 0
 
 
 def test_parser_parse_group_addresses():
@@ -37,6 +38,24 @@ def test_parser_parse_filenames():
         "third_app": {"file1.json", "file2.csv"},
         "first_app": {"file3.json", "file4.csv"},
         "second_app": {"file5.json", "file6.csv"},
+    }
+
+def test_parser_get_names():
+    app_names = parser.get_app_names()
+
+    assert app_names == [
+        "first_app",
+        "second_app",
+        "third_app",
+    ]
+
+def test_parser_get_app_priority():
+    priorities = parser.get_app_priorities()
+
+    assert priorities == {
+        "third_app": Parser.NOT_PRIVILEGED_PRIORITY_LEVEL,
+        "first_app": Parser.NOT_PRIVILEGED_PRIORITY_LEVEL,
+        "second_app": Parser.PRIVILEGED_PRIORITY_LEVEL,
     }
 
 

@@ -19,6 +19,7 @@ devices_instances = parser.parse_devices_instances()
 devices_classes = parser.parse_devices_classes()
 app_names = parser.get_app_names()
 filenames = parser.parse_filenames()
+app_priorities = parser.get_app_priorities()
 
 
 generator = Generator(
@@ -52,7 +53,7 @@ def test_generator_generate_conditions_file():
 
 
 def test_generator_generate_verification_file():
-    generator.generate_verification_file()
+    generator.generate_verification_file(app_priorities)
 
     with open(VERIFICATION_FILE_PATH, "r") as v:
         print(v.read())
@@ -71,7 +72,7 @@ def test_generator_generate_verification_file():
 
 
 def test_generator_generate_runtime_file():
-    generator.generate_runtime_file()
+    generator.generate_runtime_file(app_priorities)
 
     with open(RUNTIME_FILE_PATH, "r") as v:
         print(v.read())

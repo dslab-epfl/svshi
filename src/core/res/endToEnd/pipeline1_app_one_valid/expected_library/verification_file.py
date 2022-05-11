@@ -130,3 +130,14 @@ post: test_app_one_invariant(**__return__)
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
     return {'test_app_one_app_state': test_app_one_app_state,
         'physical_state': physical_state, 'internal_state': internal_state}
+
+def system_behaviour(test_app_one_app_state: AppState, physical_state:
+    PhysicalState, internal_state: InternalState):
+    if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+        internal_state) or test_app_one_app_state.INT_0 == 42:
+        None
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+    else:
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
+    return {'test_app_one_app_state': test_app_one_app_state,
+        'physical_state': physical_state, 'internal_state': internal_state}

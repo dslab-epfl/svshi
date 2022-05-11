@@ -1,5 +1,5 @@
 {
-  "permissionLevel": "notPrivileged",
+  "permissionLevel": "privileged",
   "timer": 0,
   "files": ["file5.json", "file6.csv"],
   "devices": [

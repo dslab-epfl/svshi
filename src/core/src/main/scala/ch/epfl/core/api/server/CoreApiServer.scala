@@ -9,21 +9,13 @@ import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.parser.json.prototype.AppInputJsonParser
-import ch.epfl.core.utils.Constants.{
-  APP_LIBRARY_FOLDER_PATH,
-  GENERATED_FOLDER_PATH,
-  PHYSICAL_STRUCTURE_JSON_FILE_NAME,
-  PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME,
-  PYTHON_RUNTIME_LOGS_FOLDER_PATH,
-  PYTHON_RUNTIME_LOGS_RECEIVED_TELEGRAMS_LOG_FILE_NAME
-}
+import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.{Constants, FileUtils}
 import ch.epfl.core.{Svshi, SvshiRunResult, SvshiTr}
 import io.undertow.Undertow
 import os.Path
 
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.{Lock, ReentrantLock}
 import scala.util.{Failure, Success, Try}
 

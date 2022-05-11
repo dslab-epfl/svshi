@@ -35,6 +35,10 @@ class Parser:
     JSON files parser.
     """
 
+    # Arbitrary: non-privileged = 0 and privileged = 10
+    PRIVILEGED_PRIORITY_LEVEL = 10
+    NOT_PRIVILEGED_PRIORITY_LEVEL = 0
+
     def __init__(self, generated_dir_name: str, app_library_dir_name: str):
         self.__generated_dir_name = generated_dir_name
         self.__app_library_dir_name = app_library_dir_name
@@ -53,12 +57,27 @@ class Parser:
         """
         Gets all the app names.
         """
-        return list(
-            map(
-                lambda a: a.name,
-                self.__apps,
+        return sorted(
+            list(
+                map(
+                    lambda a: a.name,
+                    self.__apps,
+                )
             )
         )
+
+    def get_app_priorities(self) -> Dict[str, int]:
+        """
+        Returns the priority level of all apps in a Dict mapping app names to priority level.
+        The higher the priority level, the more priviledged the app is.
+        """
+        
+        return {
+            a.name: Parser.PRIVILEGED_PRIORITY_LEVEL
+            if self.__app_protos[a.name]["permissionLevel"] == "privileged"
+            else Parser.NOT_PRIVILEGED_PRIORITY_LEVEL
+            for a in self.__apps
+        }
 
     def __get_apps(self) -> List[App]:
         def get_apps_from_directory(directory: str) -> List[App]:

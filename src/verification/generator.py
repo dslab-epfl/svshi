@@ -234,7 +234,7 @@ class AppState:
 """
         self.__code.append(code)
 
-    def __generate_device_classes(self,verification):
+    def __generate_device_classes(self, verification):
         code = []
         for device in sorted(self.__devices_classes, key=lambda c: c.app.name):
             app = device.app.name
@@ -244,7 +244,9 @@ class AppState:
             formatted_group_address = self.__group_addr_to_field_name(address)
             if type == "binary":
                 code.append(
-                    self.__BINARY_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
+                    self.__BINARY_SENSOR_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
                 )
             elif type == "temperature":
                 code.append(
@@ -254,13 +256,21 @@ class AppState:
                 )
             elif type == "humidity":
                 code.append(
-                    self.__HUMIDITY_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
+                    self.__HUMIDITY_SENSOR_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
                 )
             elif type == "switch":
-                code.append(self.__SWITCH_TEMPLATE(app, name, formatted_group_address, verification))
+                code.append(
+                    self.__SWITCH_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
+                )
             elif type == "co2":
                 code.append(
-                    self.__CO2_SENSOR_TEMPLATE(app, name, formatted_group_address, verification)
+                    self.__CO2_SENSOR_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
                 )
         if verification:
             code.append(self.__SVSHI_API_IMPL_VRF)
@@ -289,13 +299,19 @@ class AppState:
 
         self.__code.extend(devices_code)
 
-    def __generate_invariant_and_iteration_functions(self, verification: bool):
+    def __generate_invariant_and_iteration_functions(
+        self, verification: bool, app_priorities: Dict[str, int]
+    ):
         self.__code.append("\n")
-        imports, functions = self.__manipulator.manipulate_mains(verification)
+        imports, functions = self.__manipulator.manipulate_mains(
+            verification, app_priorities
+        )
         self.__imports.extend(imports)
         self.__code.extend(functions)
 
-    def __generate_file(self, filename: str, verification: bool):
+    def __generate_file(
+        self, filename: str, verification: bool, app_priorities: Dict[str, int]
+    ):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
             self.__generate_app_state_class()
@@ -303,7 +319,9 @@ class AppState:
             self.__generate_internal_state_class()
             self.__generate_device_classes(verification)
             self.__generate_devices_instances()
-            self.__generate_invariant_and_iteration_functions(verification)
+            self.__generate_invariant_and_iteration_functions(
+                verification, app_priorities
+            )
             file.write("\n".join((sorted(set(self.__imports)))))
             file.write("\n\n")
             file.write("\n".join(self.__code))
@@ -312,17 +330,17 @@ class AppState:
         self.__code.clear()
         self.__imports.clear()
 
-    def generate_verification_file(self):
+    def generate_verification_file(self, app_priorities: Dict[str, int]):
         """
         Generates the whole verification file.
         """
-        self.__generate_file(self.__verification_filename, True)
+        self.__generate_file(self.__verification_filename, True, app_priorities)
 
-    def generate_runtime_file(self):
+    def generate_runtime_file(self, app_priorities: Dict[str, int]):
         """
         Generates the whole runtime file.
         """
-        self.__generate_file(self.__runtime_filename, False)
+        self.__generate_file(self.__runtime_filename, False, app_priorities)
 
     def generate_conditions_file(self):
         """

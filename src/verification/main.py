@@ -39,8 +39,9 @@ def main(
         app_names,
         filenames,
     )
-    generator.generate_verification_file()
-    generator.generate_runtime_file()
+    app_priorities = parser.get_app_priorities()
+    generator.generate_verification_file(app_priorities=app_priorities)
+    generator.generate_runtime_file(app_priorities=app_priorities)
     generator.generate_conditions_file()
     print(verification_filename)
 

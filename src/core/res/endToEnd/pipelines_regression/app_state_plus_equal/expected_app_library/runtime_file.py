@@ -118,3 +118,26 @@ def door_lock_unchecked_send_message(msg: str) ->None:
     token = 'xoxb-2702504146389-2876497796775-r21j0QnaGcyfjwEVDFrYpkYO'
     slack_client = WebClient(token=token)
     slack_client.chat_postMessage(channel='inn319', text=msg)
+
+def system_behaviour(door_lock_app_state: AppState, physical_state:
+    PhysicalState, internal_state: InternalState):
+    if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state
+        ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
+        if not door_lock_app_state.BOOL_0:
+            if door_lock_app_state.INT_0 > 1:
+                door_lock_unchecked_send_message(
+                    'The door at office INN319 is still opened but nobody is there!'
+                    )
+                door_lock_app_state.BOOL_0 = True
+            else:
+                door_lock_app_state.INT_0 += 1
+    else:
+        door_lock_app_state.INT_0 = 0
+        if door_lock_app_state.BOOL_0:
+            if DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state):
+                door_lock_unchecked_send_message(
+                    'Someone entered the office INN319. All good!')
+            elif DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
+                door_lock_unchecked_send_message(
+                    'Someone locked the door of the office INN319. All good!')
+            door_lock_app_state.BOOL_0 = False

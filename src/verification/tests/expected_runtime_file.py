@@ -317,3 +317,26 @@ def second_app_iteration(second_app_app_state: AppState, physical_state:
 
 def second_app_unchecked_time() ->float:
     return time.time()
+
+def system_behaviour(first_app_app_state: AppState, second_app_app_state:
+    AppState, third_app_app_state: AppState, physical_state: PhysicalState,
+    internal_state: InternalState):
+    if first_app_uncheckedcompute_bool() and not first_app_app_state.BOOL_1:
+        first_app_app_state.INT_1 = 42
+        first_app_unchecked_print(FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.
+            is_on(physical_state))
+    else:
+        v = first_app_unchecked_return_two()
+        first_app_unchecked_print(v)
+        first_app_unchecked_print('/first_app/file4.csv')
+    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
+        ) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(physical_state
+        ) > 600.0:
+        another_file = '/third_app/file2.csv'
+        THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+    elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
+        t = svshi_api.get_time(internal_state)
+        THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
+    if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
+        ) and second_app_unchecked_time() > 2.0:
+        SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)

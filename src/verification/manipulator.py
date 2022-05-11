@@ -1,4 +1,6 @@
 import ast
+import copy
+from pydoc import doc
 import astor
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
@@ -43,6 +45,7 @@ class Manipulator:
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
+    __SYSTEM_BEHAVIOUR_FUNC_NAME = "system_behaviour"
 
     def __init__(
         self,
@@ -318,7 +321,7 @@ class Manipulator:
                 f_name = cast(ast.Name, op.func.value).id
                 f = op.func
                 if isinstance(f.value, ast.Name) and f.value.id in {"svshi_api"}:
-                    #functions of the svshi_api object is called
+                    # functions of the svshi_api object is called
                     op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
             elif isinstance(op.func, ast.Name):
                 f_name = op.func.id
@@ -329,7 +332,7 @@ class Manipulator:
             if f_name in accepted_names:
                 # If the function name is in the list of accepted names, add the state argument to the call
                 op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
-                if(verification):
+                if verification:
                     op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
 
                 # Rename the instance calling the function, adding the app name to it
@@ -365,49 +368,62 @@ class Manipulator:
             ):
                 # Add the state arguments to the function
                 # For the verification file we pass all the app states, for the runtime one just one is enough
-                state_args = (
-                    list(
-                        map(
-                            lambda n: ast.arg(
-                                n,
-                                ast.Name(self.__APP_STATE_TYPE, ast.Load),
-                            ),
-                            filter(
-                                lambda n: n.startswith(app_name),
-                                self.__app_states_names,
-                            ),
-                        )
-                    )
-                    if not verification
-                    else list(
-                        map(
-                            lambda n: ast.arg(
-                                n,
-                                ast.Name(self.__APP_STATE_TYPE, ast.Load),
-                            ),
-                            self.__app_states_names,
-                        )
-                    )
-                )
-                state_args.append(
-                    ast.arg(
-                        self.__PHYSICAL_STATE_ARGUMENT,
-                        ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
-                    )
-                )
-                state_args.append(
-                        ast.arg(
-                            self.__INTERNAL_STATE_ARGUMENT,
-                            ast.Name(self.__INTERNAL_STATE_TYPE, ast.Load),
-                        )
-                    )
-                op.args.args.extend(state_args)
+                only_app_state_app_name = "" if verification else app_name
+                self.__add_states_arguments_to_f(op, only_app_state_app_name)
 
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(
                 op.body, app_name, accepted_names, unchecked_functions, verification
             )
+
+    def __add_states_arguments_to_f(
+        self, f: ast.FunctionDef, only_app_state_app_name: str
+    ) -> ast.FunctionDef:
+
+        """
+        Adds in place the states (Physical and App states) to the function arguments.
+        only_app_state_app_name is used if only one app state should be added, in that case this arg is the name of said app; it must equal "" to add all app_states
+        returns the FunctionDef for convenience
+        """
+        state_args = (
+            list(
+                map(
+                    lambda n: ast.arg(
+                        n,
+                        ast.Name(self.__APP_STATE_TYPE, ast.Load),
+                    ),
+                    filter(
+                        lambda n: n.startswith(only_app_state_app_name),
+                        self.__app_states_names,
+                    ),
+                )
+            )
+            if only_app_state_app_name != ""
+            else list(
+                map(
+                    lambda n: ast.arg(
+                        n,
+                        ast.Name(self.__APP_STATE_TYPE, ast.Load),
+                    ),
+                    self.__app_states_names,
+                )
+            )
+        )
+        state_args.append(
+            ast.arg(
+                self.__PHYSICAL_STATE_ARGUMENT,
+                ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
+            )
+        )
+        state_args.append(
+            ast.arg(
+                self.__INTERNAL_STATE_ARGUMENT,
+                ast.Name(self.__INTERNAL_STATE_TYPE, ast.Load),
+            )
+        )
+        f.args.args.extend(state_args)
+        return f
 
     def __construct_contracts(
         self,
@@ -458,7 +474,7 @@ class Manipulator:
                 else list(self.__app_states_names)
             )
             arg_names.append(self.__PHYSICAL_STATE_ARGUMENT)
-            if(verification):
+            if verification:
                 arg_names.append(self.__INTERNAL_STATE_ARGUMENT)
             invariant = pre_str
             invariant += construct_func_call(
@@ -497,9 +513,19 @@ class Manipulator:
             f.body.insert(0, new_doc_string_ast)
         return f
 
+    def __remove_doc_string(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        """
+        Remove the docstring of f is there is one, in place
+        returns the FunctionDef for convenience
+        """
+        doc_string = ast.get_docstring(f)
+        if doc_string:
+            f.body = f.body[1:]
+        return f
+
     def __add_return_states(self, f: ast.FunctionDef) -> ast.FunctionDef:
         """
-        Adds a statement that returns app, internal and physical states as a dict to the end of the body of the given function, returning it.
+        Modify the function in place to add a statement that returns all app states, the internal state and the physical state as a dict to the end of the body of the given function. It returns the modified function for convenience.
         """
         keys = list(map(lambda n: ast.Constant(n), self.__app_states_names))
         keys.append(ast.Constant("physical_state"))
@@ -762,28 +788,106 @@ class Manipulator:
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
 
-    def manipulate_mains(self, verification: bool) -> Tuple[List[str], List[str]]:
+    def manipulate_mains(
+        self, verification: bool, app_priorities: Dict[str, int]
+    ) -> Tuple[List[str], List[str]]:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
         and adding the state argument to the calls. Then, the `invariant` and `iteration` functions are extracted, together with their imports,
         and dumped in the verification file.
+        It also produces a function called `system_behaviour` that represents the whole system and is thus a combination of all the iteration functions.
+        To do so, it needs the app_priorities to construct the function correctly to respect them
         """
         imports = []
         functions = []
+        app_names_to_iteration_function_without_ret = {}
+        app_names_to_unchecked_funcs = {}
         for (
             directory,
             app_name,
         ), accepted_names in sorted(self.__instances_names_per_app.items()):
-            imps, funcs = self.__manipulate_app_main(
+            (
+                imps,
+                funcs,
+                iteration_func_without_ret,
+                unchecked_functions,
+            ) = self.__manipulate_app_main(
                 directory, app_name, accepted_names, verification
             )
             # Some imports might be a single string containing multiple imports separated by '\n'
             imps = (i for imp in imps for i in imp.split("\n"))
             imports.extend(imps)
             functions.append(funcs)
+            app_names_to_iteration_function_without_ret[
+                app_name
+            ] = iteration_func_without_ret
+            app_names_to_unchecked_funcs[app_name] = unchecked_functions
+
+        # Generate the system behaviour function
+        system_behaviour_func = self.__generate_system_behaviour_function(
+            app_names_to_iteration_funcs_without_ret=app_names_to_iteration_function_without_ret,
+            app_unchecked_funcs=app_names_to_unchecked_funcs,
+            app_priorities=app_priorities,
+            verification=verification,
+        )
+
+        system_behaviour_func_str = astor.to_source(system_behaviour_func)
+        functions.append(system_behaviour_func_str)
 
         # Keep only non-empty imports
         return [imp.replace("\n", "") for imp in imports if imp], functions
+
+    def __generate_system_behaviour_function(
+        self,
+        app_names_to_iteration_funcs_without_ret: Dict[str, ast.FunctionDef],
+        app_priorities: Dict[str, int],
+        app_unchecked_funcs: Dict[str, List[UncheckedFunction]],
+        verification: bool,
+    ) -> ast.FunctionDef:
+        """
+        Create the system behaviour function that contains all iterations functions back to back and that represents the behaviour of the entire system.
+        It takes as arguments:
+            - a Dict that maps all application names to their iteration functions, manipulated but without any return statement added
+            - a Dict that maps all application names to their priority: the higher the number, the higher the priority
+            - a Dict that maps all application names to their unchecked functions
+            - a bool indicating whether it must generate a verification version of the functions
+
+        Applications with higher priority level can override behaviour of lower priority apps. Apps with same level are ordered by alphabetical order (arbitrary so no gurantee)
+
+        If the verification bool flag is set, a return statement is added to return all states, the unchecked functions are replaced by a variable and taken as arguments
+        """
+        app_names = app_priorities.keys()
+        priority_low_to_high_sorted_app_names: list[str] = []
+        sorted_low_to_high_distinct_priorities = sorted(
+            list(set(app_priorities.values()))
+        )
+        for i in sorted_low_to_high_distinct_priorities:
+            sorted_low_to_high_app_names = sorted(
+                filter(lambda n: app_priorities[n] == i, app_names)
+            )
+            priority_low_to_high_sorted_app_names.extend(sorted_low_to_high_app_names)
+
+        body = []
+        unchecked_funcs: List[UncheckedFunction] = []
+        for app_name in priority_low_to_high_sorted_app_names:
+            iteration_func = app_names_to_iteration_funcs_without_ret[app_name]
+            body.extend(iteration_func.body)
+            unchecked_funcs.extend(app_unchecked_funcs[app_name])
+
+        args = ast.arguments(args=[], defaults=[])
+        behaviour_func = ast.FunctionDef(
+            name=self.__SYSTEM_BEHAVIOUR_FUNC_NAME,
+            body=body,
+            decorator_list=[],
+            args=args,
+        )
+        behaviour_func = self.__add_states_arguments_to_f(behaviour_func, "")
+        if verification:
+            behaviour_func = self.__add_return_states(behaviour_func)
+            behaviour_func = self.__add_unchecked_function_arguments(
+                behaviour_func, unchecked_funcs
+            )
+        return behaviour_func
 
     def __check_no_invalid_calls_in_function(
         self, functions: List[ast.FunctionDef], invalid_func_names: Set[str]
@@ -878,9 +982,10 @@ class Manipulator:
 
     def __add_unchecked_function_arguments(
         self, f: ast.FunctionDef, arguments: List[UncheckedFunction]
-    ):
+    ) -> ast.FunctionDef:
         """
         In place, adds to the given function the given arguments.
+        return the FunctionDef for convenience
         """
         ast_arguments = map(
             lambda unchecked_f: ast.arg(
@@ -891,6 +996,7 @@ class Manipulator:
         )
 
         f.args.args.extend(ast_arguments)
+        return f
 
     def __rename_files(
         self,
@@ -986,7 +1092,16 @@ class Manipulator:
         app_name: str,
         accepted_names: Set[str],
         verification: bool,
-    ) -> Tuple[List[str], str]:
+    ) -> Tuple[List[str], str, ast.FunctionDef, List[UncheckedFunction]]:
+        """
+        Returns the list of imports as strings and the manipulated invariant, function as pretty printed code (as string), the iteration function ast without the return
+        statement but with the other manipulation, and the list of UncheckedFunction of the app.
+        We keep imports added by the user.
+        The manipulation consists in modifying the functions to add the app name, renaming all used files, renaming calls to devices and adding arguments to
+        calls to their methods.
+        If it is for the verification file (i.e. verification is True), the imports are dumped, the calls to unchecked functions are replaced by values of the same name
+        """
+
         def extract_functions_and_imports(
             module_body: List[ast.stmt],
             unchecked_func_dict: Dict[str, UncheckedFunction],
@@ -994,17 +1109,16 @@ class Manipulator:
             # We only keep invariant and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
                 map(
-                    lambda f: self.__add_return_states(
-                        self.__add_doc_string(
-                            f,
-                            self.__construct_contracts(
-                                self.__app_names,
-                                list(unchecked_func_dict.values()),
-                                verification,
-                            ),
-                        )
+                    lambda f: self.__add_doc_string(
+                        f,
+                        self.__construct_contracts(
+                            self.__app_names,
+                            list(unchecked_func_dict.values()),
+                            verification,
+                        ),
                     )
-                    if f.name == f"{app_name}_iteration" and verification
+                    if f.name == f"{app_name}_{self.__ITERATION_FUNC_NAME}"
+                    and verification
                     else f,
                     cast(
                         List[ast.FunctionDef],
@@ -1119,8 +1233,33 @@ class Manipulator:
                 for f in iteration_functions:
                     self.__add_unchecked_function_arguments(f, unchecked_funcs)
 
+            # Get the iteration function as an AST without return statement to generate the system behaviour function later
+            # There is only one per app
+            iteration_ast = copy.deepcopy(
+                list(
+                    filter(
+                        lambda f: f.name == f"{app_name}_{self.__ITERATION_FUNC_NAME}",
+                        functions_ast,
+                    )
+                )[0]
+            )
+
+            # We need to remove the docstring from the iteration_ast
+            iteration_ast = self.__remove_doc_string(iteration_ast)
+
+            if verification:
+                # Add a return statement that returns the states for verification
+                functions_ast = list(
+                    map(
+                        lambda f: self.__add_return_states(f)
+                        if f.name == f"{app_name}_{self.__ITERATION_FUNC_NAME}"
+                        else f,
+                        functions_ast,
+                    )
+                )
+
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))
             imports = astor.to_source(ast.Module(imports_ast))
             from_imports = astor.to_source(ast.Module(from_imports_ast))
-            return [imports, from_imports], functions
+            return [imports, from_imports], functions, iteration_ast, unchecked_funcs
