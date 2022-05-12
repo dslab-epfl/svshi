@@ -3,7 +3,7 @@ from slack_sdk.web.client import WebClient
 
 
 def unchecked_send_message(message: str) -> None:
-    token = "xoxb-2702504146389-2876497796775-3ccE1bS5XzrzfjpMLs7ysoUj"
+    token = "xoxb-2702504146389-2876497796775-bn4v0FlBytPfYcDFPU3lGS0K"
     slack_client = WebClient(token=token)
     slack_client.chat_postMessage(channel="#plants", text=message)
 
