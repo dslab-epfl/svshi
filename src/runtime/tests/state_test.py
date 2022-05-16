@@ -46,6 +46,7 @@ def always_valid_conditions(
     test3_app_state: AppState,
     test4_app_state: AppState,
     physical_state: PhysicalState,
+    internal_state: InternalState,
 ) -> bool:
     return True
 
@@ -56,6 +57,7 @@ def always_invalid_conditions(
     test3_app_state: AppState,
     test4_app_state: AppState,
     physical_state: PhysicalState,
+    internal_state: InternalState,
 ) -> bool:
     return False
 
@@ -66,6 +68,7 @@ def conditions(
     test3_app_state: AppState,
     test4_app_state: AppState,
     physical_state: PhysicalState,
+    internal_state: InternalState,
 ) -> bool:
     return physical_state.GA_1_1_2 != 8
 

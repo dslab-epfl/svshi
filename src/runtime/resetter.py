@@ -38,6 +38,13 @@ class PhysicalState:
     GA_1_1_3: bool
     GA_1_1_4: bool
 
+@dataclasses.dataclass
+class InternalState:
+    \"\"\"
+    inv: self.time>=0
+    \"\"\"
+    time: int #time in seconds
+
 """.strip()
 
     def __init__(
@@ -57,10 +64,10 @@ class PhysicalState:
         file = f"""
 # Default file, will be overwritten while running
         
-from .runtime_file import PhysicalState
+from .runtime_file import AppState, PhysicalState, InternalState
 
-def check_conditions(state: PhysicalState) -> bool:
-    return True    
+def check_conditions(app_state: AppState, state: PhysicalState, internal_state: InternalState) -> bool:
+    return True  
 """.strip()
 
         with open(self.__conditions_file_path, "w+") as output_file:

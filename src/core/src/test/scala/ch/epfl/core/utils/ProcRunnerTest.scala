@@ -18,8 +18,8 @@ class ProcRunnerTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     val (resCode, output) = callPythonBlocking(None, None, "res.failingPythonSubprocess", wd)
     resCode shouldEqual 1
     output.length shouldEqual 2
-    output.head shouldEqual "this a line of error"
-    output.tail.head shouldEqual "this is a second line"
+    output.head shouldEqual "stdout: this a line of error"
+    output.tail.head shouldEqual "stdout: this is a second line"
   }
   "callPythonBlocking" should "call the callbacks for stdOut when calling the printLinesOutAndExit0SubProcess" in {
     val wd = Constants.SVSHI_SRC_FOLDER_PATH / "core"

@@ -8,7 +8,7 @@ import scala.util.{Failure, Success, Try}
   */
 object ProcRunner {
 
-  /** Execute the given python module as a new process and return the exit code along with the stdout lines.
+  /** Execute the given python module as a new process and return the exit code along with the stdout and stderr lines combined.
     * It can optionally write stdOut and/or stdErr to some files. If defined, it redirects the corresponding output
     * to the passed file
     * @param stdOut: Optionally, a function to execute on each new line of stdOut
@@ -30,7 +30,7 @@ object ProcRunner {
     invoked match {
       case Failure(exception: os.SubprocessException) =>
         val result = exception.result
-        (result.exitCode, result.out.lines.toList)
+        (result.exitCode, result.out.lines.toList.map(e => f"stdout: $e") ++ result.err.lines.toList.map(e => f"stderr: $e"))
       case Success(result)    => (result.exitCode, result.out.lines.toList)
       case Failure(exception) => throw exception
     }

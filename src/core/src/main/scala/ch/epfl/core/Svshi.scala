@@ -65,9 +65,9 @@ object Svshi extends SvshiTr {
           existingAppsLibrary.apps.foreach { app =>
             info(s"Installing requirements of the app '${app.name}...'")
             val path = app.appFolderPath
-            val (i, msgs) = ProcRunner.callPythonBlocking(None, None, "pip", path, "install", "-r", "requirements.txt")
+            val (i, msgs) = ProcRunner.callPythonBlocking(None, None, "pip", path, "install", "-r", "requirements.txt", "-vvv", "--debug")
             if (i != PIP_SUCCESS_CODE) {
-              err(s"Cannot install requirements for app '${app.name}'. See pip outputs below:")
+              err(s"Cannot install requirements for app '${app.name}'. Pip exited with code = $i. See pip outputs below:")
               msgs.foreach(err)
               return new SvshiRunResult(None, ERROR_CODE)
             }

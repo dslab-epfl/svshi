@@ -56,8 +56,14 @@ RUN echo 'root:nigiri' | chpasswd
 # Add non-root user
 RUN useradd -rm -d /home/maki -s /bin/bash -g root -G sudo -u 1001 maki
 RUN echo 'maki:maki' | chpasswd
+
+RUN chown -R maki /usr/local/lib/node_modules/
+
+RUN chmod -R 775 /usr/local/lib/node_modules/
+
 USER maki
 WORKDIR /home/maki
+
 
 
 # Install pip3 as maki
@@ -91,6 +97,7 @@ USER root
 # Install SVSHI
 RUN cd ${SVSHI_HOME}/ && ./build.sh 
 RUN cp -r /root/local/ /home/maki
+RUN chown -R maki ${SVSHI_HOME}/
 
 USER maki
 

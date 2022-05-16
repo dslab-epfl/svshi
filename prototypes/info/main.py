@@ -1,4 +1,3 @@
-from unicodedata import ucnhash_CAPI
 from instances import app_state, CO_TWO, TEMPERATURE
 import time
 from slack_sdk.web.client import WebClient
