@@ -448,6 +448,7 @@ object Svshi extends SvshiTr {
 
   private def backupAppLibrary(destination: os.Path): Unit = {
     if (os.exists(destination)) os.remove.all(destination)
+    os.makeDir.all(destination)
     os.copy.over(APP_LIBRARY_FOLDER_PATH, destination)
   }
 
