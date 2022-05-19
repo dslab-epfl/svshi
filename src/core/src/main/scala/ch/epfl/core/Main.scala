@@ -34,6 +34,9 @@ object Main {
     // Check if generated folder exists and if not, create it
     if (!os.exists(GENERATED_FOLDER_PATH)) os.makeDir.all(GENERATED_FOLDER_PATH)
 
+    // Check if local folder exists and if not, create it
+    if (!os.exists(SVSHI_LOCAL_INTERNAL_FOLDER_PATH)) os.makeDir.all(SVSHI_LOCAL_INTERNAL_FOLDER_PATH)
+
     val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
     val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
 

@@ -1,0 +1,17 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "files": [
+    
+  ],
+  "devices": [
+    {
+      "name": "light",
+      "deviceType": "switch"
+    },
+    {
+      "name": "sensor",
+      "deviceType": "binary"
+    }
+  ]
+}

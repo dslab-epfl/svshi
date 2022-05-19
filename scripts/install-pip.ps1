@@ -1,5 +1,5 @@
 
-param([String]$currentDir=($MyInvocation.MyCommand.Path | split-path -parent)) 
+param([String]$currentDir=($MyInvocation.MyCommand.Path | split-path -parent | split-path -parent)) 
 
 Function CommandExists
 {

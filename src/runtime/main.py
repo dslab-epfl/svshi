@@ -84,6 +84,7 @@ async def main(
         addresses_listeners = get_addresses_listeners(apps)
 
         connection_config = ConnectionConfig(
+            route_back=True,  # To enable connection through the docker
             connection_type=ConnectionType.TUNNELING,
             gateway_ip=knx_address,
             gateway_port=knx_port,

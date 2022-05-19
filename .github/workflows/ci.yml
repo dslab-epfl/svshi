@@ -38,7 +38,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
   test-generator:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
   test-verification:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
   test-runtime:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -119,7 +119,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   fail_if_pull_request_is_draft:
     if: github.event.pull_request.draft == true

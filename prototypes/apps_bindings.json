@@ -1,0 +1,88 @@
+{
+  "appBindings": [
+    {
+      "name": "info",
+      "bindings": [
+        {
+          "name": "CO_TWO",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.CO2SensorBinding",
+            "typeString": "co2",
+            "physDeviceId": -2092645687
+          }
+        },
+        {
+          "name": "temperature",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
+            "typeString": "temperature",
+            "physDeviceId": -544932998
+          }
+        }
+      ]
+    },
+    {
+      "name": "door_lock",
+      "bindings": [
+        {
+          "name": "door_lock_sensor",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": 1542297768
+          }
+        },
+        {
+          "name": "presence_detector",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": -562939223
+          }
+        }
+      ]
+    },
+    {
+      "name": "plants",
+      "bindings": [
+        {
+          "name": "humidity_sensor",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.HumiditySensorBinding",
+            "typeString": "humidity",
+            "physDeviceId": -803067485
+          }
+        }
+      ]
+    },
+    {
+      "name": "ventilation",
+      "bindings": [
+        {
+          "name": "presence_detector",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binary",
+            "physDeviceId": -562939223
+          }
+        },
+        {
+          "name": "co_two_sensor",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.CO2SensorBinding",
+            "typeString": "co2",
+            "physDeviceId": -2092645687
+          }
+        },
+        {
+          "name": "ventilation",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
+            "typeString": "switch",
+            "physDeviceId": 2136915678
+          }
+        }
+      ]
+    }
+  ]
+}
