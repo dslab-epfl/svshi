@@ -1,9 +1,10 @@
 #!/bin/sh
 echo "Building the release... \n"
-VERSION=1.4.1-SNAPSHOT
+VERSION=1.4.2-SNAPSHOT
 
 cd core
 rm -rf target/*.tar.gz
+sbt compile
 sbt packArchive
 
 cd ../svshi_gui

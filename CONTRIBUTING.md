@@ -240,8 +240,9 @@ To build a new release:
 
 1. Update the variable `VERSION` in `src/build_release.sh`.
 2. Update the CLI version in `src/core/build.sbt`. Do not include `SNAPSHOT` in the version.
-3. Run `./build_release.sh` inside `src/` to build the archive.
-4. Create a new release on [GitHub](https://github.com/dslab-epfl/svshi/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
+3. Update the GUI version in `src/svshi_gui/package.json`.
+4. Run `./build_release.sh` inside `src/` to build the archive.
+5. Create a new release on [GitHub](https://github.com/dslab-epfl/svshi/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
 
 ## Code of Conduct
 
