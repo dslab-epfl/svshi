@@ -4,10 +4,10 @@
   <img src="src/res/logo.png" alt="logo" width="50%"/>
 </p>
 
-![CI](https://github.com/dslab-epfl/svshi_private/actions/workflows/ci.yml/badge.svg)
-[![codecov](https://codecov.io/gh/dslab-epfl/svshi_private/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/svshi)
-![Latest Stable Version](https://img.shields.io/github/v/release/dslab/svshi?label=version)
-![License](https://img.shields.io/github/license/dslab/svshi)
+![CI](https://github.com/dslab-epfl/svshi/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dslab-epfl/svshi/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/svshi)
+![Latest Stable Version](https://img.shields.io/github/v/release/dslab-epfl/svshi?label=version)
+![License](https://img.shields.io/github/license/dslab-epfl/svshi)
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
