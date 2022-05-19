@@ -17,6 +17,7 @@ def iteration():
         VENTILATION.off()
 
 def unchecked_in_meeting(email: str) -> bool:
+    return False
     gc = GoogleCalendar(email, credentials_path="credentials.json")
 
     acc = False

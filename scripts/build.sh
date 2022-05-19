@@ -1,4 +1,5 @@
 #!/bin/sh
+cd ..
 echo "Building svshi...\n"
 cd src/core
 sbt "pack; packInstall"

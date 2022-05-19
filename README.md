@@ -11,19 +11,23 @@
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
+  - [GUI](#gui)
+    - [Docker (can be used on Windows or Unix machine) <-- RECOMMENDED](#docker-can-be-used-on-windows-or-unix-machine----recommended)
+    - [Unix (Linux / macOS)](#unix-linux--macos)
     - [From archive](#from-archive)
-      - [Unix (Linux / macOS)](#unix-linux--macos)
+      - [Unix (Linux / macOS)](#unix-linux--macos-1)
       - [Windows](#windows)
     - [From sources](#from-sources)
-      - [Unix (Linux / macOS)](#unix-linux--macos-1)
+      - [Unix (Linux / macOS)](#unix-linux--macos-2)
       - [Windows](#windows-1)
     - [Docker](#docker)
-  - [GUI](#gui)
+  - [GUI](#gui-1)
     - [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine)
-    - [Unix (Linux / macOS)](#unix-linux--macos-2)
+    - [Unix (Linux / macOS)](#unix-linux--macos-3)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
     - [Writing apps](#writing-apps)
+      - [SVSHI built-in functions](#svshi-built-in-functions)
     - [App example](#app-example)
   - [Running the applications](#running-the-applications)
   - [Updating an application](#updating-an-application)
@@ -38,7 +42,7 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
-  - [GUI](#gui-1)
+  - [GUI](#gui-2)
     - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
@@ -59,6 +63,35 @@ To work, SVSHI needs Python 3.9 (or newer)([download here](https://www.python.or
 
 To check if the installation was successful, run `svshi version` in your terminal.
 
+## GUI
+
+SVSHI comes with a GUI in the form of a web application. For this usage, we strongly recommend to use the provided Docker image.
+
+### Docker (can be used on Windows or Unix machine) <-- RECOMMENDED
+
+Here the SVSHI system and the frontend server run in the same Docker image. To use it:
+
+- Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
+- Run `cd ./scripts && ./run_docker.sh` to run the docker container
+- Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
+- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
+
+Do not forget to use volumes (see https://docs.docker.com/storage/volumes/ )if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
+
+### Unix (Linux / macOS)
+
+You need to have `npm` installed on your system!
+
+To use the GUI:
+
+- run `svshi gui` in a terminal to start SVSHI
+- run the script `start_ui.sh` in another terminal
+- connect to [http://localhost:3000](http://localhost:3000) in your favorite browser
+
+When you want to stop, kill both processes running in terminals.
+
+> If you are running SVSHI on a smart building infrastructure, DO NOT kill `svshi gui`, it would stop running on your building installation! You can however stop the `start-ui.sh` process.
+
 ### From archive
 
 #### Unix (Linux / macOS)
@@ -66,7 +99,7 @@ To check if the installation was successful, run `svshi version` in your termina
 To install SVSHI on Linux or macOS:
 
 1. Download the latest version `.zip` file from the [Releases](https://github.com/dslab-epfl/svshi/releases) page
-2. Unzip it, move the folder to the desired installation site, then run `./install.sh` inside it.
+2. Unzip it, move the folder to the desired installation site, then run `cd ./scripts && ./install.sh` inside it.
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/the/svshi/folder` (a path example is `~/svshi-v1.1.0`) to your `.bash_profile`, `.zsh_profile`, etc.
 
@@ -96,7 +129,7 @@ To update SVSHI, you just need to do steps 1, 2, 3 and 7. However, do not forget
 To build from sources on Linux or macOS:
 
 1. Clone the repository
-2. Run `./build.sh`
+2. Run `cd ./scripts && ./build.sh`
 3. Add `$HOME/local/bin` (where the CLI executable is stored) to the path by adding `export PATH=$HOME/local/bin:$PATH` to your `.bash_profile`, `.zsh_profile`, etc.
 4. Add the variable `SVSHI_HOME` to your environment by adding `export SVSHI_HOME=path/to/your/cloned/repo` to your `.bash_profile`, `.zsh_profile`, etc.
 
@@ -122,8 +155,8 @@ To update SVSHI, you just need to pull the latest changes and perform steps 2 an
 
 We also provide a Docker image with all requirements and SVSHI installed. To use it:
 
-1. Run `./build_docker.sh` to build the image
-2. Run `./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
+1. Run `cd ./scripts && ./build_docker.sh` to build the image
+2. Run `cd ./scripts && ./run_docker.sh` to run the docker container. It opens a `sh` instance in the container with the current directory mapped to `/pwd` in the container
 3. You can find the repo copied in `/home/maki/svshi`
 4. `svshi` command is accessible
 
@@ -135,8 +168,8 @@ SVSHI comes with a GUI in the form of a web application. For this usage, we stro
 
 Here the SVSHI system and the frontend server run on the same Docker image. To use it:
 
-- Run `./build_docker.sh` (Windows: `.ps1`) to build the image
-- Run `./run_docker.sh` to run the docker container
+- Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
+- Run `cd ./scripts && ./run_docker.sh` to run the docker container
 - Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
 - \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
 

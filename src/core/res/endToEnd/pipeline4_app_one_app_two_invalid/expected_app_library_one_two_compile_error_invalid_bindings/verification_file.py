@@ -82,10 +82,10 @@ def test_app_two_invariant(test_app_one_app_state: AppState, test_app_two_app_st
     return True
 
 
-def test_app_two_iteration(test_app_one_app_state: AppState, test_app_two_app_state: AppState, physical_state: PhysicalState):
+def test_app_two_iteration(test_app_one_app_state: AppState, test_app_two_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
     """
-pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
-pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
+pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
+pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
 post: test_app_one_invariant(**__return__)
 post: test_app_two_invariant(**__return__)
 """
@@ -104,10 +104,10 @@ def test_app_one_invariant(test_app_one_app_state: AppState, test_app_two_app_st
         ) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def test_app_one_iteration(test_app_one_app_state: AppState, test_app_two_app_state: AppState, physical_state: PhysicalState):
+def test_app_one_iteration(test_app_one_app_state: AppState, test_app_two_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
     """
-pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
-pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state)
+pre: test_app_one_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
+pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, physical_state, internal_state)
 post: test_app_one_invariant(**__return__)
 post: test_app_two_invariant(**__return__)
 """

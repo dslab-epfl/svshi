@@ -1,0 +1,25 @@
+{
+    "appBindings": [
+        {
+            "name": "light",
+            "bindings": [
+                {
+                    "name": "light",
+                    "binding": {
+                        "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
+                        "typeString": "switch",
+                        "physDeviceId": 2136915678
+                    }
+                },
+                {
+                    "name": "sensor",
+                    "binding": {
+                        "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+                        "typeString": "binary",
+                        "physDeviceId": 1542297768
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -28,3 +28,10 @@ class PhysicalState:
     GA_1_1_2: float
     GA_1_1_3: bool
     GA_1_1_4: bool
+
+@dataclasses.dataclass
+class InternalState:
+    """
+    inv: self.time>=0
+    """
+    time: int #time in seconds

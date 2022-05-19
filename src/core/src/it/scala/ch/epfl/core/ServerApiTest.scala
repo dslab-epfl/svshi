@@ -539,6 +539,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   "logs/receivedTelegrams" should "reply with empty list and false when there is no logs folder" in {
 
+    if (os.exists(PYTHON_RUNTIME_LOGS_FOLDER_PATH)) os.remove.all(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
     val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/receivedTelegrams", check = false, readTimeout = requestsReadTimeout)
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     r.statusCode shouldEqual 200
@@ -589,6 +590,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   "logs/execution" should "reply with empty list and false when there is no logs folder" in {
 
+    if (os.exists(PYTHON_RUNTIME_LOGS_FOLDER_PATH)) os.remove.all(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
     val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/execution", check = false, readTimeout = requestsReadTimeout)
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     r.statusCode shouldEqual 200

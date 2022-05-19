@@ -22,9 +22,9 @@ if(CommandExists("python3")){
     Write-Output "Installing svshi ..."
 
     Write-Output "Setting SVSHI_HOME environment variable..."
-    [System.Environment]::SetEnvironmentVariable('SVSHI_HOME', $PSScriptRoot,[System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('SVSHI_HOME', (get-item $PSScriptRoot).parent.FullName,[System.EnvironmentVariableTarget]::User)
 
-    $Env:SVSHI_HOME = "$PSScriptRoot"
+    $Env:SVSHI_HOME = (get-item $PSScriptRoot).parent.FullName
     
     Write-Output "Setting Path environment variable..."
     [System.Environment]::SetEnvironmentVariable('Path', "$Env:Path;$Env:LOCALAPPDATA\svshi\bin",[System.EnvironmentVariableTarget]::User)

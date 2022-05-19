@@ -48,6 +48,7 @@ export default {
         },
         async downloadAssignments() {
             let url = this.$root.backendServerAddress + "/assignments"
+            let filename = "assignments.zip"
             try {
                 let response = await fetch(url, {
                     method: 'GET',

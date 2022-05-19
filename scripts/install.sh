@@ -1,3 +1,4 @@
+cd ..
 echo "Installing svshi..."
 cd src/core/target/pack
 make install

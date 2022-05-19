@@ -339,14 +339,18 @@ case class CoreApiServer(
 
   @get("/logs/receivedTelegrams")
   def getReceivedTelegramsLogs() = {
-    val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
-    if (logsFolders.nonEmpty) {
-      // We take the latest
-      val latestFolder = logsFolders.max
-      val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_RECEIVED_TELEGRAMS_LOG_FILE_NAME
-      if (os.exists(logFilePath)) {
-        val content = os.read.lines(logFilePath).toList
-        Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+    if (os.exists(PYTHON_RUNTIME_LOGS_FOLDER_PATH)) {
+      val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
+      if (logsFolders.nonEmpty) {
+        // We take the latest
+        val latestFolder = logsFolders.max
+        val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_RECEIVED_TELEGRAMS_LOG_FILE_NAME
+        if (os.exists(logFilePath)) {
+          val content = os.read.lines(logFilePath).toList
+          Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+        } else {
+          Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+        }
       } else {
         Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
       }
@@ -357,14 +361,18 @@ case class CoreApiServer(
 
   @get("/logs/execution")
   def getExecutionLogs() = {
-    val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
-    if (logsFolders.nonEmpty) {
-      // We take the latest
-      val latestFolder = logsFolders.max
-      val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME
-      if (os.exists(logFilePath)) {
-        val content = os.read.lines(logFilePath).toList
-        Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+    if (os.exists(PYTHON_RUNTIME_LOGS_FOLDER_PATH)) {
+      val logsFolders = os.list(PYTHON_RUNTIME_LOGS_FOLDER_PATH)
+      if (logsFolders.nonEmpty) {
+        // We take the latest
+        val latestFolder = logsFolders.max
+        val logFilePath = latestFolder / PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME
+        if (os.exists(logFilePath)) {
+          val content = os.read.lines(logFilePath).toList
+          Response(ResponseBody(status = true, content).toString, headers = HEADERS_AJAX)
+        } else {
+          Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
+        }
       } else {
         Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
       }

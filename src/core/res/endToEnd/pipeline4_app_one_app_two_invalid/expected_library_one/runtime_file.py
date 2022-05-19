@@ -75,7 +75,7 @@ def test_app_one_invariant(test_app_one_app_state: AppState, physical_state: Phy
         ) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def test_app_one_iteration(test_app_one_app_state: AppState, physical_state: PhysicalState):
+def test_app_one_iteration(test_app_one_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
         test_app_one_unchecked_send_email('test@test.com')

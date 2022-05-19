@@ -286,13 +286,14 @@ class State:
                 )
 
     def __get_check_conditions_args(
-        self, physical_state: PhysicalState
+        self, physical_state: PhysicalState, internal_state: InternalState
     ) -> Dict[str, Any]:
         check_conditions_args: Dict[str, Any] = {
             f"{app_name}_app_state": state
             for app_name, state in self._app_states.items()
         }
         check_conditions_args["physical_state"] = physical_state
+        check_conditions_args["internal_state"] = internal_state
         return check_conditions_args
 
     async def __propagate_last_valid_state(self):
@@ -319,7 +320,7 @@ class State:
         self._update_internal_state()
 
         # Check if the last state was valid
-        check_conditions_args = self.__get_check_conditions_args(old_state)
+        check_conditions_args = self.__get_check_conditions_args(old_state, self._internal_state)
         is_last_state_valid = self.__check_conditions_function(**check_conditions_args)
 
         # We first execute all the apps
@@ -347,7 +348,8 @@ class State:
 
                 # Build the check conditions args with all app states and the physical state
                 check_conditions_args = self.__get_check_conditions_args(
-                    per_app_physical_state_copy
+                    per_app_physical_state_copy,
+                    internal_state_copy
                 )
 
                 # Update the conditions with the new app state
@@ -361,14 +363,13 @@ class State:
                     # If conditions are preserved, we keep the physical state to later propagate
                     new_states[app] = per_app_physical_state_copy
 
-                    # We update the app local state and internal state
+                    # We update the app local state
                     self._app_states[app.name] = app_local_state_copy
-                    self._internal_state = internal_state_copy
 
         merged_state = self.__merge_states(old_state, new_states)
 
         # Check if the merged state is valid
-        check_conditions_args = self.__get_check_conditions_args(merged_state)
+        check_conditions_args = self.__get_check_conditions_args(merged_state, self._internal_state)
         if not self.__check_conditions_function(**check_conditions_args):
             # Stop all apps
             for app in self.__apps:
