@@ -8,6 +8,8 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import { Tabs, Tab } from 'vue3-tabs-component';
 
 let defaultBackendServerAddress = "http://localhost:4242"
+let defaultBackendServerPort = "4242"
+
 export default {
   components: {
     "tabs": Tabs,
@@ -98,7 +100,7 @@ export default {
     },
     async refresh() {
       if (!this.uninstallInProgress) {
-        this.checkApiLiveness()
+        await this.checkApiLiveness()
         if (this.apiReachable) {
           this.loadAppsList()
           this.isSvshiRunning()
@@ -113,7 +115,11 @@ export default {
           }
           this.goToRunIfRunning()
         } else {
-          clearInterval(this.polling)
+          this.setCurrentBackendAddressFromBar()
+          await this.checkApiLiveness()
+          if (!this.apiReachable) {
+            clearInterval(this.polling)
+          }
         }
       }
     },
@@ -144,6 +150,12 @@ export default {
       return this.apiReachable
 
     },
+    setCurrentBackendAddressFromBar() {
+      let currentHostname = window.location.hostname;
+      let currentProtocol = window.location.protocol;
+      let serverAddressIfSameHost = currentProtocol + "//" + currentHostname + ":" + defaultBackendServerPort
+      this.backendServerAddress = serverAddressIfSameHost
+    },
     startPolling() {
       this.polling = setInterval(() => {
         this.refresh()
@@ -172,7 +184,7 @@ export default {
       <p>SVSHI API Server unreachable</p>
     </div>
     <p>Please enter the address and port of the machine running SVSHI: </p>
-    <input v-model="this.backendServerAddress" placeholder="http://localhost:4242" />
+    <input v-model="this.backendServerAddress" placeholder="http://127.0.0.1:4242" />
     <button @Click="this.checkNewAddress">Connect</button>
   </div>
   <div v-else>
