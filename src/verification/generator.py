@@ -95,29 +95,82 @@ class SvshiApi():
     def __init__(self):
         pass
 
-    def set_time(self, internal_state: InternalState, time: int):
+    def set_hour_of_the_day(self, internal_state: InternalState, time: int):
         """
-        pre:time>=0
-        post:internal_state.time == time
+        pre: 0 <= time <= 23
+        post:internal_state.time_hour == time
         """
-        internal_state.time = time
-
-    def get_time(self, internal_state: InternalState) -> int:
-        """
-        pre:internal_state.time>=0
-        post:internal_state.time>=0
-        """
-        return internal_state.time
-
+        internal_state.time_hour = time
+        
     def get_hour_of_the_day(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 23
         """
-        time = internal_state.time
-        q = time // (60 * 60)
-        tmp = q // 24
-
-        return q - tmp * 24
+        return internal_state.time_hour
+        
+    def get_minute_in_hour(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 59
+        """
+        return internal_state.time_min
+        
+    def set_minutes(self, internal_state: InternalState, time: int):
+        """
+        pre: 0 <= time <= 59
+        post:internal_state.time_min == time
+        """
+        internal_state.time_min = time
+        
+    def get_day_of_week(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 7
+        """
+        return internal_state.time_weekday
+        
+    def set_day_of_week(self, internal_state: InternalState, wday: int) -> int:
+        """
+        pre: 1 <= wday <= 7
+        post: internal_state.time_weekday == wday
+        """
+        internal_state.time_weekday = wday
+        
+    def set_day(self, internal_state: InternalState, day: int):
+        """
+        pre: 1 <= day <= 31
+        post: internal_state.time_day == day
+        """
+        internal_state.time_day = day 
+        
+    def get_day_of_month(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 31
+        """
+        return internal_state.time_day
+        
+    def set_month(self, internal_state: InternalState, month: int):
+        """
+        pre: 1 <= month <= 12
+        post:internal_state.time_month == month
+        """
+        internal_state.time_month = month
+        
+    def get_month_in_year(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 12
+        """
+        return internal_state.time_month
+        
+    def set_year(self, internal_state: InternalState, year: int):
+        """
+        post:internal_state.time_year == year
+        """
+        internal_state.time_year = year
+        
+    def get_year(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__
+        """
+        return internal_state.time_year
     '''
     __SVSHI_API_IMPL_RUN = f'''
 class SvshiApi():
@@ -125,22 +178,41 @@ class SvshiApi():
     def __init__(self):
         pass
 
-    def get_time(self, internal_state: InternalState) -> int:
-        """
-        pre:internal_state.time>=0
-        post:internal_state.time>=0
-        """
-        return internal_state.time
-
     def get_hour_of_the_day(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 23
         """
-        time = internal_state.time
-        q = time // (60 * 60)
-        tmp = q // 24
-
-        return q - tmp * 24
+        return internal_state.date_time.tm_hour
+        
+    def get_minute_in_hour(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 59
+        """
+        return internal_state.date_time.tm_min
+    
+    def get_day_of_week(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 7
+        """
+        return internal_state.date_time.tm_wday
+        
+    def get_day_of_month(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 31
+        """
+        return internal_state.date_time.tm_mday
+        
+    def get_month_in_year(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 12
+        """
+        return internal_state.date_time.tm_mon
+        
+    def get_year(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__
+        """
+        return internal_state.date_time.tm_year 
     '''
 
     def __init__(
@@ -199,15 +271,33 @@ class PhysicalState:
 """
         self.__code.append(code)
         self.__imports.append("import dataclasses")
+        self.__imports.append("import time")
 
-    def __generate_internal_state_class(self):
-        code = f"""
+    def __generate_internal_state_class(self, verification):
+        if not verification:
+            code = f"""
 @dataclasses.dataclass
 class InternalState:
- \"\"\"
- inv: self.time>=0
- \"\"\"
- time: int #time in seconds
+    date_time: time.struct_time # time object, at local machine time
+"""
+        else:
+            code = f"""
+@dataclasses.dataclass
+class InternalState:
+    \"\"\"
+    inv: 0 <= self.time_hour <= 23
+    inv: 0 <= self.time_min <= 59
+    inv: 1 <= self.time_day <= 31
+    inv: 1 <= self.time_weekday <= 7
+    inv: 1 <= self.time_month <= 12
+    inv: 0 <= self.time_year
+    \"\"\"
+    time_hour: int
+    time_min: int
+    time_day: int
+    time_weekday: int
+    time_month: int
+    time_year: int
 """
         self.__code.append(code)
 
@@ -316,7 +406,7 @@ class AppState:
         with open(filename, "w") as file:
             self.__generate_app_state_class()
             self.__generate_physical_state_class()
-            self.__generate_internal_state_class()
+            self.__generate_internal_state_class(verification)
             self.__generate_device_classes(verification)
             self.__generate_devices_instances()
             self.__generate_invariant_and_iteration_functions(

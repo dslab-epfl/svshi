@@ -91,7 +91,8 @@ class ProcRunnerTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     svshiSubProcess.forceStop()
 
     eventually(timeout(1 seconds)) {
-      svshiSubProcess.exitCode shouldEqual Some(137)
+      svshiSubProcess.exitCode.isDefined shouldBe true
+      svshiSubProcess.exitCode.get shouldNot equal(0)
     }
   }
 

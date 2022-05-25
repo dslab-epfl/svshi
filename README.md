@@ -246,9 +246,14 @@ These values can be used in `iteration()` and `invariant()`. One should be caref
 #### SVSHI built-in functions
 
 A `svshi_api` instance is imported in every app, like the `app_state`.
-This instance offers two functions `get_time` and `get_hour_of_the_day` used to track the system's time in applications.
-`get_time` returns the UNIX time of the system and `get_hour_of_the_day` returns an integer between 0 and 23.
-Example: `get_time` returns `1649865437` for Wed Apr 13 15:57:17 2022 UTC and `get_hour_of_the_day` `15`.
+This instance offers several functions used to track the system's time in applications.
+`get_hour_of_the_day` returns an integer between 0 and 23.
+`get_minute_in_hour` returns an integer between 0 and 59.
+`get_day_of_week` returns an integer between 1 and 7, where 1 corresponds to Monday.
+`get_day_of_month` returns an integer between 1 and 31, corresponding to the day of the month.
+`get_month_in_year` returns an integer between 1 and 12, where 1 corresponds to January.
+`get_year`return the current year.
+Example: For Wed Apr 13 15:57:17 2022 UTC `get_hour_of_the_day` returns `15`, `get_minute_in_hour` returns `57`, `get_day_of_week` returns `3`, `get_day_of_month` returns `13`, `get_month_in_year` returns `4` and `get_year` returns `2022`.
 This allows to put time constraints into the invariant and to write and verify time sensitive applications . Therefore, it can be used for the code of `iteration`, in `invariant` and in pre- and post- conditions.
 
 ### App example

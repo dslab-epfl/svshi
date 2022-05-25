@@ -7,7 +7,8 @@ from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
-from .verification_file import AppState, PhysicalState, InternalState
+from .verification_file import AppState, PhysicalState
+from .runtime_file import InternalState
 
 
 @dataclasses.dataclass

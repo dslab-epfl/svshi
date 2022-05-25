@@ -17,7 +17,8 @@ from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 
 from .logger import Logger
-from .verification_file import AppState, PhysicalState, InternalState
+from .verification_file import AppState, PhysicalState
+from .runtime_file import InternalState
 from .app import App
 
 
@@ -56,7 +57,7 @@ class State:
         self._last_valid_physical_state: PhysicalState
         self._app_states = {app.name: AppState() for app in self.__apps}
 
-        self._internal_state: InternalState = InternalState(0)
+        self._internal_state: InternalState = InternalState(time.localtime())
 
         # Used to access and modify the states
         self.__execution_lock = asyncio.Lock()
@@ -306,10 +307,7 @@ class State:
 
     def _update_internal_state(self,simulated_time=False):
         if not simulated_time:
-            self._set_internal_time(int(time.time())-time.altzone)
-
-    def _set_internal_time(self, time:int):
-        self._internal_state.time = time
+            self._internal_state.date_time = time.localtime()
 
     async def __run_apps(self, apps: List[App]):
         """

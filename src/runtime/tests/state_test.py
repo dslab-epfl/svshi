@@ -17,7 +17,8 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.xknx import XKNX
 
-from ..verification_file import AppState, PhysicalState, InternalState
+from ..verification_file import AppState, PhysicalState
+from ..runtime_file import InternalState
 from ..app import App
 from ..state import State
 
@@ -284,12 +285,12 @@ async def test_internal_state_is_updated():
     )
     NEW_SECOND_ADRESS_VALUE = 8.1
     NEW_THIRD_ADDRESS_VALUE = True
-    start_test_time = int(time.time()-time.altzone)
+    start_test_time = time.time()
 
     def test_two_code(app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         test_state_holder.app_two_called = True
 
-        if start_test_time - 5 <= internal_state.time:
+        if start_test_time - 5 <= time.mktime(internal_state.date_time):
             physical_state.GA_1_1_2 = NEW_SECOND_ADRESS_VALUE
             physical_state.GA_1_1_3 = NEW_THIRD_ADDRESS_VALUE
 
@@ -309,7 +310,7 @@ async def test_internal_state_is_updated():
     assert state._physical_state.GA_1_1_3 == NEW_THIRD_ADDRESS_VALUE
     assert state._physical_state.GA_1_1_4 == True
     assert state._physical_state == state._last_valid_physical_state
-    assert start_test_time <= state._internal_state.time <= start_test_time + 5
+    assert start_test_time - 3 <= time.mktime(state._internal_state.date_time) <= start_test_time + 3
     assert test_state_holder.app_one_called == True
     assert test_state_holder.app_two_called == True
     assert test_state_holder.app_three_called == True
@@ -331,9 +332,9 @@ async def test_internal_state_is_updated():
         payload=GroupValueWrite(DPTBinary(1)),
     )
     await asyncio.sleep(5)
-    current_test_time = int(time.time()-time.altzone)
+    current_test_time = time.time()
     assert test_state_holder.app_four_called == True
-    assert current_test_time -2 <= state._internal_state.time <= current_test_time + 2
+    assert current_test_time - 3 <= time.mktime(state._internal_state.date_time) <= current_test_time + 3
     assert test_state_holder.app_one.should_run == True
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True

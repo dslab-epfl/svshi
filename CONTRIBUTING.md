@@ -230,6 +230,8 @@ To run only Python (i.e. `generator`, `verification` and `runtime`) tests and ge
 
 To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test && sbt coverage it:test && sbt coverageReport` inside `src/core`.
 
+To run the tests on a Docker, we provide a base image. To build it, execute `./build_docker_dev.sh` (or `.ps1`) in `scripts/`. To start a container, execute `./run_docker_dev.sh` (or `.ps1`). It creates a container based on the image. This image has some tools installed and a environment variable `SVSHI_HOME` defined as `/home/maki/svshi_private`. To run tests, you should add an ssh key to the docker linked to your github account and clone `svshi_private` repo in `/home/maki`
+
 ## CI
 
 We use [GitHub Actions](https://github.com/dslab-epfl/svshi/actions) to run the whole test suite on every push on `main` and on every pull request. The workflows are defined in `.github/workflows/ci.yml`.

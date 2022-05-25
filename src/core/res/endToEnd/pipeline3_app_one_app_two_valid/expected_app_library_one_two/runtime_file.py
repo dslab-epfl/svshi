@@ -1,5 +1,5 @@
 import dataclasses
-
+import time
 
 
 @dataclasses.dataclass
@@ -32,10 +32,7 @@ class PhysicalState:
 
 @dataclasses.dataclass
 class InternalState:
- """
- inv: self.time>=0
- """
- time: int #time in seconds
+    date_time: time.struct_time # time object, at local machine time
 
 
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
@@ -85,22 +82,41 @@ class SvshiApi():
     def __init__(self):
         pass
 
-    def get_time(self, internal_state: InternalState) -> int:
-        """
-        pre:internal_state.time>=0
-        post:internal_state.time>=0
-        """
-        return internal_state.time
-
     def get_hour_of_the_day(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 23
         """
-        time = internal_state.time
-        q = time // (60 * 60)
-        tmp = q // 24
-
-        return q - tmp * 24
+        return internal_state.date_time.tm_hour
+        
+    def get_minute_in_hour(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__ <= 59
+        """
+        return internal_state.date_time.tm_min
+    
+    def get_day_of_week(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 7
+        """
+        return internal_state.date_time.tm_wday
+        
+    def get_day_of_month(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 31
+        """
+        return internal_state.date_time.tm_mday
+        
+    def get_month_in_year(self, internal_state: InternalState) -> int:
+        """
+        post: 1 <= __return__ <= 12
+        """
+        return internal_state.date_time.tm_mon
+        
+    def get_year(self, internal_state: InternalState) -> int:
+        """
+        post: 0 <= __return__
+        """
+        return internal_state.date_time.tm_year 
     
 
 

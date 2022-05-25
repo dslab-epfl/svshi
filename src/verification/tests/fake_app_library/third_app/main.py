@@ -14,5 +14,5 @@ def iteration():
         another_file = "file2.csv"
         SWITCH_INSTANCE_NAME.on()
     elif 2 <= svshi_api.get_hour_of_the_day() <=3:
-        t = svshi_api.get_time()
+        t = svshi_api.get_minute_in_hour()
         SWITCH_INSTANCE_NAME.off()
