@@ -20,6 +20,7 @@ from .logger import Logger
 from .verification_file import AppState, PhysicalState
 from .runtime_file import InternalState
 from .app import App
+from .joint_apps import JointApps
 
 
 class _LOG_TYPE(Enum):
@@ -40,6 +41,7 @@ class State:
     def __init__(
         self,
         addresses_listeners: Dict[str, List[App]],
+        joint_apps: List[JointApps],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
         check_conditions_function: Callable,
@@ -52,6 +54,7 @@ class State:
         self.__apps = set(
             app for apps in self.__addresses_listeners.values() for app in apps
         )
+        self.joint_apps = joint_apps
 
         self._physical_state: PhysicalState
         self._last_valid_physical_state: PhysicalState
@@ -78,13 +81,18 @@ class State:
 
         # Group the apps by timer
         self.__periodic_apps: Dict[int, List[App]] = {}
-        for timer, group in groupby(
-            sorted(periodic_apps, key=lambda app: app.timer),
-            lambda app: app.timer,
-        ):
-            self.__periodic_apps[timer] = sorted(
-                group, key=lambda a: (a.is_privileged, a.name)
-            )
+        # for timer, group in groupby(
+        #     sorted(periodic_apps, key=lambda app: app.timer),
+        #     lambda app: app.timer,
+        # ):
+        #     self.__periodic_apps[timer] = sorted(
+        #         group, key=lambda a: (a.is_privileged, a.name)
+        #     )
+        timers = []
+        for timed_app in periodic_apps:
+            timers.append(timed_app.timer)
+        self.__periodic_apps[min(timers)] = self.joint_apps
+
         self.__periodic_apps_task: Optional[Task] = None
 
         self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
@@ -195,6 +203,7 @@ class State:
                     fields[field_address_name] = None
 
         self._physical_state = PhysicalState(**fields)
+        self._last_valid_physical_state = PhysicalState(**fields)
         self._update_internal_state()
 
         # Start executing the periodic apps in a background task
@@ -305,7 +314,7 @@ class State:
                 self.__field_name_to_group_addr(field), value
             )
 
-    def _update_internal_state(self,simulated_time=False):
+    def _update_internal_state(self, simulated_time=False):
         if not simulated_time:
             self._internal_state.date_time = time.localtime()
 
@@ -318,60 +327,78 @@ class State:
         self._update_internal_state()
 
         # Check if the last state was valid
-        check_conditions_args = self.__get_check_conditions_args(old_state, self._internal_state)
+        check_conditions_args = self.__get_check_conditions_args(
+            old_state, self._internal_state
+        )
         is_last_state_valid = self.__check_conditions_function(**check_conditions_args)
 
         # We first execute all the apps
         new_states = {}
-        for app in apps:
-            self.__logger.log_execution(f"App to execute: {app}")
-            if app.should_run:
+        for joint_app in self.joint_apps:
+            self.__logger.log_execution(f"App to execute: {joint_app}")
+            if joint_app.should_run:
                 # Copy the states before executing the app
-                app_local_state_copy = dataclasses.replace(self._app_states[app.name])
+                # app_local_state_copy = dataclasses.replace(self._app_states[app.name])
                 per_app_physical_state_copy = dataclasses.replace(old_state)
                 internal_state_copy = dataclasses.replace(self._internal_state)
 
                 self.__logger.log_execution(
-                    f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}"
+                    f"With physical state (app: '{joint_app.name}'): {per_app_physical_state_copy}"
                 )
                 self.__logger.log_execution(
-                    f"With app state (app: '{app.name}'): {app_local_state_copy}"
+                    f"With app state (app: '{joint_app.name}'): {dict(sorted(self._app_states.items()))}"
                 )
                 self.__logger.log_execution(
-                    f"With internal state (app: '{app.name}: {internal_state_copy}"
+                    f"With internal state (app: '{joint_app.name}: {internal_state_copy}"
                 )
 
                 # Notify the app to trigger execution
-                app.notify(app_local_state_copy, per_app_physical_state_copy, internal_state_copy)
+                joint_app.notify(
+                    self._app_states,
+                    physical_state=per_app_physical_state_copy,
+                    internal_state=internal_state_copy,
+                )
 
                 # Build the check conditions args with all app states and the physical state
                 check_conditions_args = self.__get_check_conditions_args(
-                    per_app_physical_state_copy,
-                    internal_state_copy
+                    per_app_physical_state_copy, internal_state_copy
                 )
 
                 # Update the conditions with the new app state
-                check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
+                # check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
                 if is_last_state_valid and not self.__check_conditions_function(
                     **check_conditions_args
                 ):
-                    # If the last state was valid and conditions are not preserved after the app execution, we prevent the app from running again
-                    app.stop()
+                    # If the last state was valid and conditions are not preserved after the app execution, we propagate
+                    # the last valid state and stop svshi
+                    joint_app.stop()
+
+                    print(
+                        "ERROR: the physical state is no longer valid! Propagating the last valid state to KNX... ",
+                        end="",
+                    )
+                    await self.__propagate_last_valid_state()
+                    print("done!")
+
+                    await self.stop()
+                    raise KeyboardInterrupt()
                 else:
                     # If conditions are preserved, we keep the physical state to later propagate
-                    new_states[app] = per_app_physical_state_copy
+                    new_states[joint_app] = per_app_physical_state_copy
 
                     # We update the app local state
-                    self._app_states[app.name] = app_local_state_copy
+                    # self._app_states[app.name] = app_local_state_copy
 
         merged_state = self.__merge_states(old_state, new_states)
 
         # Check if the merged state is valid
-        check_conditions_args = self.__get_check_conditions_args(merged_state, self._internal_state)
+        check_conditions_args = self.__get_check_conditions_args(
+            merged_state, self._internal_state
+        )
         if not self.__check_conditions_function(**check_conditions_args):
             # Stop all apps
-            for app in self.__apps:
-                app.should_run = False
+            for joint_app in self.joint_apps:
+                joint_app.should_run = False
 
             print(
                 "ERROR: the physical state is no longer valid! Propagating the last valid state to KNX... ",

@@ -3,6 +3,7 @@ from datetime import datetime
 from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.xknx import XKNX
 from .app import get_addresses_listeners, get_apps
+from .joint_apps import get_joint_apps
 from .resetter import FileResetter
 from .state import State
 from .conditions import check_conditions
@@ -94,9 +95,11 @@ async def main(
 
         parser = GroupAddressesParser(group_addresses_path)
         group_addresses_dpt = parser.read_group_addresses_dpt()
+        joint_apps = get_joint_apps(runtime_file_module)
 
         state = State(
             addresses_listeners,
+            joint_apps,
             xknx_for_initialization,
             xknx_for_listening,
             check_conditions,

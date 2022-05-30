@@ -402,15 +402,17 @@ When compiling, the apps are also verified to make sure each one of them satisfi
 
 #### Runtime
 
-Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
+Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the apps are prevented from running, otherwise the updates are propagated to KNX.
 
 ### Execution
 
-SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
+At compile time, all applications are combined to create a function representing the system's behaviour. This function combines all applications' `iteration()` functions and the order is thus set at compile time. Applications that are `privileged` overrides behaviour of `nonPrivileged` ones if they are conflicting.
 
-_Running an application_ concretely means that its `iteration()` function is executed on the current physical state of the system and on the current app state.
+SVSHI's runtime is **reactive** and **event-based**. The system _listen_ for changes to the group addresses of the devices it uses, and is run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by its own behaviour, in which case the system proceeds to notify the listener again. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
 
-Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
+For a given set of applications, the system behaviour function is run every time the state of the devices changes and every Y seconds where Y is the **minimum of all timers of all applications which are greater than 0**.
+
+_Running applications_ concretely means that the system behaviour function us executed on the current physical state of the system and with the current app states.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 

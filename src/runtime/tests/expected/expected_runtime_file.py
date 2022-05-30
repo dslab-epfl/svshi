@@ -91,3 +91,8 @@ post: another_app_invariant(__return__)
 """
     print('Hello, world!')
     return physical_state
+
+def system_behaviour(physical_state: PhysicalState):
+    print('Hello, world!')
+    print('Hello, world!')
+    return physical_state

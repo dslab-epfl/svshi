@@ -442,7 +442,11 @@ class AppState:
         app_state_arguments = []
         for i, app in enumerate(sorted(self.__app_names)):
             # We also need to import the states at the end
-            suffix = ", " if i < nb_apps - 1 else ", AppState, PhysicalState, InternalState\n"
+            suffix = (
+                ", "
+                if i < nb_apps - 1
+                else ", AppState, PhysicalState, InternalState\n"
+            )
             invariant_function = f"{app}_invariant"
             imports += f"{invariant_function}{suffix}"
             imports_code.append((app, invariant_function))
@@ -453,9 +457,7 @@ class AppState:
         nb_imports = len(imports_code)
         for i, (app, import_code) in enumerate(imports_code):
             suffix = " and " if i < nb_imports - 1 else ""
-            check_conditions_body += (
-                f"{import_code}({app}_app_state, physical_state, internal_state){suffix}"
-            )
+            check_conditions_body += f"{import_code}({app}_app_state, physical_state, internal_state){suffix}"
 
         file = f"""
 {imports}
