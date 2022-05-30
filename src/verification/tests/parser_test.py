@@ -32,7 +32,7 @@ def test_parser_parse_group_addresses():
 
 
 def test_parser_parse_filenames():
-    filenames = parser.parse_filenames()
+    filenames = parser.get_filenames()
 
     assert filenames == {
         "third_app": {"file1.json", "file2.csv"},

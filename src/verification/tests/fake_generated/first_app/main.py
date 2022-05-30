@@ -1,4 +1,4 @@
-from instances import app_state, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
+from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 from decouple import config
@@ -33,6 +33,9 @@ def unchecked_return_two() -> int:
     post: __return__ > 0
     post: __return__ != 3
     """
+    p = svshi_api.get_file_path("file1.txt")
+    f = svshi_api.get_file_text_mode("file2.txt", "w")
+    f2 = svshi_api.get_file_binary_mode("file3.txt", "ar")
     return 2
 
 def unchecked_print(s) -> None:

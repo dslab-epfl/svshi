@@ -89,9 +89,8 @@ class CO2_sensor_{app_name}_{instance_name}():
         return physical_state.{group_address}
     '''
     )
-    __SVSHI_API_IMPL_VRF = f'''
+    __SVSHI_API_IMPL_VRF = '''
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -172,9 +171,10 @@ class SvshiApi():
         """
         return internal_state.time_year
     '''
-    __SVSHI_API_IMPL_RUN = f'''
-class SvshiApi():
 
+    def __SVSHI_API_IMPL_RUN(self, files_folder_path: str) -> str:
+        return f'''
+class SvshiApi():
     def __init__(self):
         pass
 
@@ -212,7 +212,22 @@ class SvshiApi():
         """
         post: 0 <= __return__
         """
-        return internal_state.date_time.tm_year 
+        return internal_state.date_time.tm_year
+        
+    def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), mode)
+        except:
+            return None
+
+    def get_file_binary_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[bytes]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), f"{{mode}}b")
+        except:
+            return None
+
+    def get_file_path(self, app_name: str, file_name: str, internal_state: InternalState) -> str:
+        return f"{{internal_state.app_files_runtime_folder_path}}/{{app_name}}/{{file_name}}"
     '''
 
     def __init__(
@@ -234,6 +249,7 @@ class SvshiApi():
         self.__devices_instances = devices_instances
         self.__devices_classes = devices_classes
         self.__app_names = app_names
+        self.__files_folder_path = files_folder_path
 
         instances_names_per_app = {}
         for key, group in groupby(self.__devices_classes, lambda d: d.app):
@@ -279,6 +295,7 @@ class PhysicalState:
 @dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 """
         else:
             code = f"""
@@ -326,6 +343,7 @@ class AppState:
 
     def __generate_device_classes(self, verification):
         code = []
+        imports = []
         for device in sorted(self.__devices_classes, key=lambda c: c.app.name):
             app = device.app.name
             name = device.name
@@ -365,8 +383,12 @@ class AppState:
         if verification:
             code.append(self.__SVSHI_API_IMPL_VRF)
         else:
-            code.append(self.__SVSHI_API_IMPL_RUN)
+            code.append(self.__SVSHI_API_IMPL_RUN(self.__files_folder_path))
+
+        imports.append("from typing import IO, Optional")
+
         self.__code.extend(code)
+        self.__imports.extend(imports)
 
     def __generate_devices_instances(self):
         self.__code.append("\n")

@@ -5,6 +5,7 @@ import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.bindings._
+import ch.epfl.core.utils.Constants
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -13,14 +14,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
-      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", TemperatureSensor)
       )
     )
-    val app = Application("app1", os.Path("app1Path", os.pwd), appPrototypicalStructure)
+    val appOnePath = os.Path("app1Path", os.pwd)
+    val files = List(appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file1.txt", appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file2.png")
+    val app = Application("app1", appOnePath, appPrototypicalStructure, files)
 
     val device1Physical = PhysicalDevice(
       "device1",
@@ -104,14 +106,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = NotPrivileged,
       timer = 60,
-      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", CO2Sensor)
       )
     )
-    val app = Application("app1", os.Path("app1Path", os.pwd), appPrototypicalStructure)
+    val appOnePath = os.Path("app1Path", os.pwd)
+    val files = List(appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file1.txt", appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file2.png")
+    val app = Application("app1", appOnePath, appPrototypicalStructure, files)
 
     val device1Physical = PhysicalDevice(
       "device1",
@@ -195,14 +198,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
     val appPrototypicalStructure = AppPrototypicalStructure(
       permissionLevel = Privileged,
       timer = 60,
-      files = List("file1.txt", "file2.png"),
       deviceInstances = List(
         AppPrototypicalDeviceInstance("device1", BinarySensor),
         AppPrototypicalDeviceInstance("device2", Switch),
         AppPrototypicalDeviceInstance("device3", TemperatureSensor)
       )
     )
-    val app = Application("app1", os.Path("app1Path", os.pwd), appPrototypicalStructure)
+    val appOnePath = os.Path("app1Path", os.pwd)
+    val files = List(appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file1.txt", appOnePath / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / "file2.png")
+    val app = Application("app1", appOnePath, appPrototypicalStructure, files)
 
     val device1Physical = PhysicalDevice(
       "device1",

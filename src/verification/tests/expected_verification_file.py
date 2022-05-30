@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -213,7 +214,6 @@ class CO2_sensor_third_app_co_two_sensor_instance_name():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -336,7 +336,7 @@ post: third_app_invariant(**__return__)
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,
         internal_state) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(
         physical_state, internal_state) > 600.0:
-        another_file = '/third_app/file2.csv'
+        another_file = 'file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
     elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
         t = svshi_api.get_minute_in_hour(internal_state)
@@ -423,7 +423,7 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,
         internal_state) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(
         physical_state, internal_state) > 600.0:
-        another_file = '/third_app/file2.csv'
+        another_file = 'file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
     elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
         t = svshi_api.get_minute_in_hour(internal_state)

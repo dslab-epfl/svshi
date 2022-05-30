@@ -27,9 +27,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val file1 = "file1.txt"
-    val file2 = "file2.png"
-    val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, files = List(file1, file2), devices = List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -40,9 +38,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val file1 = "file1.txt"
-    val file2 = "file2.png"
-    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
     AppInputJsonParser.parseJson(json) shouldEqual app
   }
@@ -60,7 +56,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = NotPrivileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = NotPrivileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -72,7 +68,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
 
     AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -84,7 +80,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = AppPrototypicalDeviceInstance("device1", BinarySensor)
     val device2 = AppPrototypicalDeviceInstance("device2", BinarySensor)
     val device3 = AppPrototypicalDeviceInstance("device3", Switch)
-    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, files = List("file1.txt", "file2.png"), permissionLevel = Privileged)
+    val app = AppPrototypicalStructure(deviceInstances = List(device1, device2, device3), timer = 60, permissionLevel = Privileged)
 
     an[JsonParsingException] should be thrownBy AppInputJsonParser.constructPrototypicalStructure(
       AppInputJsonParser.parseJson(json)
@@ -95,9 +91,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val file1 = "file1.txt"
-    val file2 = "file2.png"
-    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
     AppInputJsonParser.writeToFile(tempFilePath, app)
 
@@ -109,9 +103,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
     val device1 = DeviceInstanceJson("device1", "binary")
     val device2 = DeviceInstanceJson("device2", "binary")
     val device3 = DeviceInstanceJson("device3", "switch")
-    val file1 = "file1.txt"
-    val file2 = "file2.png"
-    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, files = List(file1, file2), devices = List(device1, device2, device3))
+    val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
     FileUtils.writeToFileOverwrite(tempFilePath, "Content".getBytes)
 

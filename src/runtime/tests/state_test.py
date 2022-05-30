@@ -23,6 +23,7 @@ from ..state import State
 from ..joint_apps import JointApps
 
 LOGS_DIR = "tests/logs"
+RUNTIME_APP_FILES_FOLDER_PATH = "tests/files"
 
 VALUE_READER_RETURN_VALUE = 42.0
 VALUE_READER_RAW_RETURN_VALUE = DPT2ByteFloat.to_knx(VALUE_READER_RETURN_VALUE)
@@ -256,6 +257,7 @@ async def test_state_listen():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.listen()
 
@@ -275,6 +277,7 @@ async def test_state_stop():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
     await state.listen()
@@ -293,6 +296,7 @@ async def test_state_initialize():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -320,6 +324,7 @@ async def test_internal_state_is_updated():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     NEW_SECOND_ADRESS_VALUE = 8.1
     NEW_THIRD_ADDRESS_VALUE = True
@@ -386,6 +391,7 @@ async def test_state_periodic_apps_are_run():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -425,6 +431,7 @@ async def test_state_on_telegram_update_state_and_notify():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -478,6 +485,7 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
             conditions,
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
+            RUNTIME_APP_FILES_FOLDER_PATH,
         )
         state_stop_spy = mocker.spy(state, "stop")
         await state.initialize()
@@ -587,6 +595,7 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
             conditions,
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
+            RUNTIME_APP_FILES_FOLDER_PATH,
         )
         state_stop_spy = mocker.spy(state, "stop")
         await state.initialize()
@@ -635,6 +644,7 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -701,6 +711,7 @@ async def test_state_update_app_state():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -751,6 +762,7 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -798,6 +810,7 @@ async def test_state_correct_execution_log_after_33_telegrams():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -854,6 +867,7 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -896,6 +910,7 @@ async def test_state_log_files_are_bounded():
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
     )
     await state.initialize()
 
@@ -903,7 +918,7 @@ async def test_state_log_files_are_bounded():
         GroupAddress(FIRST_GROUP_ADDRESS),
         payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
     )
-    for _ in range(8500):
+    for _ in range(9000):
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             telegram1
         )

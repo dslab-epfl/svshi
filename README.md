@@ -212,7 +212,7 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the available device instances are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
-The application can use external files. They however need to have been declared in the prototypical structure `json` file and they have to be located at the root of the project, next to `main.py`.
+The application can use external files. They must live in the `files` folder at the root of the application folder. Calling `open` directly is forbidden. One must use the functions provided by `svshi_api` to access files. Files are managed by the SVSHI runtime and thus all interactions must go through `svshi_api` functions. Please refer to the [SVSHI built-in functions](#SVSHI-built-in-functions) section for details about these functions.
 
 There are two important functions in `main.py`, `invariant()` and `iteration()`. In the first one the user should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second she should write the app code.
 
@@ -246,15 +246,22 @@ These values can be used in `iteration()` and `invariant()`. One should be caref
 #### SVSHI built-in functions
 
 A `svshi_api` instance is imported in every app, like the `app_state`.
-This instance offers several functions used to track the system's time in applications.
-`get_hour_of_the_day` returns an integer between 0 and 23.
-`get_minute_in_hour` returns an integer between 0 and 59.
-`get_day_of_week` returns an integer between 1 and 7, where 1 corresponds to Monday.
-`get_day_of_month` returns an integer between 1 and 31, corresponding to the day of the month.
-`get_month_in_year` returns an integer between 1 and 12, where 1 corresponds to January.
-`get_year`return the current year.
+This instance offers several functions used to track the system's time in applications:
+
+- `get_hour_of_the_day` returns an integer between 0 and 23.
+- `get_minute_in_hour` returns an integer between 0 and 59.
+- `get_day_of_week` returns an integer between 1 and 7, where 1 corresponds to Monday.
+- `get_day_of_month` returns an integer between 1 and 31, corresponding to the day of the month.
+- `get_month_in_year` returns an integer between 1 and 12, where 1 corresponds to January.
+- `get_year`return the current year.
 Example: For Wed Apr 13 15:57:17 2022 UTC `get_hour_of_the_day` returns `15`, `get_minute_in_hour` returns `57`, `get_day_of_week` returns `3`, `get_day_of_month` returns `13`, `get_month_in_year` returns `4` and `get_year` returns `2022`.
 This allows to put time constraints into the invariant and to write and verify time sensitive applications . Therefore, it can be used for the code of `iteration`, in `invariant` and in pre- and post- conditions.
+
+The `svshi_api` instance also offers functions to interact with external files:
+
+- `get_file_text_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a text file and return the `IO[str]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
+- `get_file_binary_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a binary file and return the `IO[bytes]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
+- `get_file_path(file_name)`: returns the path to the file with the given filename as managed by SVSHI. This can be used to pass as arguments to some libraries. However, you must use use the `get_file_...` functions to open the file directly!
 
 ### App example
 
@@ -311,8 +318,6 @@ Moreover, the `timer` attribute can be used to run the application even though t
 - If `timer == 0` the application runs only when the physical state of the devices it uses changes
 - If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
-The `files` attributes is used to indicate files that the app needs to work properly. These files must be at the root of the application project (next to `main.py`).
-
 Once the app is generated, it is moved in the generated apps' folder.
 
 Here is an example:
@@ -321,7 +326,6 @@ Here is an example:
 {
   "permissionLevel": "notPrivileged",
   "timer": 60,
-  "files": ["file1.txt", "file2.png"],
   "devices": [
     {
       "name": "name_of_the_instances",

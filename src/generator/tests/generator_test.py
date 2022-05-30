@@ -67,7 +67,7 @@ def test_generator_copy_skeleton_to_generated_app():
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/__init__.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/main.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/requirements.txt") == True
-
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/files") == True
 
 def test_generator_generate_multiton_class():
     generator.generate_multiton_class()

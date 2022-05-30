@@ -8,6 +8,7 @@ src/app_library/**
 src/verification/conditions.py
 src/verification/runtime_file.py
 src/verification/verification_file.py
+src/local
 **/.coverage
 **/coverage.xml
 

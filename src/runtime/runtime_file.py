@@ -33,3 +33,4 @@ class PhysicalState:
 @dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time
+    app_files_runtime_folder_path: str

@@ -2,7 +2,7 @@ package ch.epfl.core.utils
 
 import ch.epfl.core.model.application.{Application, ApplicationLibrary}
 import ch.epfl.core.parser.json.prototype.AppInputJsonParser
-import ch.epfl.core.utils.FileUtils.getListOfFolders
+import ch.epfl.core.utils.FileUtils.{getListOfFiles, getListOfFolders}
 
 /** Utility functions for the compiler and the verifier
   */
@@ -22,7 +22,10 @@ object Utils {
       getListOfFolders(path).map(f => {
         val protoStructPath = f / Constants.APP_PROTO_STRUCT_FILE_NAME
         val protoStruct = AppInputJsonParser.parse(protoStructPath)
-        Application(f.segments.toList.last, f, protoStruct)
+        val filesFolderPath = f / Constants.FILES_FOLDER_EACH_APPLICATION_NAME
+        if (!os.exists(filesFolderPath)) os.makeDir(filesFolderPath)
+        val files = getListOfFiles(filesFolderPath)
+        Application(name = f.segments.toList.last, appFolderPath = f, appProtoStructure = protoStruct, files = files)
       }),
       path
     )

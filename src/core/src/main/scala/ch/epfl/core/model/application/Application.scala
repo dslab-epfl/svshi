@@ -7,4 +7,4 @@ import ch.epfl.core.model.prototypical.AppPrototypicalStructure
   * @param appFolderPath
   * @param appProtoStructure
   */
-case class Application(name: String, appFolderPath: os.Path, appProtoStructure: AppPrototypicalStructure)
+case class Application(name: String, appFolderPath: os.Path, appProtoStructure: AppPrototypicalStructure, files: List[os.Path])

@@ -23,7 +23,7 @@ def main(
     devices_instances = parser.parse_devices_instances()
     devices_classes = parser.parse_devices_classes()
     app_names = parser.get_app_names()
-    filenames = parser.parse_filenames()
+    filenames = parser.get_filenames()
 
     verification_filename = f"{verification_module_path}/verification_file.py"
     runtime_filename = f"{verification_module_path}/runtime_file.py"

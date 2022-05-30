@@ -52,12 +52,12 @@ object Svshi extends SvshiTr {
           os.remove.all(filesDirPath)
           os.makeDir.all(filesDirPath)
 
-          val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.appProtoStructure.files)).toMap
+          val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.files)).toMap
           appToFiles.foreach {
             case (appName, appFiles) => {
               val appFilesPath = filesDirPath / appName
               if (!os.exists(appFilesPath)) os.makeDir.all(appFilesPath)
-              FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName).filter(fPath => os.exists(fPath)), appFilesPath)
+              FileUtils.copyFiles(appFiles.filter(fPath => os.exists(fPath)), appFilesPath)
             }
           }
 

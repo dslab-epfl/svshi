@@ -1,7 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
   "timer": 0,
-  "files": [],
   "devices": [
     {
       "name": "temperature_sensor",

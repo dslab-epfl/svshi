@@ -19,7 +19,6 @@ class Parser:
     __REQUIRED_FIELDS = {
         ("permissionLevel", str),
         ("timer", int),
-        ("files", list),
         ("devices", list),
     }
 

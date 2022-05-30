@@ -71,13 +71,25 @@ class Parser:
         Returns the priority level of all apps in a Dict mapping app names to priority level.
         The higher the priority level, the more priviledged the app is.
         """
-        
+
         return {
             a.name: Parser.PRIVILEGED_PRIORITY_LEVEL
             if self.__app_protos[a.name]["permissionLevel"] == "privileged"
             else Parser.NOT_PRIVILEGED_PRIORITY_LEVEL
             for a in self.__apps
         }
+    
+    def get_filenames(self) -> Dict[str, Set[str]]:
+        """
+        Parses the filenames associated to each app.
+        """
+        filenames = {}
+        for app in self.__apps:
+            app_name = app.name
+            files_folder_path = f"{app.directory}/{app_name}/files"
+            names = [f.name for f in os.scandir(files_folder_path) if f.is_file()] if os.path.isdir(files_folder_path) else []
+            filenames[app_name] = set(names)
+        return filenames
 
     def __get_apps(self) -> List[App]:
         def get_apps_from_directory(directory: str) -> List[App]:
@@ -116,19 +128,6 @@ class Parser:
                 apps_instances.append(DeviceInstance(f"{app_name}_{name}", type))
 
         return apps_instances
-
-    def parse_filenames(self) -> Dict[str, Set[str]]:
-        """
-        Parses the filenames associated to each app.
-        """
-        filenames = {}
-        for app in self.__apps:
-            app_name = app.name
-            proto = self.__app_protos[app_name]
-            names = set(proto["files"])
-            filenames[app_name] = names
-
-        return filenames
 
     def parse_devices_classes(self) -> List[DeviceClass]:
         """

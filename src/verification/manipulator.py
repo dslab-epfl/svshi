@@ -1,6 +1,7 @@
 import ast
 import copy
 from pydoc import doc
+from statistics import mode
 import astor
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
@@ -15,6 +16,12 @@ class InvalidFunctionCallException(Exception):
 class UntypedUncheckedFunctionException(Exception):
     """
     An unchecked function has no return type.
+    """
+
+
+class InvalidFileOpenModeException(Exception):
+    """
+    A mode passed to a call of functions of svshi_api to open a file
     """
 
 
@@ -45,7 +52,28 @@ class Manipulator:
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
-    __SYSTEM_BEHAVIOUR_FUNC_NAME = "system_behaviour"
+    __OPEN_FUNC_NAME: Final = "open"
+    __SYSTEM_BEHAVIOUR_FUNC_NAME: Final = "system_behaviour"
+    __SVSHI_API_INSTANCE_NAME: Final = "svshi_api"
+    __SVSHI_API_GET_FILE_TEXT_API_FUNC_NAME: Final = "get_file_text_mode"
+    __SVSHI_API_GET_FILE_BINARY_API_FUNC_NAME: Final = "get_file_binary_mode"
+    __SVSHI_API_GET_FILEPATH_API_FUNC_NAME: Final = "get_file_path"
+    __SVSHI_API_FILESYSTEM_FUNCTION_NAMES: Final = [
+        __SVSHI_API_GET_FILE_TEXT_API_FUNC_NAME,
+        __SVSHI_API_GET_FILE_BINARY_API_FUNC_NAME,
+        __SVSHI_API_GET_FILEPATH_API_FUNC_NAME,
+    ]
+    __SVSHI_API_FILESYSTEM_OPEN_FILE_MODES = ["w", "r", "a", "wr", "ar", "ra", "rw"]
+
+    __SVSHI_API_FUNCTIONS_WITH_INTERNAL_STATE: Final = [
+        "get_hour_of_the_day",
+        "get_minute_in_hour",
+        "get_day_of_week",
+        "get_day_of_month",
+        "get_month_in_year",
+        "get_year",
+        *__SVSHI_API_FILESYSTEM_FUNCTION_NAMES,
+    ]
 
     def __init__(
         self,
@@ -141,6 +169,8 @@ class Manipulator:
         "state" argument to the calls with name in accepted_names.
         Furthermore, "invariant", "iteration" and "unchecked" functions are modified with the app_name added to them
         and with the state parameters added for the first two.
+        The internal_state argument is added to all SvshiApi functions calls of functions in the list __SVSHI_API_FUNCTIONS_WITH_INTERNAL_STATE
+        The internal_state argumetns is added to all unchecked functions as the last argument
         """
         if isinstance(op, list) or isinstance(op, tuple):
             for v in list(op):
@@ -315,38 +345,66 @@ class Manipulator:
             self.__rename_instances_add_state(
                 op.keywords, app_name, accepted_names, unchecked_functions, verification
             )
-            f_name = ""
+            # Placeholder values that can never occur to detect the two cases without flags
+            f_name = "123"
+            module_name = "456"
             if isinstance(op.func, ast.Attribute):
+                # call of the form obj.func(...) let's
                 # op.func.value is a ast.Name in this case
-                f_name = cast(ast.Name, op.func.value).id
+                module_name = cast(ast.Name, op.func.value).id
                 f = op.func
-                if isinstance(f.value, ast.Name) and f.value.id in {"svshi_api"}:
+                f_name = f.attr
+                if isinstance(f.value, ast.Name) and module_name in {"svshi_api"}:
                     # functions of the svshi_api object is called
-                    op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
+                    method_name = f.attr
+                    if method_name in self.__SVSHI_API_FUNCTIONS_WITH_INTERNAL_STATE:
+                        op.args.append(
+                            ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load)
+                        )
             elif isinstance(op.func, ast.Name):
+                # call of the form func(...)
                 f_name = op.func.id
             else:
                 self.__rename_instances_add_state(
                     op.func, app_name, accepted_names, unchecked_functions, verification
                 )
-            if f_name in accepted_names:
-                # If the function name is in the list of accepted names, add the state argument to the call
-                op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
-                if verification:
+            if module_name != "456":
+                # Composite call so op.func is an ast.Attribute
+                if module_name in accepted_names:
+                    # If the function name is in the list of accepted names, add the state argument to the call
+                    op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
+                    if verification:
+                        op.args.append(
+                            ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load)
+                        )
+
+                    # Rename the instance calling the function, adding the app name to it
+                    new_name = f"{app_name.upper()}_{module_name}"
+                    cast(ast.Name, cast(ast.Attribute, op.func).value).id = new_name
+            else:
+                # Simple call so op.func is an ast.Name
+                if f_name in accepted_names:
+                    # If the function name is in the list of accepted names, add the state argument to the call
+                    op.args.append(ast.Name(self.__PHYSICAL_STATE_ARGUMENT, ast.Load))
+                    if verification:
+                        op.args.append(
+                            ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load)
+                        )
+
+                    # Rename the instance calling the function, adding the app name to it
+                    new_name = f"{app_name.upper()}_{f_name}"
+                    cast(ast.Name, op.func).id = new_name
+
+                elif f_name in {uf.name for uf in unchecked_functions}:
+                    # If it is a call to an unchecked function, add the app name to the call
+                    new_name = f"{app_name}_{f_name}"
+
+                    # It can be only a ast.Name since the function is defined
+                    cast(ast.Name, op.func).id = new_name
+
+                    # Add the internal_state as argument
                     op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
 
-                # Rename the instance calling the function, adding the app name to it
-                new_name = f"{app_name.upper()}_{f_name}"
-                if isinstance(op.func, ast.Attribute):
-                    cast(ast.Name, op.func.value).id = new_name
-                elif isinstance(op.func, ast.Name):
-                    op.func.id = new_name
-            elif f_name in {uf.name for uf in unchecked_functions}:
-                # If it is a call to an unchecked function, add the app name to the call
-                new_name = f"{app_name}_{f_name}"
-
-                # It can be only a ast.Name since the function is defined
-                cast(ast.Name, op.func).id = new_name
         elif isinstance(op, ast.keyword):
             self.__rename_instances_add_state(
                 op.value, app_name, accepted_names, unchecked_functions, verification
@@ -382,10 +440,18 @@ class Manipulator:
     ) -> ast.FunctionDef:
 
         """
-        Adds in place the states (Physical and App states) to the function arguments.
+        Adds in place the states (Physical, App states and InternalState) to the function arguments.
         only_app_state_app_name is used if only one app state should be added, in that case this arg is the name of said app; it must equal "" to add all app_states
         returns the FunctionDef for convenience
         """
+        f_with_args = self.__add_app_states_to_fun_def(f, only_app_state_app_name)
+        f_with_args = self.__add_physical_state_to_fun_def(f_with_args)
+        f_with_args = self.__add_internal_state_to_fun_def(f_with_args)
+        return f_with_args
+
+    def __add_app_states_to_fun_def(
+        self, f: ast.FunctionDef, only_app_state_app_name: str
+    ) -> ast.FunctionDef:
         state_args = (
             list(
                 map(
@@ -410,19 +476,32 @@ class Manipulator:
                 )
             )
         )
-        state_args.append(
-            ast.arg(
-                self.__PHYSICAL_STATE_ARGUMENT,
-                ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
-            )
-        )
-        state_args.append(
-            ast.arg(
-                self.__INTERNAL_STATE_ARGUMENT,
-                ast.Name(self.__INTERNAL_STATE_TYPE, ast.Load),
-            )
-        )
+
         f.args.args.extend(state_args)
+        return f
+
+    def __add_physical_state_to_fun_def(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        args = [
+            (
+                ast.arg(
+                    self.__PHYSICAL_STATE_ARGUMENT,
+                    ast.Name(self.__PHYSICAL_STATE_TYPE, ast.Load),
+                )
+            )
+        ]
+        f.args.args.extend(args)
+        return f
+
+    def __add_internal_state_to_fun_def(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        args = [
+            (
+                ast.arg(
+                    self.__INTERNAL_STATE_ARGUMENT,
+                    ast.Name(self.__INTERNAL_STATE_TYPE, ast.Load),
+                )
+            )
+        ]
+        f.args.args.extend(args)
         return f
 
     def __construct_contracts(
@@ -894,6 +973,11 @@ class Manipulator:
     ) -> Tuple[bool, str]:
         """
         Checks that there are no calls to the given functions in the body of the given function definitions.
+        returns a tuple with a boolean indicating whether the list of function definitions is valid (i.e., does not contain any
+        invalid calls) and a str which is the first function defintion that contains an invalid call if the boolean is false
+
+        an invalid function in the set can be a function name like `func` that gives call of the form `func()` or `m.func()` for any m
+        or an instance/module name and a function name like `mod.func2` for calls of the form `mod.func(2)`
         """
 
         def check(
@@ -956,14 +1040,19 @@ class Manipulator:
             elif isinstance(op, ast.Return):
                 return check(op.value) if op.value else True
             elif isinstance(op, ast.Call):
+                module_name = "123"  # impossible name as placeholder
                 f_name = ""
                 if isinstance(op.func, ast.Attribute):
                     # op.func.value is a ast.Name in this case
-                    f_name = cast(ast.Name, op.func.value).id
+                    module_name = cast(ast.Name, op.func.value).id
+                    f_name = op.func.attr
                 elif isinstance(op.func, ast.Name):
                     f_name = op.func.id
 
-                if f_name in invalid_func_names:
+                if (
+                    f_name in invalid_func_names
+                    or f"{module_name}.{f_name}" in invalid_func_names
+                ):
                     return False
                 else:
                     return check(op.args) and check(op.keywords)
@@ -997,6 +1086,428 @@ class Manipulator:
 
         f.args.args.extend(ast_arguments)
         return f
+
+    def __add_app_name_to_function_call_arguments(
+        self, f: ast.Call, app_name: str
+    ) -> ast.Call:
+        """
+        In place, adds to the given function the give app_name as the first argument after `self`.
+        return the Call for convenience
+        """
+        new_arg = ast.Constant(value=app_name)
+        current_args = f.args
+        if len(current_args) > 0:
+            current_args.insert(0, new_arg)
+        else:
+            current_args = [new_arg]
+        f.args = current_args
+        return f
+
+    def __check_if_function_filesystem_and_add_app_name(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            ast.NamedExpr,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
+        ],
+        app_name: str,
+    ) -> Union[
+        ast.stmt,
+        ast.expr,
+        ast.comprehension,
+        ast.keyword,
+        ast.NamedExpr,
+        List[ast.stmt],
+        List[ast.expr],
+        List[ast.comprehension],
+        List[ast.keyword],
+        None,
+    ]:
+        """
+        Checks if the given op is a Function call and if that function is a filesystem SvshiApi call.
+        If that's the case, it adds, in place, the app_name as argument.
+        """
+        if isinstance(op, ast.Call):
+            if isinstance(op.func, ast.Attribute):
+                # op.func.value is a ast.Name in this case
+                module_name = cast(ast.Name, op.func.value).id
+                f_name = cast(ast.Name, op.func.attr)
+                if (
+                    module_name == self.__SVSHI_API_INSTANCE_NAME
+                    and f_name in self.__SVSHI_API_FILESYSTEM_FUNCTION_NAMES
+                ):
+                    self.__add_app_name_to_function_call_arguments(
+                        cast(ast.Call, op), app_name=app_name
+                    )
+        return op
+
+    def __check_mode_arg_if_function_call(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            ast.NamedExpr,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
+        ],
+    ) -> None:
+        """
+        Checks if the given op is a Function call and if that function is a filesystem SvshiApi get file call.
+        WARNING: it must be called BEFORE adding the app_name argument!! It assumes the mode arg is the 2nd one.
+        If that's the case, it checks that the mode arg is valid i.e., in 'w', 'r', 'a', 'wr', 'ar', 'ra', 'rw'.
+
+        Raises InvalidFileOpenModeException() if the mode is invalid or not there
+
+        """
+
+        if isinstance(op, ast.Call):
+            if isinstance(op.func, ast.Attribute):
+                # op.func.value is a ast.Name in this case
+                module_name = cast(ast.Name, op.func.value).id
+                f_name = cast(ast.Name, op.func.attr)
+                if module_name == self.__SVSHI_API_INSTANCE_NAME and f_name in [
+                    self.__SVSHI_API_GET_FILE_BINARY_API_FUNC_NAME,
+                    self.__SVSHI_API_GET_FILE_TEXT_API_FUNC_NAME,
+                ]:
+                    current_args = op.args
+                    if len(current_args) > 1:
+                        mode_arg = current_args[1]  # mode is the second argument
+                        if not isinstance(mode_arg, ast.Constant):
+                            raise InvalidFileOpenModeException(
+                                "The mode must be a constant str!"
+                            )
+                        if (
+                            mode_arg.value
+                            not in self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES
+                        ):
+                            raise InvalidFileOpenModeException(
+                                f"The mode passed to a get file function must be in {self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES}. Current mode is '{mode_arg.value}'"
+                            )
+                    else:
+                        # This is a problem, return False
+                        raise InvalidFileOpenModeException(
+                            "Too few argument passed to svshi_api get file function!"
+                        )
+
+    def __add_appname_to_filesystem_functions_args_and_check_mode_arg(
+        self,
+        op: Union[
+            ast.stmt,
+            ast.expr,
+            ast.comprehension,
+            ast.keyword,
+            ast.NamedExpr,
+            List[ast.stmt],
+            List[ast.expr],
+            List[ast.comprehension],
+            List[ast.keyword],
+        ],
+        app_name: str,
+    ):
+        """
+        Manipulates the op to add the app_name to all call to filesystem related functions as arguments. The addition is
+        done in place, it modifies the object.
+        I also checks that the argument passed for mode (e.g., "wr", "r", "a") is valid i.e. a combination of 'w', 'r', 'a' without 'a' and 'w' together
+        so available mode are 'w', 'r', 'a', 'wr', 'ar', 'ra', 'rw'
+        An empty mode corresponds to 'r'
+        """
+        if isinstance(op, list):
+            for index, v in enumerate(op):
+                self.__check_mode_arg_if_function_call(v)
+                temp_new_ast = self.__check_if_function_filesystem_and_add_app_name(
+                    v, app_name
+                )
+                op[index] = temp_new_ast
+                self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                    v, app_name
+                )
+        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.elts, app_name
+            )
+        elif isinstance(op, ast.BoolOp):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.values, app_name
+            )
+        elif isinstance(op, ast.UnaryOp):
+            self.__check_mode_arg_if_function_call(op.operand)
+            op.operand = self.__check_if_function_filesystem_and_add_app_name(
+                op.operand, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.operand, app_name
+            )
+        elif isinstance(op, ast.NamedExpr):
+            self.__check_mode_arg_if_function_call(op.target)
+            op.target = self.__check_if_function_filesystem_and_add_app_name(
+                op.target, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.target, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.Expr):
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.Lambda):
+            self.__check_mode_arg_if_function_call(op.body)
+            op.body = self.__check_if_function_filesystem_and_add_app_name(
+                op.body, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.body, app_name
+            )
+        elif isinstance(op, ast.Assign):
+            self.__check_mode_arg_if_function_call(op.targets)
+            op.targets = self.__check_if_function_filesystem_and_add_app_name(
+                op.targets, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.targets, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.AugAssign):
+            self.__check_mode_arg_if_function_call(op.target)
+            op.target = self.__check_if_function_filesystem_and_add_app_name(
+                op.target, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.target, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.AnnAssign):
+            self.__check_mode_arg_if_function_call(op.target)
+            op.target = self.__check_if_function_filesystem_and_add_app_name(
+                op.target, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.target, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.annotation)
+            op.annotation = self.__check_if_function_filesystem_and_add_app_name(
+                op.annotation, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.annotation, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__check_mode_arg_if_function_call(op.value)
+                op.value = (
+                    temp_new_ast
+                ) = self.__check_if_function_filesystem_and_add_app_name(
+                    op.value, app_name
+                )
+                self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                    op.value, app_name
+                )
+        elif isinstance(op, ast.Compare):
+            self.__check_mode_arg_if_function_call(op.left)
+            op.left = self.__check_if_function_filesystem_and_add_app_name(
+                op.left, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.left, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.comparators, app_name
+            )
+        elif isinstance(op, ast.BinOp):
+            self.__check_mode_arg_if_function_call(op.left)
+            op.left = self.__check_if_function_filesystem_and_add_app_name(
+                op.left, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.left, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.right)
+            op.right = self.__check_if_function_filesystem_and_add_app_name(
+                op.right, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.right, app_name
+            )
+        elif isinstance(op, ast.IfExp):
+            self.__check_mode_arg_if_function_call(op.test)
+            op.test = self.__check_if_function_filesystem_and_add_app_name(
+                op.test, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.test, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.body)
+            op.body = self.__check_if_function_filesystem_and_add_app_name(
+                op.body, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.body, app_name
+            )
+            self.__check_mode_arg_if_function_call(op.orelse)
+            op.orelse = self.__check_if_function_filesystem_and_add_app_name(
+                op.orelse, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.orelse, app_name
+            )
+        elif isinstance(op, ast.If):
+            self.__check_mode_arg_if_function_call(op.test)
+            op.test = self.__check_if_function_filesystem_and_add_app_name(
+                op.test, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.test, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.body, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.orelse, app_name
+            )
+        elif isinstance(op, ast.Dict):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.values, app_name
+            )
+        elif isinstance(op, ast.Set):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.elts, app_name
+            )
+        elif isinstance(op, ast.comprehension):
+            self.__check_mode_arg_if_function_call(op.iter)
+            op.iter = self.__check_if_function_filesystem_and_add_app_name(
+                op.iter, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.iter, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.ifs, app_name
+            )
+        elif (
+            isinstance(op, ast.ListComp)
+            or isinstance(op, ast.SetComp)
+            or isinstance(op, ast.GeneratorExp)
+        ):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.generators, app_name
+            )
+        elif isinstance(op, ast.DictComp):
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.generators, app_name
+            )
+        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+            if op.value:
+                self.__check_mode_arg_if_function_call(op.value)
+                op.value = self.__check_if_function_filesystem_and_add_app_name(
+                    op.value, app_name
+                )
+                self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                    op.value, app_name
+                )
+        elif isinstance(op, ast.FormattedValue):
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.JoinedStr):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.values, app_name
+            )
+        elif isinstance(op, ast.Return):
+            if op.value:
+                self.__check_mode_arg_if_function_call(op.value)
+                op.value = self.__check_if_function_filesystem_and_add_app_name(
+                    op.value, app_name
+                )
+                self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                    op.value, app_name
+                )
+        elif isinstance(op, ast.Call):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.args, app_name
+            )
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.keywords, app_name
+            )
+            # Here we cannot have a Call to replace because it would have been done in the parent
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.func, app_name
+            )
+        elif isinstance(op, ast.keyword):
+            self.__check_mode_arg_if_function_call(op.value)
+            op.value = self.__check_if_function_filesystem_and_add_app_name(
+                op.value, app_name
+            )
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.value, app_name
+            )
+        elif isinstance(op, ast.FunctionDef):
+            # Here we do not do the check as it cannot be a function call (due to the type)
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                op.body, app_name
+            )
 
     def __rename_files(
         self,
@@ -1165,17 +1676,17 @@ class Manipulator:
             unchecked_func_dict = self.__get_unchecked_functions(module_body, app_name)
             unchecked_funcs = list(unchecked_func_dict.values())
 
-            # We rename all the files, if any
-            filenames = self.__filenames_per_app[app_name]
-            if filenames:
-                self.__rename_files(module_body, app_name, filenames)
+            # # We rename all the files, if any
+            # filenames = self.__filenames_per_app[app_name]
+            # if filenames:
+            #     self.__rename_files(module_body, app_name, filenames)
 
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(
                 module_body, app_name, accepted_names, unchecked_funcs, verification
             )
 
-            # Extract imports, invariant/iteration functions and add the contracts to them
+            # Extract imports, invariant/iteration functions and add the contracts to them and the unchecked_functions if verification is false
             (
                 functions_ast,
                 imports_ast,
@@ -1183,10 +1694,16 @@ class Manipulator:
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
             # Contains all the invalid function names: these are not allowed in invariant or iteration functions
-            invalid_func_names = {self.__PRINT_FUNC_NAME}
+            invalid_func_names = {
+                self.__PRINT_FUNC_NAME,
+                self.__OPEN_FUNC_NAME,
+                f"{self.__SVSHI_API_INSTANCE_NAME}.{self.__SVSHI_API_GET_FILEPATH_API_FUNC_NAME}",
+                f"{self.__SVSHI_API_INSTANCE_NAME}.{self.__SVSHI_API_GET_FILE_TEXT_API_FUNC_NAME}",
+                f"{self.__SVSHI_API_INSTANCE_NAME}.{self.__SVSHI_API_GET_FILE_BINARY_API_FUNC_NAME}",
+            }
 
             # Check if an invariant function contains a call to an invalid function,
-            # i.e. an unchecked function or print
+            # i.e. an unchecked function or completely invalid ones
             unchecked_func_names = {
                 uf.name_with_app_name for _, uf in unchecked_func_dict.items()
             }
@@ -1202,7 +1719,7 @@ class Manipulator:
             )
             if not valid:
                 raise InvalidFunctionCallException(
-                    f"The invariant function '{wrong_invariant_func}' contains a call to an unchecked function or to 'print'."
+                    f"The invariant function '{wrong_invariant_func}' contains a call to a forbidden function in that list: {invariant_invalid_func_names}."
                 )
 
             iteration_functions = list(
@@ -1212,15 +1729,47 @@ class Manipulator:
                 )
             )
 
-            # Check if an iteration function contains a call to print
+            # Check if an iteration function contains a call to an invalid function
             valid, wrong_iteration_func = self.__check_no_invalid_calls_in_function(
                 iteration_functions,
                 invalid_func_names,
             )
             if not valid:
                 raise InvalidFunctionCallException(
-                    f"The iteration function '{wrong_iteration_func}' contains a call to 'print'."
+                    f"The iteration function '{wrong_iteration_func}' contains a call to aforbidden function in that list: {invalid_func_names}."
                 )
+
+            if not verification:
+                # Check if an unchecked function contains a call to an invalid function
+                unchecked_func_definitions = list(
+                    filter(
+                        lambda f: f.name.startswith(
+                            f"{app_name}_{self.__UNCHECKED_FUNC_PREFIX}"
+                        ),
+                        functions_ast,
+                    )
+                )
+                unchecked_invalid_func_names = set([self.__OPEN_FUNC_NAME])
+                valid, wrong_unchecked_func = self.__check_no_invalid_calls_in_function(
+                    unchecked_func_definitions,
+                    unchecked_invalid_func_names,
+                )
+                if not valid:
+                    raise InvalidFunctionCallException(
+                        f"The unchecked function '{wrong_unchecked_func}' contains a call to a forbidden function in that list: {unchecked_invalid_func_names}."
+                    )
+
+                # Add the internal_state as argument to all unchecked functions
+                for unchecked_def in unchecked_func_definitions:
+                    self.__add_internal_state_to_fun_def(unchecked_def)
+
+            # Filesystem related operations
+
+            # We add the app_name as arguments to file system calls. They appear only in unchecked functions as checked above, which
+            # are in the list only when verification = false
+            self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
+                functions_ast, app_name
+            )
 
             if verification:
                 # Replace all calls to unchecked functions by variables in iteration function

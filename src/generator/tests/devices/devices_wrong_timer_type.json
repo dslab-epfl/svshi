@@ -1,7 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
   "timer": "",
-  "files": [],
   "devices": [
     {
       "name": "binary_sensor_instance_name",

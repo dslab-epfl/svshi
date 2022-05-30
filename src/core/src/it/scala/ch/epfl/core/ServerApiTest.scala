@@ -41,8 +41,9 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   private val app1ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
   private val app2ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
-  private val existingAppsLibrary = ApplicationLibrary(List(Application("app1", Constants.APP_LIBRARY_FOLDER_PATH / "app1", app1ProtoStruct)), Constants.APP_LIBRARY_FOLDER_PATH)
-  private val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct)), Constants.GENERATED_FOLDER_PATH)
+  private val existingAppsLibrary =
+    ApplicationLibrary(List(Application("app1", Constants.APP_LIBRARY_FOLDER_PATH / "app1", app1ProtoStruct, Nil)), Constants.APP_LIBRARY_FOLDER_PATH)
+  private val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct, Nil)), Constants.GENERATED_FOLDER_PATH)
   private val existingPhysicalStructure = PhysicalStructure(Nil)
 
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"

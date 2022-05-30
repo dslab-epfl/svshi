@@ -399,6 +399,39 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
+  "compile" should "install the app one even if the `files` folder is not present" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy.into(pipeline1Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline1Path / "apps_bindings_filled.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    os.remove.all(GENERATED_FOLDER_PATH / appName / Constants.FILES_FOLDER_EACH_APPLICATION_NAME)
+
+    // Compile the app
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+    }
+
+    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+      include(
+        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
+      ) and
+      include("info: Confirmed over all paths."))
+    val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+    os.exists(newAppPath) shouldBe true
+    os.isDir(newAppPath) shouldBe true
+
+    val expectedLibraryPath = pipeline1Path / "expected_library"
+
+    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+  }
+
   "compile" should "fail when the ETS project file name is not absolute" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {

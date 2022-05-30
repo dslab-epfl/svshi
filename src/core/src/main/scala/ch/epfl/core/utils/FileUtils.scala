@@ -104,11 +104,23 @@ object FileUtils {
 
   /** Explore the given directory and output the list of folders contained in this directory
     * @param dir the path to the directory to explore
-    * @return
+    * @return the list of Paths of directories
     */
   def getListOfFolders(dir: os.Path): List[os.Path] = {
     if (os.exists(dir) && os.isDir(dir)) {
       os.list(dir).filter(a => os.isDir(a)).toList
+    } else {
+      Nil
+    }
+  }
+
+  /** Explore the given directory and output the list of files contained in this directory
+    * @param dir the path to the directory to explore
+    * @return the list of Paths of files
+    */
+  def getListOfFiles(dir: os.Path): List[os.Path] = {
+    if (os.exists(dir) && os.isDir(dir)) {
+      os.list(dir).filter(a => os.isFile(a)).toList
     } else {
       Nil
     }

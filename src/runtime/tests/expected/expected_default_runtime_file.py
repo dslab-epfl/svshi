@@ -1,5 +1,6 @@
 # Default file, will be overwritten while running
 import dataclasses
+import time
 
 
 @dataclasses.dataclass
@@ -31,7 +32,5 @@ class PhysicalState:
 
 @dataclasses.dataclass
 class InternalState:
-    """
-    inv: self.time>=0
-    """
-    time: int #time in seconds
+    date_time: time.struct_time
+    app_files_runtime_folder_path: str

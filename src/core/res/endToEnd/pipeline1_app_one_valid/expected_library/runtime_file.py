@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -32,6 +33,7 @@ class PhysicalState:
 @dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 
 
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
@@ -68,7 +70,6 @@ class Switch_test_app_one_switch_instance_name():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -106,7 +107,22 @@ class SvshiApi():
         """
         post: 0 <= __return__
         """
-        return internal_state.date_time.tm_year 
+        return internal_state.date_time.tm_year
+        
+    def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), mode)
+        except:
+            return None
+
+    def get_file_binary_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[bytes]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), f"{mode}b")
+        except:
+            return None
+
+    def get_file_path(self, app_name: str, file_name: str, internal_state: InternalState) -> str:
+        return f"{internal_state.app_files_runtime_folder_path}/{app_name}/{file_name}"
     
 
 
@@ -129,20 +145,21 @@ def test_app_one_iteration(test_app_one_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
-        test_app_one_unchecked_send_email('test@test.com')
+        test_app_one_unchecked_send_email('test@test.com', internal_state)
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)
 
 
-def test_app_one_unchecked_send_email(addr: str) ->None:
+def test_app_one_unchecked_send_email(addr: str, internal_state: InternalState
+    ) ->None:
     a = 1 + 1
 
 def system_behaviour(test_app_one_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
-        test_app_one_unchecked_send_email('test@test.com')
+        test_app_one_unchecked_send_email('test@test.com', internal_state)
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)

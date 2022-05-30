@@ -12,7 +12,7 @@ def iteration():
 
     tm = unchecked_get_time()
     diff = tm - app_state.FLOAT_0
-    if diff > 3600:
+    if diff > 800:
         unchecked_send_message(f"The current CO2 level is: {co2} ppm\nThe current room temperature is: {temp}°C")
         app_state.FLOAT_0 = tm
 

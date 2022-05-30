@@ -1,7 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
   "timer": 0,
-  "files": ["file3.json", "file4.csv"],
   "devices": [
     {
       "name": "binary_sensor_instance_name",

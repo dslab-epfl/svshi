@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -33,6 +34,7 @@ class PhysicalState:
 @dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 
 
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
@@ -78,7 +80,6 @@ class Temperature_sensor_test_app_two_temperature_sensor():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -116,7 +117,22 @@ class SvshiApi():
         """
         post: 0 <= __return__
         """
-        return internal_state.date_time.tm_year 
+        return internal_state.date_time.tm_year
+        
+    def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), mode)
+        except:
+            return None
+
+    def get_file_binary_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[bytes]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), f"{mode}b")
+        except:
+            return None
+
+    def get_file_path(self, app_name: str, file_name: str, internal_state: InternalState) -> str:
+        return f"{internal_state.app_files_runtime_folder_path}/{app_name}/{file_name}"
     
 
 

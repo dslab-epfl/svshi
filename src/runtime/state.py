@@ -47,6 +47,7 @@ class State:
         check_conditions_function: Callable,
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
         logs_dir: str,
+        runtime_app_files_folder_path: str,
     ):
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
@@ -60,7 +61,7 @@ class State:
         self._last_valid_physical_state: PhysicalState
         self._app_states = {app.name: AppState() for app in self.__apps}
 
-        self._internal_state: InternalState = InternalState(time.localtime())
+        self._internal_state: InternalState = InternalState(time.localtime(), runtime_app_files_folder_path)
 
         # Used to access and modify the states
         self.__execution_lock = asyncio.Lock()

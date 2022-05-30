@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -81,7 +82,6 @@ class Switch_test_app_one_switch_instance_name():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 

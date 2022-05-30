@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -66,7 +67,6 @@ class Binary_sensor_door_lock_presence_detector():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 

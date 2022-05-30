@@ -75,11 +75,6 @@ def test_parser_on_read_devices_throws_exceptions_on_wrong_permission_level_type
         Parser(f"{DEVICES_FOLDER_PATH}/devices_wrong_permission_level_type.json")
 
 
-def test_parser_on_read_devices_throws_exceptions_on_wrong_files_type():
-    with pytest.raises(ParserException):
-        Parser(f"{DEVICES_FOLDER_PATH}/devices_wrong_files_type.json")
-
-
 def test_parser_on_read_devices_throws_exceptions_on_wrong_devices_type():
     with pytest.raises(ParserException):
         Parser(f"{DEVICES_FOLDER_PATH}/devices_wrong_devices_type.json")

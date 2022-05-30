@@ -2,6 +2,7 @@ import filecmp
 import os
 from ..generator import Generator
 from ..parser import Parser
+import pytest
 
 TESTS_DIRECTORY = "tests"
 VERIFICATION_FILE_PATH = f"{TESTS_DIRECTORY}/verification_file.py"
@@ -18,7 +19,7 @@ group_addresses_with_types = parser.parse_group_addresses()
 devices_instances = parser.parse_devices_instances()
 devices_classes = parser.parse_devices_classes()
 app_names = parser.get_app_names()
-filenames = parser.parse_filenames()
+filenames = parser.get_filenames()
 app_priorities = parser.get_app_priorities()
 
 
@@ -26,7 +27,7 @@ generator = Generator(
     VERIFICATION_FILE_PATH,
     RUNTIME_FILE_PATH,
     CONDITIONS_FILE_PATH,
-    "",
+    "files",
     group_addresses_with_types,
     devices_instances,
     devices_classes,
@@ -85,6 +86,7 @@ def test_generator_generate_runtime_file():
         )
         == True
     )
+
 
     # Cleanup
     os.remove(RUNTIME_FILE_PATH)

@@ -1,7 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
-  "timer": 1200,
-  "files": [],
+  "timer": 30,
   "devices": [
     {
       "name": "CO_TWO",

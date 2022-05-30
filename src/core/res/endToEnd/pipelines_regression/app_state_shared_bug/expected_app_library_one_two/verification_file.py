@@ -1,3 +1,4 @@
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -91,7 +92,6 @@ class Temperature_sensor_test_app_two_temperature_sensor():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 

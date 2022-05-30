@@ -1,4 +1,5 @@
 from slack_sdk.web.client import WebClient
+from typing import IO, Optional
 import dataclasses
 import time
 
@@ -33,6 +34,7 @@ class PhysicalState:
 @dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 
 
 class Binary_sensor_door_lock_door_lock_sensor():
@@ -54,7 +56,6 @@ class Binary_sensor_door_lock_presence_detector():
     
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -92,7 +93,22 @@ class SvshiApi():
         """
         post: 0 <= __return__
         """
-        return internal_state.date_time.tm_year 
+        return internal_state.date_time.tm_year
+        
+    def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), mode)
+        except:
+            return None
+
+    def get_file_binary_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[bytes]]:
+        try:
+            return open(self.get_file_path(app_name, file_name, internal_state), f"{mode}b")
+        except:
+            return None
+
+    def get_file_path(self, app_name: str, file_name: str, internal_state: InternalState) -> str:
+        return f"{internal_state.app_files_runtime_folder_path}/{app_name}/{file_name}"
     
 
 
@@ -114,7 +130,7 @@ def door_lock_iteration(door_lock_app_state: AppState, physical_state:
             if door_lock_app_state.INT_0 > 1:
                 door_lock_unchecked_send_message(
                     'The door at office INN319 is still opened but nobody is there!'
-                    )
+                    , internal_state)
                 door_lock_app_state.BOOL_0 = True
             else:
                 door_lock_app_state.INT_0 += 1
@@ -123,14 +139,17 @@ def door_lock_iteration(door_lock_app_state: AppState, physical_state:
         if door_lock_app_state.BOOL_0:
             if DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state):
                 door_lock_unchecked_send_message(
-                    'Someone entered the office INN319. All good!')
+                    'Someone entered the office INN319. All good!',
+                    internal_state)
             elif DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
                 door_lock_unchecked_send_message(
-                    'Someone locked the door of the office INN319. All good!')
+                    'Someone locked the door of the office INN319. All good!',
+                    internal_state)
             door_lock_app_state.BOOL_0 = False
 
 
-def door_lock_unchecked_send_message(msg: str) ->None:
+def door_lock_unchecked_send_message(msg: str, internal_state: InternalState
+    ) ->None:
     token = 'xoxb-2702504146389-2876497796775-r21j0QnaGcyfjwEVDFrYpkYO'
     slack_client = WebClient(token=token)
     slack_client.chat_postMessage(channel='inn319', text=msg)
@@ -143,7 +162,7 @@ def system_behaviour(door_lock_app_state: AppState, physical_state:
             if door_lock_app_state.INT_0 > 1:
                 door_lock_unchecked_send_message(
                     'The door at office INN319 is still opened but nobody is there!'
-                    )
+                    , internal_state)
                 door_lock_app_state.BOOL_0 = True
             else:
                 door_lock_app_state.INT_0 += 1
@@ -152,8 +171,10 @@ def system_behaviour(door_lock_app_state: AppState, physical_state:
         if door_lock_app_state.BOOL_0:
             if DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state):
                 door_lock_unchecked_send_message(
-                    'Someone entered the office INN319. All good!')
+                    'Someone entered the office INN319. All good!',
+                    internal_state)
             elif DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state):
                 door_lock_unchecked_send_message(
-                    'Someone locked the door of the office INN319. All good!')
+                    'Someone locked the door of the office INN319. All good!',
+                    internal_state)
             door_lock_app_state.BOOL_0 = False

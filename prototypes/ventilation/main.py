@@ -43,3 +43,5 @@ def unchecked_in_meeting(email: str) -> bool:
         if acc: 
             break
     return acc
+
+print(unchecked_in_meeting("sam.chassot@gmail.com"))

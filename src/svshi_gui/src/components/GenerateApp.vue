@@ -9,14 +9,12 @@ export default {
                 appName: "",
                 priviledged: false,
                 timer: "0",
-                files: "",
                 devices: []
             },
             defaultAppGenProto: {
                 appName: "",
                 priviledged: false,
                 timer: "0",
-                files: "",
                 devices: []
             },
             availableDevices: ["notLoadedYet"]
@@ -37,7 +35,6 @@ export default {
             let newAppJson = {}
             newAppJson.permissionLevel = this.appGenProto.priviledged ? "privileged" : "notPrivileged"
             newAppJson.timer = parseInt(this.appGenProto.timer, 10)
-            newAppJson.files = this.appGenProto.files.split(";").filter(s => s !== "")
             let devices = this.appGenProto.devices.map(d => this.deleteKeyFromObject(d, "id"))
 
             newAppJson.devices = devices
@@ -120,10 +117,6 @@ export default {
         <tr>
             <td>Timer (0 for never): </td>
             <td><input id="appGenTimerText" v-model="appGenProto.timer" @keypress="isNumber($event)"></td>
-        </tr>
-        <tr>
-            <td>Files (file names and extension, use ; to separate files): </td>
-            <td><input id="appGenFilesText" v-model="appGenProto.files"></td>
         </tr>
         <tr>
             <td>Devices:</td>
