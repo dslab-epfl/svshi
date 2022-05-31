@@ -161,8 +161,8 @@ class StateHolder:
     def app_four_code(self, state1: AppState, physical_state: PhysicalState, internal_state: InternalState):
         self.app_four_called = True
 
-    def joint_apps_code(self, test1: AppState, test2: AppState, test3: AppState,
-                        test4: AppState, physical_state: PhysicalState, internal_state: InternalState):
+    def joint_apps_code(self, test1_app_state: AppState, test2_app_state: AppState, test3_app_state: AppState,
+                        test4_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
         self.app_one_called = True
         if self.app_two_code_description == "test_two_code":
             if self.app_two_start_time == None:
@@ -180,10 +180,10 @@ class StateHolder:
             physical_state.GA_1_1_2 = 8
         elif self.app_two_code_description == "test_two_code_app_state":
             self.app_two_called = True
-            test2.INT_0 = 42
-            test2.FLOAT_1 = 42.42
-            test2.BOOL_2 = True
-            test2.STR_3 = "the answer to everything is 42"
+            test2_app_state.INT_0 = 42
+            test2_app_state.FLOAT_1 = 42.42
+            test2_app_state.BOOL_2 = True
+            test2_app_state.STR_3 = "the answer to everything is 42"
         else:
             self.app_two_called = True
         self.app_three_called = True
@@ -305,10 +305,10 @@ async def test_state_initialize():
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
     assert state._physical_state.GA_1_1_3 == False
     assert state._physical_state.GA_1_1_4 == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # Cleanup
     await state.stop()
@@ -374,10 +374,10 @@ async def test_internal_state_is_updated():
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # Cleanup
     await state.stop()
@@ -401,19 +401,19 @@ async def test_state_periodic_apps_are_run():
     assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
     assert state._physical_state.GA_1_1_3 == False
     assert state._physical_state.GA_1_1_4 == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # We wait just to make sure the periodic app was called
     await asyncio.sleep(3)
 
     assert test_state_holder.app_four_called == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
     assert state._physical_state == state._last_valid_physical_state
 
     # Cleanup
@@ -463,10 +463,10 @@ async def test_state_on_telegram_update_state_and_notify():
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # Cleanup
     await state.stop()
@@ -511,10 +511,10 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
         assert test_state_holder.app_two.should_run == True
         assert test_state_holder.app_three.should_run == True
         assert test_state_holder.app_four.should_run == True
-        assert state._app_states[FIRST_APP_NAME] == AppState()
-        assert state._app_states[SECOND_APP_NAME] == AppState()
-        assert state._app_states[THIRD_APP_NAME] == AppState()
-        assert state._app_states[FOURTH_APP_NAME] == AppState()
+        assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
         last_valid_state = dataclasses.replace(state._physical_state)
 
@@ -574,10 +574,10 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
         assert test_state_holder.app_two.should_run == False
         assert test_state_holder.app_three.should_run == False
         assert test_state_holder.app_four.should_run == False
-        assert state._app_states[FIRST_APP_NAME] == AppState()
-        assert state._app_states[SECOND_APP_NAME] == AppState()
-        assert state._app_states[THIRD_APP_NAME] == AppState()
-        assert state._app_states[FOURTH_APP_NAME] == AppState()
+        assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
         # Stop is called
         state_stop_spy.assert_called_once()
 
@@ -620,10 +620,10 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
         assert test_state_holder.app_two.should_run == False
         assert test_state_holder.app_three.should_run == True
         assert test_state_holder.app_four.should_run == True
-        assert state._app_states[FIRST_APP_NAME] == AppState()
-        assert state._app_states[SECOND_APP_NAME] == AppState()
-        assert state._app_states[THIRD_APP_NAME] == AppState()
-        assert state._app_states[FOURTH_APP_NAME] == AppState()
+        assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+        assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
         state_stop_spy.assert_called_once()
 
@@ -684,10 +684,10 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState()
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # Cleanup
     await state.stop()
@@ -735,15 +735,15 @@ async def test_state_update_app_state():
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
     assert test_state_holder.app_four.should_run == True
-    assert state._app_states[FIRST_APP_NAME] == AppState()
-    assert state._app_states[SECOND_APP_NAME] == AppState(
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState(
         INT_0=new_int_0_value,
         FLOAT_1=new_float_1_value,
         BOOL_2=new_bool_2_value,
         STR_3=new_str_3_value,
     )
-    assert state._app_states[THIRD_APP_NAME] == AppState()
-    assert state._app_states[FOURTH_APP_NAME] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
 
     # Cleanup
     await state.stop()

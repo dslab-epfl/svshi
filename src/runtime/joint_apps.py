@@ -60,3 +60,4 @@ def get_joint_apps(runtime_file_module: str) -> List[JointApps]:
     joint_apps = []
     joint_app_code = getattr(import_module(runtime_file_module), f"system_behaviour")
     joint_apps.append(JointApps("joint_app", joint_app_code, timer=0))
+    return joint_apps

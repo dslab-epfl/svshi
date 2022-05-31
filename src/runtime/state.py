@@ -37,6 +37,7 @@ class State:
     __UNDERSCORE: Final = "_"
     __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
     __LOGGER_BUFFER_SIZE = 32
+    __APP_STATE_ARGUMENT_SUFFIX = "_app_state"
 
     def __init__(
         self,
@@ -59,7 +60,7 @@ class State:
 
         self._physical_state: PhysicalState
         self._last_valid_physical_state: PhysicalState
-        self._app_states = {app.name: AppState() for app in self.__apps}
+        self._app_states = {f"{app.name}{self.__APP_STATE_ARGUMENT_SUFFIX}": AppState() for app in self.__apps}
 
         self._internal_state: InternalState = InternalState(time.localtime(), runtime_app_files_folder_path)
 
@@ -300,8 +301,8 @@ class State:
         self, physical_state: PhysicalState, internal_state: InternalState
     ) -> Dict[str, Any]:
         check_conditions_args: Dict[str, Any] = {
-            f"{app_name}_app_state": state
-            for app_name, state in self._app_states.items()
+            app_state_arg_name: state
+            for app_state_arg_name, state in self._app_states.items()
         }
         check_conditions_args["physical_state"] = physical_state
         check_conditions_args["internal_state"] = internal_state
