@@ -1,10 +1,6 @@
 {
   "permissionLevel": "notPrivileged",
-  "timer": 10,
-  "files": [
-    "credentials.json",
-    "token.pickle"
-  ],
+  "timer": 30,
   "devices": [
     {
       "name": "presence_detector",

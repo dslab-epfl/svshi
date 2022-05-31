@@ -1,4 +1,4 @@
-from instances import app_state, PRESENCE_DETECTOR, CO_TWO_SENSOR, VENTILATION
+from instances import app_state, svshi_api, PRESENCE_DETECTOR, CO_TWO_SENSOR, VENTILATION
 
 from gcsa.google_calendar import GoogleCalendar
 from datetime import datetime
@@ -11,14 +11,14 @@ def invariant() -> bool:
 
 
 def iteration():
-    if PRESENCE_DETECTOR.is_on() or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 900.0) or unchecked_in_meeting("sam.chassot@gmail.com"):
+    if PRESENCE_DETECTOR.is_on() or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 900.0) or unchecked_in_meeting():
         VENTILATION.on()
     else:
         VENTILATION.off()
 
-def unchecked_in_meeting(email: str) -> bool:
-    return False
-    gc = GoogleCalendar(email, credentials_path="credentials.json")
+def unchecked_in_meeting() -> bool:
+    email = "sam.chassot@gmail.com"
+    gc = GoogleCalendar(email, credentials_path=svshi_api.get_file_path("credentials.json"), token_path=svshi_api.get_file_path("token.pickle"))
 
     acc = False
     for e in gc:
@@ -43,5 +43,3 @@ def unchecked_in_meeting(email: str) -> bool:
         if acc: 
             break
     return acc
-
-print(unchecked_in_meeting("sam.chassot@gmail.com"))
