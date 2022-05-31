@@ -3,6 +3,7 @@ import JsonViewer from 'vue-json-viewer'
 import vSelect from "vue-select";
 import JSZip from 'jszip'
 import 'vue-select/dist/vue-select.css';
+import 'vue-json-viewer/style.css'
 
 let successStatusCode = 200
 export default {
@@ -12,6 +13,8 @@ export default {
             "appBindings": [],
             "physicalStructure": {},
             "filteredPhysicalStructure": {},
+            "searchPhysicalStructure": {},
+            "searchField": "",
             "physicalPhysIds": [],
             "showBindings": true,
             "test": -1
@@ -100,6 +103,31 @@ export default {
 
             let result = await zip.generateAsync({ type: "uint8array" });
             return new Blob([result])
+        },
+        updateSearchPhysicalStructure() {
+            if (this.searchField === "") {
+                this.searchPhysicalStructure = {}
+            } else {
+                this.searchPhysicalStructure = {}
+                this.searchPhysicalStructure.deviceInstances = this.physicalStructure.deviceInstances.map(d => {
+                    console.log(d.name, d.name.includes(this.searchField))
+                    return {
+                        "name": d.name,
+                        "address": d.address,
+                        "nodes": d.nodes.map(n => {
+                            return {
+                                "name": n.name,
+                                "comObjects": n.comObjects.filter(c => c.name.toLowerCase().includes(this.searchField.toLowerCase()))
+                            }
+
+                        }).filter(n => n.comObjects.length > 0)
+                    }
+                }).filter(d => d.nodes.length > 0)
+            }
+        },
+        onSearchFieldChange(evt) {
+            this.searchField = evt.target.value
+            this.updateSearchPhysicalStructure()
         }
     },
     mounted() {
@@ -115,6 +143,13 @@ export default {
             <tr>
                 <td>Bindings</td>
                 <td>Physical structure</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input :value="this.searchField" placeholder="Search com objects"
+                        @input="this.onSearchFieldChange($event)" />
+                </td>
             </tr>
             <tr>
                 <td valign="top">
@@ -141,7 +176,10 @@ export default {
                     </ul>
                 </td>
                 <td>
-                    <json-viewer :value="filteredPhysicalStructure" :expand-depth=3></json-viewer>
+                    <json-viewer v-if="Object.keys(this.searchPhysicalStructure).length === 0"
+                        :value="filteredPhysicalStructure" :expand-depth=3></json-viewer>
+                    <json-viewer v-if="Object.keys(this.searchPhysicalStructure).length > 0"
+                        :value="searchPhysicalStructure" :expand-depth=1000></json-viewer>
                 </td>
             </tr>
         </table>
