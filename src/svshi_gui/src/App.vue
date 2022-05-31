@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="js" >
 import * as http from "http";
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
@@ -9,6 +9,7 @@ import { Tabs, Tab } from 'vue3-tabs-component';
 
 let defaultBackendServerAddress = "http://localhost:4242"
 let defaultBackendServerPort = "4242"
+
 
 export default {
   components: {
@@ -28,9 +29,11 @@ export default {
       ],
       isRunning: false,
       uninstallInProgress: false,
+      allAppsUninstalling: false,
       backendServerAddress: defaultBackendServerAddress,
       polling: "",
-      colourOrangeSvshi: '#e05a06'
+      colourOrangeSvshi: '#e05a06',
+      allAppsName: "42All"
     }
   },
   methods: {
@@ -58,7 +61,33 @@ export default {
         alert("You cannot remove apps while SVSHI is running!")
         return
       }
-      if (this.installedApps.some(a => a.name === appName)) {
+      console.log(appName)
+      if(appName === "42All"){
+        if (confirm("Are you sure you want to uninstall ALL applications?")) {
+          try {
+            this.allAppsUninstalling = true
+            const requestOptions = {
+              method: "POST"
+            };
+            this.uninstallInProgress = true
+            let res = await fetch(this.backendServerAddress + "/removeAllApps", requestOptions);
+            let responseBody = await res.json();
+            if (responseBody.status) {
+              console.log("Removing all the apps was successful!")
+            } else {
+              console.log("An error occurred while removing all the apps! Please see the following logs: ")
+              let array = responseBody.output
+              array.forEach(element => {
+                console.log(element)
+              });
+            }
+            this.allAppsUninstalling = false
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }
+      else if (this.installedApps.some(a => a.name === appName)) {
         if (confirm("Are you sure you want to uninstall '" + appName + "'?")) {
           try {
             this.installedApps = this.installedApps.map(a =>
@@ -190,7 +219,11 @@ export default {
   <div v-else>
     <tabs>
       <tab name="Installed Apps">
-        <h2>Installed apps</h2>
+        <h2>Installed apps</h2><button v-if="!this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0" @Click="deleteApp('42All')">Uninstall ALL apps</button>
+                  <div v-if="this.allAppsUninstalling">
+                    <PulseLoader :color="this.colourOrangeSvshi" />
+                  </div>
+        <h3 v-if="this.installedApps.length === 0">No apps are currently installed</h3>
         <ul style="list-style-type:none;">
           <li v-for='app in installedApps' :key="app.id">
             <table>
