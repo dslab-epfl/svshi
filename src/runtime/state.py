@@ -93,7 +93,8 @@ class State:
         timers = []
         for timed_app in periodic_apps:
             timers.append(timed_app.timer)
-        self.__periodic_apps[min(timers)] = self.joint_apps
+        if len(timers) > 0:
+            self.__periodic_apps[min(timers)] = self.joint_apps
 
         self.__periodic_apps_task: Optional[Task] = None
 
