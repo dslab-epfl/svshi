@@ -223,6 +223,8 @@ In addition, note that `invariant()` must return a boolean value, so any kind of
 **Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximize code that is indeed formally verified.
 Nonetheless, the user can help the verification deal with their presence by annotating their docstring with _post-conditions_.
 
+Note that some modules are forbidden to use even in unchecked functions. For now, the `time` module is forbidden, please use the time provided by the SVSHI_API, see [SVSHI built-in functions](#SVSHI-built-in-functions).
+
 Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can use `__return__` to represent the return value of the function, constants and other operations. You can add as much post-conditions as you like and need. Therefore, we encourage developers to avoid having conjunctions in post-conditions but rather to have multiple post-conditions. This does not make difference for the verification but helps the readability.  
 However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
 

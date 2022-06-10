@@ -349,12 +349,12 @@ def second_app_invariant(second_app_app_state: AppState, physical_state:
 def second_app_iteration(second_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState):
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) and second_app_unchecked_time(internal_state) > 2.0:
+        ) and second_app_unchecked_float(internal_state) > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
 
 
-def second_app_unchecked_time(internal_state: InternalState) ->float:
-    return time.time()
+def second_app_unchecked_float(internal_state: InternalState) ->float:
+    return 42.0
 
 def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     AppState, third_app_app_state: AppState, physical_state: PhysicalState,
@@ -377,5 +377,5 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) and second_app_unchecked_time(internal_state) > 2.0:
+        ) and second_app_unchecked_float(internal_state) > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)

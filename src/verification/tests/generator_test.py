@@ -58,7 +58,6 @@ def test_generator_generate_verification_file():
 
     with open(VERIFICATION_FILE_PATH, "r") as v:
         print(v.read())
-
     assert (
         filecmp.cmp(
             VERIFICATION_FILE_PATH,
@@ -77,7 +76,6 @@ def test_generator_generate_runtime_file():
 
     with open(RUNTIME_FILE_PATH, "r") as v:
         print(v.read())
-
     assert (
         filecmp.cmp(
             RUNTIME_FILE_PATH,

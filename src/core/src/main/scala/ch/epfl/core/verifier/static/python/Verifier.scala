@@ -12,6 +12,7 @@ import ch.epfl.core.verifier.static.python.exceptions.{PythonVerifierError, Pyth
 object Verifier extends VerifierTr {
   private val CONFIRMED_ALL_PATHS_MSG: String = "Confirmed over all paths".toLowerCase
   private val CROSSHAIR_ERROR_LINE_REGEX = """^.+verification_file\.py:(\d+): error: (.+)$""".r
+  private val SUCCESS_CODE_VERIFICATION_MODULE_PYTHON = 0
 
   private def transformCrossHairErrorLine(verificationFilePath: os.Path, line: String): String = {
     line match {
@@ -34,8 +35,8 @@ object Verifier extends VerifierTr {
     * @return
     */
   override def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[PythonVerifierMessage] = {
-    val (_, stdOutLines) = ProcRunner.callPythonBlocking(None, None, VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_SRC_FOLDER))
-    if (stdOutLines.length != 1) {
+    val (errorCode, stdOutLines) = ProcRunner.callPythonBlocking(None, None, VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_SRC_FOLDER))
+    if (errorCode != SUCCESS_CODE_VERIFICATION_MODULE_PYTHON) {
       // Error while creating the verification file, output
       if (stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))
       else List(PythonVerifierError("Verification_file creation ERRORS: The verification module returned nothing!"))

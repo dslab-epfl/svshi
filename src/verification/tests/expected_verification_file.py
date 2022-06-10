@@ -392,7 +392,7 @@ def second_app_invariant(first_app_app_state: AppState,
 def second_app_iteration(first_app_app_state: AppState,
     second_app_app_state: AppState, third_app_app_state: AppState,
     physical_state: PhysicalState, internal_state: InternalState,
-    second_app_unchecked_time: float):
+    second_app_unchecked_float: float):
     """
 pre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)
 pre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)
@@ -402,7 +402,7 @@ post: second_app_invariant(**__return__)
 post: third_app_invariant(**__return__)
 """
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
-        internal_state) and second_app_unchecked_time > 2.0:
+        internal_state) and second_app_unchecked_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
     return {'first_app_app_state': first_app_app_state,
         'second_app_app_state': second_app_app_state, 'third_app_app_state':
@@ -412,7 +412,7 @@ post: third_app_invariant(**__return__)
 def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     AppState, third_app_app_state: AppState, physical_state: PhysicalState,
     internal_state: InternalState, first_app_uncheckedcompute_bool: bool,
-    first_app_unchecked_return_two: int, second_app_unchecked_time: float):
+    first_app_unchecked_return_two: int, second_app_unchecked_float: float):
     if first_app_uncheckedcompute_bool and not first_app_app_state.BOOL_1:
         first_app_app_state.INT_1 = 42
         None
@@ -429,7 +429,7 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
-        internal_state) and second_app_unchecked_time > 2.0:
+        internal_state) and second_app_unchecked_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
     return {'first_app_app_state': first_app_app_state,
         'second_app_app_state': second_app_app_state, 'third_app_app_state':

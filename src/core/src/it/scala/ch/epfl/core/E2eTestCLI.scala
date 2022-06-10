@@ -1482,7 +1482,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     os.list(INSTALLED_APPS_FOLDER_PATH).toList.isEmpty shouldEqual true
   }
 
-  // Pipeline 4 - 2 apps: app one valid and then app two that violates app one invariant
+  // Pipeline 4 - 2 apps: app one valid and then app two that violates app one invariant or imports forbidden modules
   "compile" should "not install app two when it can violate invariant of app 1" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -1511,6 +1511,47 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(s"""ERROR: False when calling test_app_two_iteration"""))
               out.toString.trim should (include(s"""ERROR: At line 220:  post: test_app_one_invariant(**__return__)"""))
+
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
+              os.exists(newAppPath) shouldBe false
+
+              // Library with only app one
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "compile" should "not install app two when it imports forbidden modules (here time)" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one"
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline4Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline4Path / "test_app_two_invalid_filled_forbidden_modules", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(s"""The app 'test_app_two' imports the following module which is forbidden in applications: 'time'"""))
 
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false

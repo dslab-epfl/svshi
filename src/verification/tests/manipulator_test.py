@@ -3,6 +3,7 @@ from ..manipulator import (
     InvalidFunctionCallException,
     Manipulator,
     UntypedUncheckedFunctionException,
+    ForbiddenModuleImported,
 )
 import pytest
 
@@ -55,8 +56,8 @@ def test_manipulator_manipulate_mains_verification():
     assert functions == [
         "def third_app_invariant(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState) ->bool:\n    return THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,\n        internal_state) < 82 and (2 <= svshi_api.get_hour_of_the_day(\n        internal_state) <= 3 and not THIRD_APP_SWITCH_INSTANCE_NAME.is_on(\n        physical_state, internal_state) or not 2 <= svshi_api.\n        get_hour_of_the_day(internal_state) <= 3)\n\n\ndef third_app_iteration(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState):\n    \"\"\"\npre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: third_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npost: first_app_invariant(**__return__)\npost: second_app_invariant(**__return__)\npost: third_app_invariant(**__return__)\n\"\"\"\n    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,\n        internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:\n        another_file = 'file2.csv'\n        THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:\n        t = svshi_api.get_minute_in_hour(internal_state)\n        THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
         "def first_app_invariant(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState) ->bool:\n    return FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and FIRST_APP_TEMPERATURE_SENSOR_INSTANCE_NAME.read(\n        physical_state, internal_state) > 18 and not first_app_app_state.BOOL_1\n\n\ndef first_app_iteration(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState, first_app_uncheckedcompute_bool: bool,\n    first_app_unchecked_return_two: int):\n    \"\"\"\npre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: third_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: first_app_uncheckedcompute_bool == False\npre: first_app_unchecked_return_two > 0\npre: first_app_unchecked_return_two != 3\npost: first_app_invariant(**__return__)\npost: second_app_invariant(**__return__)\npost: third_app_invariant(**__return__)\n\"\"\"\n    if first_app_uncheckedcompute_bool and not first_app_app_state.BOOL_1:\n        first_app_app_state.INT_1 = 42\n        None\n    else:\n        v = first_app_unchecked_return_two\n        None\n        None\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
-        "def second_app_invariant(first_app_app_state: AppState,\n    second_app_app_state: AppState, third_app_app_state: AppState,\n    physical_state: PhysicalState, internal_state: InternalState) ->bool:\n    return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(\n        physical_state, internal_state)\n\n\ndef second_app_iteration(first_app_app_state: AppState,\n    second_app_app_state: AppState, third_app_app_state: AppState,\n    physical_state: PhysicalState, internal_state: InternalState,\n    second_app_unchecked_time: float):\n    \"\"\"\npre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: third_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npost: first_app_invariant(**__return__)\npost: second_app_invariant(**__return__)\npost: third_app_invariant(**__return__)\n\"\"\"\n    if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and second_app_unchecked_time > 2.0:\n        SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
-        "def system_behaviour(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState, first_app_uncheckedcompute_bool: bool,\n    first_app_unchecked_return_two: int, second_app_unchecked_time: float):\n    if first_app_uncheckedcompute_bool and not first_app_app_state.BOOL_1:\n        first_app_app_state.INT_1 = 42\n        None\n    else:\n        v = first_app_unchecked_return_two\n        None\n        None\n    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,\n        internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:\n        another_file = 'file2.csv'\n        THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:\n        t = svshi_api.get_minute_in_hour(internal_state)\n        THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)\n    if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and second_app_unchecked_time > 2.0:\n        SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
+        "def second_app_invariant(first_app_app_state: AppState,\n    second_app_app_state: AppState, third_app_app_state: AppState,\n    physical_state: PhysicalState, internal_state: InternalState) ->bool:\n    return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(\n        physical_state, internal_state)\n\n\ndef second_app_iteration(first_app_app_state: AppState,\n    second_app_app_state: AppState, third_app_app_state: AppState,\n    physical_state: PhysicalState, internal_state: InternalState,\n    second_app_unchecked_float: float):\n    \"\"\"\npre: first_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: second_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npre: third_app_invariant(first_app_app_state, second_app_app_state, third_app_app_state, physical_state, internal_state)\npost: first_app_invariant(**__return__)\npost: second_app_invariant(**__return__)\npost: third_app_invariant(**__return__)\n\"\"\"\n    if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and second_app_unchecked_float > 2.0:\n        SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
+        "def system_behaviour(first_app_app_state: AppState, second_app_app_state:\n    AppState, third_app_app_state: AppState, physical_state: PhysicalState,\n    internal_state: InternalState, first_app_uncheckedcompute_bool: bool,\n    first_app_unchecked_return_two: int, second_app_unchecked_float: float):\n    if first_app_uncheckedcompute_bool and not first_app_app_state.BOOL_1:\n        first_app_app_state.INT_1 = 42\n        None\n    else:\n        v = first_app_unchecked_return_two\n        None\n        None\n    if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,\n        internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:\n        another_file = 'file2.csv'\n        THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:\n        t = svshi_api.get_minute_in_hour(internal_state)\n        THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)\n    if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,\n        internal_state) and second_app_unchecked_float > 2.0:\n        SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)\n    return {'first_app_app_state': first_app_app_state,\n        'second_app_app_state': second_app_app_state, 'third_app_app_state':\n        third_app_app_state, 'physical_state': physical_state,\n        'internal_state': internal_state}\n",
     ]
 
 
@@ -68,11 +69,10 @@ def test_manipulator_manipulate_mains_runtime():
         "from slack_sdk.web.client import WebClient",
         "from slack_sdk.web.slack_response import SlackResponse",
         "from decouple import config",
-        "import time",
     ]
 
     assert functions == [
-        '''def third_app_invariant(third_app_app_state: AppState, physical_state:
+        """def third_app_invariant(third_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState) ->bool:
     return THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
         ) < 82 and (2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3 and
@@ -89,8 +89,8 @@ def third_app_iteration(third_app_app_state: AppState, physical_state:
     elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
-''', 
-'''def first_app_invariant(first_app_app_state: AppState, physical_state:
+""",
+        '''def first_app_invariant(first_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState) ->bool:
     return FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and FIRST_APP_TEMPERATURE_SENSOR_INSTANCE_NAME.read(physical_state
@@ -133,8 +133,8 @@ def first_app_unchecked_return_two(internal_state: InternalState) ->int:
 
 def first_app_unchecked_print(s, internal_state: InternalState) ->None:
     print(s)
-''', 
-    '''def second_app_invariant(second_app_app_state: AppState, physical_state:
+''',
+        """def second_app_invariant(second_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)
@@ -143,14 +143,14 @@ def first_app_unchecked_print(s, internal_state: InternalState) ->None:
 def second_app_iteration(second_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState):
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) and second_app_unchecked_time(internal_state) > 2.0:
+        ) and second_app_unchecked_float(internal_state) > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
 
 
-def second_app_unchecked_time(internal_state: InternalState) ->float:
-    return time.time()
-''', 
-'''def system_behaviour(first_app_app_state: AppState, second_app_app_state:
+def second_app_unchecked_float(internal_state: InternalState) ->float:
+    return 42.0
+""",
+        """def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     AppState, third_app_app_state: AppState, physical_state: PhysicalState,
     internal_state: InternalState):
     if first_app_uncheckedcompute_bool(internal_state
@@ -170,11 +170,10 @@ def second_app_unchecked_time(internal_state: InternalState) ->float:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-        ) and second_app_unchecked_time(internal_state) > 2.0:
+        ) and second_app_unchecked_float(internal_state) > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
-'''
+""",
     ]
-
 
 
 def test_manipulator_manipulate_mains_raises_untyped_unchecked_function_exception():
@@ -720,6 +719,48 @@ def test_manipulator_manipulate_mains_raises_invalid_function_call_exception_bec
 
     with pytest.raises(InvalidFileOpenModeException):
         app_priorities = {"eighteenth_app": 0}
+        manipulator.manipulate_mains(verification=False, app_priorities=app_priorities)
+
+
+def test_manipulator_manipulate_mains_raises_forbidden_module_when_using_time_module():
+    manipulator = Manipulator(
+        {
+            (f"{TESTS_DIRECTORY}/fake_wrong_app_library", "nineteenth_app"): set(
+                [
+                    "BINARY_SENSOR_INSTANCE_NAME",
+                    "SWITCH_INSTANCE_NAME",
+                    "TEMPERATURE_SENSOR_INSTANCE_NAME",
+                    "HUMIDITY_SENSOR_INSTANCE_NAME",
+                ]
+            ),
+        },
+        {"nineteenth_app": set()},
+        "",
+    )
+
+    with pytest.raises(ForbiddenModuleImported):
+        app_priorities = {"nineteenth_app": 0}
+        manipulator.manipulate_mains(verification=False, app_priorities=app_priorities)
+
+
+def test_manipulator_manipulate_mains_raises_forbidden_module_when_using_time_module_import_from():
+    manipulator = Manipulator(
+        {
+            (f"{TESTS_DIRECTORY}/fake_wrong_app_library", "twentieth_app"): set(
+                [
+                    "BINARY_SENSOR_INSTANCE_NAME",
+                    "SWITCH_INSTANCE_NAME",
+                    "TEMPERATURE_SENSOR_INSTANCE_NAME",
+                    "HUMIDITY_SENSOR_INSTANCE_NAME",
+                ]
+            ),
+        },
+        {"twentieth_app": set()},
+        "",
+    )
+
+    with pytest.raises(ForbiddenModuleImported):
+        app_priorities = {"twentieth_app": 0}
         manipulator.manipulate_mains(verification=False, app_priorities=app_priorities)
 
 

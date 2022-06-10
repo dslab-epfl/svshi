@@ -2,6 +2,7 @@ import ast
 import copy
 from pydoc import doc
 from statistics import mode
+from sys import stderr
 import astor
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union, Final, cast
@@ -22,6 +23,12 @@ class UntypedUncheckedFunctionException(Exception):
 class InvalidFileOpenModeException(Exception):
     """
     A mode passed to a call of functions of svshi_api to open a file
+    """
+
+
+class ForbiddenModuleImported(Exception):
+    """
+    A forbidden module was imported by the user in one app
     """
 
 
@@ -75,6 +82,8 @@ class Manipulator:
         *__SVSHI_API_FILESYSTEM_FUNCTION_NAMES,
     ]
 
+    __FORBIDDEN_MODULE_IN_APPS = ["time"]
+
     def __init__(
         self,
         instances_names_per_app: Dict[Tuple[str, str], Set[str]],
@@ -123,9 +132,9 @@ class Manipulator:
             doc_string = "" if doc_string == None else doc_string
             return_type = op.returns
             if not return_type:
-                raise UntypedUncheckedFunctionException(
-                    f"The unchecked function '{op.name}' has no return type."
-                )
+                msg = f"The unchecked function '{op.name}' has no return type."
+                print(msg)  # To pass it to the scala module
+                raise UntypedUncheckedFunctionException(msg)
             # When the return type is 'None', return_type is ast.Constant
             return_type_str = (
                 cast(ast.Name, return_type).id
@@ -133,9 +142,9 @@ class Manipulator:
                 else cast(ast.Constant, return_type).value
             )
             if return_type_str != None and len(return_type_str) == 0:
-                raise UntypedUncheckedFunctionException(
-                    f"The unchecked function '{op.name}' has no return type."
-                )
+                msg = f"The unchecked function '{op.name}' has no return type."
+                print(msg)  # To pass it to the scala module
+                raise UntypedUncheckedFunctionException(msg)
             func_name = op.name
             new_func_name = f"{app_name}_{func_name}"
             return {
@@ -1183,21 +1192,21 @@ class Manipulator:
                     if len(current_args) > 1:
                         mode_arg = current_args[1]  # mode is the second argument
                         if not isinstance(mode_arg, ast.Constant):
-                            raise InvalidFileOpenModeException(
-                                "The mode must be a constant str!"
-                            )
+                            msg = "The mode must be a constant str!"
+                            print(msg)  # To pass it to the scala module
+                            raise InvalidFileOpenModeException(msg)
                         if (
                             mode_arg.value
                             not in self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES
                         ):
-                            raise InvalidFileOpenModeException(
-                                f"The mode passed to a get file function must be in {self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES}. Current mode is '{mode_arg.value}'"
-                            )
+                            msg = f"The mode passed to a get file function must be in {self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES}. Current mode is '{mode_arg.value}'"
+                            print(msg)  # To pass it to the scala module
+                            raise InvalidFileOpenModeException(msg)
                     else:
                         # This is a problem, return False
-                        raise InvalidFileOpenModeException(
-                            "Too few argument passed to svshi_api get file function!"
-                        )
+                        msg = "Too few argument passed to svshi_api get file function!"
+                        print(msg)  # To pass it to the scala module
+                        raise InvalidFileOpenModeException(msg)
 
     def __add_appname_to_filesystem_functions_args_and_check_mode_arg(
         self,
@@ -1597,6 +1606,29 @@ class Manipulator:
                 # We rename the file
                 op.value = f"{self.__files_folder_path}/{app_name}/{v}"
 
+    def __check_presence_forbidden_module(
+        self, imports_ast: List[ast.stmt], forbidden_modules: List[str]
+    ) -> Tuple[bool, str]:
+        """
+        Checks in the given list of imports if one of the given forbidden module is imported.
+        Return a tuple whose first element is True if a forbidden module is found, False otherwise and second is the forbidden module found or "" if 1st is False
+        """
+        imported_modules = []
+        for imp in imports_ast:
+            if isinstance(imp, ast.Import):
+                for n in imp.names:
+                    imported_modules.append(n.name)
+            elif isinstance(imp, ast.ImportFrom):
+                imported_modules.append(imp.module)
+
+        forbidden_modules_imported = cast(
+            List[str], list(filter(lambda m: m in forbidden_modules, imported_modules))
+        )
+        if len(forbidden_modules_imported) > 0:
+            return (True, forbidden_modules_imported[0])
+        else:
+            return (False, "")
+
     def __manipulate_app_main(
         self,
         directory: str,
@@ -1693,6 +1725,8 @@ class Manipulator:
                 from_imports_ast,
             ) = extract_functions_and_imports(module_body, unchecked_func_dict)
 
+            all_imports_ast = imports_ast + from_imports_ast
+
             # Contains all the invalid function names: these are not allowed in invariant or iteration functions
             invalid_func_names = {
                 self.__PRINT_FUNC_NAME,
@@ -1718,9 +1752,9 @@ class Manipulator:
                 invariant_invalid_func_names,
             )
             if not valid:
-                raise InvalidFunctionCallException(
-                    f"The invariant function '{wrong_invariant_func}' contains a call to a forbidden function in that list: {invariant_invalid_func_names}."
-                )
+                msg = f"The invariant function '{wrong_invariant_func}' contains a call to a forbidden function in that list: {invariant_invalid_func_names}."
+                print(msg)  # To pass it to the scala module
+                raise InvalidFunctionCallException(msg)
 
             iteration_functions = list(
                 filter(
@@ -1735,9 +1769,9 @@ class Manipulator:
                 invalid_func_names,
             )
             if not valid:
-                raise InvalidFunctionCallException(
-                    f"The iteration function '{wrong_iteration_func}' contains a call to aforbidden function in that list: {invalid_func_names}."
-                )
+                msg = f"The iteration function '{wrong_iteration_func}' contains a call to a forbidden function in that list: {invalid_func_names}."
+                print(msg)  # To pass it to the scala module
+                raise InvalidFunctionCallException(msg)
 
             if not verification:
                 # Check if an unchecked function contains a call to an invalid function
@@ -1755,9 +1789,9 @@ class Manipulator:
                     unchecked_invalid_func_names,
                 )
                 if not valid:
-                    raise InvalidFunctionCallException(
-                        f"The unchecked function '{wrong_unchecked_func}' contains a call to a forbidden function in that list: {unchecked_invalid_func_names}."
-                    )
+                    msg = f"The unchecked function '{wrong_unchecked_func}' contains a call to a forbidden function in that list: {unchecked_invalid_func_names}."
+                    print(msg)  # To pass it to the scala module
+                    raise InvalidFunctionCallException(msg)
 
                 # Add the internal_state as argument to all unchecked functions
                 for unchecked_def in unchecked_func_definitions:
@@ -1806,6 +1840,19 @@ class Manipulator:
                         functions_ast,
                     )
                 )
+
+            # Check for forbidden imported modules
+            (
+                forbidden_import_flag,
+                forbidden_module_imported,
+            ) = self.__check_presence_forbidden_module(
+                imports_ast=all_imports_ast,
+                forbidden_modules=self.__FORBIDDEN_MODULE_IN_APPS,
+            )
+            if forbidden_import_flag:
+                msg = f"The app '{app_name}' imports the following module which is forbidden in applications: '{forbidden_module_imported}'"
+                print(msg)  # To pass it to the scala module
+                raise ForbiddenModuleImported(msg)
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))
