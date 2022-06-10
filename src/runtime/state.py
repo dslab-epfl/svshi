@@ -1,12 +1,10 @@
+from asyncio.log import logger
 import dataclasses
+from dataclasses import dataclass, fields
 import asyncio
-import datetime
 import time
 from asyncio.tasks import Task
-from io import TextIOWrapper
-import os
 from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
-from itertools import groupby
 from collections import defaultdict
 from enum import Enum
 from xknx.core.value_reader import ValueReader
@@ -15,6 +13,8 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
+
+import json
 
 from .logger import Logger
 from .verification_file import AppState, PhysicalState
@@ -49,6 +49,7 @@ class State:
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
         logs_dir: str,
         runtime_app_files_folder_path: str,
+        physical_state_log_file_path: str,
     ):
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
@@ -99,6 +100,8 @@ class State:
         self.__periodic_apps_task: Optional[Task] = None
 
         self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
+
+        self.physical_state_log_file_path = physical_state_log_file_path
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -426,6 +429,8 @@ class State:
 
                     # Notify the listeners of the change
                     await self.__notify_listeners(address)
+            
+            self.log_current_physical_state()
 
     async def __notify_listeners(self, address: str):
         """
@@ -434,3 +439,20 @@ class State:
         """
         if address in self.__addresses_listeners:
             await self.__run_apps(self.__addresses_listeners[address])
+
+    def log_current_physical_state(self) -> None:
+        """
+        Stores the current physical state in a file named __PHYSICAL_STATE_LOG_FILE_NAME in the current folder
+        """
+        self._physical_state
+        dct = {}
+
+        for ga in self._physical_state.__dataclass_fields__:
+            value = getattr(self._physical_state, ga)
+            dpt = self.__group_address_to_dpt[self.__field_name_to_group_addr(ga)]
+            this_ga = {}
+            this_ga["value"] = value
+            this_ga["dpt"] = f"DPT{dpt.dpt_main_number}" if isinstance(dpt, DPTBase) else "DPT1"
+            dct[ga] = this_ga
+        with open(self.physical_state_log_file_path, "w") as f:
+            json.dump(dct, f, indent=4)

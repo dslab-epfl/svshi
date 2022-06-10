@@ -1,5 +1,7 @@
 # Default file, will be overwritten while running
+from typing import IO, Optional
 import dataclasses
+import time
 
 
 @dataclasses.dataclass
@@ -29,9 +31,21 @@ class PhysicalState:
     GA_1_1_3: bool
     GA_1_1_4: bool
 
+
+
 @dataclasses.dataclass
 class InternalState:
     """
-    inv: self.time>=0
+    inv: 0 <= self.time_hour <= 23
+    inv: 0 <= self.time_min <= 59
+    inv: 1 <= self.time_day <= 31
+    inv: 1 <= self.time_weekday <= 7
+    inv: 1 <= self.time_month <= 12
+    inv: 0 <= self.time_year
     """
-    time: int #time in seconds
+    time_hour: int
+    time_min: int
+    time_day: int
+    time_weekday: int
+    time_month: int
+    time_year: int

@@ -62,7 +62,7 @@ export default {
         return
       }
       console.log(appName)
-      if(appName === "42All"){
+      if (appName === "42All") {
         if (confirm("Are you sure you want to uninstall ALL applications?")) {
           try {
             this.allAppsUninstalling = true
@@ -219,10 +219,12 @@ export default {
   <div v-else>
     <tabs>
       <tab name="Installed Apps">
-        <h2>Installed apps</h2><button v-if="!this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0" @Click="deleteApp('42All')">Uninstall ALL apps</button>
-                  <div v-if="this.allAppsUninstalling">
-                    <PulseLoader :color="this.colourOrangeSvshi" />
-                  </div>
+        <h2>Installed apps</h2><button
+          v-if="!this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0"
+          @Click="deleteApp('42All')">Uninstall ALL apps</button>
+        <div v-if="this.allAppsUninstalling">
+          <PulseLoader :color="this.colourOrangeSvshi" />
+        </div>
         <h3 v-if="this.installedApps.length === 0">No apps are currently installed</h3>
         <ul style="list-style-type:none;">
           <li v-for='app in installedApps' :key="app.id">

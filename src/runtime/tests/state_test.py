@@ -1,8 +1,10 @@
 import asyncio
+from asyncore import read
 import dataclasses
 import shutil
 import os
 import sys
+import textwrap
 import time
 
 from pyparsing import line
@@ -17,12 +19,15 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.xknx import XKNX
 
+from ..resetter import FileResetter
+
 from ..verification_file import AppState, PhysicalState, InternalState
 from ..app import App
 from ..state import State
 from ..joint_apps import JointApps
 
 LOGS_DIR = "tests/logs"
+PHYSICAL_STATE_LOG_FILE_PATH = "physical_state.json"
 RUNTIME_APP_FILES_FOLDER_PATH = "tests/files"
 
 VALUE_READER_RETURN_VALUE = 42.0
@@ -40,6 +45,7 @@ FIRST_APP_NAME = "test1"
 SECOND_APP_NAME = "test2"
 THIRD_APP_NAME = "test3"
 FOURTH_APP_NAME = "test4"
+
 
 
 def always_valid_conditions(
@@ -149,20 +155,38 @@ class StateHolder:
         self.xknx_for_listening = MockXKNX(MockTelegramQueue())
         self._last_valid_physical_state: PhysicalState
 
-    def app_one_code(self, state1: AppState, state2: PhysicalState, internal_state: InternalState):
+    def app_one_code(
+        self, state1: AppState, state2: PhysicalState, internal_state: InternalState
+    ):
         self.app_one_called = True
 
-    def app_two_code(self, state1: AppState, state: PhysicalState, internal_state: InternalState):
+    def app_two_code(
+        self, state1: AppState, state: PhysicalState, internal_state: InternalState
+    ):
         self.app_two_called = True
 
-    def app_three_code(self, state1: AppState, state: PhysicalState, internal_state: InternalState):
+    def app_three_code(
+        self, state1: AppState, state: PhysicalState, internal_state: InternalState
+    ):
         self.app_three_called = True
 
-    def app_four_code(self, state1: AppState, physical_state: PhysicalState, internal_state: InternalState):
+    def app_four_code(
+        self,
+        state1: AppState,
+        physical_state: PhysicalState,
+        internal_state: InternalState,
+    ):
         self.app_four_called = True
 
-    def joint_apps_code(self, test1_app_state: AppState, test2_app_state: AppState, test3_app_state: AppState,
-                        test4_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
+    def joint_apps_code(
+        self,
+        test1_app_state: AppState,
+        test2_app_state: AppState,
+        test3_app_state: AppState,
+        test4_app_state: AppState,
+        physical_state: PhysicalState,
+        internal_state: InternalState,
+    ):
         self.app_one_called = True
         if self.app_two_code_description == "test_two_code":
             if self.app_two_start_time == None:
@@ -199,7 +223,7 @@ class StateHolder:
         self.app_four_called = False
         self.joint_apps_called = False
 
-    def set_app_two_code(self, code_name, start_time = None):
+    def set_app_two_code(self, code_name, start_time=None):
         self.app_two_code_description = code_name
         self.app_two_start_time = start_time
 
@@ -258,6 +282,7 @@ async def test_state_listen():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.listen()
 
@@ -278,6 +303,7 @@ async def test_state_stop():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
     await state.listen()
@@ -297,6 +323,7 @@ async def test_state_initialize():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -325,12 +352,13 @@ async def test_internal_state_is_updated():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     NEW_SECOND_ADRESS_VALUE = 8.1
     NEW_THIRD_ADDRESS_VALUE = True
     start_test_time = time.time()
 
-    test_state_holder.set_app_two_code("test_two_code",start_test_time)
+    test_state_holder.set_app_two_code("test_two_code", start_test_time)
     await state.initialize()
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
@@ -345,7 +373,11 @@ async def test_internal_state_is_updated():
     assert state._physical_state.GA_1_1_3 == NEW_THIRD_ADDRESS_VALUE
     assert state._physical_state.GA_1_1_4 == True
     assert state._physical_state == state._last_valid_physical_state
-    assert start_test_time - 3 <= time.mktime(state._internal_state.date_time) <= start_test_time + 3
+    assert (
+        start_test_time - 3
+        <= time.mktime(state._internal_state.date_time)
+        <= start_test_time + 3
+    )
     assert test_state_holder.app_one_called == True
     assert test_state_holder.app_two_called == True
     assert test_state_holder.app_three_called == True
@@ -369,7 +401,11 @@ async def test_internal_state_is_updated():
     await asyncio.sleep(5)
     current_test_time = time.time()
     assert test_state_holder.app_four_called == True
-    assert current_test_time - 3 <= time.mktime(state._internal_state.date_time) <= current_test_time + 3
+    assert (
+        current_test_time - 3
+        <= time.mktime(state._internal_state.date_time)
+        <= current_test_time + 3
+    )
     assert test_state_holder.app_one.should_run == True
     assert test_state_holder.app_two.should_run == True
     assert test_state_holder.app_three.should_run == True
@@ -381,6 +417,8 @@ async def test_internal_state_is_updated():
 
     # Cleanup
     await state.stop()
+
+
 @pytest.mark.asyncio
 async def test_state_periodic_apps_are_run():
     state = State(
@@ -392,9 +430,9 @@ async def test_state_periodic_apps_are_run():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
-
 
     assert state._physical_state != None
     assert state._physical_state.GA_1_1_1 == VALUE_READER_RETURN_VALUE
@@ -420,7 +458,6 @@ async def test_state_periodic_apps_are_run():
     await state.stop()
 
 
-
 @pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify():
     state = State(
@@ -432,6 +469,7 @@ async def test_state_on_telegram_update_state_and_notify():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -486,6 +524,7 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
             RUNTIME_APP_FILES_FOLDER_PATH,
+            PHYSICAL_STATE_LOG_FILE_PATH,
         )
         state_stop_spy = mocker.spy(state, "stop")
         await state.initialize()
@@ -583,7 +622,9 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
 
 
 @pytest.mark.asyncio
-async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_conditions(mocker: MockerFixture,):
+async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_conditions(
+    mocker: MockerFixture,
+):
     with pytest.raises(KeyboardInterrupt):
 
         test_state_holder.set_app_two_code("app_two_code_that_violates_conditions")
@@ -596,6 +637,7 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
             RUNTIME_APP_FILES_FOLDER_PATH,
+            PHYSICAL_STATE_LOG_FILE_PATH,
         )
         state_stop_spy = mocker.spy(state, "stop")
         await state.initialize()
@@ -628,7 +670,6 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
         state_stop_spy.assert_called_once()
 
 
-
 @pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify_and_update_again_and_notify_and_send_to_knx():
 
@@ -645,6 +686,7 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -712,6 +754,7 @@ async def test_state_update_app_state():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -763,6 +806,7 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -811,6 +855,7 @@ async def test_state_correct_execution_log_after_33_telegrams():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -834,7 +879,6 @@ async def test_state_correct_execution_log_after_33_telegrams():
     log_file_path = f"{LOGS_DIR}/execution.log"
     expected_log_file_path = f"tests/expected/execution.log_expected"
 
-
     with open(log_file_path, "r") as log_file, open(
         expected_log_file_path, "r"
     ) as expected_log_file:
@@ -856,7 +900,6 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
     os.makedirs(LOGS_DIR)
     shutil.copy("tests/fake_logs/execution.log_fake", f"{LOGS_DIR}/execution.log")
 
-
     test_state_holder.set_app_two_code("test_two_code")
 
     state = State(
@@ -868,6 +911,7 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -896,9 +940,9 @@ async def test_state_log_files_are_bounded():
     os.makedirs(LOGS_DIR)
     shutil.copy("tests/fake_logs/execution.log_fake", f"{LOGS_DIR}/execution.log")
     shutil.copy(
-        "tests/fake_logs/telegrams_received.log_fake", f"{LOGS_DIR}/telegrams_received.log"
+        "tests/fake_logs/telegrams_received.log_fake",
+        f"{LOGS_DIR}/telegrams_received.log",
     )
-
 
     test_state_holder.set_app_two_code("test_two_code")
 
@@ -911,6 +955,7 @@ async def test_state_log_files_are_bounded():
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
     )
     await state.initialize()
 
@@ -932,3 +977,101 @@ async def test_state_log_files_are_bounded():
     max_size = 20 * 1024 * 1024
     assert os.path.getsize(execution_log_file_path) < max_size
     assert os.path.getsize(telegrams_received_log_file_path) < max_size
+
+
+@pytest.mark.asyncio
+async def test_state_on_telegram_update_state_and_write_physical_state_to_file():
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.joint_apps,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
+    )
+    await state.initialize()
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(FIRST_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+        )
+    )
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(THIRD_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(DPTBinary(1)),
+        )
+    )
+
+    assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
+    assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == True
+    assert state._physical_state.GA_1_1_4 == True
+
+    expected_json = textwrap.dedent(
+        f"""\
+        {{
+            "GA_1_1_1": {{
+                "value": {RECEIVED_VALUE},
+                "dpt": "DPT9"
+            }},
+            "GA_1_1_2": {{
+                "value": {VALUE_READER_RETURN_VALUE},
+                "dpt": "DPT9"
+            }},
+            "GA_1_1_3": {{
+                "value": true,
+                "dpt": "DPT1"
+            }},
+            "GA_1_1_4": {{
+                "value": true,
+                "dpt": "DPT1"
+            }}
+        }}"""
+    )
+    with open("physical_state.json", "r") as f:
+        assert f.read() == expected_json
+
+    await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
+        Telegram(
+            GroupAddress(THIRD_GROUP_ADDRESS),
+            payload=MockGroupValueWrite(DPTBinary(0)),
+        )
+    )
+
+    assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
+    assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == False
+    assert state._physical_state.GA_1_1_4 == True
+
+    expected_json = textwrap.dedent(
+        f"""\
+        {{
+            "GA_1_1_1": {{
+                "value": {RECEIVED_VALUE},
+                "dpt": "DPT9"
+            }},
+            "GA_1_1_2": {{
+                "value": {VALUE_READER_RETURN_VALUE},
+                "dpt": "DPT9"
+            }},
+            "GA_1_1_3": {{
+                "value": false,
+                "dpt": "DPT1"
+            }},
+            "GA_1_1_4": {{
+                "value": true,
+                "dpt": "DPT1"
+            }}
+        }}"""
+    )
+    with open("physical_state.json", "r") as f:
+        assert f.read() == expected_json
+
+    # Cleanup
+    await state.stop()

@@ -380,6 +380,17 @@ case class CoreApiServer(
       Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
     }
   }
+  @get("/logs/physicalState")
+  def getPhysicalStateLog() = {
+    val physicalStateLogPath = Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH
+    if (os.exists(physicalStateLogPath)) {
+      val physicalStateContent = FileUtils.readFileContentAsString(physicalStateLogPath)
+      Response(physicalStateContent, headers = HEADERS_AJAX)
+    } else {
+      Response("", statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+
+  }
 
   @post("/stopRun")
   def stopRun() = acquireLockAndExecute(

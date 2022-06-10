@@ -18,7 +18,8 @@ export default {
             polling: null,
             logs: "",
             receivedTelegramsLogs: "",
-            executionLogs: ""
+            executionLogs: "",
+            currentPhysicalState: {}
         }
     },
     methods: {
@@ -65,7 +66,7 @@ export default {
                     elm.setAttribute('download', filename) // SET ELEMENT CREATED 'ATTRIBUTE' TO DOWNLOAD, FILENAME PARAM AUTOMATICALLY
                     elm.click()
 
-                } else if(status === notFoundStatusCode) {
+                } else if (status === notFoundStatusCode) {
                     alert("Assignments are not created yet. Did you compile the apps?")
                 } else {
                     alert("An error occured while downloading assignments!")
@@ -156,11 +157,39 @@ export default {
                 console.log(error);
             }
         },
+        async getPhysicalStateLog() {
+            try {
+                let res = await fetch(this.$root.backendServerAddress + "/logs/physicalState");
+                if (res.status === successStatusCode) {
+                    let physicalState = await res.json()
+                    this.currentPhysicalState = physicalState
+                } else {
+                    console.log("Cannot get physicalState log!")
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        prettyPrintWithDpt(value, dpt) {
+            let dptMainNumber = parseInt(dpt.replace("DPT", ""))
+            if (dptMainNumber === 1) {
+                if (value === true || value === false) {
+                    if (value) {
+                        return "On"
+                    } else {
+                        return "Off"
+                    }
+                }
+            }
+
+            return value.toString() // Default behaviour: the value in a string
+        },
         async refresh() {
             this.getRunStatus()
             this.getRunLogs()
             this.getReceivedTelegramsLogs()
             this.getExecutionLogs()
+            this.getPhysicalStateLog()
         },
         pollData() {
             this.polling = setInterval(() => {
@@ -191,7 +220,7 @@ export default {
     <input id="portInput" v-model="this.portStr" @keypress="isNumber($event)" placeholder="Port e.g. 3671" />
     <button @Click="this.run" v-if="!this.isRunning">Run</button>
     <button @Click="this.killSvshi" v-if="this.isRunning">Stop</button>
-    
+
     <button @Click="this.downloadAssignments" v-if="!this.isRunning">Download assignments</button>
 
     <div class="logs_div">
@@ -205,6 +234,23 @@ export default {
             </tab>
             <tab name="Debug logs">
                 <textarea rows="40" cols="150" v-model="this.executionLogs" readonly="true"></textarea>
+            </tab>
+            <tab name="Physical State">
+                <ul style="list-style-type:none;">
+                    <li v-for='ga in Object.keys(this.currentPhysicalState)'>
+                        <table>
+                            <tr>
+                                <td>{{ ga }}</td>
+                                <td>
+                                    <p> ==> </p>
+                                </td>
+                                <td>{{ this.prettyPrintWithDpt(this.currentPhysicalState[ga].value,
+                                        this.currentPhysicalState[ga].dpt)
+                                }}</td>
+                            </tr>
+                        </table>
+                    </li>
+                </ul>
             </tab>
         </tabs>
     </div>

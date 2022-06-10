@@ -75,11 +75,10 @@ class AppState:
 
 @dataclasses.dataclass
 class PhysicalState:
- GA_0_0_1: bool
- GA_0_0_2: bool
- GA_0_0_3: float
- GA_0_0_4: float
- GA_0_0_5: int
+    GA_1_1_1: float
+    GA_1_1_2: float
+    GA_1_1_3: bool
+    GA_1_1_4: bool
 
 
 

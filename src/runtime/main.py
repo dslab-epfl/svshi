@@ -29,6 +29,7 @@ RUNTIME_FILE_MODULE = "runtime.runtime_file"
 LOGS_DIR_NAME = str(datetime.now()).replace(" ", "__").replace(":", "_")
 LOGS_DIR = f"{SVSHI_HOME}/logs/{LOGS_DIR_NAME}"
 RUNTIME_APP_FILES_FOLDER_PATH = f"{SVSHI_SRC_FOLDER}/runtime/files"
+PHYSICAL_STATE_LOG_FILE_PATH = f"{SVSHI_SRC_FOLDER}/runtime/physical_state.json"
 
 
 def parse_args(args) -> Tuple[str, int]:
@@ -107,6 +108,7 @@ async def main(
             group_addresses_dpt,
             logs_dir,
             RUNTIME_APP_FILES_FOLDER_PATH,
+            PHYSICAL_STATE_LOG_FILE_PATH,
         )
         print("Initializing state...", flush=True)
         await state.initialize()

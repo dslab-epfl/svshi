@@ -14,6 +14,11 @@ src/local
 
 **/svshi_private_input
 
+src/runtime/physical_state.json
+src/runtime/conditions.py
+src/runtime/runtime_file.py
+src/runtime/verification_file.py
+
 #IntelliJ
 .idea
 

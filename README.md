@@ -527,6 +527,10 @@ Here are the available endpoints:
 
  If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the complete execution log file of the latest execution, truncated if the log file goes beyond a given size (e.g., 20MB).
 
+- GET `/logs/physicalState`
+
+ If the physical state log file exists (i.e., SVSHI runtime part wrote it), it replies with a JSON Body containing the physical state (i.e., mapping from Group Addresses to their current value in the system). Reply with a 404 if the file does not exist.
+
 - POST `/stopRun`
 
   Stops the instance of `svshi` running if it was indeed running, does nothing otherwise. Replies with the standard body JSON with `status=true` and `output` containing a standard message.

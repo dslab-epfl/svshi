@@ -114,6 +114,8 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     if (os.exists(backupPythonRuntimeLogsPath)) os.remove.all(backupPythonRuntimeLogsPath)
 
     if (os.exists(tempFolderPath)) os.remove.all(tempFolderPath)
+
+    if (os.exists(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)) os.remove(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)
   }
 
   override def beforeEach(): Unit = {
@@ -135,6 +137,8 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
     if (os.exists(tempFolderPath)) os.remove.all(tempFolderPath)
     os.makeDir.all(tempFolderPath)
+
+    if (os.exists(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)) os.remove(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)
 
     reset(mockedSvshi)
     coreApiServer = CoreApiServer(mockedSvshi)
@@ -598,6 +602,31 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     val responseBody = ResponseBody.from(r.text())
     responseBody.status shouldBe false
     responseBody.output shouldEqual Nil
+  }
+
+  "logs/physicalState" should "reply with empty list and false when no physicalState log file exist" in {
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/physicalState", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 404
+  }
+
+  "logs/physicalState" should "reply with the content of the physical state log file when the physicalState log file exists" in {
+    val f1 = Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH
+
+    val json = """|{
+                  |  "GA_0_0_1": true,
+                  |  "GA_0_0_2": 2.0
+                  |}
+                  |""".stripMargin
+    FileUtils.writeToFileOverwrite(
+      f1,
+      json.getBytes
+    )
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/physicalState", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    r.text() shouldEqual json
   }
 
   "stopRun endpoint" should "stop the run thread when called and reply with the message" in {
