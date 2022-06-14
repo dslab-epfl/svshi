@@ -80,6 +80,13 @@ object KNXDatatype {
       None
     }
   }
+
+  /** Returns the list of all defined KNXDatatype without DPTUnknown
+    * @return
+    */
+  def availableDpts: List[KNXDatatype] = {
+    List(DPT1, DPT5, DPT6, DPT7, DPT9, DPT10, DPT11, DPT12, DPT13, DPT14, DPT16, DPT17, DPT18, DPT19, DPT20)
+  }
 }
 case object DPT1 extends KNXDatatype {
   override def toString = "DPT-1"

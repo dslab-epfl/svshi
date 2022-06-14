@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="jsx">
 export default {
 
     data() {
@@ -153,14 +153,14 @@ export default {
     <p>Here you can manage files present on SVSHI</p>
 
     <h3>Generated folder:</h3>
-    <button @Click="downloadCurrentGenerated">Download current generated</button>
+    <button class="classicButton" @Click="downloadCurrentGenerated">Download current generated</button>
 
     <p>Select a .zip file containing what you want to upload to the generated folder on SVSHI</p>
     <input type="file" id="zipFileToUpload" ref="zipFileToUpload" class="custom-file-input" @change="updateUploadFile">
-    <button @Click="uploadGenerated">Upload to generated</button>
+    <button class="classicButton" @Click="uploadGenerated">Upload to generated</button>
 
     <p>Delete everything in the generate folder. WARNING: this cannot be undone!</p>
-    <button @Click="deleteGenerated">Delete generated folder</button>
+    <button class="redButton" @Click="deleteGenerated">Delete generated folder</button>
 
     <h3>Installed apps</h3>
     <p>Here you can download the apps' code that are currently installed on the system to update them or check them.</p>
@@ -171,11 +171,12 @@ export default {
                 {{ app.name }}
             </option>
         </select>
-        <button @Click="downloadInstalledApp(appToDownload)">Download selected app</button>
+        <button class="classicButton" @Click="downloadInstalledApp(appToDownload)">Download selected app</button>
     </div>
     <div>
-        <p>Download all the installed apps along with the bindings and the physical structure. This can be uploaded to generated and compiled as is.</p>
-        <button @Click="downloadAllInstalledApps">Download all installed apps</button>
+        <p>Download all the installed apps along with the bindings and the physical structure. This can be uploaded to
+            generated and compiled as is.</p>
+        <button class="classicButton" @Click="downloadAllInstalledApps">Download all installed apps</button>
     </div>
 
     <!-- 
@@ -194,4 +195,8 @@ export default {
 
 <style>
 @import '../assets/base.css';
+
+select {
+    padding: 8px;
+}
 </style>

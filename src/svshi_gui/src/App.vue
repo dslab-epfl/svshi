@@ -1,10 +1,11 @@
-<script lang="js" >
+<script lang="jsx" >
 import * as http from "http";
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
 import FileManagement from './components/FileManagement.vue'
 import Run from './components/Run.vue'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+import GeneratePhysicalSystem from './components/GeneratePhysicalSystem.vue';
 import { Tabs, Tab } from 'vue3-tabs-component';
 
 let defaultBackendServerAddress = "http://localhost:4242"
@@ -19,7 +20,8 @@ export default {
     GenerationAndCompilation,
     FileManagement,
     PulseLoader,
-    Run
+    Run,
+    GeneratePhysicalSystem
   },
   data() {
     return {
@@ -214,27 +216,28 @@ export default {
     </div>
     <p>Please enter the address and port of the machine running SVSHI: </p>
     <input v-model="this.backendServerAddress" placeholder="http://127.0.0.1:4242" />
-    <button @Click="this.checkNewAddress">Connect</button>
+    <button class="classicButton" @Click="this.checkNewAddress">Connect</button>
   </div>
   <div v-else>
     <tabs>
       <tab name="Installed Apps">
-        <h2>Installed apps</h2><button
+        <h2>Installed apps</h2><button class="redButton"
           v-if="!this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0"
           @Click="deleteApp('42All')">Uninstall ALL apps</button>
         <div v-if="this.allAppsUninstalling">
           <PulseLoader :color="this.colourOrangeSvshi" />
         </div>
         <h3 v-if="this.installedApps.length === 0">No apps are currently installed</h3>
-        <ul style="list-style-type:none;">
+        <ul class="appsList" style="list-style-type:none;">
           <li v-for='app in installedApps' :key="app.id">
             <table>
               <tr>
                 <td>
-                  {{ app.name }}
+                  <p class="appName">{{ app.name }}</p>
                 </td>
                 <td>
-                  <button v-if="!app.deleting && !this.isRunning" @Click="deleteApp(app.name)">Uninstall</button>
+                  <button class="redButton" v-if="!app.deleting && !this.isRunning"
+                    @Click="deleteApp(app.name)">X</button>
                   <div v-if="app.deleting">
                     <PulseLoader :color="this.colourOrangeSvshi" v-if="app.deleting" />
                   </div>
@@ -256,6 +259,9 @@ export default {
       <tab name="Run">
         <Run ref="runComp" />
       </tab>
+      <tab name="Physical System simulator">
+        <GeneratePhysicalSystem ref="generatePhysicalSystemComp" />
+      </tab>
     </tabs>
   </div>
 
@@ -263,6 +269,22 @@ export default {
 
 <style>
 @import './assets/base.css';
+
+ul.appsList {
+  padding-top: 36px;
+  padding-bottom: 36px;
+}
+
+p.appName {
+  font-size: large;
+  background-color: #ffffff;
+  padding-left: 48px;
+  padding-right: 48px;
+  border-radius: 28px;
+  border-color: #000;
+  border-style: solid;
+  border-width: 1px;
+}
 
 .logo_img {
   display: block;

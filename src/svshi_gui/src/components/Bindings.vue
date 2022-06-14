@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="jsx">
 import JsonViewer from 'vue-json-viewer'
 import vSelect from "vue-select";
 import JSZip from 'jszip'
@@ -138,7 +138,7 @@ export default {
 <template>
     <h2>Bindings</h2>
     <div class="section">
-        <button @Click="this.refresh">Refresh bindings</button>
+        <button class="classicButton" @Click="this.refresh">Refresh bindings</button>
         <table v-if="this.appBindings.length > 0">
             <tr>
                 <td>Bindings</td>

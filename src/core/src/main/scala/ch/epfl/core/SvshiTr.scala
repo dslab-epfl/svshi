@@ -48,4 +48,5 @@ trait SvshiTr {
   ): List[String]
 
   def getAvailableProtoDevices(): List[String]
+  def getAvailableDpts(): List[String]
 }

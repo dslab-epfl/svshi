@@ -72,3 +72,75 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.classicButton {
+  background: linear-gradient(to bottom, #ffffff 5%, #f5f5f5 100%);
+  background-color: #dddddd;
+  border-radius: 28px;
+  border: 1px solid #f7f7f7;
+  display: inline-block;
+  cursor: pointer;
+  color: #000000;
+  font-family: Arial;
+  font-size: 13px;
+  padding: 5px 14px;
+  text-decoration: none;
+}
+
+.classicButton:hover {
+  background: linear-gradient(to bottom, #f5f5f5 5%, #ffffff 100%);
+  background-color: #f5f5f5;
+}
+
+.classicButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.greenButton {
+  background: linear-gradient(to bottom, #4ad870 5%, #21bd33 100%);
+  background-color: #4ad870;
+  border-radius: 28px;
+  border: 1px solid #21bd33;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 13px;
+  padding: 5px 14px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #2f6627;
+}
+
+.greenButton:hover {
+  background: linear-gradient(to bottom, #4fad1c 5%, #44c767 100%);
+  background-color: #4fad1c;
+}
+
+.greenButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.redButton {
+  background-color: #d12e2e;
+  border-radius: 28px;
+  border: 1px solid #ab1919;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 13px;
+  padding: 5px 14px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #662828;
+}
+
+.redButton:hover {
+  background-color: #bd2a2a;
+}
+
+.redButton:active {
+  position: relative;
+  top: 1px;
+}

@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="jsx">
 import * as isIp from 'is-ip';
 import { Tabs, Tab } from 'vue3-tabs-component';
 let successStatusCode = 200
@@ -186,10 +186,12 @@ export default {
         },
         async refresh() {
             this.getRunStatus()
-            this.getRunLogs()
-            this.getReceivedTelegramsLogs()
-            this.getExecutionLogs()
-            this.getPhysicalStateLog()
+            if (this.isRunning) {
+                this.getRunLogs()
+                this.getReceivedTelegramsLogs()
+                this.getExecutionLogs()
+                this.getPhysicalStateLog()
+            }
         },
         pollData() {
             this.polling = setInterval(() => {
@@ -218,10 +220,10 @@ export default {
     <p>Please enter the IP and port of your KNX interface:</p>
     <input id="ipInput" v-model="this.ipStr" @keypress="isNumberDot($event)" placeholder="Ip address e.g. 127.0.0.1" />
     <input id="portInput" v-model="this.portStr" @keypress="isNumber($event)" placeholder="Port e.g. 3671" />
-    <button @Click="this.run" v-if="!this.isRunning">Run</button>
-    <button @Click="this.killSvshi" v-if="this.isRunning">Stop</button>
+    <button class="greenButton" @Click="this.run" v-if="!this.isRunning">Run</button>
+    <button class="redButton" @Click="this.killSvshi" v-if="this.isRunning">Stop</button>
 
-    <button @Click="this.downloadAssignments" v-if="!this.isRunning">Download assignments</button>
+    <button class="classicButton" @Click="this.downloadAssignments" v-if="!this.isRunning">Download assignments</button>
 
     <div class="logs_div">
         <h3>Logs</h3>

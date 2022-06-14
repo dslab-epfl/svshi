@@ -10,14 +10,14 @@ import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
-import ch.epfl.core.utils.{Constants, Style, Utils}
+import ch.epfl.core.utils.{Constants, FileUtils, Style, Utils}
 import mainargs.ParserForClass
 
 import java.io.File
 import scala.util.{Failure, Success, Try}
 
 object Main {
-
+  val VALID_INPUT_PHYSICAL_STRUCTURE_FILE_EXTENSION = List("knxproj", "json")
   private val CLI_TOTAL_WIDTH = 200
 
   private var systemExit: SystemExit = DefaultSystemExit
@@ -54,8 +54,19 @@ object Main {
       if (!os.exists(etsProjPath)) {
         printErrorAndExit("The ETS Project file does not exist!")
       }
-      val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
-      newPhysicalStructure
+      if (!os.isFile(etsProjPath)) {
+        printErrorAndExit("The ETS project file path has to be a path to a file. It points to a directory.")
+      }
+      val fileExtension = FileUtils.getFileExtension(etsProjPath)
+      if (!VALID_INPUT_PHYSICAL_STRUCTURE_FILE_EXTENSION.contains(fileExtension)) {
+        printErrorAndExit(f"The ETS project file must be either a .knxproj file or a .json file. Received a file with extension '$fileExtension'")
+      }
+      if (fileExtension == "knxproj") {
+        EtsParser.parseEtsProjectFile(etsProjPath)
+      } else {
+        // Json
+        PhysicalStructureJsonParser.parse(etsProjPath)
+      }
     }
 
     val appNameOpt = config.appName

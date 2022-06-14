@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="jsx">
 let id = 0
 
 export default {
@@ -93,7 +93,7 @@ export default {
         addNewDevice: function () {
             this.appGenProto.devices.push({ id: id++, name: "", deviceType: "" })
         },
-        async refresh(){
+        async refresh() {
 
         }
     },
@@ -108,7 +108,8 @@ export default {
     <table>
         <tr>
             <td>App name:</td>
-            <input id="appGenAppNameTextField" type="text" v-model="appGenProto.appName" @keypress="this.isValidDeviceNameOrAppNameChar($event)">
+            <input id="appGenAppNameTextField" type="text" v-model="appGenProto.appName"
+                @keypress="this.isValidDeviceNameOrAppNameChar($event)">
         </tr>
         <tr>
             <td>Permission Level priviledged: </td>
@@ -123,23 +124,24 @@ export default {
             <td>
                 <ul>
                     <li v-for='dev in this.appGenProto.devices' :key="dev.id">
-                        <input v-model="dev.name" placeholder="device name" @keypress="this.isValidDeviceNameOrAppNameChar($event)" />
+                        <input v-model="dev.name" placeholder="device name"
+                            @keypress="this.isValidDeviceNameOrAppNameChar($event)" />
                         <select v-model="dev.deviceType">
                             <option disabled value="">Please select one</option>
                             <option v-for="deviceType in availableDevices" :value="deviceType">
                                 {{ deviceType }}
                             </option>
                         </select>
-                        <button
-                            @Click="this.appGenProto.devices = this.appGenProto.devices.filter(d => d.id !== dev.id)">Remove</button>
+                        <button class="redButton"
+                            @Click="this.appGenProto.devices = this.appGenProto.devices.filter(d => d.id !== dev.id)">X</button>
                     </li>
                 </ul>
-                <button @Click="this.addNewDevice">Add</button>
+                <button class="classicButton" @Click="this.addNewDevice">Add</button>
             </td>
         </tr>
     </table>
 
-    <button @Click="this.generateNewApp()">Generate</button>
+    <button class="classicButton" @Click="this.generateNewApp()">Generate</button>
 
 </template>
 

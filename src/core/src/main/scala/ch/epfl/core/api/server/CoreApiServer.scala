@@ -60,6 +60,9 @@ case class CoreApiServer(
   private val REQUESTED_APP_NOT_INSTALLED_MESSAGE = "The requested app is not installed!"
   private val ZIPPING_ERROR_MESSAGE = "An error occurred while zipping the content!"
   private val LOCKED_ERROR_MESSAGE = "An operation is already running on SVSHI, please retry later!"
+  private val knxprojExtension = "knxproj"
+  private val jsonExtension = "json"
+  private val WRONG_EXTENSION_FILE_ERROR_MESSAGE = "The file for the physical structure must be either a " + jsonExtension + " or a " + knxprojExtension + " file!"
 
   private val HEADERS_AJAX = Seq("Access-Control-Allow-Origin" -> "*")
 
@@ -139,12 +142,18 @@ case class CoreApiServer(
     Response(ResponseBody(status = true, availableDevices).toString, headers = HEADERS_AJAX)
   }
 
+  @get("/availableDpts")
+  def getAvailableDpts() = {
+    val availableDpts = svshiSystem.getAvailableDpts()
+    Response(ResponseBody(status = true, availableDpts).toString, headers = HEADERS_AJAX)
+  }
+
   @post("/generateApp/:appName")
   def generateApp(appName: String, request: Request) = acquireLockAndExecute(
     () => {
       cleanTempFolders()
       val protoJsonString = request.text()
-      debug(f"Received generateNewApp for $appName with json = $protoJsonString")
+      debug(f"Received generateNewApp for $appName with " + jsonExtension + f" = $protoJsonString")
       Try(AppInputJsonParser.parseJson(protoJsonString)) match {
         case Failure(exception) => Response(exception.toString, statusCode = BAD_REQUEST_CODE)
         case Success(protoJson) => {
@@ -174,7 +183,7 @@ case class CoreApiServer(
       debug("Received a compile request")
       cleanTempFolders()
       val (existingAppsLibrary, newAppsLibrary, _) = loadCurrentSVSHIState
-      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
         def outputFunc(s: String, prefix: String): Unit = {
           debug(createStrMessagePrefix(s, prefix))
@@ -229,7 +238,7 @@ case class CoreApiServer(
     () => {
       cleanTempFolders()
       val (existingAppsLibrary, newAppsLibrary, existingPhysicalStructure) = loadCurrentSVSHIState
-      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
         def outputFunc(s: String, prefix: String): Unit = {
           debug(createStrMessagePrefix(s, prefix))
@@ -545,16 +554,27 @@ case class CoreApiServer(
         Response(MALFORMED_ZIP_INPUT_FILE_MESSAGE, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
     }
   }
-  private def extractKnxprojFileAndExec(request: Request)(withPhysStruct: PhysicalStructure => Response[String]): Response[String] = {
+  private def extractKnxprojOrJsonFileAndExec(request: Request)(withPhysStruct: PhysicalStructure => Response[String]): Response[String] = {
     if (os.exists(knxprojPrivateFolderPath)) os.remove(knxprojPrivateFolderPath)
     unzipContentAndExec(request)(
       knxprojPrivateFolderPath,
       path => {
-        val knxprofFile = FileUtils.recursiveListFiles(path).head
-        Try(EtsParser.parseEtsProjectFile(knxprofFile)) match {
-          case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
-          case Success(newPhysicalStructure) =>
-            withPhysStruct(newPhysicalStructure)
+        val knxprojOrJsonFile = FileUtils.recursiveListFiles(path).head
+        val extension = FileUtils.getFileExtension(knxprojOrJsonFile)
+        if (extension == knxprojExtension) {
+          Try(EtsParser.parseEtsProjectFile(knxprojOrJsonFile)) match {
+            case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
+            case Success(newPhysicalStructure) =>
+              withPhysStruct(newPhysicalStructure)
+          }
+        } else if (extension == jsonExtension) {
+          Try(PhysicalStructureJsonParser.parse(knxprojOrJsonFile)) match {
+            case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
+            case Success(newPhysicalStructure) =>
+              withPhysStruct(newPhysicalStructure)
+          }
+        } else {
+          Response(WRONG_EXTENSION_FILE_ERROR_MESSAGE, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
         }
       }
     )

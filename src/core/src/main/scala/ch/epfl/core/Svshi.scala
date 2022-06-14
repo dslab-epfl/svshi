@@ -3,7 +3,7 @@ package ch.epfl.core
 import ch.epfl.core.compiler.IncompatibleBindingsException
 import ch.epfl.core.compiler.knxProgramming.Programmer
 import ch.epfl.core.model.application.ApplicationLibrary
-import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.physical.{KNXDatatype, PhysicalStructure}
 import ch.epfl.core.model.prototypical.SupportedDevice
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
@@ -445,6 +445,7 @@ object Svshi extends SvshiTr {
     existingAppsLibrary.apps.map(app => app.name)
   }
   override def getAvailableProtoDevices(): List[String] = SupportedDevice.getAvailableDevices
+  override def getAvailableDpts(): List[String] = KNXDatatype.availableDpts.map(_.toString)
 
   private def backupAppLibrary(destination: os.Path): Unit = {
     if (os.exists(destination)) os.remove.all(destination)

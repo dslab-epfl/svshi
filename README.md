@@ -21,8 +21,6 @@
       - [Unix (Linux / macOS)](#unix-linux--macos-2)
       - [Windows](#windows-1)
     - [Docker](#docker)
-  - [GUI](#gui-1)
-    - [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine)
     - [Unix (Linux / macOS)](#unix-linux--macos-3)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
@@ -35,6 +33,7 @@
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
   - [CLI](#cli)
+  - [Simulator](#simulator)
   - [How SVSHI works](#how-svshi-works)
     - [Compilation](#compilation)
       - [Bindings](#bindings)
@@ -42,7 +41,7 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
-  - [GUI](#gui-2)
+  - [GUI](#gui-1)
     - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
@@ -74,7 +73,6 @@ Here the SVSHI system and the frontend server run in the same Docker image. To u
 - Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
 - Run `cd ./scripts && ./run_docker.sh` to run the docker container
 - Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
-- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
 
 Do not forget to use volumes (see https://docs.docker.com/storage/volumes/ )if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
 
@@ -160,19 +158,6 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 3. You can find the repo copied in `/home/maki/svshi`
 4. `svshi` command is accessible
 
-## GUI
-
-SVSHI comes with a GUI in the form of a web application. For this usage, we strongly recommend to use the provided Docker image.
-
-### Docker (can be used on Windows or Unix machine)
-
-Here the SVSHI system and the frontend server run on the same Docker image. To use it:
-
-- Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
-- Run `cd ./scripts && ./run_docker.sh` to run the docker container
-- Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
-- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
-
 ### Unix (Linux / macOS)
 
 You need to have `npm` installed on your system!
@@ -203,8 +188,10 @@ To develop an app for SVSHI:
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. [Write your app](#writing-apps).
 4. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
+    > Note that SVSHI supports a .json file as input instead of the ets.knxproj file but this should be use only when using the simulator!
 5. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 6. Run `svshi` again to [compile](#compilation) and [verify](#verification) the app with `svshi compile -f ets.knxproj`.
+    > Note that SVSHI supports a .json file as input instead of the ets.knxproj file but this should be use only when using the simulator!
 
 ### Writing apps
 
@@ -386,6 +373,12 @@ Shorter aliases are also available:
 - `svshi la` for `svshi listApps`
 - `svshi v` for `svshi version`
 
+## Simulator
+
+To facilitate development and demo, we developed a KNX simulator that can be used with or without SVSHI.
+
+To use it with SVSHI, to avoid having to create an ETS project, it is possible to input a `.json` file when running `compile` and `generatedBindings`. This JSON file that represents the physical system can be easily generated using our [GUI](#gui).
+
 ## How SVSHI works
 
 ### Compilation
@@ -424,7 +417,7 @@ This execution model has been chosen for its ease of use: users do not need to w
 
 ## GUI
 
-To provide a GUI in the form of a web application (coming soon), SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
+To provide a GUI in the form of a web application, SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
 
 ### JSON API
 
@@ -463,6 +456,12 @@ Here are the available endpoints:
 
   Replies with one device type per element in `output`. These are the [Supported devices](#supported-devices).
 
+- GET `/availableDpts`
+
+  Does not correspond to any CLI function.
+
+  Replies with one dpt per element in `output`. The format is "DPT-X" where X is the int of an available dpt.
+
 - POST `/generateApp/:appName`
 
   Corresponds to the `svshi generateApp` of the CLI.
@@ -483,7 +482,7 @@ Here are the available endpoints:
 
   Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representating whether the update was successful or not and the `output` contains the messages returned by `svshi`.
 
-  The body must be a `.zip` archive containing the `.knxproj` file used to compile.
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to compile.
 
 - POST `/generateBindings`
 
@@ -491,7 +490,7 @@ Here are the available endpoints:
 
   Runs the `generateBindings` operation of `svshi`, replying with the `status` representating whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
 
-  The body must be a `.zip` archive containing the `.knxproj` file used to generate the bindings.
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to generate the bindings.
 
 - POST `/removeApp/:appName`
 
