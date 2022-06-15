@@ -7,13 +7,20 @@ from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
-from .verification_file import AppState, PhysicalState, InternalState
+from .verification_file import (
+    AppState,
+    PhysicalState,
+    InternalState,
+    IsolatedFunctionsValues,
+)
 
 
 @dataclasses.dataclass
 class JointApps:
     name: str
-    code: Callable[[AppState, PhysicalState, InternalState], None]
+    code: Callable[
+        [AppState, PhysicalState, InternalState, IsolatedFunctionsValues], None
+    ]
     timer: int = 0
     is_privileged: bool = True
     should_run: bool = True
@@ -41,12 +48,16 @@ class JointApps:
         app_state: Dict[str, AppState],
         physical_state: PhysicalState,
         internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
         """
         Notifies the app, triggering an iteration.
         """
         self.code(
-            **app_state, physical_state=physical_state, internal_state=internal_state
+            **app_state,
+            physical_state=physical_state,
+            internal_state=internal_state,
+            isolated_fn_values=isolated_fn_values,
         )
 
     def stop(self):

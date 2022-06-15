@@ -1,11 +1,18 @@
 import ast
 import copy
-from pydoc import doc
-from statistics import mode
-from sys import stderr
+import re
 import astor
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple, Union, Final, cast
+from typing import Dict, List, Optional, Set, Tuple, Type, Union, Final, cast
+
+
+def _print_and_raise(msg: str, exception: Type[Exception]):
+    """
+    Utility function to print `msg` (to pass it to the scala module), before raising
+    the exception with that same `msg`.
+    """
+    print(msg)  # To pass it to the scala module
+    raise exception(msg)
 
 
 class InvalidFunctionCallException(Exception):
@@ -14,9 +21,48 @@ class InvalidFunctionCallException(Exception):
     """
 
 
-class UntypedUncheckedFunctionException(Exception):
+class DirectCallToIsolatedFunctionException(Exception):
     """
-    An unchecked function has no return type.
+    An on_trigger_ or periodic_ function should not be directly called.
+    """
+
+
+class UntypedIsolatedFunctionException(Exception):
+    """
+    An on_trigger_ or periodic_ function has no return type.
+    """
+
+
+class UnallowedArgsInIsolatedFunctionException(Exception):
+    """
+    Isolated functions are not allowed to have any *args or **kwargs or default args.
+    """
+
+
+class InvalidPeriodicFunctionException(Exception):
+    """
+    A periodic function should have no arguments as input.
+    A periodic function should have a period.
+    """
+
+
+class InvalidTriggerIfNotRunningCallException(Exception):
+    """
+    Calls to `trigger_if_not_running` should have the correct args.
+    It should only be called on an `on_trigger` function.
+    """
+
+
+class InvalidGetLatestValueCallException(Exception):
+    """
+    Calls to `get_latest_value` should have exactly one argument: an `on_trigger` or a
+    `periodic` function.
+    """
+
+
+class InvalidFileOpenModeException(Exception):
+    """
+    A mode passed to a call of functions of svshi_api to open a file
     """
 
 
@@ -33,15 +79,16 @@ class ForbiddenModuleImported(Exception):
 
 
 @dataclass
-class UncheckedFunction:
+class IsolatedFunction:
     """
-    An unchecked function.
+    An isolated function.
     """
 
     name: str
     name_with_app_name: str
-    doc_string: str
+    period: Optional[int]
     return_type: str
+    args: ast.arguments
 
 
 class Manipulator:
@@ -55,10 +102,17 @@ class Manipulator:
     __INTERNAL_STATE_TYPE: Final = "InternalState"
     __APP_STATE_ARGUMENT: Final = "app_state"
     __APP_STATE_TYPE: Final = "AppState"
-    __UNCHECKED_FUNC_PREFIX: Final = "unchecked"
+    __ISOLATED_VALUES_TYPE: Final = "IsolatedFunctionsValues"
+    __ISOLATED_VALUES_ARGUMENT: Final = "isolated_fn_values"
+    __ON_TRIGGER_FUNC_PREFIX: Final = "on_trigger"
+    __PERIODIC_FUNC_PREFIX: Final = "periodic"
+    __ISOLATED_FUNC_PREFIXES: Final = (__ON_TRIGGER_FUNC_PREFIX, __PERIODIC_FUNC_PREFIX)
+    __ISOLATED_FUNC_ALLOWED_RETURN_TYPES: Final = {None, "bool", "int", "float", "str"}
     __INVARIANT_FUNC_NAME: Final = "invariant"
     __ITERATION_FUNC_NAME: Final = "iteration"
     __PRINT_FUNC_NAME: Final = "print"
+    __TRIGGER_IF_NOT_RUNNING_NAME: Final = "trigger_if_not_running"
+    __GET_LATEST_VALUE_NAME: Final = "get_latest_value"
     __OPEN_FUNC_NAME: Final = "open"
     __SYSTEM_BEHAVIOUR_FUNC_NAME: Final = "system_behaviour"
     __SVSHI_API_INSTANCE_NAME: Final = "svshi_api"
@@ -82,6 +136,7 @@ class Manipulator:
         *__SVSHI_API_FILESYSTEM_FUNCTION_NAMES,
     ]
 
+    __PERIOD_REGX: Final = re.compile(r"^\s*period:\s*(\d+)")
     __FORBIDDEN_MODULE_IN_APPS = ["time"]
 
     def __init__(
@@ -100,7 +155,25 @@ class Manipulator:
         self.__filenames_per_app = filenames_per_app
         self.__files_folder_path = files_folder_path
 
-    def __get_unchecked_functions(
+    def __period_from_docstring(self, docstring: str) -> int:
+        """Return the `period:` value of a docstring."""
+        lines = docstring.splitlines()
+        matches = list(filter(None, map(self.__PERIOD_REGX.match, lines)))
+        if not matches:
+            _print_and_raise(
+                "Periodic function has no period specified in the docstring. "
+                "If you wish to execute as often as possible, use `period: 0`.",
+                InvalidPeriodicFunctionException,
+            )
+        if len(matches) > 1:
+            _print_and_raise(
+                "Periodic function has multiple periods defined in the docstring. "
+                "Only one is allowed.",
+                InvalidPeriodicFunctionException,
+            )
+        return int(matches[0].group(1))
+
+    def __get_isolated_functions(
         self,
         op: Union[
             ast.stmt,
@@ -111,30 +184,37 @@ class Manipulator:
             List[ast.comprehension],
         ],
         app_name: str,
-    ) -> Dict[str, UncheckedFunction]:
+    ) -> Dict[str, IsolatedFunction]:
         """
         Goes through the AST and returns a Dict containing entries of the form
-        "unchecked_func_name" -> UncheckedFunction.
+        "isolated_func_name" -> IsolatedFunction.
         """
-        if isinstance(op, list) or isinstance(op, tuple):
-            dicts_list = [self.__get_unchecked_functions(v, app_name) for v in list(op)]
+        if isinstance(op, (list, tuple)):
+            dicts_list = [self.__get_isolated_functions(v, app_name) for v in list(op)]
             res = {}
             for d in dicts_list:
                 for k in d.keys():
                     res[k] = d[k]
             return res
-        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
-            return self.__get_unchecked_functions(op.elts, app_name)
+        elif isinstance(op, (ast.List, ast.Tuple)):
+            return self.__get_isolated_functions(op.elts, app_name)
         elif isinstance(op, ast.FunctionDef) and (
-            op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
+            op.name.startswith(self.__ISOLATED_FUNC_PREFIXES)
         ):
             doc_string = ast.get_docstring(op)
             doc_string = "" if doc_string == None else doc_string
             return_type = op.returns
             if not return_type:
-                msg = f"The unchecked function '{op.name}' has no return type."
-                print(msg)  # To pass it to the scala module
-                raise UntypedUncheckedFunctionException(msg)
+                _print_and_raise(
+                    f"The function '{op.name}' has no return type.",
+                    UntypedIsolatedFunctionException,
+                )
+            if not isinstance(return_type, (ast.Name, ast.Constant)):
+                _print_and_raise(
+                    f"The function '{op.name}' has a return type which is not allowed."
+                    f" Allowed return types: {self.__ISOLATED_FUNC_ALLOWED_RETURN_TYPES}",
+                    UntypedIsolatedFunctionException,
+                )
             # When the return type is 'None', return_type is ast.Constant
             return_type_str = (
                 cast(ast.Name, return_type).id
@@ -142,18 +222,194 @@ class Manipulator:
                 else cast(ast.Constant, return_type).value
             )
             if return_type_str != None and len(return_type_str) == 0:
-                msg = f"The unchecked function '{op.name}' has no return type."
-                print(msg)  # To pass it to the scala module
-                raise UntypedUncheckedFunctionException(msg)
+                _print_and_raise(
+                    f"The function '{op.name}' has no return type.",
+                    UntypedIsolatedFunctionException,
+                )
+            # We only allow str, int, float, bool or None as return types.
+            # Otherwise, we might need additional imports and verification might timeout.
+            if return_type_str not in self.__ISOLATED_FUNC_ALLOWED_RETURN_TYPES:
+                _print_and_raise(
+                    f"The function '{op.name}' has return type {return_type_str}, "
+                    "which is not allowed. Allowed return types: "
+                    f"{self.__ISOLATED_FUNC_ALLOWED_RETURN_TYPES}",
+                    UntypedIsolatedFunctionException,
+                )
             func_name = op.name
+            args = op.args
+            # We don't allow *args, **kwargs and default values for isolated functions.
+            if args.vararg or args.kwarg or args.defaults:
+                _print_and_raise(
+                    f"Function {func_name} is invalid: *args, **kwargs and default "
+                    "values are not allowed for `periodic` and `on_trigger` functions.",
+                    UnallowedArgsInIsolatedFunctionException,
+                )
+            if func_name.startswith(self.__PERIODIC_FUNC_PREFIX) and (
+                args.args or args.kwonlyargs
+            ):
+                _print_and_raise(
+                    f"Function {func_name} is periodic and is not allowed to have any "
+                    "argument.",
+                    InvalidPeriodicFunctionException,
+                )
             new_func_name = f"{app_name}_{func_name}"
+            period = None
+            if func_name.startswith(self.__PERIODIC_FUNC_PREFIX):
+                period = self.__period_from_docstring(doc_string)
             return {
-                func_name: UncheckedFunction(
-                    func_name, new_func_name, doc_string, return_type_str
+                func_name: IsolatedFunction(
+                    func_name, new_func_name, period, return_type_str, args
                 )
             }
         else:
             return {}
+
+    def _check_coherent_fn_call_to_fn_def(
+        self,
+        call_args: List[ast.expr],
+        call_keywords: List[ast.keyword],
+        fn_def_args: ast.arguments,
+        fn_name: str,
+    ):
+        """
+        Check that the args `call_args`and `call_kwarg_names` of a call are accepted
+        by the function whose args are `fn_def_args`.
+        Note: we do not allow default values, *args and **kwargs (see __get_isolated_functions).
+        """
+        call_kwarg_names = {x.arg for x in call_keywords}
+
+        # We don't allow calling the function with *args or **kwargs.
+        if (None in call_kwarg_names) or any(
+            map(lambda x: isinstance(x, ast.Starred), call_args)
+        ):
+            _print_and_raise(
+                f"You are giving *args or **kwargs when triggering function {fn_name}, "
+                "which is not allowed. Provide all arguments separately instead.",
+                InvalidTriggerIfNotRunningCallException,
+            )
+
+        ###########################
+        # Check keyword arguments #
+        ###########################
+
+        # Check all keyword-only args are satisfied.
+        kwarg_names_def = {x.arg for x in fn_def_args.kwonlyargs}
+        if not kwarg_names_def <= call_kwarg_names:
+            _print_and_raise(
+                f"Trigger to {fn_name} is missing some keyword-only arguments: "
+                f"{kwarg_names_def - call_kwarg_names}",
+                InvalidTriggerIfNotRunningCallException,
+            )
+        # Remove supplied kwargs which were just used.
+        call_kwarg_names = call_kwarg_names - kwarg_names_def
+
+        # Check all given kwargs correspond to some argument in the function def.
+        args_names_def = [x.arg for x in fn_def_args.args]
+        if not call_kwarg_names <= set(args_names_def):
+            _print_and_raise(
+                f"Trigger to {fn_name} is supplied unknown keyword arguments: "
+                f"{call_kwarg_names - set(args_names_def)}",
+                InvalidTriggerIfNotRunningCallException,
+            )
+        # Note: We don't need to check that no positional arg follows a keyword arg,
+        # since the ast parser will already throw a SyntaxError in that case.
+
+        ##############################
+        # Check positional arguments #
+        ##############################
+
+        # Check that it was not called with too few or too many arguments.
+        num_expected_args = (
+            len(args_names_def) + len(fn_def_args.posonlyargs) - len(call_kwarg_names)
+        )
+        if len(call_args) < num_expected_args:
+            _print_and_raise(
+                f"Trigger to {fn_name} is missing some positional arguments.",
+                InvalidTriggerIfNotRunningCallException,
+            )
+        if len(call_args) > num_expected_args:
+            _print_and_raise(
+                f"Trigger to {fn_name} has too many positional arguments.",
+                InvalidTriggerIfNotRunningCallException,
+            )
+
+    def __check_coherent_call_to_trigger_if_not_running(
+        self,
+        op: ast.Call,
+        on_trigger_fn_name: str,
+        isolated_functions: List[IsolatedFunction],
+    ) -> None:
+        """
+        Check that the given call to svshi_api.trigger_if_not_running is correct.
+        This means, it should be called on an existing on_trigger function with the
+        correct arguments.
+        """
+        args = op.args[1:]
+
+        # Find the corresponding IsolatedFunction
+        iso_fn = list(
+            filter(lambda x: x.name == on_trigger_fn_name, isolated_functions)
+        )
+        if not len(iso_fn):
+            _print_and_raise(
+                "Incorrect call to svshi_api.trigger_if_not_running: "
+                f"on_trigger function {on_trigger_fn_name} does not exist!",
+                InvalidTriggerIfNotRunningCallException,
+            )
+        iso_fn_args = iso_fn[0].args
+
+        self._check_coherent_fn_call_to_fn_def(
+            args, op.keywords, iso_fn_args, on_trigger_fn_name
+        )
+
+    def __check_and_rename_isolated_fn_call(
+        self,
+        op: ast.Call,
+        app_name: str,
+        method_name: str,
+        isolated_functions: List[IsolatedFunction],
+    ) -> None:
+        """
+        Check that calls to svshi_api.get_value and svshi_api.trigger_if_not_running
+        are correct.
+        """
+        is_trigger_fn = method_name == self.__TRIGGER_IF_NOT_RUNNING_NAME
+        if is_trigger_fn:
+            if not len(op.args):
+                _print_and_raise(
+                    "Incorrect call to svshi_api.trigger_if_not_running: "
+                    "no arguments provided.",
+                    InvalidTriggerIfNotRunningCallException,
+                )
+        else:
+            if len(op.args) != 1:
+                _print_and_raise(
+                    "Incorrect call to svshi_api.get_latest_value: "
+                    f"Expecting exactly one argument. Found: {len(op.args)}",
+                    InvalidGetLatestValueCallException,
+                )
+        isolated_fn_name = cast(ast.Name, op.args[0])
+        if is_trigger_fn:
+            if not isolated_fn_name.id.startswith(self.__ON_TRIGGER_FUNC_PREFIX):
+                _print_and_raise(
+                    "Incorrect call to svshi_api.trigger_if_not_running: "
+                    "should only be called on `on_trigger` functions. "
+                    f"Found: {isolated_fn_name.id}",
+                    InvalidTriggerIfNotRunningCallException,
+                )
+            self.__check_coherent_call_to_trigger_if_not_running(
+                op, isolated_fn_name.id, isolated_functions
+            )
+        else:
+            if not isolated_fn_name.id.startswith(self.__ISOLATED_FUNC_PREFIXES):
+                _print_and_raise(
+                    "Incorrect call to svshi_api.get_latest_value: "
+                    "shoudl only be called on `on_trigger` and "
+                    f"`periodic` functions. Found {isolated_fn_name.id}",
+                    InvalidGetLatestValueCallException,
+                )
+        # Rename the isolated function: prepend the application name.
+        isolated_fn_name.id = f"{app_name}_{isolated_fn_name.id}"
 
     def __rename_instances_add_state(
         self,
@@ -169,73 +425,74 @@ class Manipulator:
         ],
         app_name: str,
         accepted_names: Set[str],
-        unchecked_functions: List[UncheckedFunction],
+        isolated_functions: List[IsolatedFunction],
         verification: bool,
     ):
         """
         Renames the instances calling functions with name in accepted_names
-        and unchecked_functions by adding the app_name in front of them. Additionally, it also adds the
-        "state" argument to the calls with name in accepted_names.
-        Furthermore, "invariant", "iteration" and "unchecked" functions are modified with the app_name added to them
-        and with the state parameters added for the first two.
+        and on_trigger and periodic functions by adding the app_name in front of them.
+        Additionally, it also adds the "state" argument to the calls with name in accepted_names.
+        Furthermore, "invariant", "iteration", "on_trigger" and "periodic" functions are
+        modified with the app_name added to them and with the state parameters added for
+        the first two.
         The internal_state argument is added to all SvshiApi functions calls of functions in the list __SVSHI_API_FUNCTIONS_WITH_INTERNAL_STATE
-        The internal_state argumetns is added to all unchecked functions as the last argument
+        The internal_state arguments is added to all isolated functions as the last argument
         """
-        if isinstance(op, list) or isinstance(op, tuple):
+        if isinstance(op, (list, tuple)):
             for v in list(op):
                 self.__rename_instances_add_state(
-                    v, app_name, accepted_names, unchecked_functions, verification
+                    v, app_name, accepted_names, isolated_functions, verification
                 )
-        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+        elif isinstance(op, (ast.List, ast.Tuple)):
             self.__rename_instances_add_state(
-                op.elts, app_name, accepted_names, unchecked_functions, verification
+                op.elts, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.BoolOp):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions, verification
+                op.values, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.UnaryOp):
             self.__rename_instances_add_state(
-                op.operand, app_name, accepted_names, unchecked_functions, verification
+                op.operand, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.NamedExpr):
             self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
+                op.target, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Expr):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Lambda):
             self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions, verification
+                op.body, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Assign):
             self.__rename_instances_add_state(
-                op.targets, app_name, accepted_names, unchecked_functions, verification
+                op.targets, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.AugAssign):
             self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
+                op.target, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.AnnAssign):
             self.__rename_instances_add_state(
-                op.target, app_name, accepted_names, unchecked_functions, verification
+                op.target, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
                 op.annotation,
                 app_name,
                 accepted_names,
-                unchecked_functions,
+                isolated_functions,
                 verification,
             )
             if op.value:
@@ -243,7 +500,7 @@ class Manipulator:
                     op.value,
                     app_name,
                     accepted_names,
-                    unchecked_functions,
+                    isolated_functions,
                     verification,
                 )
         elif isinstance(op, ast.Return):
@@ -252,91 +509,87 @@ class Manipulator:
                     op.value,
                     app_name,
                     accepted_names,
-                    unchecked_functions,
+                    isolated_functions,
                     verification,
                 )
         elif isinstance(op, ast.Compare):
             self.__rename_instances_add_state(
-                op.left, app_name, accepted_names, unchecked_functions, verification
+                op.left, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
                 op.comparators,
                 app_name,
                 accepted_names,
-                unchecked_functions,
+                isolated_functions,
                 verification,
             )
         elif isinstance(op, ast.BinOp):
             self.__rename_instances_add_state(
-                op.left, app_name, accepted_names, unchecked_functions, verification
+                op.left, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.right, app_name, accepted_names, unchecked_functions, verification
+                op.right, app_name, accepted_names, isolated_functions, verification
             )
-        elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+        elif isinstance(op, (ast.IfExp, ast.If)):
             self.__rename_instances_add_state(
-                op.test, app_name, accepted_names, unchecked_functions, verification
-            )
-            self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions, verification
+                op.test, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.orelse, app_name, accepted_names, unchecked_functions, verification
+                op.body, app_name, accepted_names, isolated_functions, verification
+            )
+            self.__rename_instances_add_state(
+                op.orelse, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Dict):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions, verification
+                op.values, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Set):
             self.__rename_instances_add_state(
-                op.elts, app_name, accepted_names, unchecked_functions, verification
+                op.elts, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.comprehension):
             self.__rename_instances_add_state(
-                op.iter, app_name, accepted_names, unchecked_functions, verification
+                op.iter, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.ifs, app_name, accepted_names, unchecked_functions, verification
+                op.ifs, app_name, accepted_names, isolated_functions, verification
             )
-        elif (
-            isinstance(op, ast.ListComp)
-            or isinstance(op, ast.SetComp)
-            or isinstance(op, ast.GeneratorExp)
-        ):
+        elif isinstance(op, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
             self.__rename_instances_add_state(
                 op.generators,
                 app_name,
                 accepted_names,
-                unchecked_functions,
+                isolated_functions,
                 verification,
             )
         elif isinstance(op, ast.DictComp):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
                 op.generators,
                 app_name,
                 accepted_names,
-                unchecked_functions,
+                isolated_functions,
                 verification,
             )
-        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+        elif isinstance(op, (ast.Yield, ast.YieldFrom)):
             if op.value:
                 self.__rename_instances_add_state(
                     op.value,
                     app_name,
                     accepted_names,
-                    unchecked_functions,
+                    isolated_functions,
                     verification,
                 )
         elif isinstance(op, ast.FormattedValue):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.JoinedStr):
             self.__rename_instances_add_state(
-                op.values, app_name, accepted_names, unchecked_functions, verification
+                op.values, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Return):
             if op.value:
@@ -344,15 +597,15 @@ class Manipulator:
                     op.value,
                     app_name,
                     accepted_names,
-                    unchecked_functions,
+                    isolated_functions,
                     verification,
                 )
         elif isinstance(op, ast.Call):
             self.__rename_instances_add_state(
-                op.args, app_name, accepted_names, unchecked_functions, verification
+                op.args, app_name, accepted_names, isolated_functions, verification
             )
             self.__rename_instances_add_state(
-                op.keywords, app_name, accepted_names, unchecked_functions, verification
+                op.keywords, app_name, accepted_names, isolated_functions, verification
             )
             # Placeholder values that can never occur to detect the two cases without flags
             f_name = "123"
@@ -363,19 +616,34 @@ class Manipulator:
                 module_name = cast(ast.Name, op.func.value).id
                 f = op.func
                 f_name = f.attr
-                if isinstance(f.value, ast.Name) and module_name in {"svshi_api"}:
-                    # functions of the svshi_api object is called
+                # functions of the svshi_api object is called
+                if (
+                    isinstance(f.value, ast.Name)
+                    and module_name == self.__SVSHI_API_INSTANCE_NAME
+                ):
                     method_name = f.attr
+                    # functions of the svshi_api object involving internal_state is called
                     if method_name in self.__SVSHI_API_FUNCTIONS_WITH_INTERNAL_STATE:
                         op.args.append(
                             ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load)
                         )
+                    # If we have svshi_api.get_latest_value or
+                    # svshi_api.trigger_if_not_running,
+                    # rename the function called.
+                    if method_name in {
+                        self.__GET_LATEST_VALUE_NAME,
+                        self.__TRIGGER_IF_NOT_RUNNING_NAME,
+                    }:
+                        self.__check_and_rename_isolated_fn_call(
+                            op, app_name, method_name, isolated_functions
+                        )
+
             elif isinstance(op.func, ast.Name):
                 # call of the form func(...)
                 f_name = op.func.id
             else:
                 self.__rename_instances_add_state(
-                    op.func, app_name, accepted_names, unchecked_functions, verification
+                    op.func, app_name, accepted_names, isolated_functions, verification
                 )
             if module_name != "456":
                 # Composite call so op.func is an ast.Attribute
@@ -404,19 +672,17 @@ class Manipulator:
                     new_name = f"{app_name.upper()}_{f_name}"
                     cast(ast.Name, op.func).id = new_name
 
-                elif f_name in {uf.name for uf in unchecked_functions}:
-                    # If it is a call to an unchecked function, add the app name to the call
-                    new_name = f"{app_name}_{f_name}"
-
-                    # It can be only a ast.Name since the function is defined
-                    cast(ast.Name, op.func).id = new_name
-
-                    # Add the internal_state as argument
-                    op.args.append(ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load))
+                elif f_name in {uf.name for uf in isolated_functions}:
+                    _print_and_raise(
+                        f"{f_name} should not be called directly. "
+                        f"Use svshi_api.get_latest_value({f_name}) to get its value. "
+                        f"Use svshi_api.trigger_if_not_alredy_running to execute `on_trigger` functions.",
+                        DirectCallToIsolatedFunctionException,
+                    )
 
         elif isinstance(op, ast.keyword):
             self.__rename_instances_add_state(
-                op.value, app_name, accepted_names, unchecked_functions, verification
+                op.value, app_name, accepted_names, isolated_functions, verification
             )
         elif isinstance(op, ast.Attribute):
             name = cast(ast.Name, op.value).id
@@ -427,7 +693,7 @@ class Manipulator:
         elif isinstance(op, ast.FunctionDef) and (
             op.name == self.__INVARIANT_FUNC_NAME
             or op.name == self.__ITERATION_FUNC_NAME
-            or op.name.startswith(self.__UNCHECKED_FUNC_PREFIX)
+            or op.name.startswith(self.__ISOLATED_FUNC_PREFIXES)
         ):
             if (
                 op.name == self.__INVARIANT_FUNC_NAME
@@ -441,21 +707,24 @@ class Manipulator:
             # Rename the function, adding the app name to it
             op.name = f"{app_name}_{op.name}"
             self.__rename_instances_add_state(
-                op.body, app_name, accepted_names, unchecked_functions, verification
+                op.body, app_name, accepted_names, isolated_functions, verification
             )
 
     def __add_states_arguments_to_f(
         self, f: ast.FunctionDef, only_app_state_app_name: str
     ) -> ast.FunctionDef:
-
         """
-        Adds in place the states (Physical, App states and InternalState) to the function arguments.
+        Adds in place the states (PhysicalState, AppState, InternalState, IsolatedFunctionsValues) to the function arguments.
         only_app_state_app_name is used if only one app state should be added, in that case this arg is the name of said app; it must equal "" to add all app_states
+        IsolatedFunctionsValues is not added to invariant functions.
         returns the FunctionDef for convenience
         """
         f_with_args = self.__add_app_states_to_fun_def(f, only_app_state_app_name)
         f_with_args = self.__add_physical_state_to_fun_def(f_with_args)
         f_with_args = self.__add_internal_state_to_fun_def(f_with_args)
+        # IsolatedFunctionsValues is not added to invariant functions.
+        if f_with_args.name != self.__INVARIANT_FUNC_NAME:
+            f_with_args = self.__add_isolated_values_to_fun_def(f_with_args)
         return f_with_args
 
     def __add_app_states_to_fun_def(
@@ -485,7 +754,6 @@ class Manipulator:
                 )
             )
         )
-
         f.args.args.extend(state_args)
         return f
 
@@ -513,20 +781,29 @@ class Manipulator:
         f.args.args.extend(args)
         return f
 
+    def __add_isolated_values_to_fun_def(self, f: ast.FunctionDef) -> ast.FunctionDef:
+        args = [
+            (
+                ast.arg(
+                    self.__ISOLATED_VALUES_ARGUMENT,
+                    ast.Name(self.__ISOLATED_VALUES_TYPE, ast.Load),
+                )
+            )
+        ]
+        f.args.args.extend(args)
+        return f
+
     def __construct_contracts(
         self,
         app_names: List[str],
-        unchecked_functions: List[UncheckedFunction],
         verification: bool = True,
     ) -> str:
         """
-        Returns the contract as a docstring using the given app names. If the verification flag is set,
-        it also adds to the pre-conditions the unchecked functions' post-conditions.
+        Returns the contract as a docstring using the given app names.
         """
         pre_str = "pre: "
         post_str = "post: "
         return_value_name_str = "**__return__"
-        return_stmt_postcond = "__return__"
 
         def construct_func_call(func_name: str, arg_names: List[str]) -> str:
             res = func_name + "("
@@ -536,22 +813,6 @@ class Manipulator:
                 res = res[:-2]
             res += ")"
             return res
-
-        def construct_pre_unchecked_func(
-            unchecked_func_name: str, doc_string: str
-        ) -> List[str]:
-            list_post_conds = []
-            post_str_no_space = "post:"
-            for l in doc_string.splitlines():
-                if post_str_no_space in l:
-                    cond = (
-                        pre_str
-                        + l.replace(post_str_no_space, "")
-                        .replace(return_stmt_postcond, unchecked_func_name)
-                        .strip()
-                    )
-                    list_post_conds.append(cond)
-            return list_post_conds
 
         conditions = []
         sorted_app_names = sorted(app_names)
@@ -570,14 +831,6 @@ class Manipulator:
                 arg_names,
             )
             conditions.append(invariant)
-
-        if verification:
-            for unchecked_func in unchecked_functions:
-                conditions.extend(
-                    construct_pre_unchecked_func(
-                        unchecked_func.name_with_app_name, unchecked_func.doc_string
-                    )
-                )
 
         for app_name in sorted_app_names:
             postcond = post_str
@@ -638,7 +891,7 @@ class Manipulator:
             List[ast.comprehension],
             List[ast.keyword],
         ],
-        unchecked_functions: List[UncheckedFunction],
+        verification: bool,
     ) -> Union[
         ast.stmt,
         ast.expr,
@@ -652,33 +905,33 @@ class Manipulator:
         None,
     ]:
         """
-        Checks if the given op is a Function call and if that function is in the set of unchecked_function_names.
-        If that's the case, it returns a new ast.Name with the function name as id if the function has a return type,
+        Checks if the given op is a Function call and if that function is
+        `svshi_api.get_latest_value` or `svshi_api.trigger_if_not_running`.
+        If it is `get_latest_value(fn), it returns a new ast.Attribute representing
+        `IsolatedFunctionsValues.app_name_fn_name`.
+        `trigger_if_not_running` is replaced by None at verification time and
+        is not changed at all for runtime.
         otherwise it returns a ast.Constant with None. In all either cases, it returns the op.
         """
-        if isinstance(op, ast.Call):
-            f_name = (
-                "123"  # An illegal function name to be sure it is not in the given set
-            )
-            if isinstance(op.func, ast.Attribute):
-                # op.func.value is a ast.Name in this case
-                f_name = cast(ast.Name, op.func.value).id
-            elif isinstance(op.func, ast.Name):
-                f_name = op.func.id
-
-            unchecked_func_names_to_return_type = {
-                uf.name_with_app_name: uf.return_type for uf in unchecked_functions
-            }
-            if f_name in unchecked_func_names_to_return_type:
-                if unchecked_func_names_to_return_type[f_name] != None:
-                    # We replace the function call by a variable only if it returns something
-                    return ast.Name(id=f_name)
-                else:
-                    # It does not return anything, we can replace it by None
-                    return ast.Constant(None, "None")
+        if isinstance(op, ast.Call) and isinstance(op.func, ast.Attribute):
+            # op.func.value is an ast.Name in this case
+            if cast(ast.Name, op.func.value).id == self.__SVSHI_API_INSTANCE_NAME:
+                f_name = op.func.attr
+                if f_name == self.__GET_LATEST_VALUE_NAME:
+                    isolated_fn_name = cast(ast.Name, op.args[0]).id
+                    return ast.Attribute(
+                        value=ast.Name(
+                            id=self.__ISOLATED_VALUES_ARGUMENT, ctx=ast.Load
+                        ),
+                        attr=isolated_fn_name,
+                        ctx=ast.Load,
+                    )
+                elif f_name == self.__TRIGGER_IF_NOT_RUNNING_NAME:
+                    if verification:
+                        return ast.Constant(None, "None")
         return op
 
-    def __change_unchecked_functions_to_var(
+    def __replace_calls_to_isolated_functions(
         self,
         op: Union[
             ast.stmt,
@@ -691,194 +944,191 @@ class Manipulator:
             List[ast.comprehension],
             List[ast.keyword],
         ],
-        unchecked_functions: List[UncheckedFunction],
+        verification: bool,
     ):
         """
-        Manipulates the op to replace all calls to unchecked functions by a Name with id=unchecked_func_name. The replacement is
-        done in place, it modifies the object.
+        Manipulates the op to replace all calls to `svshi_api.get_latest_value(fn)` by
+        `IsolatedFunctionsValues.app_name_fn_name`. Calls to
+        `svshi_api.trigger_if_not_running` are replaced by None for
+        verification, but are not changed for the runtime.
+        The replacement is done in place, it modifies the object.
         """
         if isinstance(op, list):
             for index, v in enumerate(op):
                 temp_new_ast = self.__check_if_func_call_is_applicable_and_replace(
-                    v, unchecked_functions
+                    v, verification
                 )
                 op[index] = temp_new_ast
-                self.__change_unchecked_functions_to_var(v, unchecked_functions)
-        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+                self.__replace_calls_to_isolated_functions(v, verification)
+        elif isinstance(op, (ast.List, ast.Tuple)):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.elts, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.elts, verification)
         elif isinstance(op, ast.BoolOp):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.values, verification)
         elif isinstance(op, ast.UnaryOp):
             op.operand = self.__check_if_func_call_is_applicable_and_replace(
-                op.operand, unchecked_functions
+                op.operand, verification
             )
-            self.__change_unchecked_functions_to_var(op.operand, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.operand, verification)
         elif isinstance(op, ast.NamedExpr):
             op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
+                op.target, verification
             )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.target, verification)
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.Expr):
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.Lambda):
             op.body = self.__check_if_func_call_is_applicable_and_replace(
-                op.body, unchecked_functions
+                op.body, verification
             )
-            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.body, verification)
         elif isinstance(op, ast.Assign):
             op.targets = self.__check_if_func_call_is_applicable_and_replace(
-                op.targets, unchecked_functions
+                op.targets, verification
             )
-            self.__change_unchecked_functions_to_var(op.targets, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.targets, verification)
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.AugAssign):
             op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
+                op.target, verification
             )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.target, verification)
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.AnnAssign):
             op.target = self.__check_if_func_call_is_applicable_and_replace(
-                op.target, unchecked_functions
+                op.target, verification
             )
-            self.__change_unchecked_functions_to_var(op.target, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.target, verification)
             op.annotation = self.__check_if_func_call_is_applicable_and_replace(
-                op.annotation, unchecked_functions
+                op.annotation, verification
             )
-            self.__change_unchecked_functions_to_var(op.annotation, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.annotation, verification)
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.Return):
             if op.value:
                 op.value = (
                     temp_new_ast
                 ) = self.__check_if_func_call_is_applicable_and_replace(
-                    op.value, unchecked_functions
+                    op.value, verification
                 )
-                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+                self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.Compare):
             op.left = self.__check_if_func_call_is_applicable_and_replace(
-                op.left, unchecked_functions
+                op.left, verification
             )
-            self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.left, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(
-                op.comparators, unchecked_functions
-            )
+            self.__replace_calls_to_isolated_functions(op.comparators, verification)
         elif isinstance(op, ast.BinOp):
             op.left = self.__check_if_func_call_is_applicable_and_replace(
-                op.left, unchecked_functions
+                op.left, verification
             )
-            self.__change_unchecked_functions_to_var(op.left, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.left, verification)
             op.right = self.__check_if_func_call_is_applicable_and_replace(
-                op.right, unchecked_functions
+                op.right, verification
             )
-            self.__change_unchecked_functions_to_var(op.right, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.right, verification)
         elif isinstance(op, ast.IfExp):
             op.test = self.__check_if_func_call_is_applicable_and_replace(
-                op.test, unchecked_functions
+                op.test, verification
             )
-            self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.test, verification)
             op.body = self.__check_if_func_call_is_applicable_and_replace(
-                op.body, unchecked_functions
+                op.body, verification
             )
-            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.body, verification)
             op.orelse = self.__check_if_func_call_is_applicable_and_replace(
-                op.orelse, unchecked_functions
+                op.orelse, verification
             )
-            self.__change_unchecked_functions_to_var(op.orelse, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.orelse, verification)
         elif isinstance(op, ast.If):
             op.test = self.__check_if_func_call_is_applicable_and_replace(
-                op.test, unchecked_functions
+                op.test, verification
             )
-            self.__change_unchecked_functions_to_var(op.test, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.test, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.body, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.orelse, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.orelse, verification)
         elif isinstance(op, ast.Dict):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.values, verification)
         elif isinstance(op, ast.Set):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.elts, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.elts, verification)
         elif isinstance(op, ast.comprehension):
             op.iter = self.__check_if_func_call_is_applicable_and_replace(
-                op.iter, unchecked_functions
+                op.iter, verification
             )
-            self.__change_unchecked_functions_to_var(op.iter, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.iter, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.ifs, unchecked_functions)
-        elif (
-            isinstance(op, ast.ListComp)
-            or isinstance(op, ast.SetComp)
-            or isinstance(op, ast.GeneratorExp)
-        ):
+            self.__replace_calls_to_isolated_functions(op.ifs, verification)
+        elif isinstance(op, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.generators, verification)
         elif isinstance(op, ast.DictComp):
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.generators, unchecked_functions)
-        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+            self.__replace_calls_to_isolated_functions(op.generators, verification)
+        elif isinstance(op, (ast.Yield, ast.YieldFrom)):
             if op.value:
                 op.value = self.__check_if_func_call_is_applicable_and_replace(
-                    op.value, unchecked_functions
+                    op.value, verification
                 )
-                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+                self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.FormattedValue):
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.JoinedStr):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.values, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.values, verification)
         elif isinstance(op, ast.Return):
             if op.value:
                 op.value = self.__check_if_func_call_is_applicable_and_replace(
-                    op.value, unchecked_functions
+                    op.value, verification
                 )
-                self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+                self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.Call):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.args, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.args, verification)
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.keywords, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.keywords, verification)
             # Here we cannot have a Call to replace because it would have been done in the parent
-            self.__change_unchecked_functions_to_var(op.func, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.func, verification)
         elif isinstance(op, ast.keyword):
             op.value = self.__check_if_func_call_is_applicable_and_replace(
-                op.value, unchecked_functions
+                op.value, verification
             )
-            self.__change_unchecked_functions_to_var(op.value, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.value, verification)
         elif isinstance(op, ast.FunctionDef):
             # Here we do not do the check as it cannot be a function call (due to the type)
-            self.__change_unchecked_functions_to_var(op.body, unchecked_functions)
+            self.__replace_calls_to_isolated_functions(op.body, verification)
 
     def manipulate_mains(
         self, verification: bool, app_priorities: Dict[str, int]
-    ) -> Tuple[List[str], List[str]]:
+    ) -> Tuple[List[str], List[str], List[IsolatedFunction]]:
         """
         Manipulates the `main.py` of all the apps, modifying the names of the functions and instances (specified in `accepted_names`),
         and adding the state argument to the calls. Then, the `invariant` and `iteration` functions are extracted, together with their imports,
@@ -886,10 +1136,10 @@ class Manipulator:
         It also produces a function called `system_behaviour` that represents the whole system and is thus a combination of all the iteration functions.
         To do so, it needs the app_priorities to construct the function correctly to respect them
         """
-        imports = []
-        functions = []
-        app_names_to_iteration_function_without_ret = {}
-        app_names_to_unchecked_funcs = {}
+        imports: List[str] = []
+        functions: List[str] = []
+        app_names_to_iteration_function_without_ret: Dict[str, ast.FunctionDef] = {}
+        app_names_to_isolated_funcs: Dict[str, List[IsolatedFunction]] = {}
         for (
             directory,
             app_name,
@@ -898,7 +1148,7 @@ class Manipulator:
                 imps,
                 funcs,
                 iteration_func_without_ret,
-                unchecked_functions,
+                isolated_functions,
             ) = self.__manipulate_app_main(
                 directory, app_name, accepted_names, verification
             )
@@ -909,12 +1159,11 @@ class Manipulator:
             app_names_to_iteration_function_without_ret[
                 app_name
             ] = iteration_func_without_ret
-            app_names_to_unchecked_funcs[app_name] = unchecked_functions
+            app_names_to_isolated_funcs[app_name] = isolated_functions
 
         # Generate the system behaviour function
         system_behaviour_func = self.__generate_system_behaviour_function(
             app_names_to_iteration_funcs_without_ret=app_names_to_iteration_function_without_ret,
-            app_unchecked_funcs=app_names_to_unchecked_funcs,
             app_priorities=app_priorities,
             verification=verification,
         )
@@ -922,14 +1171,18 @@ class Manipulator:
         system_behaviour_func_str = astor.to_source(system_behaviour_func)
         functions.append(system_behaviour_func_str)
 
+        isolated_functions = [
+            fn for fn_list in app_names_to_isolated_funcs.values() for fn in fn_list
+        ]
+
         # Keep only non-empty imports
-        return [imp.replace("\n", "") for imp in imports if imp], functions
+        new_imports = [imp.replace("\n", "") for imp in imports if imp]
+        return new_imports, functions, isolated_functions
 
     def __generate_system_behaviour_function(
         self,
         app_names_to_iteration_funcs_without_ret: Dict[str, ast.FunctionDef],
         app_priorities: Dict[str, int],
-        app_unchecked_funcs: Dict[str, List[UncheckedFunction]],
         verification: bool,
     ) -> ast.FunctionDef:
         """
@@ -937,12 +1190,11 @@ class Manipulator:
         It takes as arguments:
             - a Dict that maps all application names to their iteration functions, manipulated but without any return statement added
             - a Dict that maps all application names to their priority: the higher the number, the higher the priority
-            - a Dict that maps all application names to their unchecked functions
             - a bool indicating whether it must generate a verification version of the functions
 
         Applications with higher priority level can override behaviour of lower priority apps. Apps with same level are ordered by alphabetical order (arbitrary so no gurantee)
 
-        If the verification bool flag is set, a return statement is added to return all states, the unchecked functions are replaced by a variable and taken as arguments
+        If the verification bool flag is set, a return statement is added to return all states.
         """
         app_names = app_priorities.keys()
         priority_low_to_high_sorted_app_names: list[str] = []
@@ -956,11 +1208,9 @@ class Manipulator:
             priority_low_to_high_sorted_app_names.extend(sorted_low_to_high_app_names)
 
         body = []
-        unchecked_funcs: List[UncheckedFunction] = []
         for app_name in priority_low_to_high_sorted_app_names:
             iteration_func = app_names_to_iteration_funcs_without_ret[app_name]
             body.extend(iteration_func.body)
-            unchecked_funcs.extend(app_unchecked_funcs[app_name])
 
         args = ast.arguments(args=[], defaults=[])
         behaviour_func = ast.FunctionDef(
@@ -972,9 +1222,6 @@ class Manipulator:
         behaviour_func = self.__add_states_arguments_to_f(behaviour_func, "")
         if verification:
             behaviour_func = self.__add_return_states(behaviour_func)
-            behaviour_func = self.__add_unchecked_function_arguments(
-                behaviour_func, unchecked_funcs
-            )
         return behaviour_func
 
     def __check_no_invalid_calls_in_function(
@@ -1001,18 +1248,18 @@ class Manipulator:
                 List[ast.keyword],
             ]
         ) -> bool:
-            if isinstance(op, list) or isinstance(op, tuple):
+            if isinstance(op, (list, tuple)):
                 for o in (check(v) for v in list(op)):
                     if not o:
                         return False
                 return True
-            elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+            elif isinstance(op, (ast.List, ast.Tuple)):
                 return check(op.elts)
             elif isinstance(op, ast.BoolOp):
                 return check(op.values)
             elif isinstance(op, ast.UnaryOp):
                 return check(op.operand)
-            elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
+            elif isinstance(op, (ast.NamedExpr, ast.Expr)):
                 return check(op.value)
             elif isinstance(op, ast.Lambda):
                 return check(op.body)
@@ -1024,7 +1271,7 @@ class Manipulator:
                 return check(op.left) and check(op.comparators)
             elif isinstance(op, ast.BinOp):
                 return check(op.left) and check(op.right)
-            elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+            elif isinstance(op, (ast.IfExp, ast.If)):
                 return check(op.test) and check(op.body) and check(op.orelse)
             elif isinstance(op, ast.Dict):
                 return check(op.values)
@@ -1032,15 +1279,11 @@ class Manipulator:
                 return check(op.elts)
             elif isinstance(op, ast.comprehension):
                 return check(op.iter) and check(op.ifs)
-            elif (
-                isinstance(op, ast.ListComp)
-                or isinstance(op, ast.SetComp)
-                or isinstance(op, ast.GeneratorExp)
-            ):
+            elif isinstance(op, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
                 return check(op.generators)
             elif isinstance(op, ast.DictComp):
                 return check(op.value) and check(op.generators)
-            elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+            elif isinstance(op, (ast.Yield, ast.YieldFrom)):
                 return check(op.value) if op.value else True
             elif isinstance(op, ast.FormattedValue):
                 return check(op.value)
@@ -1077,24 +1320,6 @@ class Manipulator:
                 return False, function.name
 
         return True, ""
-
-    def __add_unchecked_function_arguments(
-        self, f: ast.FunctionDef, arguments: List[UncheckedFunction]
-    ) -> ast.FunctionDef:
-        """
-        In place, adds to the given function the given arguments.
-        return the FunctionDef for convenience
-        """
-        ast_arguments = map(
-            lambda unchecked_f: ast.arg(
-                unchecked_f.name_with_app_name,
-                ast.Name(unchecked_f.return_type, ast.Load),
-            ),
-            filter(lambda uf: uf.return_type != None, arguments),
-        )
-
-        f.args.args.extend(ast_arguments)
-        return f
 
     def __add_app_name_to_function_call_arguments(
         self, f: ast.Call, app_name: str
@@ -1192,21 +1417,26 @@ class Manipulator:
                     if len(current_args) > 1:
                         mode_arg = current_args[1]  # mode is the second argument
                         if not isinstance(mode_arg, ast.Constant):
-                            msg = "The mode must be a constant str!"
-                            print(msg)  # To pass it to the scala module
-                            raise InvalidFileOpenModeException(msg)
+                            _print_and_raise(
+                                "The mode must be a constant str!",
+                                InvalidFileOpenModeException,
+                            )
                         if (
                             mode_arg.value
                             not in self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES
                         ):
-                            msg = f"The mode passed to a get file function must be in {self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES}. Current mode is '{mode_arg.value}'"
-                            print(msg)  # To pass it to the scala module
-                            raise InvalidFileOpenModeException(msg)
+                            _print_and_raise(
+                                f"The mode passed to a get file function must be in "
+                                f"{self.__SVSHI_API_FILESYSTEM_OPEN_FILE_MODES}. "
+                                "Current mode is '{mode_arg.value}'",
+                                InvalidFileOpenModeException,
+                            )
                     else:
                         # This is a problem, return False
-                        msg = "Too few argument passed to svshi_api get file function!"
-                        print(msg)  # To pass it to the scala module
-                        raise InvalidFileOpenModeException(msg)
+                        _print_and_raise(
+                            "Too few argument passed to svshi_api get file function!",
+                            InvalidFileOpenModeException,
+                        )
 
     def __add_appname_to_filesystem_functions_args_and_check_mode_arg(
         self,
@@ -1240,7 +1470,7 @@ class Manipulator:
                 self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                     v, app_name
                 )
-        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+        elif isinstance(op, (ast.List, ast.Tuple)):
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                 op.elts, app_name
@@ -1439,11 +1669,7 @@ class Manipulator:
             self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                 op.ifs, app_name
             )
-        elif (
-            isinstance(op, ast.ListComp)
-            or isinstance(op, ast.SetComp)
-            or isinstance(op, ast.GeneratorExp)
-        ):
+        elif isinstance(op, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
             # Here we do not do the check as it cannot be a function call (due to the type)
             self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                 op.generators, app_name
@@ -1460,7 +1686,7 @@ class Manipulator:
             self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                 op.generators, app_name
             )
-        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+        elif isinstance(op, (ast.Yield, ast.YieldFrom)):
             if op.value:
                 self.__check_mode_arg_if_function_call(op.value)
                 op.value = self.__check_if_function_filesystem_and_add_app_name(
@@ -1536,16 +1762,16 @@ class Manipulator:
         """
         In place, renames all the occurrences of the given filenames by prepending the path to it.
         """
-        if isinstance(op, list) or isinstance(op, tuple):
+        if isinstance(op, (list, tuple)):
             for v in list(op):
                 self.__rename_files(v, app_name, filenames)
-        elif isinstance(op, ast.List) or isinstance(op, ast.Tuple):
+        elif isinstance(op, (ast.List, ast.Tuple)):
             self.__rename_files(op.elts, app_name, filenames)
         elif isinstance(op, ast.BoolOp):
             self.__rename_files(op.values, app_name, filenames)
         elif isinstance(op, ast.UnaryOp):
             self.__rename_files(op.operand, app_name, filenames)
-        elif isinstance(op, ast.NamedExpr) or isinstance(op, ast.Expr):
+        elif isinstance(op, (ast.NamedExpr, ast.Expr)):
             self.__rename_files(op.value, app_name, filenames)
         elif isinstance(op, ast.Lambda):
             self.__rename_files(op.body, app_name, filenames)
@@ -1560,7 +1786,7 @@ class Manipulator:
         elif isinstance(op, ast.BinOp):
             self.__rename_files(op.left, app_name, filenames)
             self.__rename_files(op.right, app_name, filenames)
-        elif isinstance(op, ast.IfExp) or isinstance(op, ast.If):
+        elif isinstance(op, (ast.IfExp, ast.If)):
             self.__rename_files(op.test, app_name, filenames)
             self.__rename_files(op.body, app_name, filenames)
             self.__rename_files(op.orelse, app_name, filenames)
@@ -1571,16 +1797,12 @@ class Manipulator:
         elif isinstance(op, ast.comprehension):
             self.__rename_files(op.iter, app_name, filenames)
             self.__rename_files(op.ifs, app_name, filenames)
-        elif (
-            isinstance(op, ast.ListComp)
-            or isinstance(op, ast.SetComp)
-            or isinstance(op, ast.GeneratorExp)
-        ):
+        elif isinstance(op, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
             self.__rename_files(op.generators, app_name, filenames)
         elif isinstance(op, ast.DictComp):
             self.__rename_files(op.value, app_name, filenames)
             self.__rename_files(op.generators, app_name, filenames)
-        elif isinstance(op, ast.Yield) or isinstance(op, ast.YieldFrom):
+        elif isinstance(op, (ast.Yield, ast.YieldFrom)):
             if op.value:
                 self.__rename_files(op.value, app_name, filenames)
         elif isinstance(op, ast.FormattedValue):
@@ -1635,19 +1857,18 @@ class Manipulator:
         app_name: str,
         accepted_names: Set[str],
         verification: bool,
-    ) -> Tuple[List[str], str, ast.FunctionDef, List[UncheckedFunction]]:
+    ) -> Tuple[List[str], str, ast.FunctionDef, List[IsolatedFunction]]:
         """
         Returns the list of imports as strings and the manipulated invariant, function as pretty printed code (as string), the iteration function ast without the return
-        statement but with the other manipulation, and the list of UncheckedFunction of the app.
+        statement but with the other manipulation, and the list of IsolatedFunction of the app.
         We keep imports added by the user.
         The manipulation consists in modifying the functions to add the app name, renaming all used files, renaming calls to devices and adding arguments to
         calls to their methods.
-        If it is for the verification file (i.e. verification is True), the imports are dumped, the calls to unchecked functions are replaced by values of the same name
+        If it is for the verification file (i.e. verification is True), the imports are dumped.
         """
 
         def extract_functions_and_imports(
             module_body: List[ast.stmt],
-            unchecked_func_dict: Dict[str, UncheckedFunction],
         ):
             # We only keep invariant and iteration functions, and we add to them the docstring with the contracts
             functions_ast = list(
@@ -1656,7 +1877,6 @@ class Manipulator:
                         f,
                         self.__construct_contracts(
                             self.__app_names,
-                            list(unchecked_func_dict.values()),
                             verification,
                         ),
                     )
@@ -1673,7 +1893,10 @@ class Manipulator:
                                 or (
                                     not verification
                                     and n.name.startswith(
-                                        f"{app_name}_{self.__UNCHECKED_FUNC_PREFIX}"
+                                        tuple(
+                                            f"{app_name}_{prefix}"
+                                            for prefix in self.__ISOLATED_FUNC_PREFIXES
+                                        )
                                     )
                                 )
                             ),
@@ -1705,8 +1928,8 @@ class Manipulator:
             module = ast.parse(file.read())
             module_body = module.body
 
-            unchecked_func_dict = self.__get_unchecked_functions(module_body, app_name)
-            unchecked_funcs = list(unchecked_func_dict.values())
+            isolated_func_dict = self.__get_isolated_functions(module_body, app_name)
+            isolated_funcs = list(isolated_func_dict.values())
 
             # # We rename all the files, if any
             # filenames = self.__filenames_per_app[app_name]
@@ -1715,15 +1938,15 @@ class Manipulator:
 
             # We rename all the device instances and add the state argument to each of their calls
             self.__rename_instances_add_state(
-                module_body, app_name, accepted_names, unchecked_funcs, verification
+                module_body, app_name, accepted_names, isolated_funcs, verification
             )
 
-            # Extract imports, invariant/iteration functions and add the contracts to them and the unchecked_functions if verification is false
+            # Extract imports, invariant/iteration functions and add the contracts to them if verification is false
             (
                 functions_ast,
                 imports_ast,
                 from_imports_ast,
-            ) = extract_functions_and_imports(module_body, unchecked_func_dict)
+            ) = extract_functions_and_imports(module_body)
 
             all_imports_ast = imports_ast + from_imports_ast
 
@@ -1737,11 +1960,11 @@ class Manipulator:
             }
 
             # Check if an invariant function contains a call to an invalid function,
-            # i.e. an unchecked function or completely invalid ones
-            unchecked_func_names = {
-                uf.name_with_app_name for _, uf in unchecked_func_dict.items()
+            # i.e. an isolated function or completely invalid ones
+            isolated_func_names = {
+                uf.name_with_app_name for _, uf in isolated_func_dict.items()
             }
-            invariant_invalid_func_names = unchecked_func_names | invalid_func_names
+            invariant_invalid_func_names = isolated_func_names | invalid_func_names
             valid, wrong_invariant_func = self.__check_no_invalid_calls_in_function(
                 list(
                     filter(
@@ -1752,9 +1975,11 @@ class Manipulator:
                 invariant_invalid_func_names,
             )
             if not valid:
-                msg = f"The invariant function '{wrong_invariant_func}' contains a call to a forbidden function in that list: {invariant_invalid_func_names}."
-                print(msg)  # To pass it to the scala module
-                raise InvalidFunctionCallException(msg)
+                _print_and_raise(
+                    f"The invariant function '{wrong_invariant_func}' contains a call "
+                    f"to a forbidden function in that list: {invariant_invalid_func_names}.",
+                    InvalidFunctionCallException,
+                )
 
             iteration_functions = list(
                 filter(
@@ -1769,52 +1994,54 @@ class Manipulator:
                 invalid_func_names,
             )
             if not valid:
-                msg = f"The iteration function '{wrong_iteration_func}' contains a call to a forbidden function in that list: {invalid_func_names}."
-                print(msg)  # To pass it to the scala module
-                raise InvalidFunctionCallException(msg)
+                _print_and_raise(
+                    f"The iteration function '{wrong_iteration_func}' contains a call "
+                    f"to a forbidden function in that list: {invalid_func_names}.",
+                    InvalidFunctionCallException,
+                )
+
+            # Replace all calls to isolated functions via svshi_api in place.
+            self.__replace_calls_to_isolated_functions(
+                iteration_functions,
+                verification,
+            )
 
             if not verification:
-                # Check if an unchecked function contains a call to an invalid function
-                unchecked_func_definitions = list(
+                # Check if an isolated function contains a call to an invalid function
+                isolated_func_definitions = list(
                     filter(
                         lambda f: f.name.startswith(
-                            f"{app_name}_{self.__UNCHECKED_FUNC_PREFIX}"
+                            tuple(
+                                f"{app_name}_{prefix}"
+                                for prefix in self.__ISOLATED_FUNC_PREFIXES
+                            )
                         ),
                         functions_ast,
                     )
                 )
-                unchecked_invalid_func_names = set([self.__OPEN_FUNC_NAME])
-                valid, wrong_unchecked_func = self.__check_no_invalid_calls_in_function(
-                    unchecked_func_definitions,
-                    unchecked_invalid_func_names,
+                isolated_invalid_func_names = set([self.__OPEN_FUNC_NAME])
+                valid, wrong_isolated_func = self.__check_no_invalid_calls_in_function(
+                    isolated_func_definitions,
+                    isolated_invalid_func_names,
                 )
                 if not valid:
-                    msg = f"The unchecked function '{wrong_unchecked_func}' contains a call to a forbidden function in that list: {unchecked_invalid_func_names}."
-                    print(msg)  # To pass it to the scala module
-                    raise InvalidFunctionCallException(msg)
+                    _print_and_raise(
+                        f"The function '{wrong_isolated_func}' contains a call to a "
+                        f"forbidden function in that list: {isolated_invalid_func_names}.",
+                        InvalidFunctionCallException,
+                    )
 
-                # Add the internal_state as argument to all unchecked functions
-                for unchecked_def in unchecked_func_definitions:
-                    self.__add_internal_state_to_fun_def(unchecked_def)
+                # Add the internal_state as argument to all isolated functions
+                for isolated_def in isolated_func_definitions:
+                    self.__add_internal_state_to_fun_def(isolated_def)
 
             # Filesystem related operations
 
-            # We add the app_name as arguments to file system calls. They appear only in unchecked functions as checked above, which
+            # We add the app_name as arguments to file system calls. They appear only in isolated functions as checked above, which
             # are in the list only when verification = false
             self.__add_appname_to_filesystem_functions_args_and_check_mode_arg(
                 functions_ast, app_name
             )
-
-            if verification:
-                # Replace all calls to unchecked functions by variables in iteration function
-                self.__change_unchecked_functions_to_var(
-                    iteration_functions,
-                    unchecked_funcs,
-                )
-
-                # Add unchecked_function_names as arguments of the iteration functions
-                for f in iteration_functions:
-                    self.__add_unchecked_function_arguments(f, unchecked_funcs)
 
             # Get the iteration function as an AST without return statement to generate the system behaviour function later
             # There is only one per app
@@ -1850,12 +2077,14 @@ class Manipulator:
                 forbidden_modules=self.__FORBIDDEN_MODULE_IN_APPS,
             )
             if forbidden_import_flag:
-                msg = f"The app '{app_name}' imports the following module which is forbidden in applications: '{forbidden_module_imported}'"
-                print(msg)  # To pass it to the scala module
-                raise ForbiddenModuleImported(msg)
+                _print_and_raise(
+                    f"The app '{app_name}' imports the following module which is "
+                    f"forbidden in applications: '{forbidden_module_imported}'",
+                    ForbiddenModuleImported,
+                )
 
             # Transform to source code
             functions = astor.to_source(ast.Module(functions_ast))
             imports = astor.to_source(ast.Module(imports_ast))
             from_imports = astor.to_source(ast.Module(from_imports_ast))
-            return [imports, from_imports], functions, iteration_ast, unchecked_funcs
+            return [imports, from_imports], functions, iteration_ast, isolated_funcs

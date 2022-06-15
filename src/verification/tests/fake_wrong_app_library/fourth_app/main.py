@@ -11,5 +11,6 @@ def iteration():
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
         SWITCH_INSTANCE_NAME.on()
 
-def unchecked_func():
+def periodic_func():
+    """period: 2"""
     return 2

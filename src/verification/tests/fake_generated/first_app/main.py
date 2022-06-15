@@ -13,30 +13,28 @@ def invariant() -> bool:
 
 def iteration():
     # Write your app code here
-    if uncheckedcompute_bool() and not app_state.BOOL_1:
+    if svshi_api.get_latest_value(periodic_compute_bool) and not app_state.BOOL_1:
         app_state.INT_1 = 42
-        unchecked_print(BINARY_SENSOR_INSTANCE_NAME.is_on())
+        svshi_api.trigger_if_not_running(on_trigger_print, BINARY_SENSOR_INSTANCE_NAME.is_on())
     else:
-        v = unchecked_return_two()
-        unchecked_print(v)
-        unchecked_print("file4.csv")
+        v = svshi_api.get_latest_value(periodic_return_two)
+        svshi_api.trigger_if_not_running(on_trigger_print, v)
+        svshi_api.trigger_if_not_running(on_trigger_print, "file4.csv")
 
-def uncheckedcompute_bool() -> bool:
+def periodic_compute_bool() -> bool:
     """
-    post: __return__ == False
+    period: 5
     """
     return False
 
-def unchecked_return_two() -> int:
+def periodic_return_two() -> int:
     """
-    pre: True
-    post: __return__ > 0
-    post: __return__ != 3
+    period: 100
     """
     p = svshi_api.get_file_path("file1.txt")
     f = svshi_api.get_file_text_mode("file2.txt", "w")
     f2 = svshi_api.get_file_binary_mode("file3.txt", "ar")
     return 2
 
-def unchecked_print(s) -> None:
+def on_trigger_print(s) -> None:
     print(s)

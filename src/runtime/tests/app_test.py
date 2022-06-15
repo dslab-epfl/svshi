@@ -85,8 +85,8 @@ def test_app_get_addresses_listeners():
     listeners = get_addresses_listeners(apps)
 
     assert listeners == {
-        "0/0/1": [another_app, app],
-        "0/0/2": [another_app, app],
-        "0/0/3": [another_app, app],
-        "0/0/4": [another_app, app],
+        "1/1/1": [another_app, app],
+        "1/1/2": [another_app, app],
+        "1/1/3": [another_app, app],
+        "1/1/4": [another_app, app],
     }

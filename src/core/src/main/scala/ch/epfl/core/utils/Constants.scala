@@ -38,6 +38,8 @@ object Constants {
   lazy val GENERATED_RUNTIME_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_RUNTIME_FILE_NAME")
   val GENERATED_CONDITIONS_FILE_NAME = "conditions.py"
   lazy val GENERATED_CONDITIONS_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_CONDITIONS_FILE_NAME")
+  val GENERATED_ISOLATED_FNS_FILE_NAME = "isolated_fns.json"
+  lazy val GENERATED_ISOLATED_FNS_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_ISOLATED_FNS_FILE_NAME")
   val VERIFICATION_PYTHON_MODULE = "verification.main"
   val APP_GENERATOR_PYTHON_MODULE = "generator.main"
   val RUNTIME_PYTHON_MODULE = "runtime.main"

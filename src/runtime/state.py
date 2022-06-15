@@ -4,7 +4,7 @@ from dataclasses import dataclass, fields
 import asyncio
 import time
 from asyncio.tasks import Task
-from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Final, List, Optional, Set, Tuple, Union, cast
 from collections import defaultdict
 from enum import Enum
 from xknx.core.value_reader import ValueReader
@@ -17,9 +17,10 @@ from xknx.xknx import XKNX
 import json
 
 from .logger import Logger
-from .verification_file import AppState, PhysicalState
+from .verification_file import AppState, PhysicalState, IsolatedFunctionsValues
 from .runtime_file import InternalState
 from .app import App
+from .isolated_functions import RuntimeIsolatedFunction
 from .joint_apps import JointApps
 
 
@@ -38,6 +39,7 @@ class State:
     __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
     __LOGGER_BUFFER_SIZE = 32
     __APP_STATE_ARGUMENT_SUFFIX = "_app_state"
+    __MIN_FN_PERIOD = 0.5  # minimal period in seconds for executing periodic functions
 
     def __init__(
         self,
@@ -50,6 +52,7 @@ class State:
         logs_dir: str,
         runtime_app_files_folder_path: str,
         physical_state_log_file_path: str,
+        isolated_fns: List[RuntimeIsolatedFunction],
     ):
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
@@ -61,11 +64,17 @@ class State:
 
         self._physical_state: PhysicalState
         self._last_valid_physical_state: PhysicalState
-        self._app_states = {f"{app.name}{self.__APP_STATE_ARGUMENT_SUFFIX}": AppState() for app in self.__apps}
+        self._app_states = {
+            f"{app.name}{self.__APP_STATE_ARGUMENT_SUFFIX}": AppState()
+            for app in self.__apps
+        }
 
-        self._internal_state: InternalState = InternalState(time.localtime(), runtime_app_files_folder_path)
+        self._internal_state: InternalState = InternalState(
+            time.localtime(), runtime_app_files_folder_path
+        )
 
-        # Used to access and modify the states
+        self._isolated_fn_values = IsolatedFunctionsValues()
+
         self.__execution_lock = asyncio.Lock()
 
         self.__xknx_for_initialization = xknx_for_initialization
@@ -98,6 +107,13 @@ class State:
             self.__periodic_apps[min(timers)] = self.joint_apps
 
         self.__periodic_apps_task: Optional[Task] = None
+
+        self.__periodic_fns = {fn for fn in isolated_fns if fn.period is not None}
+        self.__on_trigger_fns = {
+            fn.code: fn for fn in isolated_fns if fn.period is None
+        }
+        self.__on_trigger_currently_running: Set[RuntimeIsolatedFunction] = set()
+        self.__periodic_fns_task: Optional[Task] = None
 
         self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
 
@@ -140,7 +156,13 @@ class State:
         if self.__periodic_apps_task:
             self.__periodic_apps_task.cancel()
 
+        if self.__periodic_fns_task:
+            self.__periodic_fns_task.cancel()
+
         await self.__xknx_for_listening.stop()
+
+        # Ensure tasks have time to cancel.
+        await asyncio.sleep(0.1)
 
         # Dump all logs
         self.__logger.flush()
@@ -185,7 +207,9 @@ class State:
 
         return converted_value
 
-    async def initialize(self):
+    async def initialize(
+        self, register_on_trigger_consumer: Callable[[Callable], None]
+    ):
         """
         Initializes the system state by reading it from the KNX bus through an ephemeral connection.
         """
@@ -212,9 +236,16 @@ class State:
         self._last_valid_physical_state = PhysicalState(**fields)
         self._update_internal_state()
 
-        # Start executing the periodic apps in a background task
+        register_on_trigger_consumer(self.__run_on_trigger_fn)
+
+        # Start executing the periodic apps and functions in a background task
         if self.__periodic_apps:
             self.__periodic_apps_task = asyncio.create_task(self.__run_periodic_apps())
+
+        if self.__periodic_fns:
+            self.__periodic_fns_task = asyncio.create_task(
+                self.__run_all_periodic_fns()
+            )
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         """
@@ -301,6 +332,62 @@ class State:
                     run_apps_with_lock(),
                 )
 
+    async def __run_all_periodic_fns(self):
+        """Execute all periodic functions periodically, according to their period."""
+        tasks = [
+            asyncio.create_task(self.__run_periodic_fn(fn))
+            for fn in self.__periodic_fns
+        ]
+        await asyncio.wait(tasks)
+
+    async def __run_periodic_fn(self, fn: RuntimeIsolatedFunction):
+        """Execute the periodic function periodically, according to its period."""
+        # We use gather + sleep to run the fns every `period` seconds without drift
+        while True:
+            await asyncio.gather(
+                self.__run_isolated_fn(fn),
+                asyncio.sleep(max(float(fn.period), self.__MIN_FN_PERIOD)),
+            )
+
+    def __run_on_trigger_fn(self, on_trigger_fn: Callable, *args, **kwargs):
+        """
+        Run the given on_trigger function (asynchronously) on the given args if not
+        already running.
+        """
+        fn = self.__on_trigger_fns[on_trigger_fn]
+        if not fn in self.__on_trigger_currently_running:
+            self.__on_trigger_currently_running.add(fn)
+            asyncio.create_task(self.__run_isolated_fn(fn, *args, **kwargs))
+
+    async def __run_isolated_fn(self, fn: RuntimeIsolatedFunction, *args, **kwargs):
+        """Execute the isolated function and update IsolatedFunctionsValues."""
+        # Copy internal_state to ensure it does not change during the execution.
+        # Then add it to the arguments of the function.
+        async with self.__execution_lock:
+            kwargs["internal_state"] = dataclasses.replace(self._internal_state)
+
+        self.__logger.log_execution(f"Run isolated function '{fn.name}' with args = '{str(args)}, {str(kwargs)}'")
+        try:
+            res = fn.code(*args, **kwargs)
+            if isinstance(res, fn.return_type):
+                self.__logger.log_execution(f"Isolated function '{fn.name}' returned '{res}'")
+                setattr(self._isolated_fn_values, fn.name, res)
+            else:
+                self.__logger.log_execution(
+                    f"ERROR: the returned value of `{fn.name}` was of type "
+                    f"{type(res)}. Expected: {fn.return_type}. "
+                    "Omitting the returned value."
+                )
+        except BaseException as e:
+            self.__logger.log_execution(
+                f"ERROR: the function `{fn.name}` raised the following exception: "
+                f"{repr(e)}. Omitting this execution."
+            )
+        finally:
+            # If this is an on_trigger function, mark its execution as terminated.
+            if fn.period is None:
+                self.__on_trigger_currently_running.remove(fn)
+
     def __get_check_conditions_args(
         self, physical_state: PhysicalState, internal_state: InternalState
     ) -> Dict[str, Any]:
@@ -331,6 +418,7 @@ class State:
         """
         old_state = dataclasses.replace(self._physical_state)
         self._update_internal_state()
+        isolated_fn_values_copy = dataclasses.replace(self._isolated_fn_values)
 
         # Check if the last state was valid
         check_conditions_args = self.__get_check_conditions_args(
@@ -357,12 +445,12 @@ class State:
                 self.__logger.log_execution(
                     f"With internal state (app: '{joint_app.name}: {internal_state_copy}"
                 )
-
                 # Notify the app to trigger execution
                 joint_app.notify(
                     self._app_states,
                     physical_state=per_app_physical_state_copy,
                     internal_state=internal_state_copy,
+                    isolated_fn_values=isolated_fn_values_copy,
                 )
 
                 # Build the check conditions args with all app states and the physical state
@@ -429,7 +517,7 @@ class State:
 
                     # Notify the listeners of the change
                     await self.__notify_listeners(address)
-            
+
             self.log_current_physical_state()
 
     async def __notify_listeners(self, address: str):
@@ -452,7 +540,9 @@ class State:
             dpt = self.__group_address_to_dpt[self.__field_name_to_group_addr(ga)]
             this_ga = {}
             this_ga["value"] = value
-            this_ga["dpt"] = f"DPT{dpt.dpt_main_number}" if isinstance(dpt, DPTBase) else "DPT1"
+            this_ga["dpt"] = (
+                f"DPT{dpt.dpt_main_number}" if isinstance(dpt, DPTBase) else "DPT1"
+            )
             dct[ga] = this_ga
         with open(self.physical_state_log_file_path, "w") as f:
             json.dump(dct, f, indent=4)

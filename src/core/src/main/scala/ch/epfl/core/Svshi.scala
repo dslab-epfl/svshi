@@ -43,9 +43,9 @@ object Svshi extends SvshiTr {
           }
 
           info("Running the apps...")
-          // Copy verification_file.py, runtime_file.py and conditions.py in runtime module
+          // Copy verification_file.py, runtime_file.py, conditions.py and isolated_fns.json in runtime module
           val appLibraryPath = existingAppsLibrary.path
-          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), runtimeModulePath)
+          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py", appLibraryPath / "isolated_fns.json"), runtimeModulePath)
 
           // Copy files used by each app
           val filesDirPath = runtimeModuleApplicationFilesPath
@@ -482,8 +482,8 @@ object Svshi extends SvshiTr {
           val appLibraryPath = existingAppsLibrary.path
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
-          // Move verification_file.py, runtime_file.py and conditions.py in app_library
-          val generatedFiles = List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH)
+          // Move verification_file.py, runtime_file.py, conditions.py and isolated_fns.json in app_library
+          val generatedFiles = List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH, GENERATED_ISOLATED_FNS_FILE_PATH)
           generatedFiles.foreach(p => os.move.into(p, appLibraryPath, replaceExisting = true))
 
           // Copy all installed applications, their bindings and their physical structure in installedFolder,

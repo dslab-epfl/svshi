@@ -11,12 +11,15 @@ def invariant() -> bool:
 
 
 def iteration():
-    if PRESENCE_DETECTOR.is_on() or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 900.0) or unchecked_in_meeting():
+    if PRESENCE_DETECTOR.is_on() or (CO_TWO_SENSOR.read() is not None and CO_TWO_SENSOR.read() > 900.0) or svshi_api.get_latest_value(periodic_in_meeting):
         VENTILATION.on()
     else:
         VENTILATION.off()
 
-def unchecked_in_meeting() -> bool:
+def periodic_in_meeting() -> bool:
+    """
+    period: 10
+    """
     email = "sam.chassot@gmail.com"
     gc = GoogleCalendar(email, credentials_path=svshi_api.get_file_path("credentials.json"), token_path=svshi_api.get_file_path("token.pickle"))
 

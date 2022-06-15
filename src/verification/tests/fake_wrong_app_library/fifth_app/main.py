@@ -4,7 +4,7 @@ from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_
 def invariant() -> bool:
     # Write the invariants of the app here
     # It can be any boolean expressions containing the read properties of the devices and constants
-    return BINARY_SENSOR_INSTANCE_NAME.is_on() and SWITCH_INSTANCE_NAME.is_on() and unchecked_func() == 2
+    return BINARY_SENSOR_INSTANCE_NAME.is_on() and SWITCH_INSTANCE_NAME.is_on() and svshi_api.get_latest_value(periodic_func) == 2
 
 
 def iteration():
@@ -12,5 +12,6 @@ def iteration():
     print(BINARY_SENSOR_INSTANCE_NAME.is_on())
     time.sleep(2)
 
-def unchecked_func() -> int:
+def periodic_func() -> int:
+    """period: 2"""
     return 2

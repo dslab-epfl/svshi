@@ -1,5 +1,7 @@
-from typing import IO, Optional
+from typing import Callable, IO, Optional, Protocol
+from typing import Optional
 import dataclasses
+import time
 
 
 @dataclasses.dataclass
@@ -24,8 +26,33 @@ class AppState:
 
 @dataclasses.dataclass
 class PhysicalState:
- GA_0_0_1: bool
- GA_0_0_2: bool
+    GA_0_0_1: bool
+    GA_0_0_2: bool
+
+
+
+@dataclasses.dataclass
+class IsolatedFunctionsValues:
+    test_app_one_on_trigger_send_email: Optional[None] = None
+
+
+
+@dataclasses.dataclass
+class InternalState:
+    """
+    inv: 0 <= self.time_hour <= 23
+    inv: 0 <= self.time_min <= 59
+    inv: 1 <= self.time_day <= 31
+    inv: 1 <= self.time_weekday <= 7
+    inv: 1 <= self.time_month <= 12
+    inv: 0 <= self.time_year
+    """
+    time_hour: int
+    time_min: int
+    time_day: int
+    time_weekday: int
+    time_month: int
+    time_year: int
 
 
 
@@ -36,7 +63,7 @@ class Binary_sensor_test_app_one_binary_sensor_instance_name():
         post: physical_state.GA_0_0_1 == __return__
         """
         return physical_state.GA_0_0_1
-    
+
 
 class Switch_test_app_one_switch_instance_name():
     def on(self, physical_state: PhysicalState):
@@ -45,7 +72,6 @@ class Switch_test_app_one_switch_instance_name():
         post: physical_state.GA_0_0_2  == True
         """
         physical_state.GA_0_0_2 = True
-        
 
     def off(self, physical_state: PhysicalState):
         """
@@ -60,14 +86,14 @@ class Switch_test_app_one_switch_instance_name():
         post: physical_state.GA_0_0_2  == __return__
         """
         return physical_state.GA_0_0_2
-    
+
 
 
 TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_test_app_one_binary_sensor_instance_name()
 TEST_APP_ONE_SWITCH_INSTANCE_NAME = Switch_test_app_one_switch_instance_name()
 
 
-def test_app_one_invariant(test_app_one_app_state: AppState, physical_state: PhysicalState
+def test_app_one_invariant(test_app_one_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState
     ) ->bool:
     return (TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state) or
         test_app_one_app_state.INT_0 == 42) and TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(
@@ -76,10 +102,25 @@ def test_app_one_invariant(test_app_one_app_state: AppState, physical_state: Phy
         ) and not TEST_APP_ONE_SWITCH_INSTANCE_NAME.is_on(physical_state)
 
 
-def test_app_one_iteration(test_app_one_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
+def test_app_one_iteration(test_app_one_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState, isolated_fn_values: IsolatedFunctionsValues):
+    """
+pre: test_app_one_invariant(test_app_one_app_state, physical_state, internal_state)
+post: test_app_one_invariant(**__return__)
+"""
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
         None
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)
+    return {'test_app_one_app_state': test_app_one_app_state, 'physical_state': physical_state, 'internal_state': internal_state}
+
+
+def system_behaviour(test_app_one_app_state: AppState, physical_state: PhysicalState, internal_state: InternalState, isolated_fn_values: IsolatedFunctionsValues):
+    if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
+        ) or test_app_one_app_state.INT_0 == 42:
+        None
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
+    else:
+        TEST_APP_ONE_SWITCH_INSTANCE_NAME.off(physical_state)
+    return {'test_app_one_app_state': test_app_one_app_state, 'physical_state': physical_state, 'internal_state': internal_state}

@@ -11,6 +11,8 @@ RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/runtime_file.py"
 EXPECTED_RUNTIME_FILE_PATH = f"{TESTS_DIRECTORY}/expected_runtime_file.py"
 CONDITIONS_FILE_PATH = f"{TESTS_DIRECTORY}/conditions.py"
 EXPECTED_CONDITIONS_FILE_PATH = f"{TESTS_DIRECTORY}/expected_conditions.py"
+ISOLATED_FUNCS_JSON_FILE_PATH = f"{TESTS_DIRECTORY}/isolated_fns.json"
+EXPECTED_ISOLATED_FUNCS_JSON_FILE_PATH = f"{TESTS_DIRECTORY}/expected_isolated_fns.json"
 
 parser = Parser(
     f"{TESTS_DIRECTORY}/fake_generated", f"{TESTS_DIRECTORY}/fake_app_library"
@@ -33,6 +35,7 @@ generator = Generator(
     devices_classes,
     app_names,
     filenames,
+    ISOLATED_FUNCS_JSON_FILE_PATH,
 )
 
 
@@ -85,6 +88,18 @@ def test_generator_generate_runtime_file():
         == True
     )
 
+    with open(ISOLATED_FUNCS_JSON_FILE_PATH, "r") as v:
+        print(v.read())
+
+    assert (
+        filecmp.cmp(
+            ISOLATED_FUNCS_JSON_FILE_PATH,
+            EXPECTED_ISOLATED_FUNCS_JSON_FILE_PATH,
+            shallow=False,
+        )
+        == True
+    )
 
     # Cleanup
     os.remove(RUNTIME_FILE_PATH)
+    os.remove(ISOLATED_FUNCS_JSON_FILE_PATH)

@@ -1,5 +1,6 @@
 # Default file, will be overwritten while running
-from typing import IO, Optional
+from typing import Callable, IO, Optional, Protocol
+from typing import Optional
 import dataclasses
 import time
 
@@ -30,6 +31,12 @@ class PhysicalState:
     GA_1_1_2: float
     GA_1_1_3: bool
     GA_1_1_4: bool
+
+
+
+@dataclasses.dataclass
+class IsolatedFunctionsValues:
+    pass
 
 
 

@@ -1,0 +1,22 @@
+[
+    {
+        "name": "first_app_periodic_compute_bool",
+        "return_type": "bool",
+        "period": 5
+    },
+    {
+        "name": "first_app_periodic_return_two",
+        "return_type": "int",
+        "period": 100
+    },
+    {
+        "name": "first_app_on_trigger_print",
+        "return_type": null,
+        "period": null
+    },
+    {
+        "name": "second_app_periodic_float",
+        "return_type": "float",
+        "period": 0
+    }
+]

@@ -8,8 +8,10 @@ def invariant() -> bool:
 
 def iteration():
     # Write your app code here
-    if BINARY_SENSOR_INSTANCE_NAME.is_on() and unchecked_float() > 2.0:
+    latest_float = svshi_api.get_latest_value(periodic_float)
+    if BINARY_SENSOR_INSTANCE_NAME.is_on() and latest_float and latest_float > 2.0:
         SWITCH_INSTANCE_NAME.on()
 
-def unchecked_float() -> float:
+def periodic_float() -> float:
+    """period: 0"""
     return 42.0

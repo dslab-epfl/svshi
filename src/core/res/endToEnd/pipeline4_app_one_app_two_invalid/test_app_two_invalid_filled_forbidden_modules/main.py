@@ -1,4 +1,4 @@
-from instances import app_state, TEMPERATURE_SENSOR, SWITCH
+from instances import app_state, svshi_api, TEMPERATURE_SENSOR, SWITCH
 import time
 
 def invariant() -> bool:
@@ -6,7 +6,9 @@ def invariant() -> bool:
 
 
 def iteration():
-    a = unchecked_get_time()
+    a = svshi_api.get_latest_value(periodic_get_time)
 
-def unchecked_get_time() -> float:
+
+def periodic_get_time() -> float:
+    """period: 0"""
     return time.time()

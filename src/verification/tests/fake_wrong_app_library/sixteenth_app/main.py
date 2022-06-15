@@ -9,8 +9,8 @@ def invariant() -> bool:
 def iteration():
     # Write your app code here
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
-        unchecked_func()
+        svshi_api.trigger_if_not_running(on_trigger_func)
 
-def unchecked_func() -> int:
+def on_trigger_func() -> int:
     f = open("file1.txt", "wr")
     return 2

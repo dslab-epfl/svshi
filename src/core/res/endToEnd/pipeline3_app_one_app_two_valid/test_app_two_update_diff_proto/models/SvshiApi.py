@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import IO, Optional
+from typing import Callable, IO, Optional, TypeVar
 
 
 class SvshiApi:
@@ -43,6 +43,32 @@ class SvshiApi:
         get the machine's month of the year (return is between 1 and 12)
         example : 4 for Wed Apr 13 15:57:17 2022 UTC
         :returns the current month based on the machine's time
+        """
+        pass
+
+    _T = TypeVar("_T")
+
+    def get_latest_value(self, function: Callable[..., _T]) -> Optional[_T]:
+        """
+        Get the latest computed value of a `periodic` or `on_trigger` function.
+        Might return `None` if no result is available (i.e. the first execution of the
+        function did not terminate yet).
+
+        Note: you should assume the returned value could be any value of the correct
+        type or `None`. So, you should treat it as if it was user input and accept any
+        value without violating the invariants nor crashing.
+
+        :returns the latest computed value of `function` or `None`
+        """
+        pass
+
+    def trigger_if_not_running(
+        self, on_trigger_function: Callable, *args, **kwargs
+    ) -> None:
+        """
+        Trigger the given `on_trigger_function` to be executed separately with the given
+        arguments and keyword arguments.
+        The returned value can be later fetched by using `get_latest_value`.
         """
         pass
 

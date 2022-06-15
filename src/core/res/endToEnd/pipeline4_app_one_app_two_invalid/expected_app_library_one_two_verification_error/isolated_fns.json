@@ -1,0 +1,12 @@
+[
+    {
+        "name": "test_app_one_on_trigger_send_email",
+        "return_type": null,
+        "period": null
+    },
+    {
+        "name": "test_app_two_on_trigger_send_notif",
+        "return_type": null,
+        "period": null
+    }
+]

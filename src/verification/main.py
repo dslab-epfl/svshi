@@ -28,6 +28,7 @@ def main(
     verification_filename = f"{verification_module_path}/verification_file.py"
     runtime_filename = f"{verification_module_path}/runtime_file.py"
     conditions_filename = f"{verification_module_path}/conditions.py"
+    isolated_fn_filename = f"{verification_module_path}/isolated_fns.json"
     generator = Generator(
         verification_filename,
         runtime_filename,
@@ -38,6 +39,7 @@ def main(
         devices_classes,
         app_names,
         filenames,
+        isolated_fn_filename,
     )
     app_priorities = parser.get_app_priorities()
     generator.generate_verification_file(app_priorities=app_priorities)

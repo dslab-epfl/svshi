@@ -1,4 +1,5 @@
-from typing import IO, Optional
+from typing import Callable, IO, Optional, Protocol
+from typing import Optional
 import dataclasses
 import time
 
@@ -25,8 +26,14 @@ class AppState:
 
 @dataclasses.dataclass
 class PhysicalState:
- GA_0_0_2: bool
- GA_0_0_1: bool
+    GA_0_0_2: bool
+    GA_0_0_1: bool
+
+
+
+@dataclasses.dataclass
+class IsolatedFunctionsValues:
+    door_lock_on_trigger_send_message: Optional[None] = None
 
 
 
@@ -55,7 +62,7 @@ class Binary_sensor_door_lock_door_lock_sensor():
         post: physical_state.GA_0_0_1 == __return__
         """
         return physical_state.GA_0_0_1
-    
+
 
 class Binary_sensor_door_lock_presence_detector():
     def is_on(self, physical_state: PhysicalState, internal_state: InternalState) -> bool:
@@ -64,7 +71,7 @@ class Binary_sensor_door_lock_presence_detector():
         post: physical_state.GA_0_0_2 == __return__
         """
         return physical_state.GA_0_0_2
-    
+
 
 class SvshiApi():
     def __init__(self):
@@ -76,77 +83,77 @@ class SvshiApi():
         post:internal_state.time_hour == time
         """
         internal_state.time_hour = time
-        
+
     def get_hour_of_the_day(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 23
         """
         return internal_state.time_hour
-        
+
     def get_minute_in_hour(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 59
         """
         return internal_state.time_min
-        
+
     def set_minutes(self, internal_state: InternalState, time: int):
         """
         pre: 0 <= time <= 59
         post:internal_state.time_min == time
         """
         internal_state.time_min = time
-        
+
     def get_day_of_week(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 7
         """
         return internal_state.time_weekday
-        
+
     def set_day_of_week(self, internal_state: InternalState, wday: int) -> int:
         """
         pre: 1 <= wday <= 7
         post: internal_state.time_weekday == wday
         """
         internal_state.time_weekday = wday
-        
+
     def set_day(self, internal_state: InternalState, day: int):
         """
         pre: 1 <= day <= 31
         post: internal_state.time_day == day
         """
         internal_state.time_day = day 
-        
+
     def get_day_of_month(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 31
         """
         return internal_state.time_day
-        
+
     def set_month(self, internal_state: InternalState, month: int):
         """
         pre: 1 <= month <= 12
         post:internal_state.time_month == month
         """
         internal_state.time_month = month
-        
+
     def get_month_in_year(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 12
         """
         return internal_state.time_month
-        
+
     def set_year(self, internal_state: InternalState, year: int):
         """
         post:internal_state.time_year == year
         """
         internal_state.time_year = year
-        
+
     def get_year(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__
         """
         return internal_state.time_year
-    
+
 
 
 svshi_api = SvshiApi()
@@ -160,7 +167,8 @@ def door_lock_invariant(door_lock_app_state: AppState, physical_state:
 
 
 def door_lock_iteration(door_lock_app_state: AppState, physical_state:
-    PhysicalState, internal_state: InternalState):
+    PhysicalState, internal_state: InternalState, isolated_fn_values:
+    IsolatedFunctionsValues):
     """
 pre: door_lock_invariant(door_lock_app_state, physical_state, internal_state)
 post: door_lock_invariant(**__return__)
@@ -188,7 +196,8 @@ post: door_lock_invariant(**__return__)
         physical_state, 'internal_state': internal_state}
 
 def system_behaviour(door_lock_app_state: AppState, physical_state:
-    PhysicalState, internal_state: InternalState):
+    PhysicalState, internal_state: InternalState, isolated_fn_values:
+    IsolatedFunctionsValues):
     if not DOOR_LOCK_PRESENCE_DETECTOR.is_on(physical_state, internal_state
         ) and not DOOR_LOCK_DOOR_LOCK_SENSOR.is_on(physical_state,
         internal_state):

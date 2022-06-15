@@ -1,5 +1,4 @@
 from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
-import time
 
 def invariant() -> bool:
     # Write the invariants of the app here
@@ -10,8 +9,7 @@ def invariant() -> bool:
 def iteration():
     # Write your app code here
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
-        unchecked_func()
+        svshi_api.trigger_if_not_running(on_trigger_unknown)
 
-def unchecked_func() -> float:
-    t = time.time()
-    return t
+def on_trigger_func() -> int:
+    return 2

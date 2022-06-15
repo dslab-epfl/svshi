@@ -171,6 +171,9 @@ export default {
             }
         },
         prettyPrintWithDpt(value, dpt) {
+            if(value === null){
+                return "None"
+            }
             let dptMainNumber = parseInt(dpt.replace("DPT", ""))
             if (dptMainNumber === 1) {
                 if (value === true || value === false) {

@@ -1,17 +1,14 @@
 import asyncio
-from asyncore import read
 import dataclasses
 import shutil
 import os
-import sys
 import textwrap
 import time
 
-from pyparsing import line
 import pytest
 from pytest_mock import MockerFixture
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, Optional, Union, cast
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Union, cast
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
 from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.telegram.address import GroupAddress
@@ -19,10 +16,14 @@ from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.xknx import XKNX
 
-from ..resetter import FileResetter
-
-from ..verification_file import AppState, PhysicalState, InternalState
+from ..verification_file import (
+    AppState,
+    PhysicalState,
+    InternalState,
+    IsolatedFunctionsValues,
+)
 from ..app import App
+from ..isolated_functions import RuntimeIsolatedFunction
 from ..state import State
 from ..joint_apps import JointApps
 
@@ -45,7 +46,6 @@ FIRST_APP_NAME = "test1"
 SECOND_APP_NAME = "test2"
 THIRD_APP_NAME = "test3"
 FOURTH_APP_NAME = "test4"
-
 
 
 def always_valid_conditions(
@@ -79,6 +79,22 @@ def conditions(
     internal_state: InternalState,
 ) -> bool:
     return physical_state.GA_1_1_2 != 8
+
+
+def app1_app_on_trigger_print(s: str, internal_state: InternalState) -> int:
+    print(s)
+    return 32
+
+
+def app1_app_periodic_print(internal_state: InternalState) -> None:
+    """period: 2"""
+    print("Another hello!")
+
+
+def app2_app_periodic_print(internal_state: InternalState) -> float:
+    """period: 1"""
+    print("Periodic hello!")
+    return 3.4
 
 
 class MockTelegramQueue:
@@ -143,6 +159,17 @@ class StateHolder:
             FOURTH_GROUP_ADDRESS: [self.app_four],
         }
         self.joint_apps = [JointApps("joint_apps", self.joint_apps_code)]
+        self.isolated_fns = [
+            RuntimeIsolatedFunction(
+                "app1_app_on_trigger_print", app1_app_on_trigger_print, int, None
+            ),
+            RuntimeIsolatedFunction(
+                "app1_app_periodic_print", app1_app_periodic_print, type(None), 2
+            ),
+            RuntimeIsolatedFunction(
+                "app2_app_periodic_print", app2_app_periodic_print, float, 1
+            ),
+        ]
 
         self.group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]] = {
             FIRST_GROUP_ADDRESS: DPT2ByteFloat(),
@@ -155,18 +182,38 @@ class StateHolder:
         self.xknx_for_listening = MockXKNX(MockTelegramQueue())
         self._last_valid_physical_state: PhysicalState
 
+        self.on_trigger_consumer = None
+
+        def register_on_trigger_consumer(consumer: Callable[[Callable], None]):
+            """Remember the consumer."""
+            self.on_trigger_consumer = consumer
+
+        self.register_on_trigger_consumer = register_on_trigger_consumer
+
     def app_one_code(
-        self, state1: AppState, state2: PhysicalState, internal_state: InternalState
+        self,
+        state1: AppState,
+        state2: PhysicalState,
+        internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
         self.app_one_called = True
 
     def app_two_code(
-        self, state1: AppState, state: PhysicalState, internal_state: InternalState
+        self,
+        state1: AppState,
+        state: PhysicalState,
+        internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
         self.app_two_called = True
 
     def app_three_code(
-        self, state1: AppState, state: PhysicalState, internal_state: InternalState
+        self,
+        state1: AppState,
+        state: PhysicalState,
+        internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
         self.app_three_called = True
 
@@ -175,7 +222,9 @@ class StateHolder:
         state1: AppState,
         physical_state: PhysicalState,
         internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
+        self.on_trigger_consumer(app1_app_on_trigger_print, "On trigger hello!")
         self.app_four_called = True
 
     def joint_apps_code(
@@ -186,6 +235,7 @@ class StateHolder:
         test4_app_state: AppState,
         physical_state: PhysicalState,
         internal_state: InternalState,
+        isolated_fn_values: IsolatedFunctionsValues,
     ):
         self.app_one_called = True
         if self.app_two_code_description == "test_two_code":
@@ -211,6 +261,7 @@ class StateHolder:
         else:
             self.app_two_called = True
         self.app_three_called = True
+        self.on_trigger_consumer(app1_app_on_trigger_print, "On trigger hello!")
         self.app_four_called = True
 
     def reset(self):
@@ -283,6 +334,7 @@ async def test_state_listen():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
     await state.listen()
 
@@ -304,8 +356,9 @@ async def test_state_stop():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
     await state.listen()
     await state.stop()
 
@@ -324,8 +377,9 @@ async def test_state_initialize():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     assert state._physical_state != None
     assert state._physical_state.GA_1_1_1 == VALUE_READER_RETURN_VALUE
@@ -353,13 +407,14 @@ async def test_internal_state_is_updated():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
     NEW_SECOND_ADRESS_VALUE = 8.1
     NEW_THIRD_ADDRESS_VALUE = True
     start_test_time = time.time()
 
     test_state_holder.set_app_two_code("test_two_code", start_test_time)
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
         Telegram(
@@ -431,8 +486,9 @@ async def test_state_periodic_apps_are_run():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     assert state._physical_state != None
     assert state._physical_state.GA_1_1_1 == VALUE_READER_RETURN_VALUE
@@ -459,6 +515,18 @@ async def test_state_periodic_apps_are_run():
 
 
 @pytest.mark.asyncio
+async def test_state_on_trigger_and_periodic_functions_are_run(capsys):
+    # Reuse the execution of the periodic apps test
+    await test_state_periodic_apps_are_run()
+
+    # Check periodic functions have been executed a correct amount of times
+    captured: List[str] = capsys.readouterr().out.split("\n")
+    assert 3 <= captured.count("Periodic hello!") <= 4
+    assert captured.count("Another hello!") == 2
+    assert captured.count("On trigger hello!") == 2
+
+
+@pytest.mark.asyncio
 async def test_state_on_telegram_update_state_and_notify():
     state = State(
         test_state_holder.addresses_listeners,
@@ -470,8 +538,9 @@ async def test_state_on_telegram_update_state_and_notify():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
         Telegram(
@@ -525,9 +594,10 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
             LOGS_DIR,
             RUNTIME_APP_FILES_FOLDER_PATH,
             PHYSICAL_STATE_LOG_FILE_PATH,
+            test_state_holder.isolated_fns,
         )
         state_stop_spy = mocker.spy(state, "stop")
-        await state.initialize()
+        await state.initialize(test_state_holder.register_on_trigger_consumer)
 
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             Telegram(
@@ -638,9 +708,10 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
             LOGS_DIR,
             RUNTIME_APP_FILES_FOLDER_PATH,
             PHYSICAL_STATE_LOG_FILE_PATH,
+            test_state_holder.isolated_fns,
         )
         state_stop_spy = mocker.spy(state, "stop")
-        await state.initialize()
+        await state.initialize(test_state_holder.register_on_trigger_consumer)
 
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             Telegram(
@@ -687,8 +758,9 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
         Telegram(
@@ -755,8 +827,9 @@ async def test_state_update_app_state():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
         Telegram(
@@ -807,8 +880,9 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     telegram1 = Telegram(
         GroupAddress(FIRST_GROUP_ADDRESS),
@@ -856,8 +930,9 @@ async def test_state_correct_execution_log_after_33_telegrams():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     telegram1 = Telegram(
         GroupAddress(FIRST_GROUP_ADDRESS),
@@ -912,8 +987,9 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     telegram1 = Telegram(
         GroupAddress(FIRST_GROUP_ADDRESS),
@@ -956,8 +1032,9 @@ async def test_state_log_files_are_bounded():
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     telegram1 = Telegram(
         GroupAddress(FIRST_GROUP_ADDRESS),
@@ -991,8 +1068,9 @@ async def test_state_on_telegram_update_state_and_write_physical_state_to_file()
         LOGS_DIR,
         RUNTIME_APP_FILES_FOLDER_PATH,
         PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
     )
-    await state.initialize()
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
 
     await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
         Telegram(

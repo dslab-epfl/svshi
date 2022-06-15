@@ -222,7 +222,7 @@ export default {
     <tabs>
       <tab name="Installed Apps">
         <h2>Installed apps</h2><button class="redButton"
-          v-if="!this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0"
+          v-if="!this.uninstallInProgress && !this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0"
           @Click="deleteApp('42All')">Uninstall ALL apps</button>
         <div v-if="this.allAppsUninstalling">
           <PulseLoader :color="this.colourOrangeSvshi" />
@@ -236,7 +236,7 @@ export default {
                   <p class="appName">{{ app.name }}</p>
                 </td>
                 <td>
-                  <button class="redButton" v-if="!app.deleting && !this.isRunning"
+                  <button class="redButton" v-if="!this.uninstallInProgress && !app.deleting && !this.isRunning"
                     @Click="deleteApp(app.name)">X</button>
                   <div v-if="app.deleting">
                     <PulseLoader :color="this.colourOrangeSvshi" v-if="app.deleting" />

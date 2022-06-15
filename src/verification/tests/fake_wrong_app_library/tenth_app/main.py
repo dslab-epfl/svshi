@@ -10,7 +10,8 @@ def iteration():
     # Write your app code here
     p = svshi_api.get_file_path("file1.txt")
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
-        unchecked_func()
+        svshi_api.get_latest_value(periodic_func)
 
-def unchecked_func() -> int:
+def periodic_func() -> int:
+    """period: 0"""
     return 2

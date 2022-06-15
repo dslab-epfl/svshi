@@ -74,7 +74,7 @@ Here the SVSHI system and the frontend server run in the same Docker image. To u
 - Run `cd ./scripts && ./run_docker.sh` to run the docker container
 - Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
 
-Do not forget to use volumes (see https://docs.docker.com/storage/volumes/ )if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
+Do not forget to use volumes (see https://docs.docker.com/storage/volumes/) if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
 
 ### Unix (Linux / macOS)
 
@@ -203,27 +203,54 @@ The application can use external files. They must live in the `files` folder at 
 
 There are two important functions in `main.py`, `invariant()` and `iteration()`. In the first one the user should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second she should write the app code.
 
-An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated. Then, these functions can be used in `iteration()`.
+An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _periodic_ or _on\_trigger_ functions, which are functions whose name starts with `periodic`, respectively `on_trigger` and whose return type is explicitly stated. Then, these functions can be used in `iteration()`.
 
-In addition, note that `invariant()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here operations with side effects, external libraries calls and unchecked functions calls are **not** allowed.
+In addition, note that `invariant()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here operations with side effects, external libraries calls, `periodic` and `on_trigger` functions calls are **not** allowed.
 
-**Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximize code that is indeed formally verified.
-Nonetheless, the user can help the verification deal with their presence by annotating their docstring with _post-conditions_.
+**Periodic and on_trigger functions** are used to empower performance and formal verification, while slightly reducing utility. They are meant to encapsulate calls to external libraries, as such calls might be slow and have higher chances to crash. They are run asynchronously, so that even if they need time to execute, they will not slow down the apps. Their content is not verified by SVSHI and they are allowed to crash, which will not impact the running apps. This is why, when you retrieve the result you should treat it as unsafe input and expect **any** value of the correct type, or `None` (if the function has not been executed, yet).
 
-Note that some modules are forbidden to use even in unchecked functions. For now, the `time` module is forbidden, please use the time provided by the SVSHI_API, see [SVSHI built-in functions](#SVSHI-built-in-functions).
+Note that some modules are forbidden to use even in periodic and on_trigger functions. For now, the `time` module is forbidden, please use the time provided by the SVSHI_API, see [SVSHI built-in functions](#SVSHI-built-in-functions).
 
-Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can use `__return__` to represent the return value of the function, constants and other operations. You can add as much post-conditions as you like and need. Therefore, we encourage developers to avoid having conjunctions in post-conditions but rather to have multiple post-conditions. This does not make difference for the verification but helps the readability.  
-However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
+To execute and retrieve values of such functions, use the provided api available through the `svshi_api` object: `svshi_api.trigger_if_not_running` and `svshi_api.get_latest_value` (more details below).
 
-An example with multiple post-conditions could be:
+**Periodic functions** should have a name starting with `periodic` and a period in seconds defined in the docstring like this: `period: 3` (meaning a period of 3 seconds). They are not allowed to have any argument as input. Such functions are automatically executed by svshi periodically, according to the given period. A period of X seconds means that there will be X seconds between each executions' **start**, unless the function takes more than X seconds to execute (in that case, next execution starts immediately after the function terminates). If the provided period is `0`, the function is executed as often as possible, but not more often than every 0.5 second. Here is an example:
 
 ```python
-def unchecked_function() -> int:
+def periodic_function() -> int:
   """
-  post: __return__ > 0
-  post: __return__ != 3
+  period: 10
   """
   return external_library_get_int()
+```
+
+**On_trigger functions** have a name starting with `on_trigger`. They may take some arguments as input, but are not allowed to have default arguments, *args or **kwargs.
+
+**svshi_api.trigger_if_not_running(fn, args)** is used to trigger the execution of an `on_trigger` function. See the example below on how it should be used.
+
+```python
+def on_trigger_function(x: int, y: bool) -> int:
+  return external_library_get_int(x, y)
+
+# Somewhere in the iteration function:
+svshi_api.trigger_if_not_running(on_trigger_function, 3, True)
+```
+
+**svshi_api.get_latest_value(fn)** is used to retrieve the latest value returned by a periodic of on_trigger function. Remember that you should assume it to be **any** value of the correct type, or `None` if the function was never executed yet. The verification will fail if any of the returned values leads to an invalid state, which is why you should sanitize the received value.
+Here is an example of retrieving a value:
+
+```python
+def on_trigger_function(x: int, y: bool) -> int:
+  return external_library_get_int(x, y)
+
+# Somewhere in the iteration function:
+x = svshi_api.get_latest_value(on_trigger_function)
+# Since on_trigger_functions returns an int, x might be any integer value, or None
+
+# Suppose you expect a value between -5 and 30.
+if x is None or x < -5 or x > 30:
+  # Some default and safe behaviour.
+else:
+  # Regular behaviour, using x.
 ```
 
 Furthermore, applications have access to a set of variables (the _app state_) they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an [event-based manner](#execution) (either the KNX devices' state changes or a periodic app's timer is finished). All calls to `iteration()` are independent and thus SVSHI offers a way to store some state that will live in between calls. There is a local state instance _per app_.
@@ -246,7 +273,9 @@ This instance offers several functions used to track the system's time in applic
 Example: For Wed Apr 13 15:57:17 2022 UTC `get_hour_of_the_day` returns `15`, `get_minute_in_hour` returns `57`, `get_day_of_week` returns `3`, `get_day_of_month` returns `13`, `get_month_in_year` returns `4` and `get_year` returns `2022`.
 This allows to put time constraints into the invariant and to write and verify time sensitive applications . Therefore, it can be used for the code of `iteration`, in `invariant` and in pre- and post- conditions.
 
-The `svshi_api` instance also offers functions to interact with external files:
+As seen before, the `svshi_api` instance also offers a way to trigger and retrieve values of periodic and on_trigger functions (via `trigger_if_not_running` and `get_latest_value`).
+
+The `svshi_api` instance additionally offers functions to interact with external files:
 
 - `get_file_text_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a text file and return the `IO[str]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
 - `get_file_binary_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a binary file and return the `IO[bytes]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
@@ -411,7 +440,7 @@ SVSHI's runtime is **reactive** and **event-based**. The system _listen_ for cha
 
 For a given set of applications, the system behaviour function is run every time the state of the devices changes and every Y seconds where Y is the **minimum of all timers of all applications which are greater than 0**.
 
-_Running applications_ concretely means that the system behaviour function us executed on the current physical state of the system and with the current app states.
+_Running applications_ concretely means that the system behaviour function is executed on the current physical state of the system and with the current app states.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 

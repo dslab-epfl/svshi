@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import IO, Optional
+from typing import Callable, IO, Optional, TypeVar
 
 
 class SvshiApi:
@@ -54,9 +54,35 @@ class SvshiApi:
         """
         pass
 
+    _T = TypeVar("_T")
+
+    def get_latest_value(self, function: Callable[..., _T]) -> Optional[_T]:
+        """
+        Get the latest computed value of a `periodic` or `on_trigger` function.
+        Might return `None` if no result is available (i.e. the first execution of the
+        function did not terminate yet).
+
+        Note: you should assume the returned value could be any value of the correct
+        type or `None`. So, you should treat it as if it was user input and accept any
+        value without violating the invariants nor crashing.
+
+        :returns the latest computed value of `function` or `None`
+        """
+        pass
+
+    def trigger_if_not_running(
+        self, on_trigger_function: Callable, *args, **kwargs
+    ) -> None:
+        """
+        Trigger the given `on_trigger_function` to be executed separately with the given
+        arguments and keyword arguments.
+        The returned value can be later fetched by using `get_latest_value`.
+        """
+        pass
+
     def get_file_text_mode(self, file_name: str, mode: str) -> Optional[IO[str]]:
         """
-        open the file with the given name as a text file in the given mode and 
+        open the file with the given name as a text file in the given mode and
         return the file, None if the file does not exist.
         mode can be "r", "w" or "a" or a combination of two of them like "ra", "ar", "wr", ...
         :returns the opened file or None if it does not exist
@@ -72,7 +98,7 @@ class SvshiApi:
 
     def get_file_binary_mode(self, file_name: str, mode: str) -> Optional[IO[bytes]]:
         """
-        open the file with the given name as a binary file in the given mode and 
+        open the file with the given name as a binary file in the given mode and
         return the file, None if the file does not exist.
         mode can be "r", "w" or "a" or a combination of two of them like "ra", "ar", "wr", ...
         :returns the opened file or None if it does not exist
@@ -88,9 +114,9 @@ class SvshiApi:
 
     def get_file_path(self, file_name: str) -> str:
         """
-        return the path for the given filename, even if it does not exist. 
+        return the path for the given filename, even if it does not exist.
         The path is managed by SVSHI so it can change from an execution to another.
-        The file_name must a valid filename, i.e., containing only alphanumerical 
+        The file_name must a valid filename, i.e., containing only alphanumerical
         characters, '-', '_' and '.'
         :returns the path to the given filename
         """

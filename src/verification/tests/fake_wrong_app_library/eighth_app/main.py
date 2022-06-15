@@ -9,8 +9,9 @@ def invariant() -> bool:
 def iteration():
     # Write your app code here
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
-        unchecked_func()
+        svshi_api.get_latest_value(periodic_func)
     open("file1.txt", "wr")
 
-def unchecked_func() -> int:
+def periodic_func() -> int:
+    """period: 0"""
     return 2

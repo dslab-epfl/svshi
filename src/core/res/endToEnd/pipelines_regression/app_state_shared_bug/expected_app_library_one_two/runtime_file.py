@@ -1,4 +1,5 @@
-from typing import IO, Optional
+from typing import Callable, IO, Optional, Protocol
+from typing import Optional
 import dataclasses
 import time
 
@@ -25,10 +26,15 @@ class AppState:
 
 @dataclasses.dataclass
 class PhysicalState:
- GA_0_0_3: float
- GA_0_0_1: bool
- GA_0_0_2: bool
+    GA_0_0_3: float
+    GA_0_0_1: bool
+    GA_0_0_2: bool
 
+
+
+@dataclasses.dataclass
+class IsolatedFunctionsValues:
+    pass
 
 
 @dataclasses.dataclass
@@ -44,7 +50,7 @@ class Binary_sensor_test_app_one_binary_sensor_instance_name():
         post: physical_state.GA_0_0_1 == __return__
         """
         return physical_state.GA_0_0_1
-    
+
 
 class Switch_test_app_one_switch_instance_name():
     def on(self, physical_state: PhysicalState):
@@ -53,7 +59,6 @@ class Switch_test_app_one_switch_instance_name():
         post: physical_state.GA_0_0_2  == True
         """
         physical_state.GA_0_0_2 = True
-        
 
     def off(self, physical_state: PhysicalState):
         """
@@ -68,7 +73,7 @@ class Switch_test_app_one_switch_instance_name():
         post: physical_state.GA_0_0_2  == __return__
         """
         return physical_state.GA_0_0_2
-    
+
 
 class Temperature_sensor_test_app_two_temperature_sensor():
     def read(self, physical_state: PhysicalState) -> float:
@@ -77,9 +82,10 @@ class Temperature_sensor_test_app_two_temperature_sensor():
         post: physical_state.GA_0_0_3 == __return__
         """
         return physical_state.GA_0_0_3
-    
+
 
 class SvshiApi():
+
     def __init__(self):
         pass
 
@@ -88,37 +94,56 @@ class SvshiApi():
         post: 0 <= __return__ <= 23
         """
         return internal_state.date_time.tm_hour
-        
+
     def get_minute_in_hour(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__ <= 59
         """
         return internal_state.date_time.tm_min
-    
+
     def get_day_of_week(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 7
         """
         return internal_state.date_time.tm_wday
-        
+
     def get_day_of_month(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 31
         """
         return internal_state.date_time.tm_mday
-        
+
     def get_month_in_year(self, internal_state: InternalState) -> int:
         """
         post: 1 <= __return__ <= 12
         """
         return internal_state.date_time.tm_mon
-        
+
     def get_year(self, internal_state: InternalState) -> int:
         """
         post: 0 <= __return__
         """
         return internal_state.date_time.tm_year
-        
+
+    class OnTriggerConsumer(Protocol):
+        """Type alias for the on_trigger consumer."""
+        def __call__(self, on_trigger_fn: Callable, *args, **kwargs) -> None: ...
+
+    def __not_implemented_consumer(self, fn: Callable, *args, **kwargs):
+        raise NotImplementedError(
+            "on_trigger_consumer was called before being initialized."
+        )
+
+    __on_trigger_consumer: OnTriggerConsumer = __not_implemented_consumer
+
+    def register_on_trigger_consumer(self, on_trigger_consumer: OnTriggerConsumer):
+        self.__on_trigger_consumer = on_trigger_consumer
+
+    def trigger_if_not_running(
+        self, on_trigger_function: Callable, *args, **kwargs
+    ) -> None:
+        self.__on_trigger_consumer(on_trigger_function, *args, **kwargs)
+
     def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
         try:
             return open(self.get_file_path(app_name, file_name, internal_state), mode)
@@ -133,7 +158,7 @@ class SvshiApi():
 
     def get_file_path(self, app_name: str, file_name: str, internal_state: InternalState) -> str:
         return f"{internal_state.app_files_runtime_folder_path}/{app_name}/{file_name}"
-    
+
 
 
 svshi_api = SvshiApi()
@@ -148,7 +173,8 @@ def test_app_one_invariant(test_app_one_app_state: AppState, physical_state:
 
 
 def test_app_one_iteration(test_app_one_app_state: AppState, physical_state:
-    PhysicalState, internal_state: InternalState):
+    PhysicalState, internal_state: InternalState, isolated_fn_values:
+    IsolatedFunctionsValues):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
@@ -160,7 +186,8 @@ def test_app_two_invariant(test_app_two_app_state: AppState, physical_state:
 
 
 def test_app_two_iteration(test_app_two_app_state: AppState, physical_state:
-    PhysicalState, internal_state: InternalState):
+    PhysicalState, internal_state: InternalState, isolated_fn_values:
+    IsolatedFunctionsValues):
     if TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state
         ) != None and TEST_APP_TWO_TEMPERATURE_SENSOR.read(physical_state
         ) > 42:
@@ -168,7 +195,8 @@ def test_app_two_iteration(test_app_two_app_state: AppState, physical_state:
 
 def system_behaviour(test_app_one_app_state: AppState,
     test_app_two_app_state: AppState, physical_state: PhysicalState,
-    internal_state: InternalState):
+    internal_state: InternalState, isolated_fn_values: IsolatedFunctionsValues
+    ):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:

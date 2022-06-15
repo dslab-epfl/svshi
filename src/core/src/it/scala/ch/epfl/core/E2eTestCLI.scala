@@ -43,7 +43,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   private val backupInstalledAppsPath = SVSHI_SRC_FOLDER_PATH / "backup_installed_apps_during_test"
   private val backupAssignmentsPath = SVSHI_SRC_FOLDER_PATH / "backup_assignments"
 
-  private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py")
+  private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py", "isolated_fns.json")
 
   override def beforeAll(): Unit = {
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
@@ -1696,7 +1696,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(s"""ERROR: False when calling test_app_two_iteration"""))
-              out.toString.trim should (include(s"""ERROR: At line 220:  post: test_app_one_invariant(**__return__)"""))
+              out.toString.trim should (include(s"""ERROR: At line 226:  post: test_app_one_invariant(**__return__)"""))
 
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false
@@ -1884,7 +1884,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
                   s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appTwoName' has not been removed."""
                 ))
                 out.toString.trim should (include("ERROR: False when calling test_app_one_iteration("))
-                out.toString.trim should (include("ERROR: At line 187:  post: test_app_one_invariant(**__return__)"))
+                out.toString.trim should (include("ERROR: At line 194:  post: test_app_one_invariant(**__return__)"))
                 compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")

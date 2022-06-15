@@ -10,5 +10,6 @@ def iteration():
     # Write your app code here
     print(BINARY_SENSOR_INSTANCE_NAME.is_on())
 
-def unchecked_func() -> int:
+def periodic_func() -> int:
+    """period: 2"""
     return 2
