@@ -1,0 +1,41 @@
+{
+  "knx":{
+    "number_of_areas":1,
+    "area0":{
+      "number_of_lines":1,
+      "line0":{
+        "devices":{}
+      }
+    },
+    "group_address_style":"3-levels",
+    "group_addresses":[]
+  },
+  "world":{
+    "system_dt":1,
+    "simulation_speed_factor":180,
+    "outside_temperature": 20.0,
+    "inside_temperature": 25.0,
+    "outside_relativehumidity": 50.0,
+    "inside_relativehumidity": 35.0,
+    "outside_co2": 300,
+    "inside_co2": 800.0,
+    "datetime": "today",
+    "weather": "clear",
+    "number_of_rooms":1,
+    "rooms":{
+      "room1":{
+        "name":"bedroom1",
+        "dimensions":[12.5, 10, 3],
+        "insulation":"average",
+        "windows": {
+          "window1": {
+            "wall": "north",
+            "size": [2, 1.5],
+            "location_offset": 4
+          }
+        },
+        "room_devices":{}
+      }
+    }
+  }
+}
