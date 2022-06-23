@@ -7,9 +7,15 @@
     "preview": "vite preview --port 5050"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-brands-svg-icons": "^6.1.1",
+    "@fortawesome/free-regular-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/vue-fontawesome": "^3.0.0",
     "axios": "^0.26.1",
     "is-ip": "^4.0.0",
     "jszip": "^3.9.1",
+    "sass": "^1.52.3",
     "vue": "^3.2.31",
     "vue-json-component": "^0.4.1",
     "vue-json-viewer": "^3.0.4",

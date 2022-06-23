@@ -1,6 +1,6 @@
 package ch.epfl.core
 
-import ch.epfl.core.CustomMatchers.{beAFile, beSimilarToLibrary, containThePairOfHeaders, existInFilesystem}
+import ch.epfl.core.CustomMatchers.{beAFile, beSimilarToLibrary, containThePairOfHeaders, existInFilesystem, haveSameContentAsIgnoringBlanks}
 import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
 import ch.epfl.core.api.server.CoreApiServer
 import ch.epfl.core.api.server.json.{BindingsResponse, ResponseBody}
@@ -1206,11 +1206,11 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     compareFolders(folder1 = fakeContentAfterDirectoryPath, folder2 = Constants.GENERATED_FOLDER_PATH, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
-  "deleteGenerated endpoint" should "remove everything that is contained in the generated folder" in {
+  "deleteAllGenerated endpoint" should "remove everything that is contained in the generated folder" in {
     os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
     FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
 
-    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated")
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteAllGenerated")
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     r.statusCode shouldEqual 200
     val responseBody = ResponseBody.from(r.text())
@@ -1218,6 +1218,53 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output should contain("The generated folder was successfully emptied!")
 
     os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual Nil
+  }
+
+  "deleteGenerated endpoint" should "remove only the requested file in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/aFile")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'aFile' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir")
+    os.list(Constants.GENERATED_FOLDER_PATH / "aDir").toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile")
+  }
+
+  "deleteGenerated endpoint" should "remove only the requested directory in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/aDir")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'aDir' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aFile")
+  }
+
+  "deleteGenerated endpoint" should "reply with a success message if the filename does not exist in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/doesNotExist")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'doesNotExist' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList should contain theSameElementsAs List(Constants.GENERATED_FOLDER_PATH / "aFile", Constants.GENERATED_FOLDER_PATH / "aDir")
+    os.list(Constants.GENERATED_FOLDER_PATH / "aDir").toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile")
   }
 
   "installedApp get appName endpoint" should "reply with a 404 if the requested app is not installed" in {
@@ -1316,6 +1363,67 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
       case Some(p) => {
         p should existInFilesystem
         compareFolders(p, Constants.GENERATED_FOLDER_PATH, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
+  "generated get endpoint with name" should "reply with an empty zip when the requested name is not in the folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/doesNotExist", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual Nil
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
+  "generated get endpoint with name" should "reply with a zip containing the requested file when it exists" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "dir1")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "dir1" / "file11.txt", "test file11".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "file0.txt", "test file0".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/file0.txt", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual List(p / "file0.txt")
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
+  "generated get endpoint with name" should "reply with a zip containing the requested directory when it exists" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "dir1")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "dir1" / "file11.txt", "test file11".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "file0.txt", "test file0".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/dir1", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual List(p / "dir1")
+        compareFolders(p / "dir1", Constants.GENERATED_FOLDER_PATH / "dir1", ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
       }
       case None => fail("cannot unzip the received zip")
     }
@@ -1917,7 +2025,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
       thread1.isAlive shouldEqual false
     }
   }
-  "deleteGenerated endpoint" should "reply with a 423 code when another request (compile) is running" in {
+  "deleteAllGenerated endpoint" should "reply with a 423 code when another request (compile) is running" in {
     mockedSvshi.compileApps(*, *, *)(*, *, *, *) shouldAnswer (
       (_: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
         Thread.sleep(300)
@@ -1934,7 +2042,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
     thread1.start()
     Thread.sleep(80) // Important to let time to the thread1 to start
-    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated", check = false, readTimeout = requestsReadTimeout)
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteAllGenerated", check = false, readTimeout = requestsReadTimeout)
     r.statusCode shouldEqual 423
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     eventually(timeout(2 seconds)) {

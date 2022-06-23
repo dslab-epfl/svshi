@@ -594,11 +594,25 @@ Here are the available endpoints:
 
   Replies with the `generated` folder in a `.zip` archive as body.
 
-- POST `/deleteGenerated`
+- GET `/generated/:filename`
+
+  Replies with the requested `filename` folder or file in a `.zip` archive as body.
+
+  If the file or directory does not exist, it replies with an empty `.zip`.
+
+- POST `/deleteAllGenerated`
 
   Deletes the content of the `generated` folder.
 
   Replies with the standard body JSON with `status` representing whether the removal worked and `output` containing errors or a standard message in case of success.
+
+- POST `/deleteGenerated/:filename`
+
+  Deletes the file or directory with the name `filename` in the `generated` folder.
+
+  Replies with the standard body JSON with `status` representing whether the removal worked and `output` containing errors or a standard message in case of success.
+
+  If the file or directory does not exist, it replies with a success message.
 
 - GET `/installedApp/:appName`
 

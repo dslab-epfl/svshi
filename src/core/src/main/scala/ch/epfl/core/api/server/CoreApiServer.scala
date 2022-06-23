@@ -57,12 +57,13 @@ case class CoreApiServer(
   private val MALFORMED_ZIP_INPUT_FILE_MESSAGE = "An error occurred when unzipping the file provided in the request. Please check the file is well formed and in zip format."
   private val BINDINGS_NOT_FOUND_MESSAGE = "The bindings are not generated yet, please generate them before trying to get!"
   private val GENERATED_FOLDER_DELETED_MESSAGE = "The generated folder was successfully emptied!"
+  private def FILE_IN_GENERATED_FOLDER_DELETED_MESSAGE(filename: String) = s"'$filename' was successfully removed!"
   private val REQUESTED_APP_NOT_INSTALLED_MESSAGE = "The requested app is not installed!"
   private val ZIPPING_ERROR_MESSAGE = "An error occurred while zipping the content!"
   private val LOCKED_ERROR_MESSAGE = "An operation is already running on SVSHI, please retry later!"
   private val knxprojExtension = "knxproj"
   private val jsonExtension = "json"
-  private val WRONG_EXTENSION_FILE_ERROR_MESSAGE = "The file for the physical structure must be either a " + jsonExtension + " or a " + knxprojExtension + " file!"
+  private val WRONG_EXTENSION_FILE_ERROR_MESSAGE = s"The file for the physical structure must be either a $jsonExtension or a $knxprojExtension file!"
 
   private val HEADERS_AJAX = Seq("Access-Control-Allow-Origin" -> "*")
 
@@ -459,8 +460,20 @@ case class CoreApiServer(
     }
   }
 
-  @post("/deleteGenerated")
-  def deleteGenerated() = acquireLockAndExecute(
+  @get("/generated/:filename")
+  def getGenerated(filename: String) = {
+    val toZip = os.list(Constants.GENERATED_FOLDER_PATH).toList.filter(p => p.segments.toList.last == filename)
+    FileUtils.zip(toZip, privateTempZipFilePath) match {
+      case Some(zippedPath) => {
+        val data = os.read.bytes(zippedPath)
+        Response(data = data, headers = HEADERS_AJAX)
+      }
+      case None => Response(data = Array[Byte](), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+  }
+
+  @post("/deleteAllGenerated")
+  def deleteAllGenerated() = acquireLockAndExecute(
     () => {
       cleanTempFolders()
       Try({
@@ -472,6 +485,26 @@ case class CoreApiServer(
           Response(responseBody.toString, headers = HEADERS_AJAX)
         case Success(_) =>
           val responseBody = ResponseBody(status = true, output = List(GENERATED_FOLDER_DELETED_MESSAGE))
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+      }
+
+    },
+    defaultResponseStringIfLocked
+  )
+
+  @post("/deleteGenerated/:filename")
+  def deleteAllGenerated(filename: String) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      Try({
+        val pathToRemove = Constants.GENERATED_FOLDER_PATH / filename
+        if (os.exists(pathToRemove)) os.remove.all(pathToRemove)
+      }) match {
+        case Failure(exception) =>
+          val responseBody = ResponseBody(status = false, output = exception.getLocalizedMessage.split("\n").toList)
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+        case Success(_) =>
+          val responseBody = ResponseBody(status = true, output = List(FILE_IN_GENERATED_FOLDER_DELETED_MESSAGE(filename)))
           Response(responseBody.toString, headers = HEADERS_AJAX)
       }
 

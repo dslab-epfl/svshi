@@ -2,11 +2,11 @@
 import * as http from "http";
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
-import FileManagement from './components/FileManagement.vue'
 import Run from './components/Run.vue'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import GeneratePhysicalSystem from './components/GeneratePhysicalSystem.vue';
 import { Tabs, Tab } from 'vue3-tabs-component';
+import InstalledAppList from './components/InstalledAppList.vue';
 
 let defaultBackendServerAddress = "http://localhost:4242"
 let defaultBackendServerPort = "4242"
@@ -18,10 +18,10 @@ export default {
     "tab": Tab,
     GenerateApp,
     GenerationAndCompilation,
-    FileManagement,
     PulseLoader,
     Run,
-    GeneratePhysicalSystem
+    GeneratePhysicalSystem,
+    InstalledAppList
   },
   data() {
     return {
@@ -34,7 +34,7 @@ export default {
       allAppsUninstalling: false,
       backendServerAddress: defaultBackendServerAddress,
       polling: "",
-      colourOrangeSvshi: '#e05a06',
+      colourOrangeSvshi: '#e87000',
       allAppsName: "42All"
     }
   },
@@ -130,27 +130,22 @@ export default {
       }
     },
     async refresh() {
-      if (!this.uninstallInProgress) {
+      await this.checkApiLiveness()
+      if (this.apiReachable) {
+        this.loadAppsList()
+        this.isSvshiRunning()
+        if (this.$refs.generateAppComp !== null) {
+          this.$refs.generateAppComp.refresh()
+        }
+        if (this.$refs.generationAndCompilationComp !== null) {
+          this.$refs.generationAndCompilationComp.refresh()
+        }
+        this.goToRunIfRunning()
+      } else {
+        this.setCurrentBackendAddressFromBar()
         await this.checkApiLiveness()
-        if (this.apiReachable) {
-          this.loadAppsList()
-          this.isSvshiRunning()
-          if (this.$refs.fileManagementComp !== null) {
-            this.$refs.fileManagementComp.refresh()
-          }
-          if (this.$refs.generateAppComp !== null) {
-            this.$refs.generateAppComp.refresh()
-          }
-          if (this.$refs.generationAndCompilationComp !== null) {
-            this.$refs.generationAndCompilationComp.refresh()
-          }
-          this.goToRunIfRunning()
-        } else {
-          this.setCurrentBackendAddressFromBar()
-          await this.checkApiLiveness()
-          if (!this.apiReachable) {
-            clearInterval(this.polling)
-          }
+        if (!this.apiReachable) {
+          clearInterval(this.polling)
         }
       }
     },
@@ -199,6 +194,15 @@ export default {
       } else {
         alert("Cannot connect to the given address!")
       }
+    },
+    scrollToTop() {
+      window.scrollTo(0, 0);
+    },
+    tabChanged(selectedTab) {
+      if (this.$refs.generationAndCompilationComp !== null) {
+        this.$refs.generationAndCompilationComp.installationStep = this.$refs.generationAndCompilationComp.stepWelcome
+      }
+      this.scrollToTop()
     }
   },
   mounted() {
@@ -219,42 +223,12 @@ export default {
     <button class="classicButton" @Click="this.checkNewAddress">Connect</button>
   </div>
   <div v-else>
-    <tabs>
-      <tab name="Installed Apps">
-        <h2>Installed apps</h2><button class="redButton"
-          v-if="!this.uninstallInProgress && !this.allAppsUninstalling && !this.isRunning && this.installedApps.length > 0"
-          @Click="deleteApp('42All')">Uninstall ALL apps</button>
-        <div v-if="this.allAppsUninstalling">
-          <PulseLoader :color="this.colourOrangeSvshi" />
-        </div>
-        <h3 v-if="this.installedApps.length === 0">No apps are currently installed</h3>
-        <ul class="appsList" style="list-style-type:none;">
-          <li v-for='app in installedApps' :key="app.id">
-            <table>
-              <tr>
-                <td>
-                  <p class="appName">{{ app.name }}</p>
-                </td>
-                <td>
-                  <button class="redButton" v-if="!this.uninstallInProgress && !app.deleting && !this.isRunning"
-                    @Click="deleteApp(app.name)">X</button>
-                  <div v-if="app.deleting">
-                    <PulseLoader :color="this.colourOrangeSvshi" v-if="app.deleting" />
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </li>
-        </ul>
-      </tab>
-      <tab name="Generate" :is-disabled="this.isRunning">
-        <GenerateApp ref="generateAppComp" />
-      </tab>
-      <tab name="File management" :is-disabled="this.isRunning">
-        <FileManagement ref="fileManagementComp" />
-      </tab>
-      <tab name="Bindings and compilation" :is-disabled="this.isRunning">
+    <tabs @changed="tabChanged">
+      <tab name="Apps">
         <GenerationAndCompilation ref="generationAndCompilationComp" />
+      </tab>
+      <tab name="Generate app" :is-disabled="this.isRunning">
+        <GenerateApp ref="generateAppComp" />
       </tab>
       <tab name="Run">
         <Run ref="runComp" />
@@ -271,8 +245,18 @@ export default {
 @import './assets/base.css';
 
 ul.appsList {
-  padding-top: 36px;
+  padding-top: 16px;
   padding-bottom: 36px;
+  padding-left: 32px;
+  list-style-type: none;
+}
+
+.uninstallAll {
+  margin-left: 52px;
+}
+
+h2.installedAppTitle {
+  margin-left: 4;
 }
 
 p.appName {
@@ -302,6 +286,7 @@ p.appName {
   position: relative;
   width: 580px;
   font-size: 30px;
+  border-radius: 28px;
 }
 
 #app {
@@ -360,7 +345,7 @@ a,
 
 .tabs-component {
   margin: auto auto;
-  width: 1600;
+  width: 90vw;
 }
 
 .tabs-component-tabs {
@@ -369,14 +354,12 @@ a,
   margin-bottom: 5px;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-tabs {
-    border: 0;
-    align-items: stretch;
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: -1px;
-  }
+.tabs-component-tabs {
+  border: 0;
+  align-items: stretch;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: -1px;
 }
 
 .tabs-component-tab {
@@ -404,22 +387,21 @@ a,
   cursor: not-allowed !important;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-tab {
-    background-color: #fff;
-    border: solid 1px #ddd;
-    border-radius: 3px 3px 0 0;
-    margin-right: .5em;
-    transform: translateY(2px);
-    transition: transform .3s ease;
-  }
-
-  .tabs-component-tab.is-active {
-    border-bottom: solid 1px #fff;
-    z-index: 2;
-    transform: translateY(0);
-  }
+.tabs-component-tab {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  border-radius: 3px 3px 0 0;
+  margin-right: .5em;
+  transform: translateY(2px);
+  transition: transform .3s ease;
 }
+
+.tabs-component-tab.is-active {
+  border-bottom: solid 1px #fff;
+  z-index: 2;
+  transform: translateY(0);
+}
+
 
 .tabs-component-tab-a {
   align-items: center;
@@ -433,13 +415,11 @@ a,
   padding: 4em 0;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-panels {
-    background-color: #fff;
-    border: solid 1px #ddd;
-    border-radius: 0 6px 6px 6px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .05);
-    padding: 4em 2em;
-  }
+.tabs-component-panels {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  border-radius: 0 6px 6px 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .05);
+  padding: 4em 2em;
 }
 </style>

@@ -16,8 +16,6 @@ export default {
             "searchPhysicalStructure": {},
             "searchField": "",
             "physicalPhysIds": [],
-            "showBindings": true,
-            "test": -1
         }
     },
     methods: {
@@ -164,12 +162,6 @@ export default {
                                     </p>
                                     <v-select :options="this.physicalPhysIds" :searchable="true" :filterable="true"
                                         v-model="b.binding.physDeviceId" :no-drop="false"></v-select>
-                                    <!-- <select v-model="b.binding.physDeviceId">
-                                    <option disabled value=-1>Please select one</option>
-                                    <option v-for="i in this.physicalPhysIds" :value=i>
-                                        {{ i }}
-                                    </option>
-                                </select> -->
                                 </li>
                             </ul>
                         </li>

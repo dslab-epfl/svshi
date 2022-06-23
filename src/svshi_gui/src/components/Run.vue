@@ -171,7 +171,7 @@ export default {
             }
         },
         prettyPrintWithDpt(value, dpt) {
-            if(value === null){
+            if (value === null) {
                 return "None"
             }
             let dptMainNumber = parseInt(dpt.replace("DPT", ""))
@@ -220,44 +220,50 @@ export default {
     <div v-if="!this.isRunning" class="box_stopped">
         <strong>Stopped</strong>
     </div>
-    <p>Please enter the IP and port of your KNX interface:</p>
-    <input id="ipInput" v-model="this.ipStr" @keypress="isNumberDot($event)" placeholder="Ip address e.g. 127.0.0.1" />
-    <input id="portInput" v-model="this.portStr" @keypress="isNumber($event)" placeholder="Port e.g. 3671" />
-    <button class="greenButton" @Click="this.run" v-if="!this.isRunning">Run</button>
+    <p class="assignmentsExplanation">Please download the assignments with the button below. Then, import the group addresses in ETS using the .csv and
+        assign them to the corresponding device.</p>
+
+    <p class="ipPortMessage">Please enter the IP and port of your KNX interface:</p>
+    <input class="ipAddressInput" id="ipInput" v-model="this.ipStr" @keypress="isNumberDot($event)"
+        placeholder="Ip address e.g. 127.0.0.1" />
+    <input class="portInput" id="portInput" v-model="this.portStr" @keypress="isNumber($event)"
+        placeholder="Port e.g. 3671" />
+    <button class="greenButton runButton" @Click="this.run" v-if="!this.isRunning">Run</button>
     <button class="redButton" @Click="this.killSvshi" v-if="this.isRunning">Stop</button>
 
     <button class="classicButton" @Click="this.downloadAssignments" v-if="!this.isRunning">Download assignments</button>
 
     <div class="logs_div">
-        <h3>Logs</h3>
-        <tabs>
-            <tab name="Main logs">
-                <textarea rows="40" cols="100" v-model="this.logs" readonly="true"></textarea>
-            </tab>
-            <tab name="Received telegrams">
-                <textarea rows="40" cols="150" v-model="this.receivedTelegramsLogs" readonly="true"></textarea>
-            </tab>
-            <tab name="Debug logs">
-                <textarea rows="40" cols="150" v-model="this.executionLogs" readonly="true"></textarea>
-            </tab>
-            <tab name="Physical State">
-                <ul style="list-style-type:none;">
-                    <li v-for='ga in Object.keys(this.currentPhysicalState)'>
-                        <table>
-                            <tr>
-                                <td>{{ ga }}</td>
-                                <td>
-                                    <p> ==> </p>
-                                </td>
-                                <td>{{ this.prettyPrintWithDpt(this.currentPhysicalState[ga].value,
-                                        this.currentPhysicalState[ga].dpt)
-                                }}</td>
-                            </tr>
-                        </table>
-                    </li>
-                </ul>
-            </tab>
-        </tabs>
+        <div class="logsTabs">
+            <tabs panels-wrapper-class="tabs-component-panels-logs" wrapper-class="tabs-logs">
+                <tab name="Main logs">
+                    <textarea rows="40" cols="100" v-model="this.logs" readonly="true"></textarea>
+                </tab>
+                <tab name="Received telegrams">
+                    <textarea rows="40" cols="150" v-model="this.receivedTelegramsLogs" readonly="true"></textarea>
+                </tab>
+                <tab name="Debug logs">
+                    <textarea rows="40" cols="150" v-model="this.executionLogs" readonly="true"></textarea>
+                </tab>
+                <tab name="Physical State">
+                    <ul style="list-style-type:none;">
+                        <li v-for='ga in Object.keys(this.currentPhysicalState)'>
+                            <table>
+                                <tr>
+                                    <td>{{ ga }}</td>
+                                    <td>
+                                        <p> ==> </p>
+                                    </td>
+                                    <td>{{ this.prettyPrintWithDpt(this.currentPhysicalState[ga].value,
+                                            this.currentPhysicalState[ga].dpt)
+                                    }}</td>
+                                </tr>
+                            </table>
+                        </li>
+                    </ul>
+                </tab>
+            </tabs>
+        </div>
     </div>
 
 </template>
@@ -265,6 +271,45 @@ export default {
 <style>
 body {
     font: normal 1em/1 sans-serif;
+}
+
+.assignmentsExplanation{
+    padding: 18px;
+}
+
+.ipPortMessage{
+    padding: 18px;
+}
+
+.logs_div {
+    margin-top: 32px;
+}
+
+input.ipAddressInput {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin-right: 12px;
+    margin-left: 18px;
+}
+
+input.portInput {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin-right: 12px;
+}
+
+button.runButton {
+    margin-right: 12px;
+}
+
+.tabs-logs {
+    width: 80vw;
+}
+
+.tabs-component-panels-logs {
+    background-color: #fff;
+    border: solid 1px #ddd;
+    border-radius: 0 6px 6px 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .05);
+    padding: 4em 2em;
 }
 
 textarea {
@@ -282,16 +327,12 @@ textarea {
     justify-content: center;
     height: 110px;
     position: relative;
-    width: 460px;
-}
-
-.box_running:before {
-    content: attr(data-caption);
-    font-size: 18px;
-    left: 20px;
-    position: absolute;
-    text-transform: uppercase;
-    top: 20px;
+    width: 100%;
+    border-radius: 28px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 18px;
+    margin-bottom: 32px;
 }
 
 .box_running strong {
@@ -306,16 +347,12 @@ textarea {
     justify-content: center;
     height: 110px;
     position: relative;
-    width: 460px;
-}
-
-.box_stopped:before {
-    content: attr(data-caption);
-    font-size: 18px;
-    left: 20px;
-    position: absolute;
-    text-transform: uppercase;
-    top: 20px;
+    width: 100%;
+    border-radius: 28px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 18px;
+    margin-bottom: 32px;
 }
 
 .box_stopped strong {

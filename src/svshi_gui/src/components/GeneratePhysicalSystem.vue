@@ -132,7 +132,9 @@ export default {
             if (this.validateStructure()) {
                 try {
                     let filename = "physical_system_structure.json"
-                    const data = JSON.stringify(this.physStruct, null, 2)
+                    let toExport = this.copyObject(this.physStruct)
+                    toExport.deviceInstances = toExport.deviceInstances.map(d => this.deleteKeyFromObject(d, "id"))
+                    const data = JSON.stringify(toExport, null, 2)
                     const blob = new Blob([data], { type: 'text/plain' })
 
                     let elm = document.createElement('a')
@@ -157,50 +159,96 @@ export default {
 
 <template>
     <h2>Generate a new physical system for the simlator:</h2>
-    <table>
+    <table class="tablePhysStruct">
         <tr>
-            <td>Device instances:</td>
             <td>
                 <ul style="list-style-type:none;">
                     <li v-for='dev in this.physStruct.deviceInstances' :key="dev.id">
-                        <table>
+                        <table class="tableOneDevice">
                             <tr>
-                                <input v-model="dev.name" placeholder="device name" />
-                                <input v-model="dev.address" placeholder="device physical address" />
-                                <button class="redButton"
-                                    @Click="this.physStruct.deviceInstances = this.physStruct.deviceInstances.filter(d => d.id !== dev.id)">X</button>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <input v-model="dev.name" placeholder="device name" />
+                                        </td>
+                                        <td>
+                                            <input v-model="dev.address" placeholder="device physical address" />
+                                        </td>
+                                        <td>
+                                            <button class="redButton"
+                                                @Click="this.physStruct.deviceInstances = this.physStruct.deviceInstances.filter(d => d.id !== dev.id)">
+                                                <FontAwesomeIcon icon="trash-can" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+
                             </tr>
                             <tr>
                                 <ul>
-                                    <li v-for='comObject in dev.nodes[0].comObjects' :key="comObject.id">
-                                        <input v-model="comObject.name" placeholder="comObject name" />
-                                        <select v-model="comObject.ioType">
-                                            <option disabled value="">IO Type: Please select one</option>
-                                            <option v-for="ioType in this.availableIoTypes" :value="ioType">
-                                                {{ ioType }}
-                                            </option>
-                                        </select>
-                                        <select v-model="comObject.datatype">
-                                            <option disabled value="">KNX DPT: Please select one</option>
-                                            <option v-for="dpt in this.availableDpts" :value="dpt">
-                                                {{ dpt }}
-                                            </option>
-                                        </select>
-                                        <button class="redButton"
-                                            @Click="dev.nodes[0].comObjects = dev.nodes[0].comObjects.filter(c => c.id !== comObject.id)">X</button>
+                                    <li class="devicesList" v-for='comObject in dev.nodes[0].comObjects'
+                                        :key="comObject.id">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input v-model="comObject.name" placeholder="comObject name" />
+                                                </td>
+                                                <td>
+                                                    <div class="selectSvshi selectPhysSystem">
+                                                        <select v-model="comObject.ioType">
+                                                            <option disabled value="">IO Type: Please select one
+                                                            </option>
+                                                            <option v-for="ioType in this.availableIoTypes"
+                                                                :value="ioType">
+                                                                {{ ioType }}
+                                                            </option>
+                                                        </select>
+                                                        <div class="selectSvshi_arrow">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="selectSvshi selectPhysSystem">
+                                                        <select v-model="comObject.datatype">
+                                                            <option disabled value="">KNX DPT: Please select one
+                                                            </option>
+                                                            <option v-for="dpt in this.availableDpts" :value="dpt">
+                                                                {{ dpt }}
+                                                            </option>
+                                                        </select>
+                                                        <div class="selectSvshi_arrow">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button class="redButton"
+                                                        @Click="dev.nodes[0].comObjects = dev.nodes[0].comObjects.filter(c => c.id !== comObject.id)">
+                                                        <FontAwesomeIcon icon="trash-can" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+
+
+
                                     </li>
                                 </ul>
                             </tr>
                             <tr>
-                                <button class="classicButton" @Click="this.addNewComObjectTo(dev)">Add
-                                    comObject</button>
+                                <button class="classicButton" @Click="this.addNewComObjectTo(dev)">
+                                    <FontAwesomeIcon icon="plus" /> comObject
+                                </button>
                             </tr>
                         </table>
 
                     </li>
                 </ul>
-                <button class="classicButton" @Click="this.addNewDevice">Add
-                    device</button>
+                <button class="classicButton addDeviceButton" @Click="this.addNewDevice">
+                    <FontAwesomeIcon icon="plus" /> device
+                </button>
             </td>
         </tr>
     </table>
@@ -221,4 +269,29 @@ export default {
 
 <style>
 @import '../assets/base.css';
+
+.addDeviceButton{
+    
+}
+
+.tablePhysStruct{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tableOneDevice{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #e8c4a2;
+    padding: 12px;
+    border-radius: 28px;
+}
+
+.selectPhysSystem {
+    padding: -12px;
+}
+
+li.devicesList {
+    list-style: none;
+}
 </style>

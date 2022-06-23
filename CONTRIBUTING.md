@@ -23,6 +23,7 @@
   - [CI](#ci)
   - [Releases](#releases)
   - [Code of Conduct](#code-of-conduct)
+  - [SVSHI orange colour](#svshi-orange-colour)
 
 ## Requirements
 
@@ -249,3 +250,7 @@ To build a new release:
 ## Code of Conduct
 
 Our Code of Conduct is [here](https://github.com/dslab-epfl/svshi/blob/main/CODE_OF_CONDUCT.md). By contributing to SVSHI, you implicitly accept it.
+
+## SVSHI orange colour
+
+`#e87000`
