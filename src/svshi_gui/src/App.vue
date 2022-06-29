@@ -1,5 +1,4 @@
 <script lang="jsx" >
-import * as http from "http";
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
 import Run from './components/Run.vue'
