@@ -2,8 +2,10 @@ import Dependencies._
 
 ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / version := "1.4.1-SNAPSHOT"
-ThisBuild / organization := "ch.epfl.core"
+ThisBuild / organization := "ch.epfl"
 ThisBuild / organizationName := "epfl"
+
+name:= "svshi-core"
 
 Test / parallelExecution := false
 
