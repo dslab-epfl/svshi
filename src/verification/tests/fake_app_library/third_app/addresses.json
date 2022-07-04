@@ -25,6 +25,16 @@
       "$type": "ch.epfl.core.parsers.json.bindings.CO2SensorAddressJson",
       "name": "co_two_sensor_instance_name",
       "address": "0/0/5"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.DimmerSensorAddressJson",
+      "name": "dimmer_sensor_instance_name",
+      "address": "0/0/6"
+    },
+    {
+      "$type": "ch.epfl.core.parsers.json.bindings.DimmerActuatorAddressJson",
+      "name": "dimmer_actuator_instance_name",
+      "address": "0/0/7"
     }
   ]
 }

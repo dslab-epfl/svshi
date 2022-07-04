@@ -46,3 +46,15 @@ object CO2SensorAddressJson {
   implicit val rw: ReadWriter[CO2SensorAddressJson] =
     macroRW[CO2SensorAddressJson]
 }
+
+case class DimmerSensorAddressJson(name: String, address: String) extends DeviceAddressJson
+object DimmerSensorAddressJson {
+  implicit val rw: ReadWriter[DimmerSensorAddressJson] =
+    macroRW[DimmerSensorAddressJson]
+}
+
+case class DimmerActuatorAddressJson(name: String, address: String) extends DeviceAddressJson
+object DimmerActuatorAddressJson {
+  implicit val rw: ReadWriter[DimmerActuatorAddressJson] =
+    macroRW[DimmerActuatorAddressJson]
+}

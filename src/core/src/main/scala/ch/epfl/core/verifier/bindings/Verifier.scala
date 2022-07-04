@@ -84,6 +84,12 @@ object Verifier extends VerifierTr {
           case CO2SensorBinding(_, physDeviceId) => {
             checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
+          case DimmerSensorBinding(_, physDeviceId) => {
+            checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
+          case DimmerActuatorBinding(_, physDeviceId) => {
+            checkPhysIdKNXDptCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
         }
       })
     })
@@ -124,6 +130,12 @@ object Verifier extends VerifierTr {
           case CO2SensorBinding(_, physDeviceId) => {
             checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
           }
+          case DimmerSensorBinding(_, physDeviceId) => {
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
+          case DimmerActuatorBinding(_, physDeviceId) => {
+            checkPhysIdIOCompatibility(physicalStructure, deviceInstBinding, protoDevice, physDeviceId)
+          }
         }
       })
     })
@@ -151,6 +163,12 @@ object Verifier extends VerifierTr {
             checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
           }
           case CO2SensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case DimmerSensorBinding(_, physDeviceId) => {
+            checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
+          }
+          case DimmerActuatorBinding(_, physDeviceId) => {
             checkMutualDPTCompatibility(deviceInstBinding, bindings, physDeviceId)
           }
         }

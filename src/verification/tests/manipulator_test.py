@@ -43,6 +43,8 @@ manipulator = Manipulator(
                 "SWITCH_INSTANCE_NAME",
                 "TEMPERATURE_SENSOR_INSTANCE_NAME",
                 "HUMIDITY_SENSOR_INSTANCE_NAME",
+                "DIMMER_SENSOR_INSTANCE_NAME",
+                "DIMMER_ACTUATOR_INSTANCE_NAME",
             ]
         ),
     },
@@ -68,6 +70,7 @@ def test_manipulator_manipulate_mains_verification():
     }
 
     assert len(imports) == 0
+    print(functions)
     assert functions == [
         textwrap.dedent(
             '''\
@@ -97,6 +100,8 @@ def test_manipulator_manipulate_mains_verification():
                     internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
                     THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+                    THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state,
+                        internal_state)
                 elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
                     t = svshi_api.get_minute_in_hour(internal_state)
                     THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
@@ -192,6 +197,8 @@ def test_manipulator_manipulate_mains_verification():
                     internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
                     THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+                    THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state,
+                        internal_state)
                 elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
                     t = svshi_api.get_minute_in_hour(internal_state)
                     THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state, internal_state)
@@ -243,6 +250,7 @@ def test_manipulator_manipulate_mains_runtime():
                     ) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
                     THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+                    THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state)
                 elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
                     t = svshi_api.get_minute_in_hour(internal_state)
                     THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
@@ -337,6 +345,7 @@ def test_manipulator_manipulate_mains_runtime():
                     ) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
                     THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+                    THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state)
                 elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
                     t = svshi_api.get_minute_in_hour(internal_state)
                     THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)

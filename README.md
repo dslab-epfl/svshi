@@ -179,6 +179,8 @@ When you want to stop, kill both processes running in terminals.
 - **Humidity sensors** (deviceType = "humidity")
 - **CO2 sensors** (deviceType = "co2")
 - **Switches** (deviceType = "switch")
+- **Dimmer Actuator** (deviceType = "dimmerActuator")
+- **Dimmer Sensor** (deviceType = "dimmerSensor")
 
 ## Developing an application
 

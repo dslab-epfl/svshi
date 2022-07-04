@@ -35,6 +35,8 @@ object PythonAddressJsonParser {
         case TemperatureSensorBinding(_, physDeviceId) => TemperatureSensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
         case HumiditySensorBinding(_, physDeviceId)    => HumiditySensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
         case CO2SensorBinding(_, physDeviceId)         => CO2SensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
+        case DimmerSensorBinding(_, physDeviceId)      => DimmerSensorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
+        case DimmerActuatorBinding(_, physDeviceId)    => DimmerActuatorAddressJson(instBinding.name, physIdToGA(physDeviceId).toString)
       }
     }
     val applicationBindingsOpt = assignment.appLibraryBindings.appBindings.find(b => b.name == app.name)

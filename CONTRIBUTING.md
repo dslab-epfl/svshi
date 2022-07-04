@@ -215,6 +215,7 @@ The types of device that SVSHI supports require specific code to be handled prop
   > WARNING! Do NOT forget to update `ReadWriter.merge(...)` at the top of the file!!!
   > Once you added the new `SupportedDeviceBinding`, compiler warnings can guide you because the trait is sealed and thus match can be exhaustive.
 - update the `getAvailableDevices` of `ch.epfl.core.model.prototypical.SupportedDevice` to add your new device in the list
+- add a new `case class` that extends `ch.epfl.core.parser.json.bindings.DeviceAddressJson` in `ch.epfl.core.parser.json.bindings.JsonClasses.scala` following present examples
 - update the function `assignmentToPythonAddressJson` in `ch.epfl.core.parser.json.bindings.PythonAddressJsonParser` (specially the `match`)
 - update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
 - modify the `read_devices` method in `src/generator/parsing/parser.py`.

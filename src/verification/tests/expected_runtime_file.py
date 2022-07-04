@@ -34,6 +34,8 @@ class PhysicalState:
     GA_0_0_3: float
     GA_0_0_4: float
     GA_0_0_5: int
+    GA_0_0_6: int
+    GA_0_0_7: int
 
 
 
@@ -211,6 +213,31 @@ class CO2_sensor_third_app_co_two_sensor_instance_name():
         return physical_state.GA_0_0_5
 
 
+class Dimmer_Sensor_third_app_dimmer_sensor_instance_name():
+    def read(self, physical_state: PhysicalState) -> int:
+        """
+        pre:
+        post: physical_state.GA_0_0_6 == __return__
+        """
+        return physical_state.GA_0_0_6
+
+
+class Dimmer_Actuator_third_app_dimmer_actuator_instance_name():
+    def set(self, value: int, physical_state: PhysicalState):
+        """
+        pre: 
+        post: physical_state.GA_0_0_7  == value
+        """
+        physical_state.GA_0_0_7 = value
+
+    def read(self, physical_state: PhysicalState) -> int:
+        """
+        pre: 
+        post: physical_state.GA_0_0_7  == __return__
+        """
+        return physical_state.GA_0_0_7
+
+
 class SvshiApi():
 
     def __init__(self):
@@ -299,6 +326,8 @@ SECOND_APP_SWITCH_INSTANCE_NAME = Switch_second_app_switch_instance_name()
 SECOND_APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_second_app_temperature_sensor_instance_name()
 THIRD_APP_BINARY_SENSOR_INSTANCE_NAME = Binary_sensor_third_app_binary_sensor_instance_name()
 THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME = CO2_sensor_third_app_co_two_sensor_instance_name()
+THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME = Dimmer_Actuator_third_app_dimmer_actuator_instance_name()
+THIRD_APP_DIMMER_SENSOR_INSTANCE_NAME = Dimmer_Sensor_third_app_dimmer_sensor_instance_name()
 THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME = Humidity_sensor_third_app_humidity_sensor_instance_name()
 THIRD_APP_SWITCH_INSTANCE_NAME = Switch_third_app_switch_instance_name()
 THIRD_APP_TEMPERATURE_SENSOR_INSTANCE_NAME = Temperature_sensor_third_app_temperature_sensor_instance_name()
@@ -320,6 +349,7 @@ def third_app_iteration(third_app_app_state: AppState, physical_state:
         ) > 600.0:
         another_file = 'file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+        THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state)
     elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)
@@ -406,6 +436,7 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
         ) > 600.0:
         another_file = 'file2.csv'
         THIRD_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+        THIRD_APP_DIMMER_ACTUATOR_INSTANCE_NAME.set(34, physical_state)
     elif 2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3:
         t = svshi_api.get_minute_in_hour(internal_state)
         THIRD_APP_SWITCH_INSTANCE_NAME.off(physical_state)

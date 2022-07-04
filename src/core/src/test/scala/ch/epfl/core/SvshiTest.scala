@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 class SvshiTest extends AnyFlatSpec with Matchers {
   "getAvailableProtoDevices" should "return the correct list" in {
-    Svshi.getAvailableProtoDevices() should contain theSameElementsAs List("co2", "binary", "temperature", "switch", "humidity")
+    Svshi.getAvailableProtoDevices() should contain theSameElementsAs List("co2", "binary", "temperature", "switch", "humidity", "dimmerSensor", "dimmerActuator")
   }
   "getAvailableDpts" should "return the correct list" in {
     Svshi.getAvailableDpts() should contain theSameElementsAs List(

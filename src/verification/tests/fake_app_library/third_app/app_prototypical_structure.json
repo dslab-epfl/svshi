@@ -22,6 +22,14 @@
     {
       "name": "co_two_sensor_instance_name",
       "deviceType": "co2"
+    },
+    {
+      "name": "dimmer_sensor_instance_name",
+      "deviceType": "dimmerSensor"
+    },
+    {
+      "name": "dimmer_actuator_instance_name",
+      "deviceType": "dimmerActuator"
     }
   ]
 }

@@ -72,6 +72,10 @@ class Parser:
                 type = "Switch"
             elif type == "co2":
                 type = "CO2Sensor"
+            elif type == "dimmerSensor":
+                type = "DimmerSensor"
+            elif type == "dimmerActuator":
+                type = "DimmerActuator"
             else:
                 raise ParserException(f"Unknown type '{type}'")
 

@@ -28,6 +28,8 @@ def test_parser_parse_group_addresses():
         GroupAddress("0/0/3", "float"),
         GroupAddress("0/0/4", "float"),
         GroupAddress("0/0/5", "int"),
+        GroupAddress("0/0/6", "int"),
+        GroupAddress("0/0/7", "int"),
     ]
 
 
@@ -81,6 +83,8 @@ def test_parser_parse_devices_instances():
             DeviceInstance("third_app_temperature_sensor_instance_name", "temperature"),
             DeviceInstance("third_app_humidity_sensor_instance_name", "humidity"),
             DeviceInstance("third_app_co_two_sensor_instance_name", "co2"),
+            DeviceInstance("third_app_dimmer_sensor_instance_name", "dimmerSensor"),
+            DeviceInstance("third_app_dimmer_actuator_instance_name", "dimmerActuator"),
         ],
         key=sorting_function,
     )
@@ -144,6 +148,18 @@ def test_parser_parse_devices_classes():
                 "co_two_sensor_instance_name",
                 "co2",
                 "0/0/5",
+            ),
+            DeviceClass(
+                third_app,
+                "dimmer_sensor_instance_name",
+                "dimmerSensor",
+                "0/0/6",
+            ),
+            DeviceClass(
+                third_app,
+                "dimmer_actuator_instance_name",
+                "dimmerActuator",
+                "0/0/7",
             ),
         ],
         key=sorting_function,

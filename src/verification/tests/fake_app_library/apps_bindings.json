@@ -34,6 +34,22 @@
             "typeString": "humidity",
             "physDeviceId": -1
           }
+        },
+        {
+          "name": "dimmer_sensor_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.DimmerSensorBinding",
+            "typeString": "dimmerSensor",
+            "physDeviceId": -1
+          }
+        },
+        {
+          "name": "dimmer_actuator_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.DimmerActuatorBinding",
+            "typeString": "dimmerActuator",
+            "physDeviceId": -1
+          }
         }
       ]
     }

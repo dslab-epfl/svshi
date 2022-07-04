@@ -12,12 +12,17 @@ object SupportedDevice {
   final val temperatureSensorString = "temperature"
   final val humiditySensorString = "humidity"
   final val co2SensorString = "co2"
+  final val dimmerSensorString = "dimmerSensor"
+  final val dimmerActuatorString = "dimmerActuator"
+
   def fromString(s: String): SupportedDevice = s.toLowerCase match {
     case SupportedDevice.binarySensorString      => BinarySensor
     case SupportedDevice.switchString            => Switch
     case SupportedDevice.temperatureSensorString => TemperatureSensor
     case SupportedDevice.humiditySensorString    => HumiditySensor
     case SupportedDevice.co2SensorString         => CO2Sensor
+    case SupportedDevice.`dimmerSensorString`    => DimmerSensor
+    case SupportedDevice.dimmerActuatorString    => DimmerActuator
   }
   def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
     case BinarySensor      => BinarySensorBinding(deviceType.toString, defaultPhysicalId)
@@ -25,8 +30,11 @@ object SupportedDevice {
     case TemperatureSensor => TemperatureSensorBinding(deviceType.toString, defaultPhysicalId)
     case HumiditySensor    => HumiditySensorBinding(deviceType.toString, defaultPhysicalId)
     case CO2Sensor         => CO2SensorBinding(deviceType.toString, defaultPhysicalId)
+    case DimmerSensor      => DimmerSensorBinding(deviceType.toString, defaultPhysicalId)
+    case DimmerActuator    => DimmerActuatorBinding(deviceType.toString, defaultPhysicalId)
   }
-  def getAvailableDevices: List[String] = List(binarySensorString, switchString, temperatureSensorString, humiditySensorString, co2SensorString)
+  def getAvailableDevices: List[String] =
+    List(binarySensorString, switchString, temperatureSensorString, humiditySensorString, co2SensorString, dimmerSensorString, dimmerActuatorString)
 }
 
 case object BinarySensor extends SupportedDevice {
@@ -43,6 +51,12 @@ case object HumiditySensor extends SupportedDevice {
 }
 case object CO2Sensor extends SupportedDevice {
   override def toString: String = SupportedDevice.co2SensorString
+}
+case object DimmerSensor extends SupportedDevice {
+  override def toString: String = SupportedDevice.dimmerSensorString
+}
+case object DimmerActuator extends SupportedDevice {
+  override def toString: String = SupportedDevice.dimmerActuatorString
 }
 
 class UnsupportedDeviceException(msg: String) extends Exception(msg)

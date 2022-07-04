@@ -91,6 +91,37 @@ class Generator:
         '''
     )
 
+    __DIMMER_SENSOR_TEMPLATE = lambda self, app_name, instance_name, group_address, verification: textwrap.dedent(
+        f'''
+        class Dimmer_Sensor_{app_name}_{instance_name}():
+            def read(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> int:
+                """
+                pre:
+                post: physical_state.{group_address} == __return__
+                """
+                return physical_state.{group_address}
+        '''
+    )
+
+    __DIMMER_ACTUATOR_TEMPLATE = lambda self, app_name, instance_name, group_address, verification: textwrap.dedent(
+        f'''
+        class Dimmer_Actuator_{app_name}_{instance_name}():
+            def set(self, value: int, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}):
+                """
+                pre: 
+                post: physical_state.{group_address}  == value
+                """
+                physical_state.{group_address} = value
+
+            def read(self, physical_state: PhysicalState{", internal_state: InternalState" if verification else ""}) -> int:
+                """
+                pre: 
+                post: physical_state.{group_address}  == __return__
+                """
+                return physical_state.{group_address}
+        '''
+    )
+
     __SVSHI_API_IMPL_VRF = textwrap.dedent(
         f'''
         class SvshiApi():
@@ -433,6 +464,18 @@ class Generator:
                         app, name, formatted_group_address, verification
                     )
                 )
+            elif type == "dimmerSensor":
+                code.append(
+                    self.__DIMMER_SENSOR_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
+                )
+            elif type == "dimmerActuator":
+                code.append(
+                    self.__DIMMER_ACTUATOR_TEMPLATE(
+                        app, name, formatted_group_address, verification
+                    )
+                )
         if verification:
             code.append(self.__SVSHI_API_IMPL_VRF)
         else:
@@ -459,6 +502,10 @@ class Generator:
                 device_class = "Humidity_sensor_"
             elif type == "co2":
                 device_class = "CO2_sensor_"
+            elif type == "dimmerSensor":
+                device_class = "Dimmer_Sensor_"
+            elif type == "dimmerActuator":
+                device_class = "Dimmer_Actuator_"
 
             devices_code.append(f"{name.upper()} = {device_class}{name}()")
 
