@@ -1,5 +1,10 @@
 from io import TextIOWrapper
 from typing import Callable, IO, Optional, TypeVar
+import sys
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 
 
 class SvshiApi:
@@ -55,6 +60,7 @@ class SvshiApi:
         pass
 
     _T = TypeVar("_T")
+    _P = ParamSpec("_P")
 
     def get_latest_value(self, function: Callable[..., _T]) -> Optional[_T]:
         """
@@ -71,11 +77,14 @@ class SvshiApi:
         pass
 
     def trigger_if_not_running(
-        self, on_trigger_function: Callable, *args, **kwargs
-    ) -> None:
+        self, on_trigger_function: Callable[_P, _T]
+    ) -> Callable[_P, None]:
         """
         Trigger the given `on_trigger_function` to be executed separately with the given
         arguments and keyword arguments.
+
+        Usage: svshi_api.trigger_if_not_running(on_trigger_fn)(arg1, arg2).
+
         The returned value can be later fetched by using `get_latest_value`.
         """
         pass

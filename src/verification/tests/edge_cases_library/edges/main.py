@@ -20,7 +20,7 @@ def iteration():
         return not SWITCH_INSTANCE_NAME.is_on()
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
-        svshi_api.trigger_if_not_running(on_trigger_send_email, "test@test.com")
+        svshi_api.trigger_if_not_running(on_trigger_send_email)("test@test.com")
         SWITCH_INSTANCE_NAME.on()
     else:
         SWITCH_INSTANCE_NAME.off()
@@ -44,7 +44,7 @@ def iteration():
 
     string = f"this is a beautiful string {SWITCH_INSTANCE_NAME.is_on()}"
 
-    svshi_api.trigger_if_not_running(on_trigger_send_email, addr="test")
+    svshi_api.trigger_if_not_running(on_trigger_send_email)(addr="test")
 
 
 def periodic_iteration() -> None:
@@ -56,7 +56,7 @@ def periodic_iteration() -> None:
         return not SWITCH_INSTANCE_NAME.is_on()
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
-        svshi_api.trigger_if_not_running(on_trigger_send_email, "test@test.com")
+        svshi_api.trigger_if_not_running(on_trigger_send_email)("test@test.com")
         SWITCH_INSTANCE_NAME.on()
     else:
         SWITCH_INSTANCE_NAME.off()
@@ -77,7 +77,7 @@ def periodic_iteration() -> None:
 
     string = f"this is a beautiful string {SWITCH_INSTANCE_NAME.is_on()}"
 
-    svshi_api.trigger_if_not_running(on_trigger_send_email, addr="test")
+    svshi_api.trigger_if_not_running(on_trigger_send_email)(addr="test")
 
 
 def on_trigger_send_email(addr: str) -> None:

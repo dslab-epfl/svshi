@@ -11,7 +11,11 @@ def iteration():
     latest_float = svshi_api.get_latest_value(periodic_float)
     if BINARY_SENSOR_INSTANCE_NAME.is_on() and latest_float and latest_float > 2.0:
         SWITCH_INSTANCE_NAME.on()
+        svshi_api.trigger_if_not_running(on_trigger_do_nothing)()
 
 def periodic_float() -> float:
     """period: 0"""
     return 42.0
+
+def on_trigger_do_nothing() -> None:
+    return None

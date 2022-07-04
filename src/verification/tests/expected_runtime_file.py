@@ -1,9 +1,14 @@
 from decouple import config
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
-from typing import Callable, IO, Optional, Protocol
+from typing import Callable, IO, Optional, TypeVar
 from typing import Optional
 import dataclasses
+import sys
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 import time
 
 
@@ -44,7 +49,9 @@ class IsolatedFunctionsValues:
     first_app_periodic_compute_bool: Optional[bool] = None
     first_app_periodic_return_two: Optional[int] = None
     first_app_on_trigger_print: Optional[None] = None
+    first_app_on_trigger_do_nothing: Optional[None] = None
     second_app_periodic_float: Optional[float] = None
+    second_app_on_trigger_do_nothing: Optional[None] = None
 
 
 
@@ -279,11 +286,12 @@ class SvshiApi():
         """
         return internal_state.date_time.tm_year
 
-    class OnTriggerConsumer(Protocol):
-        """Type alias for the on_trigger consumer."""
-        def __call__(self, on_trigger_fn: Callable, *args, **kwargs) -> None: ...
+    _T = TypeVar("_T")
+    _P = ParamSpec("_P")
+    # Type alias for the on_trigger consumer.
+    OnTriggerConsumer = Callable[[Callable[_P, _T]], Callable[_P, None]]
 
-    def __not_implemented_consumer(self, fn: Callable, *args, **kwargs):
+    def __not_implemented_consumer(self, fn: Callable[_P, _T]) -> Callable[_P, None]:
         raise NotImplementedError(
             "on_trigger_consumer was called before being initialized."
         )
@@ -294,9 +302,9 @@ class SvshiApi():
         self.__on_trigger_consumer = on_trigger_consumer
 
     def trigger_if_not_running(
-        self, on_trigger_function: Callable, *args, **kwargs
-    ) -> None:
-        self.__on_trigger_consumer(on_trigger_function, *args, **kwargs)
+        self, on_trigger_function: Callable[_P, _T]
+    ) -> Callable[_P, None]:
+        return self.__on_trigger_consumer(on_trigger_function)
 
     def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
         try:
@@ -367,13 +375,14 @@ def first_app_iteration(first_app_app_state: AppState, physical_state:
     if (isolated_fn_values.first_app_periodic_compute_bool and not
         first_app_app_state.BOOL_1):
         first_app_app_state.INT_1 = 42
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
             FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
     else:
         v = isolated_fn_values.first_app_periodic_return_two
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print, v)
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(v)
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
             'file4.csv')
+        svshi_api.trigger_if_not_running(first_app_on_trigger_do_nothing)()
 
 
 def first_app_periodic_compute_bool(internal_state: InternalState) ->bool:
@@ -398,6 +407,10 @@ def first_app_periodic_return_two(internal_state: InternalState) ->int:
 def first_app_on_trigger_print(s, internal_state: InternalState) ->None:
     print(s)
 
+
+def first_app_on_trigger_do_nothing(internal_state: InternalState) ->None:
+    return None
+
 def second_app_invariant(second_app_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
@@ -411,11 +424,16 @@ def second_app_iteration(second_app_app_state: AppState, physical_state:
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and latest_float and latest_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+        svshi_api.trigger_if_not_running(second_app_on_trigger_do_nothing)()
 
 
 def second_app_periodic_float(internal_state: InternalState) ->float:
     """period: 0"""
     return 42.0
+
+
+def second_app_on_trigger_do_nothing(internal_state: InternalState) ->None:
+    return None
 
 def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     AppState, third_app_app_state: AppState, physical_state: PhysicalState,
@@ -424,13 +442,14 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     if (isolated_fn_values.first_app_periodic_compute_bool and not
         first_app_app_state.BOOL_1):
         first_app_app_state.INT_1 = 42
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
             FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
     else:
         v = isolated_fn_values.first_app_periodic_return_two
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print, v)
-        svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(v)
+        svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
             'file4.csv')
+        svshi_api.trigger_if_not_running(first_app_on_trigger_do_nothing)()
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
         ) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(physical_state
         ) > 600.0:
@@ -444,3 +463,4 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) and latest_float and latest_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+        svshi_api.trigger_if_not_running(second_app_on_trigger_do_nothing)()

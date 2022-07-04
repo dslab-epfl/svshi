@@ -10,9 +10,14 @@ class FileResetter:
     __DEFAULT_RUNTIME_FILE: Final = textwrap.dedent(
         """\
         # Default file, will be overwritten while running
-        from typing import Callable, IO, Optional, Protocol
+        from typing import Callable, IO, Optional, TypeVar
         from typing import Optional
         import dataclasses
+        import sys
+        if sys.version_info < (3, 10):
+            from typing_extensions import ParamSpec
+        else:
+            from typing import ParamSpec
         import time
 
 
@@ -62,7 +67,7 @@ class FileResetter:
     __DEFAULT_VERIFICATION_FILE: Final = textwrap.dedent(
         '''\
         # Default file, will be overwritten while running
-        from typing import Callable, IO, Optional, Protocol
+        from typing import Callable, IO, Optional, TypeVar
         from typing import Optional
         import dataclasses
         import time

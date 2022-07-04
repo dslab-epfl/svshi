@@ -66,7 +66,9 @@ def test_manipulator_manipulate_mains_verification():
         "first_app_periodic_compute_bool": 5,
         "first_app_periodic_return_two": 100,
         "first_app_on_trigger_print": None,
+        "first_app_on_trigger_do_nothing": None,
         "second_app_periodic_float": 0,
+        "second_app_on_trigger_do_nothing": None,
     }
 
     assert len(imports) == 0
@@ -141,6 +143,7 @@ def test_manipulator_manipulate_mains_verification():
                     v = isolated_fn_values.first_app_periodic_return_two
                     None
                     None
+                    None
                 return {'first_app_app_state': first_app_app_state,
                     'second_app_app_state': second_app_app_state, 'third_app_app_state':
                     third_app_app_state, 'physical_state': physical_state,
@@ -173,6 +176,7 @@ def test_manipulator_manipulate_mains_verification():
                 if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
                     internal_state) and latest_float and latest_float > 2.0:
                     SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+                    None
                 return {'first_app_app_state': first_app_app_state,
                     'second_app_app_state': second_app_app_state, 'third_app_app_state':
                     third_app_app_state, 'physical_state': physical_state,
@@ -193,6 +197,7 @@ def test_manipulator_manipulate_mains_verification():
                     v = isolated_fn_values.first_app_periodic_return_two
                     None
                     None
+                    None
                 if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,
                     internal_state) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
@@ -206,6 +211,7 @@ def test_manipulator_manipulate_mains_verification():
                 if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
                     internal_state) and latest_float and latest_float > 2.0:
                     SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+                    None
                 return {'first_app_app_state': first_app_app_state,
                     'second_app_app_state': second_app_app_state, 'third_app_app_state':
                     third_app_app_state, 'physical_state': physical_state,
@@ -224,7 +230,9 @@ def test_manipulator_manipulate_mains_runtime():
         "first_app_periodic_compute_bool": 5,
         "first_app_periodic_return_two": 100,
         "first_app_on_trigger_print": None,
+        "first_app_on_trigger_do_nothing": None,
         "second_app_periodic_float": 0,
+        "second_app_on_trigger_do_nothing": None,
     }
     assert imports == [
         "from slack_sdk.web.client import WebClient",
@@ -271,13 +279,14 @@ def test_manipulator_manipulate_mains_runtime():
                 if (isolated_fn_values.first_app_periodic_compute_bool and not
                     first_app_app_state.BOOL_1):
                     first_app_app_state.INT_1 = 42
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
                         FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
                 else:
                     v = isolated_fn_values.first_app_periodic_return_two
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print, v)
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(v)
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
                         'file4.csv')
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_do_nothing)()
 
 
             def first_app_periodic_compute_bool(internal_state: InternalState) ->bool:
@@ -301,6 +310,10 @@ def test_manipulator_manipulate_mains_runtime():
 
             def first_app_on_trigger_print(s, internal_state: InternalState) ->None:
                 print(s)
+
+
+            def first_app_on_trigger_do_nothing(internal_state: InternalState) ->None:
+                return None
             '''
         ),
         textwrap.dedent(
@@ -318,11 +331,16 @@ def test_manipulator_manipulate_mains_runtime():
                 if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
                     ) and latest_float and latest_float > 2.0:
                     SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+                    svshi_api.trigger_if_not_running(second_app_on_trigger_do_nothing)()
 
 
             def second_app_periodic_float(internal_state: InternalState) ->float:
                 """period: 0"""
                 return 42.0
+            
+
+            def second_app_on_trigger_do_nothing(internal_state: InternalState) ->None:
+                return None
             '''
         ),
         textwrap.dedent(
@@ -334,13 +352,14 @@ def test_manipulator_manipulate_mains_runtime():
                 if (isolated_fn_values.first_app_periodic_compute_bool and not
                     first_app_app_state.BOOL_1):
                     first_app_app_state.INT_1 = 42
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
                         FIRST_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state))
                 else:
                     v = isolated_fn_values.first_app_periodic_return_two
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print, v)
-                    svshi_api.trigger_if_not_running(first_app_on_trigger_print,
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(v)
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_print)(
                         'file4.csv')
+                    svshi_api.trigger_if_not_running(first_app_on_trigger_do_nothing)()
                 if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
                     ) > 30 and CO_TWO_SENSOR_INSTANCE_NAME.read() > 600.0:
                     another_file = 'file2.csv'
@@ -353,6 +372,7 @@ def test_manipulator_manipulate_mains_runtime():
                 if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
                     ) and latest_float and latest_float > 2.0:
                     SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state)
+                    svshi_api.trigger_if_not_running(second_app_on_trigger_do_nothing)()
             """
         ),
     ]
@@ -946,7 +966,7 @@ def test_manipulator_manipulate_mains_raises_invalid_trigger_if_not_running_beca
 
     with pytest.raises(
         InvalidTriggerIfNotRunningCallException,
-        match="Incorrect call to svshi_api.trigger_if_not_running: no arguments provided.",
+        match="Incorrect call to svshi_api.trigger_if_not_running: Expecting exactly one on_trigger function. Found: 0.",
     ):
         app_priorities = {"twentieth_app": 0}
         manipulator.manipulate_mains(verification=False, app_priorities=app_priorities)

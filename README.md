@@ -227,14 +227,14 @@ def periodic_function() -> int:
 
 **On_trigger functions** have a name starting with `on_trigger`. They may take some arguments as input, but are not allowed to have default arguments, *args or **kwargs.
 
-**svshi_api.trigger_if_not_running(fn, args)** is used to trigger the execution of an `on_trigger` function. See the example below on how it should be used.
+**svshi_api.trigger_if_not_running(fn)(args)** is used to trigger the execution of an `on_trigger` function. See the example below on how it should be used.
 
 ```python
 def on_trigger_function(x: int, y: bool) -> int:
   return external_library_get_int(x, y)
 
 # Somewhere in the iteration function:
-svshi_api.trigger_if_not_running(on_trigger_function, 3, True)
+svshi_api.trigger_if_not_running(on_trigger_function)(3, True)
 ```
 
 **svshi_api.get_latest_value(fn)** is used to retrieve the latest value returned by a periodic of on_trigger function. Remember that you should assume it to be **any** value of the correct type, or `None` if the function was never executed yet. The verification will fail if any of the returned values leads to an invalid state, which is why you should sanitize the received value.

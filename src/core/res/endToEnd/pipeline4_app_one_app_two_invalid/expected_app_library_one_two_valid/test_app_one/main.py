@@ -6,7 +6,7 @@ def invariant() -> bool:
 
 def iteration():
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
-        svshi_api.trigger_if_not_running(on_trigger_send_email, "test@test.com")
+        svshi_api.trigger_if_not_running(on_trigger_send_email)("test@test.com")
         SWITCH_INSTANCE_NAME.on()
     else:
         SWITCH_INSTANCE_NAME.off()

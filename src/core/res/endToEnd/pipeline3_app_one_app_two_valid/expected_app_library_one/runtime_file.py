@@ -1,6 +1,11 @@
-from typing import Callable, IO, Optional, Protocol
+from typing import Callable, IO, Optional, TypeVar
 from typing import Optional
 import dataclasses
+import sys
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 import time
 
 
@@ -116,11 +121,12 @@ class SvshiApi():
         """
         return internal_state.date_time.tm_year
 
-    class OnTriggerConsumer(Protocol):
-        """Type alias for the on_trigger consumer."""
-        def __call__(self, on_trigger_fn: Callable, *args, **kwargs) -> None: ...
+    _T = TypeVar("_T")
+    _P = ParamSpec("_P")
+    # Type alias for the on_trigger consumer.
+    OnTriggerConsumer = Callable[[Callable[_P, _T]], Callable[_P, None]]
 
-    def __not_implemented_consumer(self, fn: Callable, *args, **kwargs):
+    def __not_implemented_consumer(self, fn: Callable[_P, _T]) -> Callable[_P, None]:
         raise NotImplementedError(
             "on_trigger_consumer was called before being initialized."
         )
@@ -131,9 +137,9 @@ class SvshiApi():
         self.__on_trigger_consumer = on_trigger_consumer
 
     def trigger_if_not_running(
-        self, on_trigger_function: Callable, *args, **kwargs
-    ) -> None:
-        self.__on_trigger_consumer(on_trigger_function, *args, **kwargs)
+        self, on_trigger_function: Callable[_P, _T]
+    ) -> Callable[_P, None]:
+        return self.__on_trigger_consumer(on_trigger_function)
 
     def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
         try:
@@ -172,7 +178,7 @@ def test_app_one_iteration(test_app_one_app_state: AppState, physical_state:
     IsolatedFunctionsValues):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
-        svshi_api.trigger_if_not_running(test_app_one_on_trigger_send_email,
+        svshi_api.trigger_if_not_running(test_app_one_on_trigger_send_email)(
             'test@test.com')
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
@@ -188,7 +194,7 @@ def system_behaviour(test_app_one_app_state: AppState, physical_state:
     IsolatedFunctionsValues):
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
         ) or test_app_one_app_state.INT_0 == 42:
-        svshi_api.trigger_if_not_running(test_app_one_on_trigger_send_email,
+        svshi_api.trigger_if_not_running(test_app_one_on_trigger_send_email)(
             'test@test.com')
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:

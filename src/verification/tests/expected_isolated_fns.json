@@ -15,8 +15,18 @@
         "period": null
     },
     {
+        "name": "first_app_on_trigger_do_nothing",
+        "return_type": null,
+        "period": null
+    },
+    {
         "name": "second_app_periodic_float",
         "return_type": "float",
         "period": 0
+    },
+    {
+        "name": "second_app_on_trigger_do_nothing",
+        "return_type": null,
+        "period": null
     }
 ]

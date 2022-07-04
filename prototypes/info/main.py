@@ -11,8 +11,7 @@ def iteration():
 
     minutes = svshi_api.get_minute_in_hour()
     if minutes % 10 == 0:
-        svshi_api.trigger_if_not_running(
-            on_trigger_send_message,
+        svshi_api.trigger_if_not_running(on_trigger_send_message)(
             f"The current CO2 level is: {co2} ppm\nThe current room temperature is: {temp}°C"
         )
 

@@ -1,5 +1,11 @@
-from typing import Callable, IO, Optional, Protocol
+from typing import Callable, IO, Optional, TypeVar
+from typing import Optional
 import dataclasses
+import sys
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 import time
 
 @dataclasses.dataclass
@@ -135,11 +141,12 @@ class SvshiApi():
         """
         return internal_state.date_time.tm_year
 
-    class OnTriggerConsumer(Protocol):
-        """Type alias for the on_trigger consumer."""
-        def __call__(self, on_trigger_fn: Callable, *args, **kwargs) -> None: ...
+    _T = TypeVar("_T")
+    _P = ParamSpec("_P")
+    # Type alias for the on_trigger consumer.
+    OnTriggerConsumer = Callable[[Callable[_P, _T]], Callable[_P, None]]
 
-    def __not_implemented_consumer(self, fn: Callable, *args, **kwargs):
+    def __not_implemented_consumer(self, fn: Callable[_P, _T]) -> Callable[_P, None]:
         raise NotImplementedError(
             "on_trigger_consumer was called before being initialized."
         )
@@ -150,9 +157,9 @@ class SvshiApi():
         self.__on_trigger_consumer = on_trigger_consumer
 
     def trigger_if_not_running(
-        self, on_trigger_function: Callable, *args, **kwargs
-    ) -> None:
-        self.__on_trigger_consumer(on_trigger_function, *args, **kwargs)
+        self, on_trigger_function: Callable[_P, _T]
+    ) -> Callable[_P, None]:
+        return self.__on_trigger_consumer(on_trigger_function)
 
     def get_file_text_mode(self, app_name: str, file_name: str, mode: str, internal_state: InternalState) -> Optional[IO[str]]:
         try:
@@ -190,7 +197,7 @@ pre: another_app_invariant(physical_state)
 post: app_invariant(__return__)
 post: another_app_invariant(__return__)
 """
-    svshi_api.trigger_if_not_running(app_on_trigger_write, "123\n")
+    svshi_api.trigger_if_not_running(app_on_trigger_write)("123\n")
     return physical_state
 
 def app_on_trigger_write(txt: str, internal_state: InternalState) ->int:
@@ -227,5 +234,5 @@ def system_behaviour(app_app_state: AppState, another_app_app_state: AppState,
     physical_state: PhysicalState, internal_state: InternalState,
     isolated_fn_values: IsolatedFunctionsValues):
     print('Hello, world!')
-    svshi_api.trigger_if_not_running(app_on_trigger_write, "123\n")
+    svshi_api.trigger_if_not_running(app_on_trigger_write)("123\n")
     return physical_state

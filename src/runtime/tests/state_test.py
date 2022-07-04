@@ -184,7 +184,7 @@ class StateHolder:
 
         self.on_trigger_consumer = None
 
-        def register_on_trigger_consumer(consumer: Callable[[Callable], None]):
+        def register_on_trigger_consumer(consumer: Callable[[Callable], Callable]):
             """Remember the consumer."""
             self.on_trigger_consumer = consumer
 
@@ -224,7 +224,7 @@ class StateHolder:
         internal_state: InternalState,
         isolated_fn_values: IsolatedFunctionsValues,
     ):
-        self.on_trigger_consumer(app1_app_on_trigger_print, "On trigger hello!")
+        self.on_trigger_consumer(app1_app_on_trigger_print)("On trigger hello!")
         self.app_four_called = True
 
     def joint_apps_code(
@@ -261,7 +261,7 @@ class StateHolder:
         else:
             self.app_two_called = True
         self.app_three_called = True
-        self.on_trigger_consumer(app1_app_on_trigger_print, "On trigger hello!")
+        self.on_trigger_consumer(app1_app_on_trigger_print)("On trigger hello!")
         self.app_four_called = True
 
     def reset(self):

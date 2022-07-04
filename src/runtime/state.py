@@ -4,7 +4,19 @@ from dataclasses import dataclass, fields
 import asyncio
 import time
 from asyncio.tasks import Task
-from typing import Any, Callable, Dict, Final, List, Optional, Set, Tuple, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Final,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 from collections import defaultdict
 from enum import Enum
 from xknx.core.value_reader import ValueReader
@@ -15,6 +27,13 @@ from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 
 import json
+
+import sys
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 
 from .logger import Logger
 from .verification_file import AppState, PhysicalState, IsolatedFunctionsValues
@@ -236,7 +255,7 @@ class State:
         self._last_valid_physical_state = PhysicalState(**fields)
         self._update_internal_state()
 
-        register_on_trigger_consumer(self.__run_on_trigger_fn)
+        register_on_trigger_consumer(self.__on_trigger_consumer)
 
         # Start executing the periodic apps and functions in a background task
         if self.__periodic_apps:
@@ -366,11 +385,15 @@ class State:
         async with self.__execution_lock:
             kwargs["internal_state"] = dataclasses.replace(self._internal_state)
 
-        self.__logger.log_execution(f"Run isolated function '{fn.name}' with args = '{str(args)}, {str(kwargs)}'")
+        self.__logger.log_execution(
+            f"Run isolated function '{fn.name}' with args = '{str(args)}, {str(kwargs)}'"
+        )
         try:
             res = fn.code(*args, **kwargs)
             if isinstance(res, fn.return_type):
-                self.__logger.log_execution(f"Isolated function '{fn.name}' returned '{res}'")
+                self.__logger.log_execution(
+                    f"Isolated function '{fn.name}' returned '{res}'"
+                )
                 setattr(self._isolated_fn_values, fn.name, res)
             else:
                 self.__logger.log_execution(
@@ -387,6 +410,19 @@ class State:
             # If this is an on_trigger function, mark its execution as terminated.
             if fn.period is None:
                 self.__on_trigger_currently_running.remove(fn)
+
+    _T = TypeVar("_T")
+    _P = ParamSpec("_P")
+
+    def __on_trigger_consumer(
+        self, on_trigger_fn: Callable[_P, _T]
+    ) -> Callable[_P, None]:
+        """The consumer for on_trigger functions, wich calls __run_on_trigger_fn"""
+
+        def inner_consumer(*args: self._P.args, **kwargs: self._P.kwargs) -> None:
+            self.__run_on_trigger_fn(on_trigger_fn, *args, **kwargs)
+
+        return inner_consumer
 
     def __get_check_conditions_args(
         self, physical_state: PhysicalState, internal_state: InternalState

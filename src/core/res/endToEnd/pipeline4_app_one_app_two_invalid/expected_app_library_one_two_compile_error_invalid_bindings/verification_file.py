@@ -1,4 +1,4 @@
-from typing import Callable, IO, Optional, Protocol
+from typing import Callable, IO, Optional, TypeVar
 from typing import Optional
 import dataclasses
 import time

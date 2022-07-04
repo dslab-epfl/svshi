@@ -1,4 +1,4 @@
-from typing import Callable, IO, Optional, Protocol
+from typing import Callable, IO, Optional, TypeVar
 from typing import Optional
 import dataclasses
 import time
@@ -41,7 +41,9 @@ class IsolatedFunctionsValues:
     first_app_periodic_compute_bool: Optional[bool] = None
     first_app_periodic_return_two: Optional[int] = None
     first_app_on_trigger_print: Optional[None] = None
+    first_app_on_trigger_do_nothing: Optional[None] = None
     second_app_periodic_float: Optional[float] = None
+    second_app_on_trigger_do_nothing: Optional[None] = None
 
 
 
@@ -413,6 +415,7 @@ post: third_app_invariant(**__return__)
         v = isolated_fn_values.first_app_periodic_return_two
         None
         None
+        None
     return {'first_app_app_state': first_app_app_state,
         'second_app_app_state': second_app_app_state, 'third_app_app_state':
         third_app_app_state, 'physical_state': physical_state,
@@ -442,6 +445,7 @@ post: third_app_invariant(**__return__)
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
         internal_state) and latest_float and latest_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+        None
     return {'first_app_app_state': first_app_app_state,
         'second_app_app_state': second_app_app_state, 'third_app_app_state':
         third_app_app_state, 'physical_state': physical_state,
@@ -459,6 +463,7 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
         v = isolated_fn_values.first_app_periodic_return_two
         None
         None
+        None
     if THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state,
         internal_state) > 30 and THIRD_APP_CO_TWO_SENSOR_INSTANCE_NAME.read(
         physical_state, internal_state) > 600.0:
@@ -473,6 +478,7 @@ def system_behaviour(first_app_app_state: AppState, second_app_app_state:
     if SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
         internal_state) and latest_float and latest_float > 2.0:
         SECOND_APP_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
+        None
     return {'first_app_app_state': first_app_app_state,
         'second_app_app_state': second_app_app_state, 'third_app_app_state':
         third_app_app_state, 'physical_state': physical_state,

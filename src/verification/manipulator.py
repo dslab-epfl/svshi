@@ -335,7 +335,8 @@ class Manipulator:
 
     def __check_coherent_call_to_trigger_if_not_running(
         self,
-        op: ast.Call,
+        provided_args: List[ast.expr],
+        provided_kwargs: List[ast.keyword],
         on_trigger_fn_name: str,
         isolated_functions: List[IsolatedFunction],
     ) -> None:
@@ -344,8 +345,6 @@ class Manipulator:
         This means, it should be called on an existing on_trigger function with the
         correct arguments.
         """
-        args = op.args[1:]
-
         # Find the corresponding IsolatedFunction
         iso_fn = list(
             filter(lambda x: x.name == on_trigger_fn_name, isolated_functions)
@@ -359,7 +358,7 @@ class Manipulator:
         iso_fn_args = iso_fn[0].args
 
         self._check_coherent_fn_call_to_fn_def(
-            args, op.keywords, iso_fn_args, on_trigger_fn_name
+            provided_args, provided_kwargs, iso_fn_args, on_trigger_fn_name
         )
 
     def __check_and_rename_isolated_fn_call(
@@ -368,6 +367,8 @@ class Manipulator:
         app_name: str,
         method_name: str,
         isolated_functions: List[IsolatedFunction],
+        provided_args: List[ast.expr] = [],
+        provided_kwargs: List[ast.keyword] = [],
     ) -> None:
         """
         Check that calls to svshi_api.get_value and svshi_api.trigger_if_not_running
@@ -375,10 +376,12 @@ class Manipulator:
         """
         is_trigger_fn = method_name == self.__TRIGGER_IF_NOT_RUNNING_NAME
         if is_trigger_fn:
-            if not len(op.args):
+            if len(op.args) != 1:
                 _print_and_raise(
                     "Incorrect call to svshi_api.trigger_if_not_running: "
-                    "no arguments provided.",
+                    "Expecting exactly one on_trigger function. Found: "
+                    f"{len(op.args)}.\nExample of a correct call: "
+                    "svshi_api.trigger_if_not_running(on_trigger_fn)(arg1, arg2)",
                     InvalidTriggerIfNotRunningCallException,
                 )
         else:
@@ -398,7 +401,10 @@ class Manipulator:
                     InvalidTriggerIfNotRunningCallException,
                 )
             self.__check_coherent_call_to_trigger_if_not_running(
-                op, isolated_fn_name.id, isolated_functions
+                provided_args,
+                provided_kwargs,
+                isolated_fn_name.id,
+                isolated_functions,
             )
         else:
             if not isolated_fn_name.id.startswith(self.__ISOLATED_FUNC_PREFIXES):
@@ -638,6 +644,25 @@ class Manipulator:
                             op, app_name, method_name, isolated_functions
                         )
 
+            elif isinstance(op.func, ast.Call) and isinstance(
+                op.func.func, ast.Attribute
+            ):
+                # Call of the form obj.func(...)(...)
+                module_name = cast(ast.Name, op.func.func.value).id
+                f_name = op.func.func.attr
+                # svshi_api.trigger_if_not_running(...)(...) is called
+                if (
+                    module_name == self.__SVSHI_API_INSTANCE_NAME
+                    and f_name == self.__TRIGGER_IF_NOT_RUNNING_NAME
+                ):
+                    self.__check_and_rename_isolated_fn_call(
+                        op.func,
+                        app_name,
+                        f_name,
+                        isolated_functions,
+                        op.args,
+                        op.keywords,
+                    )
             elif isinstance(op.func, ast.Name):
                 # call of the form func(...)
                 f_name = op.func.id
@@ -910,12 +935,13 @@ class Manipulator:
         If it is `get_latest_value(fn), it returns a new ast.Attribute representing
         `IsolatedFunctionsValues.app_name_fn_name`.
         `trigger_if_not_running` is replaced by None at verification time and
-        is not changed at all for runtime.
+        is not changed at all for runtime (except to add missing empty brackets).
         otherwise it returns a ast.Constant with None. In all either cases, it returns the op.
         """
         if isinstance(op, ast.Call) and isinstance(op.func, ast.Attribute):
             # op.func.value is an ast.Name in this case
             if cast(ast.Name, op.func.value).id == self.__SVSHI_API_INSTANCE_NAME:
+                # We have a call of the form svshi_api.func(...)
                 f_name = op.func.attr
                 if f_name == self.__GET_LATEST_VALUE_NAME:
                     isolated_fn_name = cast(ast.Name, op.args[0]).id
@@ -929,6 +955,20 @@ class Manipulator:
                 elif f_name == self.__TRIGGER_IF_NOT_RUNNING_NAME:
                     if verification:
                         return ast.Constant(None, "None")
+                    else:
+                        # Replace svshi_api.trigger_if_not_running(fn)
+                        # by svshi_api.trigger_if_not_running(fn)()
+                        return ast.Call(op, args=[], keywords=[])
+        if (
+            isinstance(op, ast.Call)
+            and isinstance(op.func, ast.Call)
+            and isinstance(op.func.func, ast.Attribute)
+            and cast(ast.Name, op.func.func.value).id == self.__SVSHI_API_INSTANCE_NAME
+            and op.func.func.attr == self.__TRIGGER_IF_NOT_RUNNING_NAME
+        ):
+            # We have a call of the form svshi_api.trigger_if_not_running(...)(...)
+            if verification:
+                return ast.Constant(None, "None")
         return op
 
     def __replace_calls_to_isolated_functions(
