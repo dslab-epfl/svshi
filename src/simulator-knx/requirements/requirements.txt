@@ -5,7 +5,7 @@ argparse==1.4.0
 astral==2.2
 asyncio==3.4.3
 bs4==0.0.1
-lxml==4.8.0
+lxml==4.9.1
 numpy==1.22.3
 pyglet==1.5.23
 pynput==1.7.6
