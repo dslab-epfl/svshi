@@ -683,7 +683,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1602086147: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
