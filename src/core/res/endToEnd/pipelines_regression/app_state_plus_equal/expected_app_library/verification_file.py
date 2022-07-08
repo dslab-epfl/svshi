@@ -26,8 +26,8 @@ class AppState:
 
 @dataclasses.dataclass
 class PhysicalState:
-    GA_0_0_2: bool
     GA_0_0_1: bool
+    GA_0_0_2: bool
 
 
 

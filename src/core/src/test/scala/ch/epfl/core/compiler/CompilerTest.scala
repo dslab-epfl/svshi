@@ -54,11 +54,11 @@ class CompilerTest extends AnyFlatSpec with Matchers {
     parsed.addresses.map(_._1).contains(GroupAddress(3, 2, 1).toString) shouldBe true
     parsed.addresses.map(_._1).contains(GroupAddress(3, 2, 3).toString) shouldBe true
 
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 1, 1).toString) shouldEqual (PythonBool.toString, DPT1.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(2, 1, 2).toString) shouldEqual (PythonBool.toString, DPT1.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 2).toString) shouldEqual (PythonFloat.toString, DPT9.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 1).toString) shouldEqual (PythonFloat.toString, DPT9.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 3).toString) shouldEqual (PythonBool.toString, DPT1.toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 1, 1).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(2, 1, 2).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 2).toString) shouldEqual (PythonFloat.toString, DPT9(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 1).toString) shouldEqual (PythonFloat.toString, DPT9(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 3).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
   }
 
   "generateGroupAddressesList" should "write the correct json file when multiple conflicting types" in {
@@ -102,9 +102,9 @@ class CompilerTest extends AnyFlatSpec with Matchers {
     parsed.addresses.map(_._1).contains(GroupAddress(3, 2, 2).toString) shouldBe true
     parsed.addresses.map(_._1).contains(GroupAddress(3, 2, 1).toString) shouldBe true
 
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 1, 1).toString) shouldEqual (PythonBool.toString, DPT1.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(2, 1, 2).toString) shouldEqual (PythonBool.toString, DPT1.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 2).toString) shouldEqual (PythonFloat.toString, DPT9.toString)
-    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 1).toString) shouldEqual (PythonBool.toString, DPT1.toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 1, 1).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(2, 1, 2).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 2).toString) shouldEqual (PythonFloat.toString, DPT9(-1).toString)
+    parsed.addresses.map(t => (t._1, (t._2, t._3))).toMap.apply(GroupAddress(3, 2, 1).toString) shouldEqual (PythonBool.toString, DPT1(-1).toString)
   }
 }

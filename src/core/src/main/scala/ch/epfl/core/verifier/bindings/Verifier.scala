@@ -239,12 +239,12 @@ object Verifier extends VerifierTr {
 
   private def checkCompatibilityKNXTypes(dpt1: KNXDatatype, dpt2: KNXDatatype, msgDevicesDescription: String): List[BindingsVerifierMessage] = {
     dpt1 match {
-      case DPTUnknown => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
+      case DPTUnknown(sub) => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
       case _ =>
         dpt2 match {
-          case DPTUnknown        => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
-          case _ if dpt1 == dpt2 => Nil
-          case _                 => List(ErrorKNXDatatype(s"$msgDevicesDescription: KNXDatatype '$dpt1' is incompatible with KNXDatatype '$dpt2'!"))
+          case DPTUnknown(sub)           => List(WarningKNXDatatype(s"$msgDevicesDescription: one KNXDatatype is UnknownDPT, attention required!"))
+          case _ if dpt1.similarTo(dpt2) => Nil
+          case _                         => List(ErrorKNXDatatype(s"$msgDevicesDescription: KNXDatatype '$dpt1' is incompatible with KNXDatatype '$dpt2'!"))
         }
     }
   }

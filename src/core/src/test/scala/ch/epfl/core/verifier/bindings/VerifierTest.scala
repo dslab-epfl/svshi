@@ -19,7 +19,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -30,8 +30,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -43,17 +43,17 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313),
-            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9(-1), Out, 314)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -96,7 +96,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -107,8 +107,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -120,17 +120,17 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, In, 313),
-            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), In, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9(-1), Out, 314)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -176,7 +176,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -187,8 +187,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -200,16 +200,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, In, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), In, 322)
           )
         )
       )
@@ -252,7 +252,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -263,8 +263,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -276,16 +276,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, In, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), In, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -329,7 +329,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -340,8 +340,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -353,16 +353,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, In, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), In, 322)
           )
         )
       )
@@ -406,7 +406,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -417,8 +417,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -430,16 +430,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, In, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), In, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -480,7 +480,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -491,8 +491,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -504,16 +504,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Unknown, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Unknown, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -558,7 +558,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -569,8 +569,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -582,16 +582,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, Unknown, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), Unknown, 322)
           )
         )
       )
@@ -636,7 +636,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -647,8 +647,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -660,16 +660,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Unknown, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Unknown, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -714,7 +714,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -725,8 +725,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Unknown, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, Unknown, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Unknown, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), Unknown, 212)
           )
         )
       )
@@ -738,16 +738,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -792,7 +792,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -803,8 +803,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -816,16 +816,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, In, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Unknown, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), In, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Unknown, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -873,7 +873,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -884,8 +884,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -897,16 +897,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -952,7 +952,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -963,8 +963,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), InOut, 212)
           )
         )
       )
@@ -976,16 +976,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT5(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, In, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), In, 322)
           )
         )
       )
@@ -1035,7 +1035,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1046,8 +1046,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1(-1), InOut, 212)
           )
         )
       )
@@ -1059,17 +1059,17 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313),
-            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9, Out, 314)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313),
+            PhysicalDeviceCommObject("device3Node1ComObj4", DPT9(-1), Out, 314)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9(-1), InOut, 322)
           )
         )
       )
@@ -1112,7 +1112,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1123,8 +1123,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1(-1), InOut, 212)
           )
         )
       )
@@ -1136,16 +1136,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT5, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT5(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9(-1), InOut, 322)
           )
         )
       )
@@ -1192,7 +1192,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1203,8 +1203,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT19, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT19, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT19(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT19(-1), InOut, 212)
           )
         )
       )
@@ -1216,16 +1216,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9(-1), InOut, 322)
           )
         )
       )
@@ -1272,7 +1272,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1283,8 +1283,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown(-1), InOut, 212)
           )
         )
       )
@@ -1296,16 +1296,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9(-1), InOut, 322)
           )
         )
       )
@@ -1351,7 +1351,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1362,8 +1362,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT1(-1), InOut, 212)
           )
         )
       )
@@ -1375,16 +1375,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT9(-1), InOut, 322)
           )
         )
       )
@@ -1430,7 +1430,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -1441,8 +1441,8 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, InOut, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPTUnknown(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown(-1), InOut, 212)
           )
         )
       )
@@ -1454,16 +1454,16 @@ class VerifierTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312),
-            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9, Out, 313)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312),
+            PhysicalDeviceCommObject("device3Node1ComObj3", DPT9(-1), Out, 313)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT7, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT7(-1), InOut, 322)
           )
         )
       )
@@ -1621,14 +1621,14 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     res.head.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
     res.last.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
 
-    res.head.msg.contains(DPT1.toString) shouldBe true
-    res.head.msg.contains(DPT9.toString) shouldBe true
+    res.head.msg.contains(DPT1(-1).toString) shouldBe true
+    res.head.msg.contains(DPT9(-1).toString) shouldBe true
     res.head.msg.contains("device3") shouldBe true
     res.head.msg.contains("device5") shouldBe true
     res.head.msg.contains("322") shouldBe true
 
-    res.last.msg.contains(DPT1.toString) shouldBe true
-    res.last.msg.contains(DPT9.toString) shouldBe true
+    res.last.msg.contains(DPT1(-1).toString) shouldBe true
+    res.last.msg.contains(DPT9(-1).toString) shouldBe true
     res.last.msg.contains("device3") shouldBe true
     res.last.msg.contains("device5") shouldBe true
     res.last.msg.contains("322") shouldBe true
@@ -1654,14 +1654,14 @@ class VerifierTest extends AnyFlatSpec with Matchers {
     res.head.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
     res.last.isInstanceOf[ErrorProtoDevicesBoundSameIdDifferentDPT] shouldEqual true
 
-    res.head.msg.contains(DPT1.toString) shouldBe true
-    res.head.msg.contains(DPT9.toString) shouldBe true
+    res.head.msg.contains(DPT1(-1).toString) shouldBe true
+    res.head.msg.contains(DPT9(-1).toString) shouldBe true
     res.head.msg.contains("device2") shouldBe true
     res.head.msg.contains("device6") shouldBe true
     res.head.msg.contains("212") shouldBe true
 
-    res.last.msg.contains(DPT1.toString) shouldBe true
-    res.last.msg.contains(DPT9.toString) shouldBe true
+    res.last.msg.contains(DPT1(-1).toString) shouldBe true
+    res.last.msg.contains(DPT9(-1).toString) shouldBe true
     res.last.msg.contains("device2") shouldBe true
     res.last.msg.contains("device6") shouldBe true
     res.last.msg.contains("212") shouldBe true

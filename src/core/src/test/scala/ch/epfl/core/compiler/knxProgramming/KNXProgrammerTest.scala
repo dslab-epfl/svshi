@@ -15,11 +15,11 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
   private val assignment = GroupAddressAssignment(
     PhysicalStructure(
       List(
-        PhysicalDevice("device1", ("1", "1", "1"), List(PhysicalDeviceNode("node1", List(PhysicalDeviceCommObject("commObject1", DPT9, In, 1))))),
+        PhysicalDevice("device1", ("1", "1", "1"), List(PhysicalDeviceNode("node1", List(PhysicalDeviceCommObject("commObject1", DPT9(-1), In, 1))))),
         PhysicalDevice(
           "device2",
           ("1", "1", "2"),
-          List(PhysicalDeviceNode("node2", List(PhysicalDeviceCommObject("commObject2", DPT1, Out, 2), PhysicalDeviceCommObject("commObject3", DPTUnknown, Out, 3))))
+          List(PhysicalDeviceNode("node2", List(PhysicalDeviceCommObject("commObject2", DPT1(-1), Out, 2), PhysicalDeviceCommObject("commObject3", DPTUnknown(-1), Out, 3))))
         )
       )
     ),

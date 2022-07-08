@@ -34,7 +34,7 @@ object SupportedDeviceBinding {
 case class BinarySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case BinarySensorBinding(_, _) => true
     case _                         => false
@@ -47,7 +47,7 @@ object BinarySensorBinding {
 case class SwitchBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, In))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1), (physDeviceId, DPT1))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT1(-1)), (physDeviceId, DPT1(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case SwitchBinding(_, _) => true
     case _                   => false
@@ -60,7 +60,7 @@ object SwitchBinding {
 case class TemperatureSensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case TemperatureSensorBinding(_, _) => true
     case _                              => false
@@ -73,7 +73,7 @@ object TemperatureSensorBinding {
 case class HumiditySensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case HumiditySensorBinding(_, _) => true
     case _                           => false
@@ -87,7 +87,7 @@ object HumiditySensorBinding {
 case class CO2SensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT9(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case CO2SensorBinding(_, _) => true
     case _                      => false
@@ -101,7 +101,7 @@ object CO2SensorBinding {
 case class DimmerSensorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, Out))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT5))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT5(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case DimmerSensorBinding(_, _) => true
     case _                         => false
@@ -115,7 +115,7 @@ object DimmerSensorBinding {
 case class DimmerActuatorBinding(typeString: String, physDeviceId: Int) extends SupportedDeviceBinding {
   override def getBoundIds: List[Int] = List(physDeviceId)
   override def getIOTypes: Map[Int, IOType] = Map((physDeviceId, In))
-  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT5))
+  override def getKNXDpt: Map[Int, KNXDatatype] = Map((physDeviceId, DPT5(-1)))
   override def equivalent(other: SupportedDeviceBinding): Boolean = other match {
     case DimmerActuatorBinding(_, _) => true
     case _                           => false

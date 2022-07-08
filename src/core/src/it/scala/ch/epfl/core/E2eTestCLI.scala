@@ -534,21 +534,29 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     // Compile the app
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("info: Confirmed over all paths."))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+        }
+      }
     }
-
-    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-      include(
-        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
-      ) and
-      include("info: Confirmed over all paths."))
-    val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
-    os.exists(newAppPath) shouldBe true
-    os.isDir(newAppPath) shouldBe true
-
-    val expectedLibraryPath = pipeline1Path / "expected_library"
-
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
   "compile" should "install the app one when it is valid and verified and show output warning and success messages with json file as input instead of knxproj" in {
@@ -568,21 +576,30 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     // Compile the app
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Main.main(Array("compile", "-f", (pathToJsonInput).toString))
+      Try(Main.main(Array("compile", "-f", (pathToJsonInput).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("info: Confirmed over all paths."))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+        }
+      }
     }
 
-    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-      include(
-        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
-      ) and
-      include("info: Confirmed over all paths."))
-    val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
-    os.exists(newAppPath) shouldBe true
-    os.isDir(newAppPath) shouldBe true
-
-    val expectedLibraryPath = pipeline1Path / "expected_library"
-
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
   "compile" should "install the app one even if the `files` folder is not present" in {
@@ -601,21 +618,31 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     // Compile the app
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("info: Confirmed over all paths."))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+
+        }
+      }
     }
 
-    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-      include(
-        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
-      ) and
-      include("info: Confirmed over all paths."))
-    val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
-    os.exists(newAppPath) shouldBe true
-    os.isDir(newAppPath) shouldBe true
-
-    val expectedLibraryPath = pipeline1Path / "expected_library"
-
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
   "compile" should "fail when the ETS project file name is not absolute" in {
@@ -656,7 +683,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = Send - CO2 value, physicalId = -2092645687: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
@@ -693,15 +720,27 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     val err = new ByteArrayOutputStream()
     Console.withOut(out) {
       Console.withErr(err) {
-        Main.main(Array("run", "-a", "192.0.0.1:42"))
+        Try(Main.main(Array("run", "-a", "192.0.0.1:42"))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => {
+                fail(
+                  s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+                )
+              }
+              case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => {
+            os.exists(pathToExpectedFile) shouldBe true
+            out.toString.trim should (include("this a line of text printed by the runtime module on stdout") and
+              include("this is a line of text printed by runtime module on stdout after 3 sec") and
+              include("this a line of text printed by the runtime module on stderr"))
+            err.toString.trim shouldEqual ""
+          }
+        }
       }
     }
 
-    os.exists(pathToExpectedFile) shouldBe true
-    out.toString.trim should (include("this a line of text printed by the runtime module on stdout") and
-      include("this is a line of text printed by runtime module on stdout after 3 sec") and
-      include("this a line of text printed by the runtime module on stderr"))
-    err.toString.trim shouldEqual ""
   }
 
   "run" should "fail if no KNX address and port have been provided" in {

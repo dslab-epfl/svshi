@@ -30,7 +30,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -41,8 +41,8 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -54,15 +54,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, Out, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), Out, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -122,7 +122,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -133,8 +133,8 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -146,15 +146,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, Out, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), Out, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -214,7 +214,7 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -225,8 +225,8 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -238,15 +238,15 @@ class PythonAddressJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, Out, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), Out, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )

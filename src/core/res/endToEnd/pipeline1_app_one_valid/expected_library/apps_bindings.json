@@ -8,7 +8,7 @@
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
             "typeString": "binary",
-            "physDeviceId": 1542297768
+            "physDeviceId": 270662119
           }
         },
         {
@@ -16,7 +16,7 @@
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
             "typeString": "switch",
-            "physDeviceId": 2136915678
+            "physDeviceId": -1473244268
           }
         }
       ]
