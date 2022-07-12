@@ -702,6 +702,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
 
   // Pipeline 3 - 2 valid apps: app one and then app two
   private val pipeline3ExpectedLibraryAppOneTwoPath: Path = pipeline3Path / "expected_app_library_one_two"
+  private val pipeline3ExpectedLibraryAppOnePath: Path = pipeline3Path / "expected_app_library_one"
 
   "run" should "execute the runtime module" in {
     // Install app one
@@ -2148,6 +2149,134 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
       }
     }
 
+  }
+
+  "generateBindings" should "fail gracefully when a new app has a prototypical structure file but no main.py" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put app two in generated and remove main.py
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.remove(GENERATED_FOLDER_PATH / appTwoName / MAIN_PY_APP_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no main.py file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+  "generateBindings" should "fail gracefully when a new app has no prototypical structure file" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put empty folder app two in generated
+    os.makeDir.all(GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no prototypical structure file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+
+  "compile" should "fail gracefully when a new app has a prototypical structure file but no main.py" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put app two in generated and remove main.py
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.remove(GENERATED_FOLDER_PATH / appTwoName / MAIN_PY_APP_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME, GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no main.py file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+  "compile" should "fail gracefully when a new app has no prototypical structure file" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put empty folder app two in generated
+    os.makeDir.all(GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME, GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no prototypical structure file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
   }
 
   object MockSystemExit extends SystemExit {

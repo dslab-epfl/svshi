@@ -45,7 +45,10 @@ object Svshi extends SvshiTr {
           info("Running the apps...")
           // Copy verification_file.py, runtime_file.py, conditions.py and isolated_fns.json in runtime module
           val appLibraryPath = existingAppsLibrary.path
-          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py", appLibraryPath / "isolated_fns.json"), runtimeModulePath)
+          FileUtils.copyFiles(
+            List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py", appLibraryPath / "isolated_fns.json"),
+            runtimeModulePath
+          )
 
           // Copy files used by each app
           val filesDirPath = runtimeModuleApplicationFilesPath
@@ -115,9 +118,21 @@ object Svshi extends SvshiTr {
       newPhysicalStructure: PhysicalStructure
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
-    val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
-    if (d != SUCCESS_CODE) {
-      return d
+    val dDuplicate = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dDuplicate != SUCCESS_CODE) {
+      return dDuplicate
+    }
+
+    // Then check that no app has no prototypical structure file
+    val dProto = checkForNewAppsWithoutPrototypicalFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dProto != SUCCESS_CODE) {
+      return dProto
+    }
+
+    // Then check that no app has no main.py file
+    val dMain = checkForNewAppsWithoutMainPyFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dMain != SUCCESS_CODE) {
+      return dMain
     }
 
     info("Compiling and verifying the apps...")
@@ -226,9 +241,21 @@ object Svshi extends SvshiTr {
       newPhysicalStructure: PhysicalStructure
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
-    val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
-    if (d != SUCCESS_CODE) {
-      return d
+    val dDuplicate = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dDuplicate != SUCCESS_CODE) {
+      return dDuplicate
+    }
+
+    // Then check that no app has no prototypical structure file
+    val dProto = checkForNewAppsWithoutPrototypicalFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dProto != SUCCESS_CODE) {
+      return dProto
+    }
+
+    // Then check that no app has no main.py file
+    val dMain = checkForNewAppsWithoutMainPyFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dMain != SUCCESS_CODE) {
+      return dMain
     }
 
     info("Generating the bindings...")
@@ -533,6 +560,44 @@ object Svshi extends SvshiTr {
       .map(a =>
         if (existingAppsLibrary.apps.exists(existingA => existingA.name == a.name)) {
           err(s"An application with the name '${a.name}' is already installed! You cannot install two apps with the same name!")
+          ERROR_CODE
+        } else {
+          SUCCESS_CODE
+        }
+      )
+      .fold(SUCCESS_CODE)((x1, x2) => if (x1 == ERROR_CODE || x2 == ERROR_CODE) ERROR_CODE else SUCCESS_CODE)
+  }
+
+  private def checkForNewAppsWithoutPrototypicalFile(
+      existingAppsLibrary: ApplicationLibrary,
+      newAppsLibrary: ApplicationLibrary,
+      success: String => Unit,
+      info: String => Unit,
+      err: String => Unit
+  ): Int = {
+    newAppsLibrary.apps
+      .map(a =>
+        if (!os.exists(a.appFolderPath / APP_PROTO_STRUCT_FILE_NAME) || !os.isFile(a.appFolderPath / APP_PROTO_STRUCT_FILE_NAME)) {
+          err(s"The app '${a.name}' has no prototypical structure file!")
+          ERROR_CODE
+        } else {
+          SUCCESS_CODE
+        }
+      )
+      .fold(SUCCESS_CODE)((x1, x2) => if (x1 == ERROR_CODE || x2 == ERROR_CODE) ERROR_CODE else SUCCESS_CODE)
+  }
+
+  private def checkForNewAppsWithoutMainPyFile(
+      existingAppsLibrary: ApplicationLibrary,
+      newAppsLibrary: ApplicationLibrary,
+      success: String => Unit,
+      info: String => Unit,
+      err: String => Unit
+  ): Int = {
+    newAppsLibrary.apps
+      .map(a =>
+        if (!os.exists(a.appFolderPath / MAIN_PY_APP_FILE_NAME) || !os.isFile(a.appFolderPath / MAIN_PY_APP_FILE_NAME)) {
+          err(s"The app '${a.name}' has no main.py file!")
           ERROR_CODE
         } else {
           SUCCESS_CODE

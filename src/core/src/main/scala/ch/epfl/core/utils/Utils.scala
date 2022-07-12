@@ -1,7 +1,8 @@
 package ch.epfl.core.utils
 
-import ch.epfl.core.model.application.{Application, ApplicationLibrary}
-import ch.epfl.core.parser.json.prototype.AppInputJsonParser
+import ch.epfl.core.model.application.{Application, ApplicationLibrary, NotPrivileged, PermissionLevel}
+import ch.epfl.core.model.prototypical.AppPrototypicalStructure
+import ch.epfl.core.parser.json.prototype.{AppInputJsonParser, PrototypicalStructureJson}
 import ch.epfl.core.utils.FileUtils.{getListOfFiles, getListOfFolders}
 
 /** Utility functions for the compiler and the verifier
@@ -21,7 +22,12 @@ object Utils {
     ApplicationLibrary(
       getListOfFolders(path).map(f => {
         val protoStructPath = f / Constants.APP_PROTO_STRUCT_FILE_NAME
-        val protoStruct = AppInputJsonParser.parse(protoStructPath)
+        val protoStruct = if (os.exists(protoStructPath)) {
+          AppInputJsonParser.parse(protoStructPath)
+        } else {
+          // Default empty config, the process fails later when generateBindings or compile if no file
+          AppPrototypicalStructure(NotPrivileged, 0, Nil)
+        }
         val filesFolderPath = f / Constants.FILES_FOLDER_EACH_APPLICATION_NAME
         if (!os.exists(filesFolderPath)) os.makeDir(filesFolderPath)
         val files = getListOfFiles(filesFolderPath)
