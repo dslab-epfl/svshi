@@ -18,10 +18,6 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
@@ -55,6 +51,7 @@ class InternalState:
     time_weekday: int
     time_month: int
     time_year: int
+    c0: int
 
 
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
@@ -178,6 +175,32 @@ class SvshiApi():
         post: 0 <= __return__
         """
         return internal_state.time_year
+
+    class Hour:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Minute:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Day:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Week:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Month:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    def check_time_property(self, frequency, duration, condition: bool, internal_state: InternalState) -> bool:
+        ...
+
+    def dummy_check(self,i: InternalState,v:int) -> bool:
+        return i.c0 == v
 
 
 

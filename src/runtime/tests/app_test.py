@@ -44,7 +44,7 @@ def test_app_get_apps():
     apps = sorted(
         get_apps(
             "tests/fake_app_library",
-            f"{SVSHI_HOME.split('/')[-1]}.src.runtime.tests.expected.expected_runtime_file",
+            f"runtime.tests.expected.expected_runtime_file",
         ),
         key=lambda a: a.name,
     )

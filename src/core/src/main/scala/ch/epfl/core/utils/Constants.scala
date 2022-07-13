@@ -42,6 +42,10 @@ object Constants {
   val GENERATED_ISOLATED_FNS_FILE_NAME = "isolated_fns.json"
   lazy val GENERATED_ISOLATED_FNS_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_ISOLATED_FNS_FILE_NAME")
   val VERIFICATION_PYTHON_MODULE = "verification.main"
+  val EXTENDED_VERIFICATION_PYTHON_MODULE = "extended_verification.main"
+  val PER_PATH_TIMEOUT = 25.0
+  val PER_CONDITION_TIMEOUT = 30.0
+  val VERIFICATION_FILE_MODULE_NAME = "verification.verification_file"
   val APP_GENERATOR_PYTHON_MODULE = "generator.main"
   val RUNTIME_PYTHON_MODULE = "runtime.main"
   lazy val RUNTIME_PYTHON_MODULE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/runtime")

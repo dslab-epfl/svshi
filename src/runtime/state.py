@@ -37,7 +37,7 @@ else:
 
 from .logger import Logger
 from .verification_file import AppState, PhysicalState, IsolatedFunctionsValues
-from .runtime_file import InternalState
+from .runtime_file import InternalState, CheckState
 from .app import App
 from .isolated_functions import RuntimeIsolatedFunction
 from .joint_apps import JointApps
@@ -89,8 +89,13 @@ class State:
         }
 
         self._internal_state: InternalState = InternalState(
-            time.localtime(), runtime_app_files_folder_path
+            date_time=time.localtime(), app_files_runtime_folder_path=runtime_app_files_folder_path
         )
+        #leave the check_conditions as default to initialize them now:
+        check_condition_dict = self._internal_state.check_condition
+        time_int = int(time.mktime(self._internal_state.date_time))
+        for k in check_condition_dict.keys():
+            check_condition_dict[k] = CheckState(start_frequency=time_int, start_condition_true=time_int)
 
         self._isolated_fn_values = IsolatedFunctionsValues()
 

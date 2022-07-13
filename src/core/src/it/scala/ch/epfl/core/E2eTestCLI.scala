@@ -28,6 +28,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   private val pipeline2Path = endToEndResPath / "pipeline2_app_one_invalid_bindings"
   private val pipeline3Path = endToEndResPath / "pipeline3_app_one_app_two_valid"
   private val pipeline4Path = endToEndResPath / "pipeline4_app_one_app_two_invalid"
+  private val pipeline5Path = endToEndResPath / "pipeline5_check"
   private val pipelinesRegressionPath = endToEndResPath / "pipelines_regression"
 
   private val inputPath = Constants.SVSHI_HOME_PATH / "input"
@@ -546,7 +547,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           }
         case Success(_) => {
           out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-            include("info: Confirmed over all paths."))
+            include("CONFIRMED"))
           val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
           os.exists(newAppPath) shouldBe true
           os.isDir(newAppPath) shouldBe true
@@ -588,7 +589,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           }
         case Success(_) => {
           out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-            include("info: Confirmed over all paths."))
+            include("CONFIRMED"))
           val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
           os.exists(newAppPath) shouldBe true
           os.isDir(newAppPath) shouldBe true
@@ -630,7 +631,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           }
         case Success(_) => {
           out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-            include("info: Confirmed over all paths."))
+            include("CONFIRMED"))
           val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
           os.exists(newAppPath) shouldBe true
           os.isDir(newAppPath) shouldBe true
@@ -683,7 +684,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1602086147: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
@@ -1735,8 +1736,91 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
-              out.toString.trim should (include(s"""ERROR: False when calling test_app_two_iteration"""))
-              out.toString.trim should (include(s"""ERROR: At line 226:  post: test_app_one_invariant(**__return__)"""))
+              out.toString.trim should (include(s"""ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_3_1d = 23, GA_0_0_1_1e = False]"""))
+
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
+              os.exists(newAppPath) shouldBe false
+
+              // Library with only app one
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  // Pipeline 5 - 2 apps: app one valid and then app two that contains a check should be installed
+  "compile" should "install check app when app1 satisfies the check property" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline5Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline5Path / "expected_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline5Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline5Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline5Path / "test_app_two_two_hours_everyday_check", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(s"The execution of the update command fails with error code = $errorCode\nStdOut is:\n${out.toString}")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
+          }
+        case Success(_) => {
+          // Check
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and include("CONFIRMED"))
+        }
+      }
+
+    }
+
+  }
+
+  // Pipeline 5 - 2 apps: app one valid and then app two that contains a check should be installed
+  "compile" should "not install check app when app1 does not satisfies the check property" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline5Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline5Path / "expected_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline5Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline5Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline5Path / "test_app_two_twenty_hours_everyday_check", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(
+                "ERROR: unsat for invariant test_app_two_invariant This condition is always false: " +
+                  "svshi_api.check_time_property(svshi_api.Day(1), svshi_api.Hour(        20), condition=TEST_APP_TWO_SWITCH.is_on(physical_state,        internal_state))"
+              ))
 
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false
@@ -1923,8 +2007,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
                 out.toString.trim should (include(
                   s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appTwoName' has not been removed."""
                 ))
-                out.toString.trim should (include("ERROR: False when calling test_app_one_iteration("))
-                out.toString.trim should (include("ERROR: At line 194:  post: test_app_one_invariant(**__return__)"))
+                out.toString.trim should (include("ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_1_10 = False]"))
                 compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")

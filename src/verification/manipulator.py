@@ -154,6 +154,7 @@ class Manipulator:
         self.__instances_names_per_app = instances_names_per_app
         self.__filenames_per_app = filenames_per_app
         self.__files_folder_path = files_folder_path
+        self.check_counter = 0
 
     def __period_from_docstring(self, docstring: str) -> int:
         """Return the `period:` value of a docstring."""
@@ -633,6 +634,9 @@ class Manipulator:
                         op.args.append(
                             ast.Name(self.__INTERNAL_STATE_ARGUMENT, ast.Load)
                         )
+                    elif method_name in {"check_time_property"} and not verification:
+                        op.args.append(ast.Name(str(self.check_counter), ast.Load))
+                        self.check_counter += 1
                     # If we have svshi_api.get_latest_value or
                     # svshi_api.trigger_if_not_running,
                     # rename the function called.

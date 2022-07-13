@@ -29,7 +29,7 @@
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
             "typeString": "temperature",
-            "physDeviceId": -48198848
+            "physDeviceId": -88280997
           }
         },
         {

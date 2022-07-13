@@ -23,10 +23,6 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
@@ -44,8 +40,15 @@ class IsolatedFunctionsValues:
 
 
 @dataclasses.dataclass
+class CheckState:
+    start_frequency: int = 0
+    start_condition_true: int = 0
+    condition_was_true: bool = False
+
+@dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    check_condition = {}
     app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 
 
@@ -114,7 +117,6 @@ class Switch_test_app_two_switch():
 
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -154,6 +156,50 @@ class SvshiApi():
         """
         return internal_state.date_time.tm_year
 
+    class Hour:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 3600
+
+    class Minute:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 60
+
+    class Day:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 3600 * 24
+
+    class Week:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 7 * 24 * 3600
+
+    class Month:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 30 * 24 * 3600
+
+    def check_time_property(self, frequency, duration, condition, internal_state: InternalState, check_num: int) -> bool:
+        check_obj = internal_state.check_condition[check_num]
+        internal_time = int(time.mktime(internal_state.date_time))
+        if condition:
+            if check_obj.condition_was_true:
+                # condition was true at last iteration, we need to increase the duration's counter
+                if internal_time - check_obj.start_condition_true >= duration.value:
+                    #duration.value is in seconds
+                    check_obj.start_frequency = internal_time # condition is true since the given start frequency
+            else:
+                #start the counter to see how long the condition remains true
+                check_obj.condition_was_true = True
+                check_obj.start_condition_true = internal_time
+        else:
+            if check_obj.condition_was_true:
+                if internal_time - check_obj.start_condition_true >= duration.value:
+                    check_obj.start_frequency = internal_time # condition is true since the given start frequency
+                check_obj.condition_was_true = False
+        frequency_reached = internal_time - check_obj.start_frequency >= frequency.value
+        return not frequency_reached
+
+    class OnTriggerConsumer(Protocol):
+        """Type alias for the on_trigger consumer."""
+        def __call__(self, on_trigger_fn: Callable, *args, **kwargs) -> None: ...
     _T = TypeVar("_T")
     _P = ParamSpec("_P")
     # Type alias for the on_trigger consumer.

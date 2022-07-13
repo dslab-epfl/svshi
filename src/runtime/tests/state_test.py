@@ -257,7 +257,6 @@ class StateHolder:
             test2_app_state.INT_0 = 42
             test2_app_state.FLOAT_1 = 42.42
             test2_app_state.BOOL_2 = True
-            test2_app_state.STR_3 = "the answer to everything is 42"
         else:
             self.app_two_called = True
         self.app_three_called = True
@@ -813,7 +812,6 @@ async def test_state_update_app_state():
     new_int_0_value = 42
     new_float_1_value = 42.42
     new_bool_2_value = True
-    new_str_3_value = "the answer to everything is 42"
 
     test_state_holder.set_app_two_code("test_two_code_app_state")
 
@@ -856,7 +854,6 @@ async def test_state_update_app_state():
         INT_0=new_int_0_value,
         FLOAT_1=new_float_1_value,
         BOOL_2=new_bool_2_value,
-        STR_3=new_str_3_value,
     )
     assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
     assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()

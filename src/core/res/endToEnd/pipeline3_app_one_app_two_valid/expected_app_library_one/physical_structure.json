@@ -7,7 +7,7 @@
         {
           "name": "Channel - CH-0 - IP settings",
           "comObjects": [
-            
+
           ]
         }
       ]
@@ -40,8 +40,8 @@
             {
               "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
               "datatype": "DPT-1",
-              "ioType": "in/out",
-              "id": 209048516
+              "ioType": "in",
+              "id": -1213567979
             }
           ]
         }
@@ -74,8 +74,8 @@
             {
               "name": "Channel I1 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "in/out",
-              "id": 1375494812
+              "ioType": "out",
+              "id": 630399157
             }
           ]
         },
@@ -85,8 +85,8 @@
             {
               "name": "Channel I2 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "in/out",
-              "id": 450822335
+              "ioType": "out",
+              "id": -1125409237
             }
           ]
         },
@@ -125,38 +125,38 @@
             {
               "name": "Firmware - Version",
               "datatype": "DPT-Unknown",
-              "ioType": "out",
-              "id": -1725825766
+              "ioType": "unknown",
+              "id": -1000353478
             },
             {
               "name": "CO2 value - Send",
               "datatype": "DPT-9-8",
-              "ioType": "out",
-              "id": -1602086147
+              "ioType": "unknown",
+              "id": -1184303279
             },
             {
               "name": "Relative humidity - Send",
               "datatype": "DPT-9-7",
-              "ioType": "out",
-              "id": 60610091
+              "ioType": "unknown",
+              "id": 711915391
             },
             {
               "name": "Air pressure - Send",
               "datatype": "DPT-14-58",
-              "ioType": "out",
-              "id": 171552419
+              "ioType": "unknown",
+              "id": 245941911
             },
             {
               "name": "Degree of comfort - Send",
               "datatype": "DPT-5-1",
-              "ioType": "out",
-              "id": 1738919070
+              "ioType": "unknown",
+              "id": 620186758
             },
             {
               "name": "Temperature value - Send",
               "datatype": "DPT-9-1",
-              "ioType": "out",
-              "id": -48198848
+              "ioType": "unknown",
+              "id": -88280997
             },
             {
               "name": "CO2 Offset - Measurement value offset",
@@ -178,32 +178,32 @@
             {
               "name": "CO2 threshold 1 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": 842685262
+              "ioType": "unknown",
+              "id": -31549778
             },
             {
               "name": "CO2 threshold 2 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": 101433736
+              "ioType": "unknown",
+              "id": -466622281
             },
             {
               "name": "CO2 threshold 3 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": -1656388986
+              "ioType": "unknown",
+              "id": 2144426406
             },
             {
               "name": "Ventilation of CO2 - Actuating value 0-100%",
               "datatype": "DPT-5-1",
-              "ioType": "out",
-              "id": 102571518
+              "ioType": "unknown",
+              "id": 725755485
             },
             {
               "name": "CO2 scenes - Send",
               "datatype": "DPT-17-1",
-              "ioType": "out",
-              "id": -891283031
+              "ioType": "unknown",
+              "id": -533047851
             }
           ]
         },
@@ -213,32 +213,32 @@
             {
               "name": "Humidity threshold 1 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": 260635346
+              "ioType": "unknown",
+              "id": 891783618
             },
             {
               "name": "Humidity threshold 2 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": 899634006
+              "ioType": "unknown",
+              "id": -333410284
             },
             {
               "name": "Humidity threshold 3 - Switching",
               "datatype": "DPT-1-1",
-              "ioType": "out",
-              "id": -1803164184
+              "ioType": "unknown",
+              "id": -1039824473
             },
             {
               "name": "Ventilating humidity - Actuating value 0-100%",
               "datatype": "DPT-5-1",
-              "ioType": "out",
-              "id": 169607414
+              "ioType": "unknown",
+              "id": 1437071751
             },
             {
               "name": "Humidity scenes - Send",
               "datatype": "DPT-17-1",
-              "ioType": "out",
-              "id": 1098224059
+              "ioType": "unknown",
+              "id": -1955552901
             }
           ]
         },
@@ -248,69 +248,69 @@
             {
               "name": "Control actual value - Send",
               "datatype": "DPT-9-1",
-              "ioType": "out",
-              "id": 2137688082
+              "ioType": "unknown",
+              "id": 297285294
             },
             {
               "name": "Operating mode preset - Receive",
               "datatype": "DPT-20-102",
-              "ioType": "in",
-              "id": -1533250797
+              "ioType": "unknown",
+              "id": 610010774
             },
             {
               "name": "Presence - Receive",
               "datatype": "DPT-1-18",
-              "ioType": "in",
-              "id": -1807055591
+              "ioType": "unknown",
+              "id": 53771218
             },
             {
               "name": "Window status - Closed=0, open=1",
               "datatype": "DPT-1-19",
-              "ioType": "in",
-              "id": -226534607
+              "ioType": "unknown",
+              "id": -1746855724
             },
             {
               "name": "Operating mode as scene - Save/call up",
               "datatype": "DPT-18-1",
-              "ioType": "in/out",
-              "id": 1121403300
+              "ioType": "unknown",
+              "id": 118898617
             },
             {
               "name": "Current operating mode - Send",
               "datatype": "DPT-20-102",
-              "ioType": "out",
-              "id": -736121376
+              "ioType": "unknown",
+              "id": 907279147
             },
             {
               "name": "Heating actuating value - Send",
               "datatype": "DPT-5-1",
-              "ioType": "out",
-              "id": -332965869
+              "ioType": "unknown",
+              "id": 2012212597
             },
             {
               "name": "Base setpoint - Defining the set temperature",
               "datatype": "DPT-9-1",
-              "ioType": "in",
-              "id": -343491868
+              "ioType": "unknown",
+              "id": 1286892473
             },
             {
               "name": "Setpoint offset at rotary control - Send",
               "datatype": "DPT-9-2",
-              "ioType": "out",
-              "id": 350975025
+              "ioType": "unknown",
+              "id": 200162452
             },
             {
               "name": "Current setpoint - Setting/sending",
               "datatype": "DPT-9-1",
-              "ioType": "in/out",
-              "id": 207554292
+              "ioType": "unknown",
+              "id": -1215108948
             }
           ]
         },
         {
           "name": "Channel - CH-6 - External inputs",
           "comObjects": [
-            
+
           ]
         },
         {
@@ -330,14 +330,14 @@
             {
               "name": "Alarm - Info",
               "datatype": "DPT-Unknown",
-              "ioType": "out",
-              "id": -284347676
+              "ioType": "unknown",
+              "id": 910253167
             },
             {
               "name": "Alarm - Error text",
               "datatype": "DPT-16-0",
-              "ioType": "out",
-              "id": 800418858
+              "ioType": "unknown",
+              "id": 499693633
             }
           ]
         }

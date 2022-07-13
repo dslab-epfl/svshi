@@ -257,7 +257,7 @@ else:
 
 Furthermore, applications have access to a set of variables (the _app state_) they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an [event-based manner](#execution) (either the KNX devices' state changes or a periodic app's timer is finished). All calls to `iteration()` are independent and thus SVSHI offers a way to store some state that will live in between calls. There is a local state instance _per app_.
 
-To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a [dataclass](https://docs.python.org/3/library/dataclasses.html) and it contains 4 fields of each of the following types: `int`, `float`, `bool` and `str`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where X equals 0, 1, 2 or 3.
+To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a [dataclass](https://docs.python.org/3/library/dataclasses.html) and it contains 4 fields of each of the following types: `int`, `float`, `bool`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` where X equals 0, 1, 2 or 3.
 
 These values can be used in `iteration()` and `invariant()`. One should be careful while using it in `invariant()` or in a condition that will affect the KNX installation's state (the _physical_ state): the formal verification would fail if ANY possible value of the `app_state` leads to an invalid state after running `iteration()` even if this case should not occur because of previous calls to `iteration()` that would have set the values.
 
@@ -282,6 +282,20 @@ The `svshi_api` instance additionally offers functions to interact with external
 - `get_file_text_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a text file and return the `IO[str]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
 - `get_file_binary_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a binary file and return the `IO[bytes]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
 - `get_file_path(file_name)`: returns the path to the file with the given filename as managed by SVSHI. This can be used to pass as arguments to some libraries. However, you must use use the `get_file_...` functions to open the file directly!
+
+To ease the verification process of time sensitive functions, a `check_time_property` function is offered:
+
+`check_time_property` has three arguments : `frequency`,`duration` and finally the condition.
+- `frequency` and `duration` time are given in `svshi_api`, already imported on the `main.py`.
+- `frequency` indicates how often the property must be valid. Having `svshi_api.Day(2)` for frequency means that the property must be true every two days.
+- `duration` states for how long the property holds. For example, if `duration` is `svshi_api.Minute(10)`, the property must be always valid for 10 minutes, continuously.
+
+Classes in `svshi_api` are used to represent various time durations; Possible representations are `Year`,`Month`,`Week`,`Day`,`Hour` and `Minute`.
+Each of these instances take one value at construction, the amount of time. Example: `svshi_api.Day(5)` represent 5 days.
+- `condition` is the proposition that needs to be valid for some time at the given frequency. WARNING: Do not use any previously declared variables or the verification will fail.
+For example, if you want that the `switch_one` is on every hour for ten minutes, you can write:
+`svshi_api.check_time_property(frequency=Hour(1),duration=Minute(10),condition=switch_one.is_on()`
+NB: This function can only be used in the `invariant` and cannot be used in `iteration`.
 
 ### App example
 

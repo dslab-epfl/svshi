@@ -130,3 +130,79 @@ class SvshiApi:
         :returns the path to the given filename
         """
         return f"files/{file_name}"
+
+    class Hour:
+        """
+        Class used to set an hourly frequency or a duration of hours in svshi api's check_time_property function
+        Example: A frequency set to Hour(3) means the condition should be true for a give duration every three hours
+        Example: A duration set to Hour(2) means the condition should be true for two hours every given frequency
+
+        Value is between 0 and 23
+        """
+
+        def __init__(self, value: int):
+            pass
+
+    class Minute:
+        """
+        Class used to set a frequency of minutes or a duration of minutes in svshi api's check_time_property function
+        Example: A frequency set to Minute(30) means the condition should be true for a give duration every half an hour
+        Example: A duration set to Minute(10) means the condition should be true for 10 minutes every given frequency
+
+        Value is between 0 and 59
+        """
+
+        def __init__(self, value: int):
+            pass
+
+    class Day:
+        """
+        Class used to set a daily frequency or a duration of days in svshi api's check_time_property function
+        Example: A frequency set to Day(3) means the condition should be true for a give duration every three days
+        Example: A duration set to Day(1) means the condition should be true for one day every given frequency
+
+        Value is between 1 and 7
+        """
+
+        def __init__(self, value: int):
+            pass
+
+    class Week:
+        """
+        Class used to set a weekly frequency or a duration of weeks in svshi api's check_time_property function
+        Example: A frequency set to Week(3) means the condition should be true for a give duration every three weeks
+        Example: A duration set to Week(2) means the condition should be true for two weeks every given frequency
+
+        Value is between 1 and 4
+        """
+
+        def __init__(self, value: int):
+            pass
+
+    class Month:
+        """
+        Class used to set a monthly frequency or a duration of months in svshi api's check_time_property function
+        Example: A frequency set to Month(5) means the condition should be true for a give duration every five months
+        Example: A duration set to Month(2) means the condition should be true for two months every given frequency
+
+        Value is between 1 and 12
+        """
+
+        def __init__(self, value: int):
+            pass
+
+    def check_time_property(self, frequency, duration, condition: bool) -> bool:
+        """
+        This function can be used to check time dependent conditions in the apps invariants. It is designed to
+        check that for every time period given by the frequency, a condition is True for a certain amount of time,
+        given by the duration.
+        Example: Check that a window is open for 30 minutes every day
+        :param frequency: Either svshi_api's Minute, Hour, Day, Week or Month, depending
+                          on how often the condition should hold
+        :param duration: Either svshi_api's Minute, Hour, Day, Week or Month, depending
+                          on how long the condition should hold
+        :param condition: A condition on the svshi system that should hold for the given duration of
+                          time within the given frequency
+        :return: True if the condition was True for the given duration in the given frequency of time
+        """
+        pass

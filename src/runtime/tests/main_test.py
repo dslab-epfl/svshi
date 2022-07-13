@@ -21,7 +21,7 @@ ISOLATED_FNS_FILE_PATH = "isol.json"
 REAL_ISOLATED_FNS_FILE_PATH = "tests/expected/expected_isolated_fns.json"
 SVSHI_HOME = os.environ["SVSHI_HOME"].replace("\\", "/")
 RUNTIME_FILE_MODULE = (
-    f"{SVSHI_HOME.split('/')[-1]}.src.runtime.tests.expected.expected_runtime_file"
+    f"runtime.tests.expected.expected_runtime_file"
 )
 
 

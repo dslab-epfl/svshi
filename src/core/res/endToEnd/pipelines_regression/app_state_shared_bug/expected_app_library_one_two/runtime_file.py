@@ -23,10 +23,6 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
@@ -43,8 +39,15 @@ class IsolatedFunctionsValues:
 
 
 @dataclasses.dataclass
+class CheckState:
+    start_frequency: int = 0
+    start_condition_true: int = 0
+    condition_was_true: bool = False
+
+@dataclasses.dataclass
 class InternalState:
     date_time: time.struct_time # time object, at local machine time
+    check_condition = {}
     app_files_runtime_folder_path: str # path to the folder in which files used by apps are stored at runtime
 
 
@@ -90,7 +93,6 @@ class Temperature_sensor_test_app_two_temperature_sensor():
 
 
 class SvshiApi():
-
     def __init__(self):
         pass
 
@@ -129,6 +131,47 @@ class SvshiApi():
         post: 0 <= __return__
         """
         return internal_state.date_time.tm_year
+
+    class Hour:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 3600
+
+    class Minute:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 60
+
+    class Day:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 3600 * 24
+
+    class Week:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 7 * 24 * 3600
+
+    class Month:
+        def __init__(self, value, internal_state: InternalState):
+            self.value = value * 30 * 24 * 3600
+
+    def check_time_property(self, frequency, duration, condition, internal_state: InternalState, check_num: int) -> bool:
+        check_obj = internal_state.check_condition[check_num]
+        internal_time = int(time.mktime(internal_state.date_time))
+        if condition:
+            if check_obj.condition_was_true:
+                # condition was true at last iteration, we need to increase the duration's counter
+                if internal_time - check_obj.start_condition_true >= duration.value:
+                    #duration.value is in seconds
+                    check_obj.start_frequency = internal_time # condition is true since the given start frequency
+            else:
+                #start the counter to see how long the condition remains true
+                check_obj.condition_was_true = True
+                check_obj.start_condition_true = internal_time
+        else:
+            if check_obj.condition_was_true:
+                if internal_time - check_obj.start_condition_true >= duration.value:
+                    check_obj.start_frequency = internal_time # condition is true since the given start frequency
+                check_obj.condition_was_true = False
+        frequency_reached = internal_time - check_obj.start_frequency >= frequency.value
+        return not frequency_reached
 
     _T = TypeVar("_T")
     _P = ParamSpec("_P")
@@ -175,12 +218,13 @@ TEST_APP_TWO_TEMPERATURE_SENSOR = Temperature_sensor_test_app_two_temperature_se
 
 def test_app_one_invariant(test_app_one_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState) ->bool:
-    return test_app_one_app_state.INT_0 != 42
+    return test_app_one_app_state.INT_0 == 40
 
 
 def test_app_one_iteration(test_app_one_app_state: AppState, physical_state:
     PhysicalState, internal_state: InternalState, isolated_fn_values:
     IsolatedFunctionsValues):
+    test_app_one_app_state.INT_0 = 40
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:
@@ -203,6 +247,7 @@ def system_behaviour(test_app_one_app_state: AppState,
     test_app_two_app_state: AppState, physical_state: PhysicalState,
     internal_state: InternalState, isolated_fn_values: IsolatedFunctionsValues
     ):
+    test_app_one_app_state.INT_0 = 40
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state)
     else:

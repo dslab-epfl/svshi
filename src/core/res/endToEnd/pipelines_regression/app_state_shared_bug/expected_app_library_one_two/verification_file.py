@@ -18,10 +18,6 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
@@ -53,6 +49,7 @@ class InternalState:
     time_weekday: int
     time_month: int
     time_year: int
+    c0: int
 
 
 class Binary_sensor_test_app_one_binary_sensor_instance_name():
@@ -177,6 +174,32 @@ class SvshiApi():
         """
         return internal_state.time_year
 
+    class Hour:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Minute:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Day:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Week:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Month:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    def check_time_property(self, frequency, duration, condition: bool, internal_state: InternalState) -> bool:
+        ...
+
+    def dummy_check(self,i: InternalState,v:int) -> bool:
+        return i.c0 == v
+
 
 
 svshi_api = SvshiApi()
@@ -188,7 +211,7 @@ TEST_APP_TWO_TEMPERATURE_SENSOR = Temperature_sensor_test_app_two_temperature_se
 def test_app_one_invariant(test_app_one_app_state: AppState,
     test_app_two_app_state: AppState, physical_state: PhysicalState,
     internal_state: InternalState) ->bool:
-    return test_app_one_app_state.INT_0 != 42
+    return test_app_one_app_state.INT_0 == 40
 
 
 def test_app_one_iteration(test_app_one_app_state: AppState,
@@ -201,6 +224,7 @@ pre: test_app_two_invariant(test_app_one_app_state, test_app_two_app_state, phys
 post: test_app_one_invariant(**__return__)
 post: test_app_two_invariant(**__return__)
 """
+    test_app_one_app_state.INT_0 = 40
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
         internal_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)
@@ -238,6 +262,7 @@ def system_behaviour(test_app_one_app_state: AppState,
     test_app_two_app_state: AppState, physical_state: PhysicalState,
     internal_state: InternalState, isolated_fn_values: IsolatedFunctionsValues
     ):
+    test_app_one_app_state.INT_0 = 40
     if TEST_APP_ONE_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
         internal_state):
         TEST_APP_ONE_SWITCH_INSTANCE_NAME.on(physical_state, internal_state)

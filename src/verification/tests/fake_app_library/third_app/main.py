@@ -5,7 +5,10 @@ FILE = "file1.json"
 def invariant() -> bool:
     # Write the invariants of the app here
     # It can be any boolean expressions containing the read properties of the devices and constants
-    return HUMIDITY_SENSOR_INSTANCE_NAME.read() < 82 and ((2 <= svshi_api.get_hour_of_the_day() <=3 and not SWITCH_INSTANCE_NAME.is_on()) or not(2 <= svshi_api.get_hour_of_the_day() <=3))
+    return HUMIDITY_SENSOR_INSTANCE_NAME.read() < 82 and ((2 <= svshi_api.get_hour_of_the_day() <=3
+                                                           and not SWITCH_INSTANCE_NAME.is_on())
+                                                          or not(2 <= svshi_api.get_hour_of_the_day() <=3)) \
+           and svshi_api.check_time_property(svshi_api.Week(2), svshi_api.Day(2), BINARY_SENSOR_INSTANCE_NAME.is_on())
 
 
 def iteration():

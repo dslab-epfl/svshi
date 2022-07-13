@@ -83,7 +83,10 @@ def test_manipulator_manipulate_mains_verification():
                     internal_state) < 82 and (2 <= svshi_api.get_hour_of_the_day(
                     internal_state) <= 3 and not THIRD_APP_SWITCH_INSTANCE_NAME.is_on(
                     physical_state, internal_state) or not 2 <= svshi_api.
-                    get_hour_of_the_day(internal_state) <= 3)
+                    get_hour_of_the_day(internal_state) <= 3
+                    ) and svshi_api.check_time_property(svshi_api.Week(2), svshi_api.
+                    Day(2), THIRD_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+                    internal_state))
 
 
             def third_app_iteration(first_app_app_state: AppState, second_app_app_state:
@@ -157,7 +160,9 @@ def test_manipulator_manipulate_mains_verification():
                 physical_state: PhysicalState, internal_state: InternalState) ->bool:
                 return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
                     internal_state) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(
-                    physical_state, internal_state)
+                    physical_state, internal_state) and svshi_api.check_time_property(
+                    svshi_api.Day(1), svshi_api.Hour(1),
+                    SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state, internal_state))
 
 
             def second_app_iteration(first_app_app_state: AppState,
@@ -248,7 +253,9 @@ def test_manipulator_manipulate_mains_runtime():
                 return THIRD_APP_HUMIDITY_SENSOR_INSTANCE_NAME.read(physical_state
                     ) < 82 and (2 <= svshi_api.get_hour_of_the_day(internal_state) <= 3 and
                     not THIRD_APP_SWITCH_INSTANCE_NAME.is_on(physical_state) or not 2 <=
-                    svshi_api.get_hour_of_the_day(internal_state) <= 3)
+                    svshi_api.get_hour_of_the_day(internal_state) <= 3
+                    ) and svshi_api.check_time_property(svshi_api.Week(2), svshi_api.
+                    Day(2), THIRD_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state), 0)
 
 
             def third_app_iteration(third_app_app_state: AppState, physical_state:
@@ -321,7 +328,9 @@ def test_manipulator_manipulate_mains_runtime():
             def second_app_invariant(second_app_app_state: AppState, physical_state:
                 PhysicalState, internal_state: InternalState) ->bool:
                 return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state
-                    ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state)
+                    ) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state
+                    ) and svshi_api.check_time_property(svshi_api.Day(1), svshi_api.
+                    Hour(1), SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state), 1)
 
 
             def second_app_iteration(second_app_app_state: AppState, physical_state:

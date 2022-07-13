@@ -238,38 +238,13 @@ object EtsParser {
     }
   )
 
-  private def getIOPortTypeFromFlags(comObjectRefNode: Node, comObjectNode: Node): String = {
-    // The flags are used that way in the XML:
-    // The flags are defined in the comObject element of the XML
-    // But they can be overwritten in the comObjectRef element
-
-    val cFlagComObjectRefText = (comObjectRefNode \@ COMMUNICATIONFLAG_PARAM)
-    val rFlagComObjectRefText = (comObjectRefNode \@ READFLAG_PARAM)
-    val tFlagComObjectRefText = (comObjectRefNode \@ TRANSMITFLAG_PARAM)
-    val wFlagComObjectRefText = (comObjectRefNode \@ WRITEFLAG_PARAM)
-    val uFlagComObjectRefText = (comObjectRefNode \@ UPDATEFLAG_PARAM)
-    val iFlagComObjectRefText = (comObjectRefNode \@ READONINITFLAG_PARAM)
-
-    val cFlagComObjectText = (comObjectNode \@ COMMUNICATIONFLAG_PARAM)
-    val rFlagComObjectText = (comObjectNode \@ READFLAG_PARAM)
-    val tFlagComObjectText = (comObjectNode \@ TRANSMITFLAG_PARAM)
-    val wFlagComObjectText = (comObjectNode \@ WRITEFLAG_PARAM)
-    val uFlagComObjectText = (comObjectNode \@ UPDATEFLAG_PARAM)
-    val iFlagComObjectText = (comObjectNode \@ READONINITFLAG_PARAM)
-
-    val cFlagText = if (cFlagComObjectRefText != "") cFlagComObjectRefText else cFlagComObjectText
-    val rFlagText = if (rFlagComObjectRefText != "") rFlagComObjectRefText else rFlagComObjectText
-    val tFlagText = if (tFlagComObjectRefText != "") tFlagComObjectRefText else tFlagComObjectText
-    val wFlagText = if (wFlagComObjectRefText != "") wFlagComObjectRefText else wFlagComObjectText
-    val uFlagText = if (uFlagComObjectRefText != "") uFlagComObjectRefText else uFlagComObjectText
-    val iFlagText = if (iFlagComObjectRefText != "") iFlagComObjectRefText else iFlagComObjectText
-
-    val cFlag = cFlagText == enabledText // Tells if the device is communicating (i.e., the other flags mean something
-    val rFlag = rFlagText == enabledText
-    val tFlag = tFlagText == enabledText
-    val wFlag = wFlagText == enabledText
-    val uFlag = uFlagText == enabledText
-    val iFlag = iFlagText == enabledText
+  private def getIOPortTypeFromFlags(comObjectNode: Node): String = {
+    val cFlag = (comObjectNode \@ COMMUNICATIONFLAG_PARAM) == enabledText // Tells if the device is communicating (i.e., the other flags mean something
+    val rFlag = (comObjectNode \@ READFLAG_PARAM) == enabledText
+    val tFlag = (comObjectNode \@ TRANSMITFLAG_PARAM) == enabledText
+    val wFlag = (comObjectNode \@ WRITEFLAG_PARAM) == enabledText
+    val uFlag = (comObjectNode \@ UPDATEFLAG_PARAM) == enabledText
+    val iFlag = (comObjectNode \@ READONINITFLAG_PARAM) == enabledText
 
     val in = wFlag || uFlag
     val out = rFlag || tFlag
@@ -303,16 +278,15 @@ object EtsParser {
             case Some(comObjectRef) => {
               val comObjectRefDPTString = comObjectRef \@ DATAPOINTTYPE_PARAM
               val refId = comObjectRef \@ REFID_PARAM
-              val comObjectOpt = (catalogEntry \\ COMOBJECT_TAG).par.find(n => (n \@ ID_PARAM) == refId)
+              val comObject = (catalogEntry \\ COMOBJECT_TAG).par.find(n => (n \@ ID_PARAM) == refId)
               val comObjectRefObjectSize = comObjectRef \@ OBJECTSIZE_PARAM
-              comObjectOpt match {
-                case Some(comObject) => {
-                  val comObjectDPTString = comObject \@ DATAPOINTTYPE_PARAM
+              comObject match {
+                case Some(value) => {
+                  val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
                   val dptStr = if (comObjectRefDPTString.nonEmpty) comObjectRefDPTString else comObjectDPTString // The comObjectRef dpt is the right one if it exists
                   val objectSizeStr =
-                    if (comObjectRefObjectSize.nonEmpty) comObjectRefObjectSize else comObject \@ OBJECTSIZE_PARAM // The comObjectRef objectSize is the right one if it exists
-                  val ioType = getIOPortTypeFromFlags(comObjectRef, comObject)
-                  CommObject(constructCommObjectName(comObject, comObjectRef, catalogEntry), dptStr, ioType, objectSizeStr) :: Nil
+                    if (comObjectRefObjectSize.nonEmpty) comObjectRefObjectSize else value \@ OBJECTSIZE_PARAM // The comObjectRef objectSize is the right one if it exists
+                  CommObject(constructCommObjectName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), objectSizeStr) :: Nil
                 }
                 case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }

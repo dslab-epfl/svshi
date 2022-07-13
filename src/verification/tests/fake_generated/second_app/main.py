@@ -3,7 +3,8 @@ from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_
 def invariant() -> bool:
     # Write the invariants of the app here
     # It can be any boolean expressions containing the read properties of the devices and constants
-    return BINARY_SENSOR_INSTANCE_NAME.is_on() and SWITCH_INSTANCE_NAME.is_on()
+    return BINARY_SENSOR_INSTANCE_NAME.is_on() and SWITCH_INSTANCE_NAME.is_on() \
+           and svshi_api.check_time_property(svshi_api.Day(1), svshi_api.Hour(1), SWITCH_INSTANCE_NAME.is_on())
 
 
 def iteration():

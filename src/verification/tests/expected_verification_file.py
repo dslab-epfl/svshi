@@ -18,10 +18,6 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
@@ -63,6 +59,7 @@ class InternalState:
     time_weekday: int
     time_month: int
     time_year: int
+    c0: int
 
 
 class Binary_sensor_first_app_binary_sensor_instance_name():
@@ -236,14 +233,14 @@ class Dimmer_Sensor_third_app_dimmer_sensor_instance_name():
 class Dimmer_Actuator_third_app_dimmer_actuator_instance_name():
     def set(self, value: int, physical_state: PhysicalState, internal_state: InternalState):
         """
-        pre: 
+        pre:
         post: physical_state.GA_0_0_7  == value
         """
         physical_state.GA_0_0_7 = value
 
     def read(self, physical_state: PhysicalState, internal_state: InternalState) -> int:
         """
-        pre: 
+        pre:
         post: physical_state.GA_0_0_7  == __return__
         """
         return physical_state.GA_0_0_7
@@ -330,6 +327,32 @@ class SvshiApi():
         """
         return internal_state.time_year
 
+    class Hour:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Minute:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Day:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Week:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    class Month:
+        def __init__(self, value: int, internal_state: InternalState):
+            self.value = value
+
+    def check_time_property(self, frequency, duration, condition: bool, internal_state: InternalState) -> bool:
+        ...
+
+    def dummy_check(self,i: InternalState,v:int) -> bool:
+        return i.c0 == v
+
 
 
 svshi_api = SvshiApi()
@@ -357,7 +380,10 @@ def third_app_invariant(first_app_app_state: AppState, second_app_app_state:
         internal_state) < 82 and (2 <= svshi_api.get_hour_of_the_day(
         internal_state) <= 3 and not THIRD_APP_SWITCH_INSTANCE_NAME.is_on(
         physical_state, internal_state) or not 2 <= svshi_api.
-        get_hour_of_the_day(internal_state) <= 3)
+        get_hour_of_the_day(internal_state) <= 3
+        ) and svshi_api.check_time_property(svshi_api.Week(2), svshi_api.
+        Day(2), THIRD_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
+        internal_state))
 
 
 def third_app_iteration(first_app_app_state: AppState, second_app_app_state:
@@ -426,7 +452,9 @@ def second_app_invariant(first_app_app_state: AppState,
     physical_state: PhysicalState, internal_state: InternalState) ->bool:
     return SECOND_APP_BINARY_SENSOR_INSTANCE_NAME.is_on(physical_state,
         internal_state) and SECOND_APP_SWITCH_INSTANCE_NAME.is_on(
-        physical_state, internal_state)
+        physical_state, internal_state) and svshi_api.check_time_property(
+        svshi_api.Day(1), svshi_api.Hour(1),
+        SECOND_APP_SWITCH_INSTANCE_NAME.is_on(physical_state, internal_state))
 
 
 def second_app_iteration(first_app_app_state: AppState,
