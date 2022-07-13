@@ -680,9 +680,9 @@ The `name` is used as the instance name in the Python app that is generated. It 
 The `deviceType` should be supported by SVSHI.
 At the moment, the supported devices are:
 
-- **Binary sensors** (deviceType = "binary")
+- **Binary sensors** (deviceType = "binarySensor")
 - **Temperature sensors** (deviceType = "temperature")
-- **Humidity sensors** (deviceType = "humidity")
+- **Humidity sensors** (deviceType = "humiditySensor")
 - **CO2 sensors** (deviceType = "co2")
 - **Switches** (deviceType = "switch")
 

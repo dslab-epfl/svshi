@@ -2,8 +2,8 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from models.binary import BinarySensor
-from models.co2 import CO2Sensor
+from models.binarySensor import BinarySensor
+from models.co2Sensor import CO2Sensor
 from models.switch import Switch
 
 from models.state import AppState

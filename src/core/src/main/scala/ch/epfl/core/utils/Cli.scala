@@ -46,6 +46,8 @@ object Cli {
     */
   case object Gui extends Task
 
+  case object DeviceMappings extends Task
+
   implicit object TaskRead
       extends TokensReader[Task](
         "command",
@@ -60,6 +62,7 @@ object Cli {
             case "listapps" | "la"         => Right(ListApps)
             case "version" | "v"           => Right(GetVersion)
             case "gui"                     => Right(Gui)
+            case "devicemappings"          => Right(DeviceMappings)
             case token: String             => Left(token)
           }
       )
@@ -76,7 +79,7 @@ object Cli {
       @arg(
         name = "task",
         doc =
-          "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps' and 'version'. This argument is not case sensitive.",
+          "The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps', 'version', 'gui' and 'deviceMappings. This argument is not case sensitive.",
         positional = true
       )
       task: Task,

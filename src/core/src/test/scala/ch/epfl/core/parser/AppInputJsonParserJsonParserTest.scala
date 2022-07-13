@@ -24,8 +24,8 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
   "parseJson" should "return the correct ParsedStructure with correct input NotPrivileged" in {
     val json = os.read(protoJsonResDirectoryPath / "proto1.json")
 
-    val device1 = DeviceInstanceJson("device1", "binary")
-    val device2 = DeviceInstanceJson("device2", "binary")
+    val device1 = DeviceInstanceJson("device1", "binarySensor")
+    val device2 = DeviceInstanceJson("device2", "binarySensor")
     val device3 = DeviceInstanceJson("device3", "switch")
     val app = PrototypicalStructureJson(permissionLevel = "notPrivileged", timer = 0, devices = List(device1, device2, device3))
 
@@ -35,8 +35,8 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
   "parseJson" should "return the correct ParsedStructure with correct input Privileged" in {
     val json = os.read(protoJsonResDirectoryPath / "proto2.json")
 
-    val device1 = DeviceInstanceJson("device1", "binary")
-    val device2 = DeviceInstanceJson("device2", "binary")
+    val device1 = DeviceInstanceJson("device1", "binarySensor")
+    val device2 = DeviceInstanceJson("device2", "binarySensor")
     val device3 = DeviceInstanceJson("device3", "switch")
     val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
@@ -46,7 +46,7 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
   "constructPrototypicalStructure(parseJson(...))" should "throw UnsupportedDeviceException on unsupported device type" in {
     val json = os.read(protoJsonResDirectoryPath / "proto3.json")
 
-    an[MatchError] should be thrownBy AppInputJsonParser
+    an[UnsupportedDeviceException] should be thrownBy AppInputJsonParser
       .constructPrototypicalStructure(AppInputJsonParser.parseJson(json))
   }
 
@@ -88,8 +88,8 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
   }
 
   "writeToFile" should "create a file that gives the same structure when parsed again" in {
-    val device1 = DeviceInstanceJson("device1", "binary")
-    val device2 = DeviceInstanceJson("device2", "binary")
+    val device1 = DeviceInstanceJson("device1", "binarySensor")
+    val device2 = DeviceInstanceJson("device2", "binarySensor")
     val device3 = DeviceInstanceJson("device3", "switch")
     val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 
@@ -100,8 +100,8 @@ class AppInputJsonParserJsonParserTest extends AnyFlatSpec with Matchers with Be
   }
 
   "writeToFile" should "create a file that gives the same structure when parsed again if file already exists" in {
-    val device1 = DeviceInstanceJson("device1", "binary")
-    val device2 = DeviceInstanceJson("device2", "binary")
+    val device1 = DeviceInstanceJson("device1", "binarySensor")
+    val device2 = DeviceInstanceJson("device2", "binarySensor")
     val device3 = DeviceInstanceJson("device3", "switch")
     val app = PrototypicalStructureJson(permissionLevel = "privileged", timer = 60, devices = List(device1, device2, device3))
 

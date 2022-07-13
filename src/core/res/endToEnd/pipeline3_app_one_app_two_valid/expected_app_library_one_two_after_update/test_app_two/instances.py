@@ -2,7 +2,7 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from models.temperature import TemperatureSensor
+from models.temperatureSensor import TemperatureSensor
 
 from models.state import AppState
 from models.SvshiApi import SvshiApi

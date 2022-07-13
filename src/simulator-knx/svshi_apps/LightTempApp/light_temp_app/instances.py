@@ -3,8 +3,8 @@
 ###
 
 from models.switch import Switch
-from models.binary import BinarySensor
-from models.temperature import TemperatureSensor
+from models.binarySensor import BinarySensor
+from models.temperatureSensor import TemperatureSensor
 
 from models.state import AppState
 from models.SvshiApi import SvshiApi

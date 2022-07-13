@@ -14,7 +14,7 @@ class CO2Sensor(Device):
     """
 
     def __init__(self, name: str):
-        super().__init__(name, "co2")
+        super().__init__(name, "co2Sensor")
 
     def read(self) -> Optional[float]:
         """

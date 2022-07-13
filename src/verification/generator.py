@@ -486,19 +486,19 @@ class Generator:
             type = device.type
             address = device.address
             formatted_group_address = self.__group_addr_to_field_name(address)
-            if type == "binary":
+            if type == "binarySensor":
                 code.append(
                     self.__BINARY_SENSOR_TEMPLATE(
                         app, name, formatted_group_address, verification
                     )
                 )
-            elif type == "temperature":
+            elif type == "temperatureSensor":
                 code.append(
                     self.__TEMPERATURE_SENSOR_TEMPLATE(
                         app, name, formatted_group_address, verification
                     )
                 )
-            elif type == "humidity":
+            elif type == "humiditySensor":
                 code.append(
                     self.__HUMIDITY_SENSOR_TEMPLATE(
                         app, name, formatted_group_address, verification
@@ -510,7 +510,7 @@ class Generator:
                         app, name, formatted_group_address, verification
                     )
                 )
-            elif type == "co2":
+            elif type == "co2Sensor":
                 code.append(
                     self.__CO2_SENSOR_TEMPLATE(
                         app, name, formatted_group_address, verification
@@ -559,11 +559,11 @@ class Generator:
             device_class = "Binary_sensor_"
             if type == "switch":
                 device_class = "Switch_"
-            elif type == "temperature":
+            elif type == "temperatureSensor":
                 device_class = "Temperature_sensor_"
-            elif type == "humidity":
+            elif type == "humiditySensor":
                 device_class = "Humidity_sensor_"
-            elif type == "co2":
+            elif type == "co2Sensor":
                 device_class = "CO2_sensor_"
             elif type == "dimmerSensor":
                 device_class = "Dimmer_Sensor_"

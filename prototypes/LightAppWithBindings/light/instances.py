@@ -3,7 +3,7 @@
 ###
 
 from models.switch import Switch
-from models.binary import BinarySensor
+from models.binarySensor import BinarySensor
 
 from models.state import AppState
 from models.SvshiApi import SvshiApi

@@ -174,13 +174,15 @@ When you want to stop, kill both processes running in terminals.
 
 ## Supported devices
 
-- **Binary sensors** (deviceType = "binary")
-- **Temperature sensors** (deviceType = "temperature")
-- **Humidity sensors** (deviceType = "humidity")
-- **CO2 sensors** (deviceType = "co2")
+- **Binary sensors** (deviceType = "binarySensor")
+- **Temperature sensors** (deviceType = "temperatureSensor")
+- **Humidity sensors** (deviceType = "humiditySensor")
+- **CO2 sensors** (deviceType = "co2Sensor")
 - **Switches** (deviceType = "switch")
 - **Dimmer Actuator** (deviceType = "dimmerActuator")
+  - Note that this dimmer supports single-value dimming (KNX DPT-5-1)
 - **Dimmer Sensor** (deviceType = "dimmerSensor")
+  - - Note that this dimmer supports single-value dimming (KNX DPT-5-1)
 
 ## Developing an application
 
@@ -384,10 +386,10 @@ To execute the generator, run `svshi generateApp -d devices.json -n app_name`, w
 
 You can run `svshi --help` to display the following:
 
-```
-svshi
+```bash
 Secure and Verified Smart Home Infrastructure
-  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps' and 'version'. This argument is not case sensitive.
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps', 'version', 'gui' and
+                           'deviceMappings. This argument is not case sensitive.
   -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
   -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
   -n --app-name <str>      The app name to use for the tasks 'generateApp' and 'removeApp'
@@ -406,6 +408,8 @@ Available commands are:
 - `svshi updateApp -n app_name` to update the code of an app that is already installed
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
+- `svshi gui` to start svshi as a server for the GUI
+- `svshi deviceMappings -f ets.knxproj` to generate a json file containing a list of the prototypical devices offered by your physical devices
 
 Shorter aliases are also available:
 
@@ -464,6 +468,70 @@ This execution model has been chosen for its ease of use: users do not need to w
 
 To provide a GUI in the form of a web application, SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
 
+## Device Mappings
+We provide a way to discover the functionality offered by your physical devices. Given your knxproj file (ETS project file), Svshi produces a json structure containing a list of protoypical devices supported by svshi for each of your physical devices.
+
+Example of such a file:
+
+```json
+{
+    "physicalStructureJson": {...},
+    "deviceMappings": [
+      {
+        "physicalAddress": "1.1.1",
+        "supportedDeviceMappingNodes": [
+          {
+            "name": "Channel - CH-0 - IP settings",
+            "supportedDeviceMappings": [
+              
+            ]
+          }
+        ]
+      },
+      {
+        "physicalAddress": "1.1.7",
+        "supportedDeviceMappingNodes": [
+          {
+            "name": "Default",
+            "supportedDeviceMappings": [
+              {
+                "name": "Input A - Eingang A - Disable",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 85743129
+              },
+              {
+                "name": "Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 270662119
+              },
+              {
+                "name": "Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",
+                "supportedDeviceName": "binarySensor",
+                "physicalCommObjectId": 270662119
+              },
+              {
+                "name": "Input B - Eingang B - Disable",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": -1909925948
+              },
+              {
+                "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 209048516
+              },
+              {
+                "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
+                "supportedDeviceName": "binarySensor",
+                "physicalCommObjectId": 209048516
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+```
+
 ### JSON API
 
 Except otherwise specified, requests reply with a JSON body with the following structure:
@@ -517,7 +585,7 @@ Here are the available endpoints:
 
   Corresponds to the `svshi compile` of the CLI.
 
-  Runs the `compile` operation of `svshi`, replying with the `status` representating whether the compilation was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `compile` operation of `svshi`, replying with the `status` representing whether the compilation was successful or not and the `output` contains the messages returned by `svshi`.
 
   The body must be a `.zip` archive containing the `.knxproj` file used to compile.
 
@@ -525,7 +593,7 @@ Here are the available endpoints:
 
   Corresponds to the `svshi updateApp -n appName` of the CLI.
 
-  Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representating whether the update was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representing whether the update was successful or not and the `output` contains the messages returned by `svshi`.
 
   The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to compile.
 
@@ -533,7 +601,7 @@ Here are the available endpoints:
 
   Corresponds to the `svshi generateBindings` of the CLI.
 
-  Runs the `generateBindings` operation of `svshi`, replying with the `status` representating whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `generateBindings` operation of `svshi`, replying with the `status` representing whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
 
   The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to generate the bindings.
 
@@ -541,13 +609,13 @@ Here are the available endpoints:
 
   Corresponds to the `svshi removeApp -n appName` of the CLI.
 
-  Runs the `removeApp -n appName` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `removeApp -n appName` operation of `svshi`, replying with the `status` representing whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
 
 - POST `/removeAllApps`
 
   Corresponds to the `svshi removeApp --all` of the CLI.
 
-  Runs the `removeApp --all` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `removeApp --all` operation of `svshi`, replying with the `status` representing whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
 
 - POST `/run/:ipPort`
 
@@ -642,6 +710,14 @@ Here are the available endpoints:
 - GET `/assignments`
 
   Replies with a `.zip` archive as body containing the `assignments` folder if assignments are created, 404 error if no assignments are created.
+
+- POST `/deviceMappings`
+
+  Corresponds to the `svshi deviceMappings` of the CLI.
+
+  Runs the `deviceMappings` operation of `svshi`, replying with the json containing the mappings for the devices and the physical structure.
+
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to get the mappings.
 
 The POST endpoints functions cannot be ran in parallel. These endpoints then acquire a "lock" and reply with a 423 error code if the lock is already aquired by another endpoint currently running.
 

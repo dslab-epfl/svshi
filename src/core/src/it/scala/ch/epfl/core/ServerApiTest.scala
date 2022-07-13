@@ -1,11 +1,13 @@
 package ch.epfl.core
 
-import ch.epfl.core.CustomMatchers.{beAFile, beSimilarToLibrary, containThePairOfHeaders, existInFilesystem, haveSameContentAsIgnoringBlanks}
+import ch.epfl.core.CustomMatchers.{beAFile, beSimilarToLibrary, containThePairOfHeaders, existInFilesystem}
 import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
 import ch.epfl.core.api.server.CoreApiServer
 import ch.epfl.core.api.server.json.{BindingsResponse, ResponseBody}
+import ch.epfl.core.deviceMapper.model.{DeviceMapping, StructureMapping, SupportedDeviceMapping, SupportedDeviceMappingNode}
 import ch.epfl.core.model.application.{Application, ApplicationLibrary}
-import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical.BinarySensor
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
@@ -39,11 +41,11 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   private val app1ProtoFileName = "test_app_one_proto.json"
 
-  private val app1ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
-  private val app2ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
-  private val existingAppsLibrary =
+  private lazy val app1ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
+  private lazy val app2ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
+  private lazy val existingAppsLibrary =
     ApplicationLibrary(List(Application("app1", Constants.APP_LIBRARY_FOLDER_PATH / "app1", app1ProtoStruct, Nil)), Constants.APP_LIBRARY_FOLDER_PATH)
-  private val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct, Nil)), Constants.GENERATED_FOLDER_PATH)
+  private lazy val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct, Nil)), Constants.GENERATED_FOLDER_PATH)
   private val existingPhysicalStructure = PhysicalStructure(Nil)
 
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"
@@ -2076,6 +2078,124 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     eventually(timeout(2 seconds)) {
       thread1.isAlive shouldEqual false
     }
+  }
+
+  val channelNameKlix1 = "Channel - MD-2_M-1_MI-1_CH-argCH - CH-{{argCH}}"
+  val commObjectKlix1 = PhysicalDeviceCommObject.from(
+    name = "CH-{{argCH}} - Switching : OnOff",
+    datatype = DPT1(1),
+    ioType = Out,
+    physicalAddress = ("1", "1", "1"),
+    deviceNodeName = channelNameKlix1
+  )
+  val channelNameKlix2 = "Channel - MD-2_M-8_MI-1_CH-argCH - CH-{{argCH}}"
+  val commObjectKlix2 = PhysicalDeviceCommObject.from(
+    name = "CH-{{argCH}} - Switching : OnOff - switch and sensor",
+    datatype = DPT1(1),
+    ioType = InOut,
+    physicalAddress = ("1", "1", "1"),
+    deviceNodeName = channelNameKlix2
+  )
+  val deviceKlix = PhysicalDevice(
+    "KliX (D4)",
+    ("1", "1", "1"),
+    List(
+      PhysicalDeviceNode(
+        channelNameKlix1,
+        List(
+          commObjectKlix1
+        )
+      ),
+      PhysicalDeviceNode(
+        channelNameKlix2,
+        List(
+          commObjectKlix2
+        )
+      )
+    )
+  )
+  private val physicalStructure = PhysicalStructure(List(deviceKlix))
+  val klixMappings = DeviceMapping(
+    "1.1.1",
+    List(
+      SupportedDeviceMappingNode(
+        name = channelNameKlix1,
+        List(SupportedDeviceMapping(name = commObjectKlix1.name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = commObjectKlix1.id))
+      ),
+      SupportedDeviceMappingNode(
+        name = channelNameKlix2,
+        List(SupportedDeviceMapping(name = commObjectKlix2.name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = commObjectKlix2.id))
+      )
+    )
+  )
+  val deviceMappings = StructureMapping(PhysicalStructureJsonParser.physicalStructureToJson(physicalStructure), List(klixMappings))
+
+  "deviceMappings endpoint" should "fail with a file which is not a json nor a knxproj file" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+    val wrongFilePath = tempFolderPath / "input_json_struct.png"
+    os.write(wrongFilePath, "test".getBytes())
+    val newKnxProjFileZip = createInMemZip(wrongFilePath)
+
+    val r =
+      requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = newKnxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 400
+    r.text() shouldEqual "The file for the physical structure must be either a json or a knxproj file!"
+  }
+
+  "deviceMappings endpoint" should "call the Svshi functions with the correct library" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+
+    // Create app libraries:
+    val knxProjFile = simpleEtsProjFilePath
+    val knxProjFileZip = createInMemZip(knxProjFile)
+
+    val captorPhysStruct = ArgCaptor[PhysicalStructure]
+    val captorSuccess = ArgCaptor[String => Unit]
+    val captorInfo = ArgCaptor[String => Unit]
+    val captorWarning = ArgCaptor[String => Unit]
+    val captorError = ArgCaptor[String => Unit]
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = knxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    verify(mockedSvshi).generatePrototypicalDeviceMappings(captorPhysStruct)(captorSuccess, captorInfo, captorWarning, captorError)
+
+    captorPhysStruct.value shouldEqual simpleEtsProjPhysStruct
+  }
+
+  "deviceMappings endpoint" should "return the structure in the file" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+
+    // Create app libraries:
+    val knxProjFile = simpleEtsProjFilePath
+    val knxProjFileZip = createInMemZip(knxProjFile)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = knxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    StructureMapping.parseJson(r.text()) shouldEqual deviceMappings
   }
 
   private def createInMemZip(file: os.Path): Array[Byte] = {

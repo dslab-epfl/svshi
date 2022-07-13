@@ -14,7 +14,7 @@ class BinarySensor(Device):
     """
 
     def __init__(self, name: str):
-        super().__init__(name, "binary")
+        super().__init__(name, "binarySensor")
 
     def is_on(self) -> Optional[bool]:
         """

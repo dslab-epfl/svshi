@@ -62,15 +62,15 @@ class Parser:
 
             type = d["deviceType"]
             import_module_name = type
-            if type == "binary":
+            if type == "binarySensor":
                 type = "BinarySensor"
-            elif type == "temperature":
+            elif type == "temperatureSensor":
                 type = "TemperatureSensor"
-            elif type == "humidity":
+            elif type == "humiditySensor":
                 type = "HumiditySensor"
             elif type == "switch":
                 type = "Switch"
-            elif type == "co2":
+            elif type == "co2Sensor":
                 type = "CO2Sensor"
             elif type == "dimmerSensor":
                 type = "DimmerSensor"

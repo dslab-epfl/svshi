@@ -65,6 +65,8 @@ case class CoreApiServer(
   private val jsonExtension = "json"
   private val WRONG_EXTENSION_FILE_ERROR_MESSAGE = s"The file for the physical structure must be either a $jsonExtension or a $knxprojExtension file!"
 
+  private def CANNOT_GENERATE_DEVICE_MAPPINGS(excMsg: String) = s"Cannot generate the device mappings!\nPlease see the exception: $excMsg"
+
   private val HEADERS_AJAX = Seq("Access-Control-Allow-Origin" -> "*")
 
   private var svshiRunResult: Option[SvshiRunResult] = None
@@ -559,6 +561,33 @@ case class CoreApiServer(
       Response(data = Array[Byte](), statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
     }
   }
+
+  @post("/deviceMappings")
+  def generateDeviceMappings(request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
+        var output: List[String] = List()
+        def outputFunc(s: String, prefix: String): Unit = {
+          debug(createStrMessagePrefix(s, prefix))
+          output = output ::: List(createStrMessagePrefix(s, prefix))
+        }
+        val resCode = svshiSystem.generatePrototypicalDeviceMappings(newPhysicalStructure)(
+          success = s => outputFunc(s, ""),
+          info = s => outputFunc(s, infoPrefix),
+          warning = s => outputFunc(s, warningPrefix),
+          err = s => outputFunc(s, errorPrefix)
+        )
+        if (resCode == Svshi.SUCCESS_CODE) {
+          val json = FileUtils.readFileContentAsString(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+          Response(json, headers = HEADERS_AJAX)
+        } else {
+          Response(CANNOT_GENERATE_DEVICE_MAPPINGS(output.mkString("\n")), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+        }
+      })
+    },
+    defaultResponseStringIfLocked
+  )
 
   private def cleanTempFolders() = {
     if (os.exists(knxprojPrivateFolderPath)) os.remove.all(knxprojPrivateFolderPath)

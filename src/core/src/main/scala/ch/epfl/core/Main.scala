@@ -71,6 +71,24 @@ object Main {
 
     val appNameOpt = config.appName
     config.task match {
+      case Compile | GenerateBindings | DeviceMappings if config.etsProjectFile.isEmpty =>
+        printErrorAndExit("The ETS project file needs to be specified to compile, to generate the bindings or get device mappings")
+      case DeviceMappings =>
+        val etsProjectFile = config.etsProjectFile.get
+        if (!new File(etsProjectFile).isAbsolute) printErrorAndExit("The ETS project file name has to be absolute")
+        else {
+          if (
+            Svshi.generatePrototypicalDeviceMappings(extractPhysicalStructure(etsProjectFile))(
+              success = success,
+              info = info,
+              warning = warning,
+              err = error
+            ) != SUCCESS_CODE
+          ) {
+            printErrorAndExit("Exiting...")
+          }
+        }
+
       case Gui =>
         val addrPort = config.knxAddress
         val (address, port) =
@@ -103,8 +121,6 @@ object Main {
         ) {
           printErrorAndExit("Exiting...")
         }
-      case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
-        printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
         val etsProjectFile = config.etsProjectFile.get
         if (!new File(etsProjectFile).isAbsolute) printErrorAndExit("The ETS project file name has to be absolute")

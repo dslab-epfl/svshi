@@ -7,7 +7,7 @@
           "name": "door_lock_sensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": 270662119
           }
         },
@@ -15,7 +15,7 @@
           "name": "presence_detector",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": 585844677
           }
         }

@@ -4,7 +4,7 @@
   "devices": [
     {
       "name": "humidity_sensor",
-      "deviceType": "humidity"
+      "deviceType": "humiditySensor"
     }
   ]
 }

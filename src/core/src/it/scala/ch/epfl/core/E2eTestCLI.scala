@@ -2,6 +2,8 @@ package ch.epfl.core
 
 import ch.epfl.core.CustomMatchers._
 import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
+import ch.epfl.core.deviceMapper.DeviceMapper
+import ch.epfl.core.deviceMapper.model.StructureMapping
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
@@ -118,6 +120,50 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     Main.coreApiServer = None
   }
 
+  "deviceMappings" should "fail with no ets file" in {
+    val out = new ByteArrayOutputStream()
+    val err = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Console.withErr(err) {
+        Try(Main.main(Array("deviceMappings"))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => {
+                out.toString should include("ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings")
+              }
+              case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => fail("It should have failed!")
+        }
+      }
+    }
+  }
+
+  "deviceMappings" should "write the device mappings in the generated folder" in {
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    val out = new ByteArrayOutputStream()
+    val err = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Console.withErr(err) {
+        Try(Main.main(Array("deviceMappings", "-f", (inputPath / etsProjectFileName).toString))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => fail("The deviceMappings should not have failed!")
+              case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => {
+            GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH should existInFilesystem
+            GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH should beAFile
+
+            val physicalStructure = EtsParser.parseEtsProjectFile(inputPath / etsProjectFileName)
+            val expectedStructure = DeviceMapper.mapStructure(physicalStructure)
+            StructureMapping.parseFromFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH) shouldEqual expectedStructure
+          }
+        }
+      }
+    }
+  }
   "gui" should f"start a server that serves among other things the http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
@@ -163,7 +209,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
       Try(Main.main(Array("version"))) match {
         case Failure(exception) => fail(exception)
         case Success(_) =>
-          out.toString().contains("svshi v") shouldBe true
+          out.toString should include("svshi v")
       }
     }
   }
@@ -684,7 +730,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binarySensor; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
@@ -1296,7 +1342,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                s"""ERROR: The ETS project file needs to be specified to compile or to generate the bindings"""
+                s"""ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings"""
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -1321,7 +1367,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                s"""ERROR: The ETS project file needs to be specified to compile or to generate the bindings"""
+                s"""ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings"""
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")

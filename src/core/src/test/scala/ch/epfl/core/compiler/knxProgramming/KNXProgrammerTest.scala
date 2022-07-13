@@ -28,9 +28,9 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
         AppPrototypeBindings(
           "app1",
           List(
-            DeviceInstanceBinding("device1", HumiditySensorBinding("humidity", 1)),
-            DeviceInstanceBinding("device2", BinarySensorBinding("binary", 2)),
-            DeviceInstanceBinding("device2", TemperatureSensorBinding("temperature", 3))
+            DeviceInstanceBinding("device1", HumiditySensorBinding("humiditySensor", 1)),
+            DeviceInstanceBinding("device2", BinarySensorBinding("binarySensor", 2)),
+            DeviceInstanceBinding("device2", TemperatureSensorBinding("temperatureSensor", 3))
           )
         )
       )

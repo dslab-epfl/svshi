@@ -68,21 +68,21 @@ def test_parser_parse_devices_instances():
 
     assert sorted(instances, key=sorting_function) == sorted(
         [
-            DeviceInstance("first_app_binary_sensor_instance_name", "binary"),
+            DeviceInstance("first_app_binary_sensor_instance_name", "binarySensor"),
             DeviceInstance("first_app_switch_instance_name", "switch"),
-            DeviceInstance("first_app_temperature_sensor_instance_name", "temperature"),
-            DeviceInstance("first_app_humidity_sensor_instance_name", "humidity"),
-            DeviceInstance("second_app_binary_sensor_instance_name", "binary"),
+            DeviceInstance("first_app_temperature_sensor_instance_name", "temperatureSensor"),
+            DeviceInstance("first_app_humidity_sensor_instance_name", "humiditySensor"),
+            DeviceInstance("second_app_binary_sensor_instance_name", "binarySensor"),
             DeviceInstance("second_app_switch_instance_name", "switch"),
             DeviceInstance(
-                "second_app_temperature_sensor_instance_name", "temperature"
+                "second_app_temperature_sensor_instance_name", "temperatureSensor"
             ),
-            DeviceInstance("second_app_humidity_sensor_instance_name", "humidity"),
-            DeviceInstance("third_app_binary_sensor_instance_name", "binary"),
+            DeviceInstance("second_app_humidity_sensor_instance_name", "humiditySensor"),
+            DeviceInstance("third_app_binary_sensor_instance_name", "binarySensor"),
             DeviceInstance("third_app_switch_instance_name", "switch"),
-            DeviceInstance("third_app_temperature_sensor_instance_name", "temperature"),
-            DeviceInstance("third_app_humidity_sensor_instance_name", "humidity"),
-            DeviceInstance("third_app_co_two_sensor_instance_name", "co2"),
+            DeviceInstance("third_app_temperature_sensor_instance_name", "temperatureSensor"),
+            DeviceInstance("third_app_humidity_sensor_instance_name", "humiditySensor"),
+            DeviceInstance("third_app_co_two_sensor_instance_name", "co2Sensor"),
             DeviceInstance("third_app_dimmer_sensor_instance_name", "dimmerSensor"),
             DeviceInstance("third_app_dimmer_actuator_instance_name", "dimmerActuator"),
         ],
@@ -101,52 +101,52 @@ def test_parser_parse_devices_classes():
 
     assert sorted(classes, key=sorting_function) == sorted(
         [
-            DeviceClass(first_app, "binary_sensor_instance_name", "binary", "0/0/1"),
+            DeviceClass(first_app, "binary_sensor_instance_name", "binarySensor", "0/0/1"),
             DeviceClass(first_app, "switch_instance_name", "switch", "0/0/2"),
             DeviceClass(
                 first_app,
                 "temperature_sensor_instance_name",
-                "temperature",
+                "temperatureSensor",
                 "0/0/3",
             ),
             DeviceClass(
                 first_app,
                 "humidity_sensor_instance_name",
-                "humidity",
+                "humiditySensor",
                 "0/0/4",
             ),
-            DeviceClass(second_app, "binary_sensor_instance_name", "binary", "0/0/1"),
+            DeviceClass(second_app, "binary_sensor_instance_name", "binarySensor", "0/0/1"),
             DeviceClass(second_app, "switch_instance_name", "switch", "0/0/2"),
             DeviceClass(
                 second_app,
                 "temperature_sensor_instance_name",
-                "temperature",
+                "temperatureSensor",
                 "0/0/3",
             ),
             DeviceClass(
                 second_app,
                 "humidity_sensor_instance_name",
-                "humidity",
+                "humiditySensor",
                 "0/0/4",
             ),
-            DeviceClass(third_app, "binary_sensor_instance_name", "binary", "0/0/1"),
+            DeviceClass(third_app, "binary_sensor_instance_name", "binarySensor", "0/0/1"),
             DeviceClass(third_app, "switch_instance_name", "switch", "0/0/2"),
             DeviceClass(
                 third_app,
                 "temperature_sensor_instance_name",
-                "temperature",
+                "temperatureSensor",
                 "0/0/3",
             ),
             DeviceClass(
                 third_app,
                 "humidity_sensor_instance_name",
-                "humidity",
+                "humiditySensor",
                 "0/0/4",
             ),
             DeviceClass(
                 third_app,
                 "co_two_sensor_instance_name",
-                "co2",
+                "co2Sensor",
                 "0/0/5",
             ),
             DeviceClass(

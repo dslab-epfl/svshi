@@ -3,8 +3,8 @@
   "timer": 0,
   "devices": [
     {
-      "name": "binary",
-      "deviceType": "binary"
+      "name": "binarySensor",
+      "deviceType": "binarySensor"
     },
     {
       "name": "switch",

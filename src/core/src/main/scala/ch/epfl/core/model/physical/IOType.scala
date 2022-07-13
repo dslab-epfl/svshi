@@ -3,6 +3,8 @@ package ch.epfl.core.model.physical
 import scala.util.matching.Regex
 
 /** Represents the type of I/O provided by communication objects in a physical KNX installation
+  * In: The device accepts value from the and modifies its state (i.e., Actuator)
+  * Out: The device writes its value to the bus or replies to a read request (i.e., Sensor)
   */
 sealed trait IOType
 

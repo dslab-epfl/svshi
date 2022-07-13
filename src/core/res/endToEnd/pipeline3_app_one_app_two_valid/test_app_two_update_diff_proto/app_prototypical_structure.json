@@ -4,7 +4,7 @@
   "devices": [
     {
       "name": "temperature_sensor",
-      "deviceType": "temperature"
+      "deviceType": "temperatureSensor"
     },
     {
       "name": "additional_device",

@@ -11,11 +11,11 @@
     },
     {
       "name": "button",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     },
     {
       "name": "thermometer",
-      "deviceType": "temperature"
+      "deviceType": "temperatureSensor"
     }
   ]
 }

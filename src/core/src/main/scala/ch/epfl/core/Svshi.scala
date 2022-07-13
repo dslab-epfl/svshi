@@ -2,6 +2,7 @@ package ch.epfl.core
 
 import ch.epfl.core.compiler.IncompatibleBindingsException
 import ch.epfl.core.compiler.knxProgramming.Programmer
+import ch.epfl.core.deviceMapper.DeviceMapper
 import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.{KNXDatatype, PhysicalStructure}
 import ch.epfl.core.model.prototypical.SupportedDevice
@@ -662,4 +663,20 @@ object Svshi extends SvshiTr {
 
   def setRuntimeModulePath(newRuntimeModulePath: os.Path): Unit = runtimeModulePath = newRuntimeModulePath
 
+  override def generatePrototypicalDeviceMappings(
+      physicalStructure: PhysicalStructure
+  )(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+    val structureMapping = DeviceMapper.mapStructure(physicalStructure)
+    Try(structureMapping.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)) match {
+      case Failure(exception) => {
+        err(s"Cannot write the mapping to the file! Exception thrown: ${exception.getLocalizedMessage}")
+        ERROR_CODE
+      }
+      case Success(_) => {
+        success("The device mappings were correctly generated!")
+        SUCCESS_CODE
+      }
+    }
+
+  }
 }

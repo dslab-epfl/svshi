@@ -2,7 +2,7 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from models.humidity import HumiditySensor
+from models.humiditySensor import HumiditySensor
 
 from models.state import AppState
 from models.SvshiApi import SvshiApi

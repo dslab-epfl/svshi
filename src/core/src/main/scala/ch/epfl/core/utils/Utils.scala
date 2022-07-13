@@ -1,8 +1,8 @@
 package ch.epfl.core.utils
 
-import ch.epfl.core.model.application.{Application, ApplicationLibrary, NotPrivileged, PermissionLevel}
+import ch.epfl.core.model.application.{Application, ApplicationLibrary, NotPrivileged}
 import ch.epfl.core.model.prototypical.AppPrototypicalStructure
-import ch.epfl.core.parser.json.prototype.{AppInputJsonParser, PrototypicalStructureJson}
+import ch.epfl.core.parser.json.prototype.AppInputJsonParser
 import ch.epfl.core.utils.FileUtils.{getListOfFiles, getListOfFolders}
 
 /** Utility functions for the compiler and the verifier

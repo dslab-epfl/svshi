@@ -2,7 +2,7 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from models.temperature import TemperatureSensor
+from models.temperatureSensor import TemperatureSensor
 from models.switch import Switch
 
 from models.state import AppState

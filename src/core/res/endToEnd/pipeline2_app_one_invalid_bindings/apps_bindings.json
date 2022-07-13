@@ -7,7 +7,7 @@
           "name": "binary_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -1
           }
         },

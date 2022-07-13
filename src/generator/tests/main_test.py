@@ -30,12 +30,12 @@ def test_main():
 
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/__init__.py") == True
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/binary.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/binarySensor.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/device.py") == True
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/humidity.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/humiditySensor.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/switch.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/state.py") == True
-    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/temperature.py") == True
+    assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/temperatureSensor.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/models/multiton.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/__init__.py") == True
     assert os.path.exists(f"{GENERATED_APP_DIRECTORY}/main.py") == True

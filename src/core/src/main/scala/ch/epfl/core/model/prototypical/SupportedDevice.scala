@@ -3,26 +3,42 @@ package ch.epfl.core.model.prototypical
 /** Represents a device supported by the platform, i.e., that can be used in a PrototypicalStructure.
   * New classes are intended to be added here to extend the prototypical devices offering
   */
-sealed trait SupportedDevice
+sealed trait SupportedDevice {
+  def toString: String
+}
 
 object SupportedDevice {
   val defaultPhysicalId: Int = -1
-  final val binarySensorString = "binary"
+  final val binarySensorString = "binarySensor"
+  private final val binarySensorStringLower = binarySensorString.toLowerCase
+
   final val switchString = "switch"
-  final val temperatureSensorString = "temperature"
-  final val humiditySensorString = "humidity"
-  final val co2SensorString = "co2"
+  private final val switchStringLower = switchString.toLowerCase
+
+  final val temperatureSensorString = "temperatureSensor"
+  private final val temperatureSensorStringLower = temperatureSensorString.toLowerCase
+
+  final val humiditySensorString = "humiditySensor"
+  private final val humiditySensorStringLower = humiditySensorString.toLowerCase
+
+  final val co2SensorString = "co2Sensor"
+  private final val co2SensorStringLower = co2SensorString.toLowerCase
+
   final val dimmerSensorString = "dimmerSensor"
+  private final val dimmerSensorStringLower = dimmerSensorString.toLowerCase
+
   final val dimmerActuatorString = "dimmerActuator"
+  private final val dimmerActuatorStringLower = dimmerActuatorString.toLowerCase
 
   def fromString(s: String): SupportedDevice = s.toLowerCase match {
-    case SupportedDevice.binarySensorString      => BinarySensor
-    case SupportedDevice.switchString            => Switch
-    case SupportedDevice.temperatureSensorString => TemperatureSensor
-    case SupportedDevice.humiditySensorString    => HumiditySensor
-    case SupportedDevice.co2SensorString         => CO2Sensor
-    case SupportedDevice.`dimmerSensorString`    => DimmerSensor
-    case SupportedDevice.dimmerActuatorString    => DimmerActuator
+    case SupportedDevice.binarySensorStringLower      => BinarySensor
+    case SupportedDevice.switchStringLower            => Switch
+    case SupportedDevice.temperatureSensorStringLower => TemperatureSensor
+    case SupportedDevice.humiditySensorStringLower    => HumiditySensor
+    case SupportedDevice.co2SensorStringLower         => CO2Sensor
+    case SupportedDevice.dimmerSensorStringLower      => DimmerSensor
+    case SupportedDevice.dimmerActuatorStringLower    => DimmerActuator
+    case _                                            => throw new UnsupportedDeviceException(s"The device '$s' is not supported by SVSHI")
   }
   def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
     case BinarySensor      => BinarySensorBinding(deviceType.toString, defaultPhysicalId)

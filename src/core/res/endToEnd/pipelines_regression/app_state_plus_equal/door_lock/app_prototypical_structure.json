@@ -4,11 +4,11 @@
   "devices": [
     {
       "name": "door_lock_sensor",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     },
     {
       "name": "presence_detector",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     }
   ]
 }
