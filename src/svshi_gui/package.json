@@ -1,6 +1,6 @@
 {
   "name": "svshi_gui",
-  "version": "1.4.2-SNAPSHOT",
+  "version": "2.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
