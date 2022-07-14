@@ -11,9 +11,15 @@ export default {
         return {
             newApps: [],
             isRunning: false,
+            showSuccessMark: false,
         }
     },
     methods: {
+        sleep(ms) {
+            return new Promise(
+                resolve => setTimeout(resolve, ms)
+            )
+        },
         async getNewApps() {
             try {
                 let res = await fetch(this.$root.backendServerAddress + "/newApps");
@@ -36,7 +42,7 @@ export default {
                 console.log(file)
                 if (!file.name.endsWith(".zip")) {
                     alert("Please upload a .zip file!")
-                    this.$refs.knxProjFile.value = ""
+                    this.$refs.newAppToInstall.value = null
                 } else {
                     this.zipFileUploadNewApps = file
                 }
@@ -108,11 +114,22 @@ export default {
                         message += element
                     });
                     alert(message)
+                }else{
+                    this.showSucess()
                 }
 
                 this.zipFileUploadNewApps = ''
+                this.$refs.newAppToInstall.value = null
 
             }
+        },
+        async showSucess() {
+            this.showSuccessMark = true
+            this.$refs.uploadButton.disabled = true
+            await this.sleep(2000)
+            this.showSuccessMark = false
+            this.$refs.uploadButton.disabled = false
+
         },
         async downloadFromGenerated(filename) {
             let zipname = filename + ".zip"
@@ -192,12 +209,13 @@ export default {
                     </button>
                 </td>
                 <td>
-                    <input type="file" id="file" ref="newAppToInstall" class="addAppToInstalled"
+                    <input type="file" id="file" ref="newAppToInstall" class="addAppToInstalled" v-if="!this.showSuccessMark"
                         @change="updateNewAppToInstall">
                 </td>
                 <td>
-                    <button class="greenButton uploadTo" v-if="true" @Click="uploadToGenerated()">
-                        <FontAwesomeIcon icon="upload" />
+                    <button ref="uploadButton" class="greenButton uploadTo" @Click="uploadToGenerated()">
+                        <FontAwesomeIcon v-if="this.showSuccessMark" icon="check" />
+                        <FontAwesomeIcon v-else icon="upload" />
                     </button>
                 </td>
             </tr>

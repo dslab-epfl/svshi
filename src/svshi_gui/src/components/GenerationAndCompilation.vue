@@ -63,7 +63,7 @@ export default {
                 console.log(file)
                 if (!file.name.endsWith(".knxproj")) {
                     alert("Please upload a .knxproj file!")
-                    this.$refs.knxProjFile.value = ""
+                    this.$refs.knxProjFile.value = null
                 } else {
                     this.knxProjFile = file
                 }
@@ -77,7 +77,7 @@ export default {
                 console.log(file)
                 if (!file.name.endsWith(".json")) {
                     alert("Please upload a .json file!")
-                    this.$refs.jsonPhysFile.value = ""
+                    this.$refs.jsonPhysFile.value = null
                 } else {
                     this.jsonPhysFile = file
                 }
@@ -154,6 +154,9 @@ export default {
                         },
                         body: formData
                     })
+
+                    this.$refs.jsonPhysFile.value = null
+                    this.$refs.knxProjFile.value = null
 
                     let responseBody = await response.json();
                     var message = ""

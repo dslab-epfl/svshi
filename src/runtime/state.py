@@ -59,6 +59,7 @@ class State:
     __LOGGER_BUFFER_SIZE = 32
     __APP_STATE_ARGUMENT_SUFFIX = "_app_state"
     __MIN_FN_PERIOD = 0.5  # minimal period in seconds for executing periodic functions
+    __PERIODIC_READ_TIMEOUT: Final = 1.0
 
     def __init__(
         self,
@@ -66,13 +67,16 @@ class State:
         joint_apps: List[JointApps],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
+        xknx_for_periodic_reads: XKNX,
         check_conditions_function: Callable,
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
         logs_dir: str,
         runtime_app_files_folder_path: str,
         physical_state_log_file_path: str,
         isolated_fns: List[RuntimeIsolatedFunction],
+        periodic_read_frequency_second = 60.0,
     ):
+        self.__PERIODIC_READ_FREQUENCY_SEC = periodic_read_frequency_second
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
 
@@ -103,6 +107,7 @@ class State:
 
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
+        self.__xknx_for_period_reads = xknx_for_periodic_reads
         self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
@@ -138,6 +143,8 @@ class State:
         }
         self.__on_trigger_currently_running: Set[RuntimeIsolatedFunction] = set()
         self.__periodic_fns_task: Optional[Task] = None
+
+        self.__periodic_device_reads_task: Optional[Task] = None
 
         self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
 
@@ -182,6 +189,9 @@ class State:
 
         if self.__periodic_fns_task:
             self.__periodic_fns_task.cancel()
+        
+        if self.__periodic_device_reads_task:
+            self.__periodic_device_reads_task.cancel()
 
         await self.__xknx_for_listening.stop()
 
@@ -270,6 +280,28 @@ class State:
             self.__periodic_fns_task = asyncio.create_task(
                 self.__run_all_periodic_fns()
             )
+
+        # Start the periodic reading of devices
+        self.__periodic_device_reads_task = asyncio.create_task(self.__periodically_read_devices())
+
+    async def __periodically_read_devices(self):
+        while True:
+            async with self.__xknx_for_period_reads as xknx:
+                for address in self.__addresses:
+                    # Read from KNX the current value
+                    value_reader = ValueReader(
+                        xknx,
+                        GroupAddress(address),
+                        timeout_in_seconds=self.__PERIODIC_READ_TIMEOUT,
+                    )
+                    self.__logger.log_execution(f"Send periodic read request to '{address}'")
+                    telegram = await value_reader.read()
+                    if telegram:
+                        self.__logger.log_execution(f"Periodic read request to '{address}' answered with '{telegram}'")
+                        await self.__telegram_received_cb(telegram)
+                    else:
+                        self.__logger.log_execution(f"'{address}' did not answered to the periodic read request")
+            await asyncio.sleep(self.__PERIODIC_READ_FREQUENCY_SEC)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         """

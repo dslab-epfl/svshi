@@ -104,6 +104,7 @@ async def main(
             gateway_port=knx_port,
         )
         xknx_for_initialization = XKNX(connection_config=connection_config)
+        xknx_for_periodic_reads = XKNX(connection_config=connection_config)
         xknx_for_listening = XKNX(daemon_mode=True, connection_config=connection_config)
 
         parser = GroupAddressesParser(group_addresses_path)
@@ -114,16 +115,18 @@ async def main(
         )
 
         state = State(
-            addresses_listeners,
-            joint_apps,
-            xknx_for_initialization,
-            xknx_for_listening,
-            check_conditions,
-            group_addresses_dpt,
-            logs_dir,
-            RUNTIME_APP_FILES_FOLDER_PATH,
-            PHYSICAL_STATE_LOG_FILE_PATH,
-            isolated_fns,
+            addresses_listeners = addresses_listeners,
+            joint_apps = joint_apps,
+            xknx_for_initialization=xknx_for_initialization,
+            xknx_for_listening=xknx_for_listening,
+            xknx_for_periodic_reads=xknx_for_periodic_reads,
+            check_conditions_function=check_conditions,
+            group_address_to_dpt = group_addresses_dpt,
+            logs_dir= logs_dir,
+            runtime_app_files_folder_path= RUNTIME_APP_FILES_FOLDER_PATH,
+            physical_state_log_file_path= PHYSICAL_STATE_LOG_FILE_PATH,
+            isolated_fns= isolated_fns,
+            periodic_read_frequency_second= 60.0
         )
 
         register_on_trigger_consumer = get_svshi_api_register_on_trigger_consumer(

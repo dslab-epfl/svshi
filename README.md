@@ -41,6 +41,7 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
+      - [State refresh](#state-refresh)
   - [GUI](#gui-1)
     - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
@@ -463,6 +464,14 @@ For a given set of applications, the system behaviour function is run every time
 _Running applications_ concretely means that the system behaviour function is executed on the current physical state of the system and with the current app states.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
+
+#### State refresh
+
+The copy of the state kept by SVSHI is updated each time a telegram is sent by a device.
+
+The SVSHI runtime also sends KNX "read" request every 60 seconds to all devices connected to SVSHI. So, for devices that support the read request, their state is updated at least every 60 seconds.
+
+This is particularly indispensable for devices that cannot send their state on their own and rely solely on read requests.
 
 ## GUI
 

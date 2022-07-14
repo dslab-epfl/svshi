@@ -180,6 +180,7 @@ class StateHolder:
 
         self.xknx_for_initialization = MockXKNX(MockTelegramQueue())
         self.xknx_for_listening = MockXKNX(MockTelegramQueue())
+        self.xknx_for_periodic_reads = MockXKNX(MockTelegramQueue())
         self._last_valid_physical_state: PhysicalState
 
         self.on_trigger_consumer = None
@@ -328,6 +329,7 @@ async def test_state_listen():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -350,6 +352,7 @@ async def test_state_stop():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -371,6 +374,7 @@ async def test_state_initialize():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -401,6 +405,7 @@ async def test_internal_state_is_updated():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -480,6 +485,7 @@ async def test_state_periodic_apps_are_run():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -532,6 +538,7 @@ async def test_state_on_telegram_update_state_and_notify():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -579,6 +586,70 @@ async def test_state_on_telegram_update_state_and_notify():
 
 
 @pytest.mark.asyncio
+async def test_state_sends_read_request_and_update_state_and_notify(
+    mocker: MockerFixture,
+):
+    state = State(
+        test_state_holder.addresses_listeners,
+        test_state_holder.joint_apps,
+        test_state_holder.xknx_for_initialization,
+        test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
+        always_valid_conditions,
+        test_state_holder.group_address_to_dpt,
+        LOGS_DIR,
+        RUNTIME_APP_FILES_FOLDER_PATH,
+        PHYSICAL_STATE_LOG_FILE_PATH,
+        test_state_holder.isolated_fns,
+        periodic_read_frequency_second=2.0,
+    )
+    await state.initialize(test_state_holder.register_on_trigger_consumer)
+
+    read_reply_ga_1 = Telegram(
+        GroupAddress(FIRST_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
+    )
+
+    read_reply_ga_3 = Telegram(
+        GroupAddress(THIRD_GROUP_ADDRESS),
+        payload=MockGroupValueWrite(DPTBinary(1)),
+    )
+
+    mocker.patch(
+        "xknx.core.value_reader.ValueReader.read",
+        side_effect=[
+            read_reply_ga_1,
+            read_reply_ga_3,
+        ],
+    )
+
+    # We wait just to make sure the periodic read requests were sent and replies processed
+    await asyncio.sleep(4)
+
+    assert state._physical_state.GA_1_1_1 == RECEIVED_VALUE
+    assert state._physical_state.GA_1_1_2 == VALUE_READER_RETURN_VALUE
+    assert state._physical_state.GA_1_1_3 == True
+    assert state._physical_state.GA_1_1_4 == True
+    assert state._physical_state == state._last_valid_physical_state
+    assert test_state_holder.app_one_called == True
+    assert test_state_holder.app_two_called == True
+    assert test_state_holder.app_three_called == True
+    assert test_state_holder.app_four_called == True
+    assert test_state_holder.xknx_for_listening.telegrams.empty() == True
+    assert test_state_holder.app_one.should_run == True
+    assert test_state_holder.app_two.should_run == True
+    assert test_state_holder.app_three.should_run == True
+    assert test_state_holder.app_four.should_run == True
+    assert state._app_states[f"{FIRST_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{SECOND_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{THIRD_APP_NAME}_app_state"] == AppState()
+    assert state._app_states[f"{FOURTH_APP_NAME}_app_state"] == AppState()
+
+    # Cleanup
+    await state.stop()
+
+
+@pytest.mark.asyncio
 async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_invalid_then_runtime_stops_and_raises_interrupt(
     mocker: MockerFixture,
 ):
@@ -588,6 +659,7 @@ async def test_state_on_telegram_update_state_makes_it_invalid_merged_state_inva
             test_state_holder.joint_apps,
             test_state_holder.xknx_for_initialization,
             test_state_holder.xknx_for_listening,
+            test_state_holder.xknx_for_periodic_reads,
             conditions,
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
@@ -702,6 +774,7 @@ async def test_state_on_telegram_update_state_and_notify_and_stop_app_violating_
             test_state_holder.joint_apps,
             test_state_holder.xknx_for_initialization,
             test_state_holder.xknx_for_listening,
+            test_state_holder.xknx_for_periodic_reads,
             conditions,
             test_state_holder.group_address_to_dpt,
             LOGS_DIR,
@@ -752,6 +825,7 @@ async def test_state_on_telegram_update_state_and_notify_and_update_again_and_no
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -820,6 +894,7 @@ async def test_state_update_app_state():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -872,6 +947,7 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -922,6 +998,7 @@ async def test_state_correct_execution_log_after_33_telegrams():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -979,6 +1056,7 @@ async def test_state_logger_remove_first_1000_lines_when_file_exceeds_20MB():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -1024,6 +1102,7 @@ async def test_state_log_files_are_bounded():
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,
@@ -1060,6 +1139,7 @@ async def test_state_on_telegram_update_state_and_write_physical_state_to_file()
         test_state_holder.joint_apps,
         test_state_holder.xknx_for_initialization,
         test_state_holder.xknx_for_listening,
+        test_state_holder.xknx_for_periodic_reads,
         always_valid_conditions,
         test_state_holder.group_address_to_dpt,
         LOGS_DIR,

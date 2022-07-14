@@ -127,7 +127,8 @@ p {
 }
 
 .redButton {
-  background-color: #d12e2e;
+  background: linear-gradient(to bottom, #ff4949 5%, #ae2424 100%);
+  background-color: #ae2424;
   border-radius: 28px;
   border: 1px solid #ab1919;
   display: inline-block;
@@ -141,7 +142,8 @@ p {
 }
 
 .redButton:hover {
-  background-color: #bd2a2a;
+  background: linear-gradient(to bottom, #ae2424 5%, #ff4949 100%);
+  background-color: #ae2424;
 }
 
 .redButton:active {
