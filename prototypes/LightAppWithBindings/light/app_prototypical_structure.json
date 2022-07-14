@@ -11,7 +11,7 @@
     },
     {
       "name": "sensor",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     }
   ]
 }

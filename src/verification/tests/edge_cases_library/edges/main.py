@@ -1,5 +1,5 @@
 from typing import Generator, Iterable
-from instances import app_state, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME
+from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME
 
 
 def invariant() -> bool:
@@ -20,14 +20,15 @@ def iteration():
         return not SWITCH_INSTANCE_NAME.is_on()
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
-        unchecked_send_email("test@test.com")
+        svshi_api.trigger_if_not_running(on_trigger_send_email)("test@test.com")
         SWITCH_INSTANCE_NAME.on()
     else:
         SWITCH_INSTANCE_NAME.off()
 
     a = app_state.INT_0 + 1
-    if unchecked_return_int() == 42:
-        b = [unchecked_return_int(), 2]
+    latest_int = svshi_api.get_latest_value(periodic_return_int)
+    if latest_int == 42:
+        b = [latest_int, 2]
         g: list = [x for x in b]
         app_state.INT_2 += 5
     else:
@@ -35,7 +36,7 @@ def iteration():
 
     stuff = [[y := 2, x / y] for x in range(5)]
 
-    y = not (unchecked_return_int() == 31)
+    y = not (svshi_api.get_latest_value(periodic_return_int) == 31)
     d = {"a": SWITCH_INSTANCE_NAME.is_on()}
     {k: v for k, v in d.items()}
 
@@ -43,10 +44,11 @@ def iteration():
 
     string = f"this is a beautiful string {SWITCH_INSTANCE_NAME.is_on()}"
 
-    unchecked_send_email(addr="test")
+    svshi_api.trigger_if_not_running(on_trigger_send_email)(addr="test")
 
 
-def unchecked_iteration() -> None:
+def periodic_iteration() -> None:
+    """period: 5"""
     def yield_fun() -> Iterable[bool]:
         yield not SWITCH_INSTANCE_NAME.is_on()
 
@@ -54,19 +56,20 @@ def unchecked_iteration() -> None:
         return not SWITCH_INSTANCE_NAME.is_on()
 
     if BINARY_SENSOR_INSTANCE_NAME.is_on() or app_state.INT_0 == 42:
-        unchecked_send_email("test@test.com")
+        svshi_api.trigger_if_not_running(on_trigger_send_email)("test@test.com")
         SWITCH_INSTANCE_NAME.on()
     else:
         SWITCH_INSTANCE_NAME.off()
 
     a = app_state.INT_0 + 1
-    if unchecked_return_int() == 42:
-        b = [unchecked_return_int(), 2]
+    latest_int = svshi_api.get_latest_value(periodic_return_int)
+    if latest_int == 42:
+        b = [latest_int, 2]
         g = [x for x in b]
     else:
         c = (lambda d: d + 1)(a)
 
-    y = not (unchecked_return_int() == 31)
+    y = not (svshi_api.get_latest_value(periodic_return_int) == 31)
     d = {"a": SWITCH_INSTANCE_NAME.is_on()}
     {k: v for k, v in d.items()}
 
@@ -74,13 +77,14 @@ def unchecked_iteration() -> None:
 
     string = f"this is a beautiful string {SWITCH_INSTANCE_NAME.is_on()}"
 
-    unchecked_send_email(addr="test")
+    svshi_api.trigger_if_not_running(on_trigger_send_email)(addr="test")
 
 
-def unchecked_send_email(addr: str) -> None:
+def on_trigger_send_email(addr: str) -> None:
     # do stuff
     a = 1 + 1
 
 
-def unchecked_return_int() -> int:
+def periodic_return_int() -> int:
+    """period: 10"""
     return 42

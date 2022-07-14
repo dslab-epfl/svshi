@@ -4,8 +4,10 @@ import ch.epfl.core.CustomMatchers.{beAFile, beSimilarToLibrary, containThePairO
 import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
 import ch.epfl.core.api.server.CoreApiServer
 import ch.epfl.core.api.server.json.{BindingsResponse, ResponseBody}
+import ch.epfl.core.deviceMapper.model.{DeviceMapping, StructureMapping, SupportedDeviceMapping, SupportedDeviceMappingNode}
 import ch.epfl.core.model.application.{Application, ApplicationLibrary}
-import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.physical._
+import ch.epfl.core.model.prototypical.BinarySensor
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
@@ -39,10 +41,11 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   private val app1ProtoFileName = "test_app_one_proto.json"
 
-  private val app1ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
-  private val app2ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
-  private val existingAppsLibrary = ApplicationLibrary(List(Application("app1", Constants.APP_LIBRARY_FOLDER_PATH / "app1", app1ProtoStruct)), Constants.APP_LIBRARY_FOLDER_PATH)
-  private val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct)), Constants.GENERATED_FOLDER_PATH)
+  private lazy val app1ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
+  private lazy val app2ProtoStruct = AppInputJsonParser.parse(pipeline1Path / app1ProtoFileName)
+  private lazy val existingAppsLibrary =
+    ApplicationLibrary(List(Application("app1", Constants.APP_LIBRARY_FOLDER_PATH / "app1", app1ProtoStruct, Nil)), Constants.APP_LIBRARY_FOLDER_PATH)
+  private lazy val newAppsLibrary = ApplicationLibrary(List(Application("app2", Constants.APP_LIBRARY_FOLDER_PATH / "app2", app2ProtoStruct, Nil)), Constants.GENERATED_FOLDER_PATH)
   private val existingPhysicalStructure = PhysicalStructure(Nil)
 
   private val backupGeneratedPath = SVSHI_SRC_FOLDER_PATH / "backup_generated_during_test"
@@ -53,7 +56,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
   private val runLogFilePath = Constants.PRIVATE_SERVER_LOG_FOLDER_PATH / "private_run_logs.log"
 
-  private val coreResFolderPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res"
+  private val coreResFolderPath: os.Path = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res"
   private val coreResApiServerFolderPath = coreResFolderPath / "apiServerTests"
 
   private val testPhysicalStructureJsonFileName = "test_physicalJson.json"
@@ -71,7 +74,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
   private val oldFakeContentDirectoryPath = coreResApiServerFolderPath / "fakeContentBeforeUpload"
   private val fakeContentAfterDirectoryPath = coreResApiServerFolderPath / "fakeContentAfterUpload"
 
-  private val tempFolderPath = coreResApiServerFolderPath / "tempTests"
+  private val tempFolderPath: os.Path = coreResApiServerFolderPath / "tempTests"
 
   private val mockedSvshi = mock[SvshiTr]
   private var coreApiServer = CoreApiServer(mockedSvshi)
@@ -113,6 +116,8 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     if (os.exists(backupPythonRuntimeLogsPath)) os.remove.all(backupPythonRuntimeLogsPath)
 
     if (os.exists(tempFolderPath)) os.remove.all(tempFolderPath)
+
+    if (os.exists(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)) os.remove(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)
   }
 
   override def beforeEach(): Unit = {
@@ -134,6 +139,8 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
     if (os.exists(tempFolderPath)) os.remove.all(tempFolderPath)
     os.makeDir.all(tempFolderPath)
+
+    if (os.exists(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)) os.remove(Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH)
 
     reset(mockedSvshi)
     coreApiServer = CoreApiServer(mockedSvshi)
@@ -599,6 +606,31 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output shouldEqual Nil
   }
 
+  "logs/physicalState" should "reply with empty list and false when no physicalState log file exist" in {
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/physicalState", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 404
+  }
+
+  "logs/physicalState" should "reply with the content of the physical state log file when the physicalState log file exists" in {
+    val f1 = Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH
+
+    val json = """|{
+                  |  "GA_0_0_1": true,
+                  |  "GA_0_0_2": 2.0
+                  |}
+                  |""".stripMargin
+    FileUtils.writeToFileOverwrite(
+      f1,
+      json.getBytes
+    )
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/logs/physicalState", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    r.text() shouldEqual json
+  }
+
   "stopRun endpoint" should "stop the run thread when called and reply with the message" in {
 
     mockedSvshi.run(*, *, *)(*, *, *, *) shouldAnswer (
@@ -676,7 +708,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output shouldEqual Nil
   }
 
-  "compile endpoint" should "call the compile function with the correct physicalStructure" in {
+  "compile endpoint" should "call the compile function with the correct physicalStructures with .json file" in {
 
     mockedSvshi.compileApps(*, *, *)(*, *, *, *) shouldAnswer (
       (_: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
@@ -705,6 +737,59 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     val expectedOutput = "Applications were installed!"
     val responseBody = ResponseBody.from(r.text())
     responseBody.output.mkString("\n") shouldEqual expectedOutput
+  }
+
+  "compile endpoint" should "call the generateBindings function with the correct physicalStructures with .json file" in {
+    mockedSvshi.compileApps(*, *, *)(*, *, *, *) shouldAnswer (
+      (_: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        success("Applications were installed!")
+        0
+      }
+    )
+    val existingPhysStructJsonFile = existingAppsLibrary.path / "physical_structure.json"
+    val expectedExistingPhysStruct = simpleEtsProjPhysStruct
+    PhysicalStructureJsonParser.writeToFile(existingPhysStructJsonFile, expectedExistingPhysStruct)
+    PhysicalStructureJsonParser.writeToFile(tempFolderPath / "input_json_struct.json", expectedExistingPhysStruct)
+    val knxProjFileZip = createInMemZip(tempFolderPath / "input_json_struct.json")
+
+    val captorExistingApps = ArgCaptor[ApplicationLibrary]
+    val captorNewApps = ArgCaptor[ApplicationLibrary]
+    val captorPhysStruct = ArgCaptor[PhysicalStructure]
+    val captorSuccess = ArgCaptor[String => Unit]
+    val captorInfo = ArgCaptor[String => Unit]
+    val captorWarning = ArgCaptor[String => Unit]
+    val captorError = ArgCaptor[String => Unit]
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/compile", data = knxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    verify(mockedSvshi).compileApps(captorExistingApps, captorNewApps, captorPhysStruct)(captorSuccess, captorInfo, captorWarning, captorError)
+
+    val expectedPhysStruct = simpleEtsProjPhysStruct
+    captorPhysStruct hasCaptured expectedPhysStruct
+
+    val expectedOutput = "Applications were installed!"
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.output.mkString("\n") shouldEqual expectedOutput
+  }
+
+  "compile endpoint" should "fail with a file which is not a json nor a knxproj file" in {
+
+    mockedSvshi.compileApps(*, *, *)(*, *, *, *) shouldAnswer (
+      (_: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        success("Applications were installed!")
+        0
+      }
+    )
+    val wrongFilePath = tempFolderPath / "input_json_struct.png"
+    os.write(wrongFilePath, "test".getBytes())
+    val newKnxProjFileZip = createInMemZip(wrongFilePath)
+
+    val r =
+      requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/compile", data = newKnxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 400
+    r.text() shouldEqual "The file for the physical structure must be either a json or a knxproj file!"
   }
 
   "compile endpoint" should "call the compile function with the correct Application libraries" in {
@@ -894,7 +979,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output.mkString("\n") shouldEqual expectedOutput
   }
 
-  "generateBindings endpoint" should "call the generateBindings function with the correct physicalStructures" in {
+  "generateBindings endpoint" should "call the generateBindings function with the correct physicalStructures with .knxproj file" in {
 
     mockedSvshi.generateBindings(*, *, *, *)(*, *, *, *) shouldAnswer (
       (
@@ -933,6 +1018,70 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     captorNewPhysStruct hasCaptured expectedNewPhysStruct
     captorExistingPhysStruct hasCaptured expectedExistingPhysStruct
     responseBody.output.mkString("\n") shouldEqual expectedOutput
+  }
+
+  "generateBindings endpoint" should "call the generateBindings function with the correct physicalStructures with .json file" in {
+
+    mockedSvshi.generateBindings(*, *, *, *)(*, *, *, *) shouldAnswer (
+      (
+        _: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit,
+        error: String => Unit
+      ) => {
+        success("Bindings were generated!")
+        0
+      }
+    )
+    val existingPhysStructJsonFile = existingAppsLibrary.path / "physical_structure.json"
+    val expectedExistingPhysStruct = simpleEtsProjPhysStruct
+    PhysicalStructureJsonParser.writeToFile(existingPhysStructJsonFile, expectedExistingPhysStruct)
+    PhysicalStructureJsonParser.writeToFile(tempFolderPath / "input_json_struct.json", expectedExistingPhysStruct)
+    val newKnxProjFileZip = createInMemZip(tempFolderPath / "input_json_struct.json")
+
+    val captorExistingApps = ArgCaptor[ApplicationLibrary]
+    val captorNewApps = ArgCaptor[ApplicationLibrary]
+    val captorNewPhysStruct = ArgCaptor[PhysicalStructure]
+    val captorExistingPhysStruct = ArgCaptor[PhysicalStructure]
+    val captorSuccess = ArgCaptor[String => Unit]
+    val captorInfo = ArgCaptor[String => Unit]
+    val captorWarning = ArgCaptor[String => Unit]
+    val captorError = ArgCaptor[String => Unit]
+
+    val r =
+      requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generateBindings", data = newKnxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    verify(mockedSvshi).generateBindings(captorExistingApps, captorNewApps, captorExistingPhysStruct, captorNewPhysStruct)(captorSuccess, captorInfo, captorWarning, captorError)
+
+    val expectedNewPhysStruct = simpleEtsProjPhysStruct
+
+    val expectedOutput = "Bindings were generated!"
+    val responseBody = ResponseBody.from(r.text())
+
+    captorNewPhysStruct hasCaptured expectedNewPhysStruct
+    captorExistingPhysStruct hasCaptured expectedExistingPhysStruct
+    responseBody.output.mkString("\n") shouldEqual expectedOutput
+  }
+
+  "generateBindings endpoint" should "fail with a file which is not a json nor a knxproj file" in {
+
+    mockedSvshi.generateBindings(*, *, *, *)(*, *, *, *) shouldAnswer (
+      (
+        _: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit,
+        error: String => Unit
+      ) => {
+        success("Bindings were generated!")
+        0
+      }
+    )
+    val wrongFilePath = tempFolderPath / "input_json_struct.png"
+    os.write(wrongFilePath, "test".getBytes())
+    val newKnxProjFileZip = createInMemZip(wrongFilePath)
+
+    val r =
+      requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generateBindings", data = newKnxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 400
+    r.text() shouldEqual "The file for the physical structure must be either a json or a knxproj file!"
   }
 
   "generateBindings endpoint" should "call the generateBindings function with the correct Application libraries" in {
@@ -1059,11 +1208,11 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     compareFolders(folder1 = fakeContentAfterDirectoryPath, folder2 = Constants.GENERATED_FOLDER_PATH, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
 
-  "deleteGenerated endpoint" should "remove everything that is contained in the generated folder" in {
+  "deleteAllGenerated endpoint" should "remove everything that is contained in the generated folder" in {
     os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
     FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
 
-    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated")
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteAllGenerated")
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     r.statusCode shouldEqual 200
     val responseBody = ResponseBody.from(r.text())
@@ -1071,6 +1220,53 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output should contain("The generated folder was successfully emptied!")
 
     os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual Nil
+  }
+
+  "deleteGenerated endpoint" should "remove only the requested file in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/aFile")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'aFile' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir")
+    os.list(Constants.GENERATED_FOLDER_PATH / "aDir").toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile")
+  }
+
+  "deleteGenerated endpoint" should "remove only the requested directory in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/aDir")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'aDir' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aFile")
+  }
+
+  "deleteGenerated endpoint" should "reply with a success message if the filename does not exist in the generated folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated/doesNotExist")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldEqual true
+    responseBody.output should contain("'doesNotExist' was successfully removed!")
+
+    os.list(Constants.GENERATED_FOLDER_PATH).toList should contain theSameElementsAs List(Constants.GENERATED_FOLDER_PATH / "aFile", Constants.GENERATED_FOLDER_PATH / "aDir")
+    os.list(Constants.GENERATED_FOLDER_PATH / "aDir").toList shouldEqual List(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile")
   }
 
   "installedApp get appName endpoint" should "reply with a 404 if the requested app is not installed" in {
@@ -1174,6 +1370,67 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     }
   }
 
+  "generated get endpoint with name" should "reply with an empty zip when the requested name is not in the folder" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "aDir")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aDir" / "aFile", "test".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "aFile", "test".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/doesNotExist", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual Nil
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
+  "generated get endpoint with name" should "reply with a zip containing the requested file when it exists" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "dir1")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "dir1" / "file11.txt", "test file11".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "file0.txt", "test file0".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/file0.txt", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual List(p / "file0.txt")
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
+  "generated get endpoint with name" should "reply with a zip containing the requested directory when it exists" in {
+    os.makeDir.all(Constants.GENERATED_FOLDER_PATH / "dir1")
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "dir1" / "file11.txt", "test file11".getBytes)
+    FileUtils.writeToFileOverwrite(Constants.GENERATED_FOLDER_PATH / "file0.txt", "test file0".getBytes)
+
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/generated/dir1", check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val zipBytes = r.bytes
+    val zipPath = tempFolderPath / "received.zip"
+    os.write(zipPath, zipBytes)
+    FileUtils.unzip(zipPath, tempFolderPath / "received") match {
+      case Some(p) => {
+        p should existInFilesystem
+        os.list(p) shouldEqual List(p / "dir1")
+        compareFolders(p / "dir1", Constants.GENERATED_FOLDER_PATH / "dir1", ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+      }
+      case None => fail("cannot unzip the received zip")
+    }
+  }
+
   "listApps endpoint" should "return the correct list with the installed apps in the outputs" in {
 
     mockedSvshi.listApps(*) shouldAnswer ((_: ApplicationLibrary) => {
@@ -1205,7 +1462,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.output shouldEqual Nil
   }
 
-  "generateApp/availableDevices endpoint" should "return the available devices for new apps" in {
+  "availableProtoDevices endpoint" should "return the available devices for new apps" in {
 
     val expectedDevices = List("device1", "device2")
     mockedSvshi.getAvailableProtoDevices() shouldReturn expectedDevices
@@ -1218,6 +1475,21 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     responseBody.status shouldBe true
 
     responseBody.output should contain theSameElementsAs expectedDevices
+  }
+
+  "availableDpts endpoint" should "return the available dpts" in {
+
+    val expectedDpts = List("DPT-1", "DPT-2")
+    mockedSvshi.getAvailableDpts() shouldReturn expectedDpts
+
+    mockedSvshi.getAvailableDpts() shouldEqual expectedDpts
+    val r = requests.get(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/availableDpts")
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 200
+    val responseBody = ResponseBody.from(r.text())
+    responseBody.status shouldBe true
+
+    responseBody.output should contain theSameElementsAs expectedDpts
   }
 
   "assignments endpoint" should "reply with a 404 when the assignments does not exist" in {
@@ -1755,7 +2027,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
       thread1.isAlive shouldEqual false
     }
   }
-  "deleteGenerated endpoint" should "reply with a 423 code when another request (compile) is running" in {
+  "deleteAllGenerated endpoint" should "reply with a 423 code when another request (compile) is running" in {
     mockedSvshi.compileApps(*, *, *)(*, *, *, *) shouldAnswer (
       (_: ApplicationLibrary, _: ApplicationLibrary, _: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
         Thread.sleep(300)
@@ -1772,7 +2044,7 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
 
     thread1.start()
     Thread.sleep(80) // Important to let time to the thread1 to start
-    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteGenerated", check = false, readTimeout = requestsReadTimeout)
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deleteAllGenerated", check = false, readTimeout = requestsReadTimeout)
     r.statusCode shouldEqual 423
     expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
     eventually(timeout(2 seconds)) {
@@ -1806,6 +2078,124 @@ class ServerApiTest extends AnyFlatSpec with Matchers with BeforeAndAfterAll wit
     eventually(timeout(2 seconds)) {
       thread1.isAlive shouldEqual false
     }
+  }
+
+  val channelNameKlix1 = "Channel - MD-2_M-1_MI-1_CH-argCH - CH-{{argCH}}"
+  val commObjectKlix1 = PhysicalDeviceCommObject.from(
+    name = "CH-{{argCH}} - Switching : OnOff",
+    datatype = DPT1(1),
+    ioType = Out,
+    physicalAddress = ("1", "1", "1"),
+    deviceNodeName = channelNameKlix1
+  )
+  val channelNameKlix2 = "Channel - MD-2_M-8_MI-1_CH-argCH - CH-{{argCH}}"
+  val commObjectKlix2 = PhysicalDeviceCommObject.from(
+    name = "CH-{{argCH}} - Switching : OnOff - switch and sensor",
+    datatype = DPT1(1),
+    ioType = InOut,
+    physicalAddress = ("1", "1", "1"),
+    deviceNodeName = channelNameKlix2
+  )
+  val deviceKlix = PhysicalDevice(
+    "KliX (D4)",
+    ("1", "1", "1"),
+    List(
+      PhysicalDeviceNode(
+        channelNameKlix1,
+        List(
+          commObjectKlix1
+        )
+      ),
+      PhysicalDeviceNode(
+        channelNameKlix2,
+        List(
+          commObjectKlix2
+        )
+      )
+    )
+  )
+  private val physicalStructure = PhysicalStructure(List(deviceKlix))
+  val klixMappings = DeviceMapping(
+    "1.1.1",
+    List(
+      SupportedDeviceMappingNode(
+        name = channelNameKlix1,
+        List(SupportedDeviceMapping(name = commObjectKlix1.name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = commObjectKlix1.id))
+      ),
+      SupportedDeviceMappingNode(
+        name = channelNameKlix2,
+        List(SupportedDeviceMapping(name = commObjectKlix2.name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = commObjectKlix2.id))
+      )
+    )
+  )
+  val deviceMappings = StructureMapping(PhysicalStructureJsonParser.physicalStructureToJson(physicalStructure), List(klixMappings))
+
+  "deviceMappings endpoint" should "fail with a file which is not a json nor a knxproj file" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+    val wrongFilePath = tempFolderPath / "input_json_struct.png"
+    os.write(wrongFilePath, "test".getBytes())
+    val newKnxProjFileZip = createInMemZip(wrongFilePath)
+
+    val r =
+      requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = newKnxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+    r.statusCode shouldEqual 400
+    r.text() shouldEqual "The file for the physical structure must be either a json or a knxproj file!"
+  }
+
+  "deviceMappings endpoint" should "call the Svshi functions with the correct library" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+
+    // Create app libraries:
+    val knxProjFile = simpleEtsProjFilePath
+    val knxProjFileZip = createInMemZip(knxProjFile)
+
+    val captorPhysStruct = ArgCaptor[PhysicalStructure]
+    val captorSuccess = ArgCaptor[String => Unit]
+    val captorInfo = ArgCaptor[String => Unit]
+    val captorWarning = ArgCaptor[String => Unit]
+    val captorError = ArgCaptor[String => Unit]
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = knxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    verify(mockedSvshi).generatePrototypicalDeviceMappings(captorPhysStruct)(captorSuccess, captorInfo, captorWarning, captorError)
+
+    captorPhysStruct.value shouldEqual simpleEtsProjPhysStruct
+  }
+
+  "deviceMappings endpoint" should "return the structure in the file" in {
+
+    mockedSvshi.generatePrototypicalDeviceMappings(*)(*, *, *, *) shouldAnswer (
+      (_: PhysicalStructure, success: String => Unit, info: String => Unit, warning: String => Unit, error: String => Unit) => {
+        deviceMappings.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+        success("The device mappings were correctly generated!")
+        0
+      }
+    )
+
+    // Create app libraries:
+    val knxProjFile = simpleEtsProjFilePath
+    val knxProjFileZip = createInMemZip(knxProjFile)
+
+    val r = requests.post(f"http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}/deviceMappings", data = knxProjFileZip, check = false, readTimeout = requestsReadTimeout)
+    expectedHeaders.foreach(p => r.headers should containThePairOfHeaders(p))
+
+    StructureMapping.parseJson(r.text()) shouldEqual deviceMappings
   }
 
   private def createInMemZip(file: os.Path): Array[Byte] = {

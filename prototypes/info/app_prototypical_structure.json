@@ -1,15 +1,14 @@
 {
   "permissionLevel": "notPrivileged",
-  "timer": 1200,
-  "files": [],
+  "timer": 30,
   "devices": [
     {
       "name": "CO_TWO",
-      "deviceType": "co2"
+      "deviceType": "co2Sensor"
     },
     {
-      "name": "temperature",
-      "deviceType": "temperature"
+      "name": "temperatureSensor",
+      "deviceType": "temperatureSensor"
     }
   ]
 }

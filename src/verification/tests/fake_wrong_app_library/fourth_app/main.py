@@ -1,4 +1,4 @@
-from instances import app_state, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
+from instances import app_state, svshi_api, BINARY_SENSOR_INSTANCE_NAME, SWITCH_INSTANCE_NAME, TEMPERATURE_SENSOR_INSTANCE_NAME, HUMIDITY_SENSOR_INSTANCE_NAME
 
 def invariant() -> bool:
     # Write the invariants of the app here
@@ -11,5 +11,6 @@ def iteration():
     if BINARY_SENSOR_INSTANCE_NAME.is_on():
         SWITCH_INSTANCE_NAME.on()
 
-def unchecked_func():
+def periodic_func():
+    """period: 2"""
     return 2

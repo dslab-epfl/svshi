@@ -10,7 +10,7 @@ object DeviceInstanceJson {
   implicit val deviceInstance: ReadWriter[DeviceInstanceJson] = macroRW[DeviceInstanceJson]
 }
 
-case class PrototypicalStructureJson(permissionLevel: String, timer: Int, files: List[String], devices: List[DeviceInstanceJson])
+case class PrototypicalStructureJson(permissionLevel: String, timer: Int, devices: List[DeviceInstanceJson])
 object PrototypicalStructureJson {
   implicit val parsedStructure: ReadWriter[PrototypicalStructureJson] = macroRW[PrototypicalStructureJson]
 }

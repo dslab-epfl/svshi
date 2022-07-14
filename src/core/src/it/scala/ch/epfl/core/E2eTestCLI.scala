@@ -2,6 +2,10 @@ package ch.epfl.core
 
 import ch.epfl.core.CustomMatchers._
 import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
+import ch.epfl.core.deviceMapper.DeviceMapper
+import ch.epfl.core.deviceMapper.model.StructureMapping
+import ch.epfl.core.parser.ets.EtsParser
+import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants._
 import org.scalatest.concurrent.{Signaler, TimeLimitedTests}
@@ -26,6 +30,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   private val pipeline2Path = endToEndResPath / "pipeline2_app_one_invalid_bindings"
   private val pipeline3Path = endToEndResPath / "pipeline3_app_one_app_two_valid"
   private val pipeline4Path = endToEndResPath / "pipeline4_app_one_app_two_invalid"
+  private val pipeline5Path = endToEndResPath / "pipeline5_check"
   private val pipelinesRegressionPath = endToEndResPath / "pipelines_regression"
 
   private val inputPath = Constants.SVSHI_HOME_PATH / "input"
@@ -41,7 +46,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   private val backupInstalledAppsPath = SVSHI_SRC_FOLDER_PATH / "backup_installed_apps_during_test"
   private val backupAssignmentsPath = SVSHI_SRC_FOLDER_PATH / "backup_assignments"
 
-  private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py")
+  private val expectedIgnoredFiles = List("group_addresses.json", "conditions.py", "runtime_file.py", "verification_file.py", "isolated_fns.json")
 
   override def beforeAll(): Unit = {
     if (os.exists(backupLibraryPath)) os.remove.all(backupLibraryPath)
@@ -115,6 +120,50 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     Main.coreApiServer = None
   }
 
+  "deviceMappings" should "fail with no ets file" in {
+    val out = new ByteArrayOutputStream()
+    val err = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Console.withErr(err) {
+        Try(Main.main(Array("deviceMappings"))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => {
+                out.toString should include("ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings")
+              }
+              case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => fail("It should have failed!")
+        }
+      }
+    }
+  }
+
+  "deviceMappings" should "write the device mappings in the generated folder" in {
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    val out = new ByteArrayOutputStream()
+    val err = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Console.withErr(err) {
+        Try(Main.main(Array("deviceMappings", "-f", (inputPath / etsProjectFileName).toString))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => fail("The deviceMappings should not have failed!")
+              case e: Exception                       => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => {
+            GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH should existInFilesystem
+            GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH should beAFile
+
+            val physicalStructure = EtsParser.parseEtsProjectFile(inputPath / etsProjectFileName)
+            val expectedStructure = DeviceMapper.mapStructure(physicalStructure)
+            StructureMapping.parseFromFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH) shouldEqual expectedStructure
+          }
+        }
+      }
+    }
+  }
   "gui" should f"start a server that serves among other things the http://localhost:${Constants.SVSHI_GUI_SERVER_DEFAULT_PORT}" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
@@ -160,7 +209,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
       Try(Main.main(Array("version"))) match {
         case Failure(exception) => fail(exception)
         case Success(_) =>
-          out.toString().contains("svshi v") shouldBe true
+          out.toString should include("svshi v")
       }
     }
   }
@@ -350,6 +399,37 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     out.toString.trim should (include("""The bindings have been successfully created!"""))
   }
 
+  "generateBindings" should "generate the correct bindings and physical_structure.json with only one app in generated and none installed - pipeline 1 with json file as input instead of knxproj" in {
+    // Prepare everything for the test
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+    val pathToJsonInput = inputPath / "EtsInJson.json"
+    val physStruct = EtsParser.parseEtsProjectFile(inputPath / etsProjectFileName)
+    PhysicalStructureJsonParser.writeToFile(pathToJsonInput, physStruct)
+    val appName = "test_app_one"
+
+    // Generate the app
+    Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateBindings", "-f", (pathToJsonInput).toString))
+    }
+
+    os.exists(GENERATED_FOLDER_PATH / "physical_structure.json") shouldBe true
+    GENERATED_FOLDER_PATH / "physical_structure.json" should beAFile()
+    GENERATED_FOLDER_PATH / "physical_structure.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "physical_structure.json")
+
+    os.exists(GENERATED_FOLDER_PATH / "apps_bindings.json") shouldBe true
+    GENERATED_FOLDER_PATH / "apps_bindings.json" should beAFile()
+    GENERATED_FOLDER_PATH / "apps_bindings.json" should haveSameContentAsIgnoringBlanks(pipeline1Path / "apps_bindings.json")
+
+    out.toString.trim should (include("""The bindings have been successfully created!"""))
+  }
+
   "generateBindings" should "fail when the ETS project file name is not absolute" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
@@ -360,6 +440,125 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
               out.toString should include(
                 "ERROR: The ETS project file name has to be absolute"
               )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
+  }
+
+  "compile" should "fail when the ETS file path is a path to a directory with correct message" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy.into(pipeline1Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline1Path / "apps_bindings_filled.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile the app
+
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "ERROR: The ETS project file path has to be a path to a file. It points to a directory."
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "generateBindings" should "fail when the ETS file path is a path to a directory with correct message" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile the app
+
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "ERROR: The ETS project file path has to be a path to a file. It points to a directory."
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
+  }
+
+  "compile" should "fail when the ETS file path is a path to a file with extension different from json or knxproj with the correct message" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy.into(pipeline1Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline1Path / "apps_bindings_filled.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+
+    val wrongExtension = "png"
+    val wrongFileName = f"project.$wrongExtension"
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / wrongFileName)
+
+    // Compile the app
+
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / wrongFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(f"ERROR: The ETS project file must be either a .knxproj file or a .json file. Received a file with extension '$wrongExtension'")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "generateBindings" should "fail when the ETS file path is a path to a file with extension different from json or knxproj with the correct message" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    val wrongExtension = "png"
+    val wrongFileName = f"project.$wrongExtension"
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / wrongFileName)
+
+    // Compile the app
+
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / wrongFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(f"ERROR: The ETS project file must be either a .knxproj file or a .json file. Received a file with extension '$wrongExtension'")
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
@@ -382,21 +581,115 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     // Compile the app
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("CONFIRMED"))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+        }
+      }
+    }
+  }
+
+  "compile" should "install the app one when it is valid and verified and show output warning and success messages with json file as input instead of knxproj" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy.into(pipeline1Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline1Path / "apps_bindings_filled.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
+    val pathToJsonInput = inputPath / "EtsInJson.json"
+    val physStruct = EtsParser.parseEtsProjectFile(inputPath / etsProjectFileName)
+    PhysicalStructureJsonParser.writeToFile(pathToJsonInput, physStruct)
+
+    // Compile the app
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (pathToJsonInput).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("CONFIRMED"))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+        }
+      }
     }
 
-    out.toString.trim should (include("The apps have been successfully compiled and verified!") and
-      include(
-        "WARNING: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,7), commObject = Telegr. counter value 2 bytes - Telegr. switch - Eingang A - Input A, physicalId = 1542297768: one KNXDatatype is UnknownDPT, attention required!"
-      ) and
-      include("info: Confirmed over all paths."))
-    val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
-    os.exists(newAppPath) shouldBe true
-    os.isDir(newAppPath) shouldBe true
+  }
 
-    val expectedLibraryPath = pipeline1Path / "expected_library"
+  "compile" should "install the app one even if the `files` folder is not present" in {
+    // Prepare everything for the test
+    val appName = "test_app_one"
+    val protoFileName = "test_app_one_proto.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(pipeline1Path / "test_app_one_valid_filled", GENERATED_FOLDER_PATH / appName)
+    os.copy.into(pipeline1Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline1Path / "apps_bindings_filled.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline1Path / protoFileName, pathToProto)
+    os.copy(pipeline1Path / etsProjectFileName, inputPath / etsProjectFileName)
 
-    compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+    os.remove.all(GENERATED_FOLDER_PATH / appName / Constants.FILES_FOLDER_EACH_APPLICATION_NAME)
+
+    // Compile the app
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(
+                s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => {
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and
+            include("CONFIRMED"))
+          val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
+          os.exists(newAppPath) shouldBe true
+          os.isDir(newAppPath) shouldBe true
+
+          val expectedLibraryPath = pipeline1Path / "expected_library"
+
+          compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+
+        }
+      }
+    }
+
   }
 
   "compile" should "fail when the ETS project file name is not absolute" in {
@@ -437,7 +730,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binary; physical device address = (1,1,10), commObject = Send - CO2 value, physicalId = -2092645687: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binarySensor; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
@@ -456,6 +749,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
 
   // Pipeline 3 - 2 valid apps: app one and then app two
   private val pipeline3ExpectedLibraryAppOneTwoPath: Path = pipeline3Path / "expected_app_library_one_two"
+  private val pipeline3ExpectedLibraryAppOnePath: Path = pipeline3Path / "expected_app_library_one"
 
   "run" should "execute the runtime module" in {
     // Install app one
@@ -474,15 +768,27 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     val err = new ByteArrayOutputStream()
     Console.withOut(out) {
       Console.withErr(err) {
-        Main.main(Array("run", "-a", "192.0.0.1:42"))
+        Try(Main.main(Array("run", "-a", "192.0.0.1:42"))) match {
+          case Failure(exception) =>
+            exception match {
+              case MockSystemExitException(errorCode) => {
+                fail(
+                  s"ERROR: An error was thrown! ${exception.getLocalizedMessage}\n out = ${out}"
+                )
+              }
+              case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+            }
+          case Success(_) => {
+            os.exists(pathToExpectedFile) shouldBe true
+            out.toString.trim should (include("this a line of text printed by the runtime module on stdout") and
+              include("this is a line of text printed by runtime module on stdout after 3 sec") and
+              include("this a line of text printed by the runtime module on stderr"))
+            err.toString.trim shouldEqual ""
+          }
+        }
       }
     }
 
-    os.exists(pathToExpectedFile) shouldBe true
-    out.toString.trim should (include("this a line of text printed by the runtime module on stdout") and
-      include("this is a line of text printed by runtime module on stdout after 3 sec") and
-      include("this a line of text printed by the runtime module on stderr"))
-    err.toString.trim shouldEqual ""
   }
 
   "run" should "fail if no KNX address and port have been provided" in {
@@ -1036,7 +1342,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                s"""ERROR: The ETS project file needs to be specified to compile or to generate the bindings"""
+                s"""ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings"""
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -1061,7 +1367,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                s"""ERROR: The ETS project file needs to be specified to compile or to generate the bindings"""
+                s"""ERROR: The ETS project file needs to be specified to compile, to generate the bindings or get device mappings"""
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -1449,7 +1755,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     os.list(INSTALLED_APPS_FOLDER_PATH).toList.isEmpty shouldEqual true
   }
 
-  // Pipeline 4 - 2 apps: app one valid and then app two that violates app one invariant
+  // Pipeline 4 - 2 apps: app one valid and then app two that violates app one invariant or imports forbidden modules
   "compile" should "not install app two when it can violate invariant of app 1" in {
     // Prepare everything for the test
     val appOneName = "test_app_one"
@@ -1476,8 +1782,132 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
-              out.toString.trim should (include(s"""ERROR: False when calling test_app_two_iteration"""))
-              out.toString.trim should (include(s"""ERROR: At line 156:  post: test_app_one_invariant(**__return__)"""))
+              out.toString.trim should (include(s"""ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_3_1d = 23, GA_0_0_1_1e = False]"""))
+
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
+              os.exists(newAppPath) shouldBe false
+
+              // Library with only app one
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  // Pipeline 5 - 2 apps: app one valid and then app two that contains a check should be installed
+  "compile" should "install check app when app1 satisfies the check property" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline5Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline5Path / "expected_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline5Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline5Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline5Path / "test_app_two_two_hours_everyday_check", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              fail(s"The execution of the update command fails with error code = $errorCode\nStdOut is:\n${out.toString}")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.toString}")
+          }
+        case Success(_) => {
+          // Check
+          out.toString.trim should (include("The apps have been successfully compiled and verified!") and include("CONFIRMED"))
+        }
+      }
+
+    }
+
+  }
+
+  // Pipeline 5 - 2 apps: app one valid and then app two that contains a check should be installed
+  "compile" should "not install check app when app1 does not satisfies the check property" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline5Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline5Path / "expected_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline5Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline5Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline5Path / "test_app_two_twenty_hours_everyday_check", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(
+                "ERROR: unsat for invariant test_app_two_invariant This condition is always false: " +
+                  "svshi_api.check_time_property(svshi_api.Day(1), svshi_api.Hour(        20), condition=TEST_APP_TWO_SWITCH.is_on(physical_state,        internal_state))"
+              ))
+
+              val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
+              os.exists(newAppPath) shouldBe false
+
+              // Library with only app one
+              compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The compilation should have failed!")
+      }
+    }
+  }
+
+  "compile" should "not install app two when it imports forbidden modules (here time)" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline4Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    val appLibraryOnePipelineThree = pipeline3Path / "expected_app_library_one"
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    val expectedLibraryPath = pipeline3Path / "expected_app_library_one"
+    os.copy(expectedLibraryPath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(expectedLibraryPath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline4Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline4Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline4Path / "test_app_two_invalid_filled_forbidden_modules", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString.trim should (include(s"""The app 'test_app_two' imports the following module which is forbidden in applications: 'time'"""))
 
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false
@@ -1623,8 +2053,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
                 out.toString.trim should (include(
                   s"""ERROR: Removing the application '$appTwoName' causes the verification of the remaining applications to fail. Please see trace above for more information. The app '$appTwoName' has not been removed."""
                 ))
-                out.toString.trim should (include("ERROR: False when calling test_app_one_iteration("))
-                out.toString.trim should (include("ERROR: At line 123:  post: test_app_one_invariant(**__return__)"))
+                out.toString.trim should (include("ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_1_10 = False]"))
                 compareFolders(APP_LIBRARY_FOLDER_PATH, expectedLibraryPath, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
               }
               case e: Exception => fail(s"Unwanted exception occurred! exception = ${e}")
@@ -1849,6 +2278,134 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
       }
     }
 
+  }
+
+  "generateBindings" should "fail gracefully when a new app has a prototypical structure file but no main.py" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put app two in generated and remove main.py
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.remove(GENERATED_FOLDER_PATH / appTwoName / MAIN_PY_APP_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no main.py file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+  "generateBindings" should "fail gracefully when a new app has no prototypical structure file" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put empty folder app two in generated
+    os.makeDir.all(GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no prototypical structure file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+
+  "compile" should "fail gracefully when a new app has a prototypical structure file but no main.py" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put app two in generated and remove main.py
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / appTwoName, GENERATED_FOLDER_PATH / appTwoName)
+    os.remove(GENERATED_FOLDER_PATH / appTwoName / MAIN_PY_APP_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME, GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no main.py file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+  "compile" should "fail gracefully when a new app has no prototypical structure file" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3ExpectedLibraryAppOnePath, INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Put empty folder app two in generated
+    os.makeDir.all(GENERATED_FOLDER_PATH / appTwoName)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / APP_PROTO_BINDINGS_JSON_FILE_NAME, GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    os.copy(pipeline3ExpectedLibraryAppOneTwoPath / PHYSICAL_STRUCTURE_JSON_FILE_NAME, GENERATED_FOLDER_PATH / PHYSICAL_STRUCTURE_JSON_FILE_NAME)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Compile
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The app '$appTwoName' has no prototypical structure file!""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
   }
 
   object MockSystemExit extends SystemExit {

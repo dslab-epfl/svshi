@@ -23,6 +23,7 @@
   - [CI](#ci)
   - [Releases](#releases)
   - [Code of Conduct](#code-of-conduct)
+  - [SVSHI orange colour](#svshi-orange-colour)
 
 ## Requirements
 
@@ -195,10 +196,10 @@ To do so, this stage calls the `verification` module written in Python that tran
 The code modification consists, in a nutshell, in:
 
 - Adding a `PhysicalState` and `AppState` instances as argument of `iteration` and `invariant` functions
-- Adding an instance of the corresponding type as argument of `iteration` function for each `unchecked` function. The type used for the instance is the return type of the `unchecked` function.
+- Adding an `IsolatedFunctionsValues` instance as argument of `iteration` functions. This object contains one attribute per `periodic` and `on_trigger` functions (type inferred from the return type).
+- Replacing calls to `svshi_api.get_latest_value(some_fn)` by `isolated_fn_values.some_fn` and calls to `svshi_api.trigger_if_not_running` by `None` for verification and by the concrete asynchronous call for runtime.
 - Adding a CrossHair contract to `iteration` containing:
   - one precondition for all `invariant` function of installed or being installed applications
-  - one precondition for all postconditions of the `unchecked` functions
   - one postcondition for all `invariant` function of installed or being installed applications on `__return__` value (containing the new `PhysicalState` and `AppState`)
 - Moving all used functions in one file (called either `verification_file.py` or `runtime_file.py`)
 - Adding to that file all the generated code (`PhysicalState`, `AppState`, devices' classes and instances, ...)
@@ -214,6 +215,7 @@ The types of device that SVSHI supports require specific code to be handled prop
   > WARNING! Do NOT forget to update `ReadWriter.merge(...)` at the top of the file!!!
   > Once you added the new `SupportedDeviceBinding`, compiler warnings can guide you because the trait is sealed and thus match can be exhaustive.
 - update the `getAvailableDevices` of `ch.epfl.core.model.prototypical.SupportedDevice` to add your new device in the list
+- add a new `case class` that extends `ch.epfl.core.parser.json.bindings.DeviceAddressJson` in `ch.epfl.core.parser.json.bindings.JsonClasses.scala` following present examples
 - update the function `assignmentToPythonAddressJson` in `ch.epfl.core.parser.json.bindings.PythonAddressJsonParser` (specially the `match`)
 - update the 3 following functions in `ch.epfl.core.verifier.bindings.Verifier`: `verifyBindingsMutualDPT`, `verifyBindingsIoTypes` and `verifyBindingsKNXDatatypes` (also the `match`es)
 - modify the `read_devices` method in `src/generator/parsing/parser.py`.
@@ -230,6 +232,8 @@ To run only Python (i.e. `generator`, `verification` and `runtime`) tests and ge
 
 To run only Scala (i.e. `core`) tests and get the coverage, execute `sbt clean coverage test && sbt coverage it:test && sbt coverageReport` inside `src/core`.
 
+To run the tests on a Docker, we provide a base image. To build it, execute `./build_docker_dev.sh` (or `.ps1`) in `scripts/`. To start a container, execute `./run_docker_dev.sh` (or `.ps1`). It creates a container based on the image. This image has some tools installed and a environment variable `SVSHI_HOME` defined as `/home/maki/svshi_private`. To run tests, you should add an ssh key to the docker linked to your github account and clone `svshi_private` repo in `/home/maki`
+
 ## CI
 
 We use [GitHub Actions](https://github.com/dslab-epfl/svshi/actions) to run the whole test suite on every push on `main` and on every pull request. The workflows are defined in `.github/workflows/ci.yml`.
@@ -240,9 +244,14 @@ To build a new release:
 
 1. Update the variable `VERSION` in `src/build_release.sh`.
 2. Update the CLI version in `src/core/build.sbt`. Do not include `SNAPSHOT` in the version.
-3. Run `./build_release.sh` inside `src/` to build the archive.
-4. Create a new release on [GitHub](https://github.com/dslab-epfl/svshi/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
+3. Update the GUI version in `src/svshi_gui/package.json`.
+4. Run `./build_release.sh` inside `src/` to build the archive.
+5. Create a new release on [GitHub](https://github.com/dslab-epfl/svshi/releases) and add the created `.zip` file as an attachment. Make sure the release version, the svshi version and the CLI version are the same.
 
 ## Code of Conduct
 
 Our Code of Conduct is [here](https://github.com/dslab-epfl/svshi/blob/main/CODE_OF_CONDUCT.md). By contributing to SVSHI, you implicitly accept it.
+
+## SVSHI orange colour
+
+`#e87000`

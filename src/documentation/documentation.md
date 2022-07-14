@@ -680,9 +680,9 @@ The `name` is used as the instance name in the Python app that is generated. It 
 The `deviceType` should be supported by SVSHI.
 At the moment, the supported devices are:
 
-- **Binary sensors** (deviceType = "binary")
+- **Binary sensors** (deviceType = "binarySensor")
 - **Temperature sensors** (deviceType = "temperature")
-- **Humidity sensors** (deviceType = "humidity")
+- **Humidity sensors** (deviceType = "humiditySensor")
 - **CO2 sensors** (deviceType = "co2")
 - **Switches** (deviceType = "switch")
 
@@ -1008,22 +1008,22 @@ Here is an example of a device class with the `PhysicalState` and `AppState` cla
 ```python
 @dataclasses.dataclass
 class AppState:
-    INT_0: int = 0
-    INT_1: int = 0
-    INT_2: int = 0
-    INT_3: int = 0
-    FLOAT_0: float = 0.0
-    FLOAT_1: float = 0.0
-    FLOAT_2: float = 0.0
-    FLOAT_3: float = 0.0
-    BOOL_0: bool = False
-    BOOL_1: bool = False
-    BOOL_2: bool = False
-    BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
+  INT_0: int = 0
+  INT_1: int = 0
+  INT_2: int = 0
+  INT_3: int = 0
+  FLOAT_0: float = 0.0
+  FLOAT_1: float = 0.0
+  FLOAT_2: float = 0.0
+  FLOAT_3: float = 0.0
+  BOOL_0: bool = False
+  BOOL_1: bool = False
+  BOOL_2: bool = False
+  BOOL_3: bool = False
+  STR_0: str = ""
+  STR_1: str = ""
+  STR_2: str = ""
+  STR_3: str = ""
 
 @dataclasses.dataclass
 class PhysicalState:

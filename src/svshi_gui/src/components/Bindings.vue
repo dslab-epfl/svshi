@@ -1,8 +1,9 @@
-<script lang="js">
+<script lang="jsx">
 import JsonViewer from 'vue-json-viewer'
 import vSelect from "vue-select";
 import JSZip from 'jszip'
 import 'vue-select/dist/vue-select.css';
+import 'vue-json-viewer/style.css'
 
 let successStatusCode = 200
 export default {
@@ -12,9 +13,9 @@ export default {
             "appBindings": [],
             "physicalStructure": {},
             "filteredPhysicalStructure": {},
+            "searchPhysicalStructure": {},
+            "searchField": "",
             "physicalPhysIds": [],
-            "showBindings": true,
-            "test": -1
         }
     },
     methods: {
@@ -100,6 +101,31 @@ export default {
 
             let result = await zip.generateAsync({ type: "uint8array" });
             return new Blob([result])
+        },
+        updateSearchPhysicalStructure() {
+            if (this.searchField === "") {
+                this.searchPhysicalStructure = {}
+            } else {
+                this.searchPhysicalStructure = {}
+                this.searchPhysicalStructure.deviceInstances = this.physicalStructure.deviceInstances.map(d => {
+                    console.log(d.name, d.name.includes(this.searchField))
+                    return {
+                        "name": d.name,
+                        "address": d.address,
+                        "nodes": d.nodes.map(n => {
+                            return {
+                                "name": n.name,
+                                "comObjects": n.comObjects.filter(c => c.name.toLowerCase().includes(this.searchField.toLowerCase()))
+                            }
+
+                        }).filter(n => n.comObjects.length > 0)
+                    }
+                }).filter(d => d.nodes.length > 0)
+            }
+        },
+        onSearchFieldChange(evt) {
+            this.searchField = evt.target.value
+            this.updateSearchPhysicalStructure()
         }
     },
     mounted() {
@@ -110,11 +136,18 @@ export default {
 <template>
     <h2>Bindings</h2>
     <div class="section">
-        <button @Click="this.refresh">Refresh bindings</button>
+        <button class="classicButton" @Click="this.refresh">Refresh bindings</button>
         <table v-if="this.appBindings.length > 0">
             <tr>
                 <td>Bindings</td>
                 <td>Physical structure</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input :value="this.searchField" placeholder="Search com objects"
+                        @input="this.onSearchFieldChange($event)" />
+                </td>
             </tr>
             <tr>
                 <td valign="top">
@@ -129,19 +162,16 @@ export default {
                                     </p>
                                     <v-select :options="this.physicalPhysIds" :searchable="true" :filterable="true"
                                         v-model="b.binding.physDeviceId" :no-drop="false"></v-select>
-                                    <!-- <select v-model="b.binding.physDeviceId">
-                                    <option disabled value=-1>Please select one</option>
-                                    <option v-for="i in this.physicalPhysIds" :value=i>
-                                        {{ i }}
-                                    </option>
-                                </select> -->
                                 </li>
                             </ul>
                         </li>
                     </ul>
                 </td>
                 <td>
-                    <json-viewer :value="filteredPhysicalStructure" :expand-depth=3></json-viewer>
+                    <json-viewer v-if="Object.keys(this.searchPhysicalStructure).length === 0"
+                        :value="filteredPhysicalStructure" :expand-depth=3></json-viewer>
+                    <json-viewer v-if="Object.keys(this.searchPhysicalStructure).length > 0"
+                        :value="searchPhysicalStructure" :expand-depth=1000></json-viewer>
                 </td>
             </tr>
         </table>

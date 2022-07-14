@@ -1,0 +1,12 @@
+[
+    {
+        "name": "app_on_trigger_write",
+        "return_type": "int",
+        "period": null
+    },
+    {
+        "name": "another_app_periodic_write",
+        "return_type": "float",
+        "period": 0
+    }
+]

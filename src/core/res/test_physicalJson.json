@@ -49,13 +49,13 @@
           "comObjects": [
             {
               "name": "device3Node1ComObj1",
-              "datatype": "DPT-1",
+              "datatype": "DPT-1-5",
               "ioType": "out",
               "id": 311
             },
             {
               "name": "device3Node1ComObj2",
-              "datatype": "DPT-5",
+              "datatype": "DPT-5-3",
               "ioType": "in",
               "id": 312
             }
@@ -66,13 +66,13 @@
           "comObjects": [
             {
               "name": "device3Node2ComObj1",
-              "datatype": "DPT-5",
+              "datatype": "DPT-5-1",
               "ioType": "in",
               "id": 321
             },
             {
               "name": "device3Node2ComObj2",
-              "datatype": "DPT-12",
+              "datatype": "DPT-12-3",
               "ioType": "in/out",
               "id": 322
             }

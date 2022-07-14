@@ -2,8 +2,9 @@ package ch.epfl.core
 
 import ch.epfl.core.compiler.IncompatibleBindingsException
 import ch.epfl.core.compiler.knxProgramming.Programmer
+import ch.epfl.core.deviceMapper.DeviceMapper
 import ch.epfl.core.model.application.ApplicationLibrary
-import ch.epfl.core.model.physical.PhysicalStructure
+import ch.epfl.core.model.physical.{KNXDatatype, PhysicalStructure}
 import ch.epfl.core.model.prototypical.SupportedDevice
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants._
@@ -43,21 +44,24 @@ object Svshi extends SvshiTr {
           }
 
           info("Running the apps...")
-          // Copy verification_file.py, runtime_file.py and conditions.py in runtime module
+          // Copy verification_file.py, runtime_file.py, conditions.py and isolated_fns.json in runtime module
           val appLibraryPath = existingAppsLibrary.path
-          FileUtils.copyFiles(List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py"), runtimeModulePath)
+          FileUtils.copyFiles(
+            List(appLibraryPath / "verification_file.py", appLibraryPath / "runtime_file.py", appLibraryPath / "conditions.py", appLibraryPath / "isolated_fns.json"),
+            runtimeModulePath
+          )
 
           // Copy files used by each app
           val filesDirPath = runtimeModuleApplicationFilesPath
           os.remove.all(filesDirPath)
           os.makeDir.all(filesDirPath)
 
-          val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.appProtoStructure.files)).toMap
+          val appToFiles = existingAppsLibrary.apps.map(a => (a.name, a.files)).toMap
           appToFiles.foreach {
             case (appName, appFiles) => {
               val appFilesPath = filesDirPath / appName
               if (!os.exists(appFilesPath)) os.makeDir.all(appFilesPath)
-              FileUtils.copyFiles(appFiles.map(fName => appLibraryPath / appName / fName).filter(fPath => os.exists(fPath)), appFilesPath)
+              FileUtils.copyFiles(appFiles.filter(fPath => os.exists(fPath)), appFilesPath)
             }
           }
 
@@ -115,9 +119,21 @@ object Svshi extends SvshiTr {
       newPhysicalStructure: PhysicalStructure
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
-    val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
-    if (d != SUCCESS_CODE) {
-      return d
+    val dDuplicate = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dDuplicate != SUCCESS_CODE) {
+      return dDuplicate
+    }
+
+    // Then check that no app has no prototypical structure file
+    val dProto = checkForNewAppsWithoutPrototypicalFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dProto != SUCCESS_CODE) {
+      return dProto
+    }
+
+    // Then check that no app has no main.py file
+    val dMain = checkForNewAppsWithoutMainPyFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dMain != SUCCESS_CODE) {
+      return dMain
     }
 
     info("Compiling and verifying the apps...")
@@ -226,9 +242,21 @@ object Svshi extends SvshiTr {
       newPhysicalStructure: PhysicalStructure
   )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int = {
     // First check that no app with the same name as any new apps is already installed
-    val d = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
-    if (d != SUCCESS_CODE) {
-      return d
+    val dDuplicate = checkForAppDuplicates(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dDuplicate != SUCCESS_CODE) {
+      return dDuplicate
+    }
+
+    // Then check that no app has no prototypical structure file
+    val dProto = checkForNewAppsWithoutPrototypicalFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dProto != SUCCESS_CODE) {
+      return dProto
+    }
+
+    // Then check that no app has no main.py file
+    val dMain = checkForNewAppsWithoutMainPyFile(existingAppsLibrary = existingAppsLibrary, newAppsLibrary = newAppsLibrary, success = success, info = info, err = err)
+    if (dMain != SUCCESS_CODE) {
+      return dMain
     }
 
     info("Generating the bindings...")
@@ -445,6 +473,7 @@ object Svshi extends SvshiTr {
     existingAppsLibrary.apps.map(app => app.name)
   }
   override def getAvailableProtoDevices(): List[String] = SupportedDevice.getAvailableDevices
+  override def getAvailableDpts(): List[String] = KNXDatatype.availableDpts.map(_.toString)
 
   private def backupAppLibrary(destination: os.Path): Unit = {
     if (os.exists(destination)) os.remove.all(destination)
@@ -481,8 +510,8 @@ object Svshi extends SvshiTr {
           val appLibraryPath = existingAppsLibrary.path
           FileUtils.moveAllFileToOtherDirectory(GENERATED_FOLDER_PATH, appLibraryPath)
 
-          // Move verification_file.py, runtime_file.py and conditions.py in app_library
-          val generatedFiles = List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH)
+          // Move verification_file.py, runtime_file.py, conditions.py and isolated_fns.json in app_library
+          val generatedFiles = List(GENERATED_VERIFICATION_FILE_PATH, GENERATED_RUNTIME_FILE_PATH, GENERATED_CONDITIONS_FILE_PATH, GENERATED_ISOLATED_FNS_FILE_PATH)
           generatedFiles.foreach(p => os.move.into(p, appLibraryPath, replaceExisting = true))
 
           // Copy all installed applications, their bindings and their physical structure in installedFolder,
@@ -532,6 +561,44 @@ object Svshi extends SvshiTr {
       .map(a =>
         if (existingAppsLibrary.apps.exists(existingA => existingA.name == a.name)) {
           err(s"An application with the name '${a.name}' is already installed! You cannot install two apps with the same name!")
+          ERROR_CODE
+        } else {
+          SUCCESS_CODE
+        }
+      )
+      .fold(SUCCESS_CODE)((x1, x2) => if (x1 == ERROR_CODE || x2 == ERROR_CODE) ERROR_CODE else SUCCESS_CODE)
+  }
+
+  private def checkForNewAppsWithoutPrototypicalFile(
+      existingAppsLibrary: ApplicationLibrary,
+      newAppsLibrary: ApplicationLibrary,
+      success: String => Unit,
+      info: String => Unit,
+      err: String => Unit
+  ): Int = {
+    newAppsLibrary.apps
+      .map(a =>
+        if (!os.exists(a.appFolderPath / APP_PROTO_STRUCT_FILE_NAME) || !os.isFile(a.appFolderPath / APP_PROTO_STRUCT_FILE_NAME)) {
+          err(s"The app '${a.name}' has no prototypical structure file!")
+          ERROR_CODE
+        } else {
+          SUCCESS_CODE
+        }
+      )
+      .fold(SUCCESS_CODE)((x1, x2) => if (x1 == ERROR_CODE || x2 == ERROR_CODE) ERROR_CODE else SUCCESS_CODE)
+  }
+
+  private def checkForNewAppsWithoutMainPyFile(
+      existingAppsLibrary: ApplicationLibrary,
+      newAppsLibrary: ApplicationLibrary,
+      success: String => Unit,
+      info: String => Unit,
+      err: String => Unit
+  ): Int = {
+    newAppsLibrary.apps
+      .map(a =>
+        if (!os.exists(a.appFolderPath / MAIN_PY_APP_FILE_NAME) || !os.isFile(a.appFolderPath / MAIN_PY_APP_FILE_NAME)) {
+          err(s"The app '${a.name}' has no main.py file!")
           ERROR_CODE
         } else {
           SUCCESS_CODE
@@ -596,4 +663,20 @@ object Svshi extends SvshiTr {
 
   def setRuntimeModulePath(newRuntimeModulePath: os.Path): Unit = runtimeModulePath = newRuntimeModulePath
 
+  override def generatePrototypicalDeviceMappings(
+      physicalStructure: PhysicalStructure
+  )(success: String => Unit, info: String => Unit, warning: String => Unit, err: String => Unit): Int = {
+    val structureMapping = DeviceMapper.mapStructure(physicalStructure)
+    Try(structureMapping.writeToFile(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)) match {
+      case Failure(exception) => {
+        err(s"Cannot write the mapping to the file! Exception thrown: ${exception.getLocalizedMessage}")
+        ERROR_CODE
+      }
+      case Success(_) => {
+        success("The device mappings were correctly generated!")
+        SUCCESS_CODE
+      }
+    }
+
+  }
 }

@@ -9,11 +9,11 @@
     [
        {
          "name": "device1",
-         "deviceType": "binary"
+         "deviceType": "binarySensor"
        },
        {
          "name": "device2",
-         "deviceType": "binary"
+         "deviceType": "binarySensor"
        },
        {
          "name": "device3",

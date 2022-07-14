@@ -2,12 +2,14 @@ package ch.epfl.core.parser
 
 import ch.epfl.core.model.prototypical._
 import ch.epfl.core.parser.json.bindings.BindingsJsonParser
+import ch.epfl.core.utils.Constants
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
+  private val coreResDirPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res"
   "parse" should "return the right structure given a valid file" in {
-    val res = BindingsJsonParser.parse(os.Path("res/test_bindings_json_parser.json", os.pwd))
+    val res = BindingsJsonParser.parse(coreResDirPath / "test_bindings_json_parser.json")
 
     val expected = AppLibraryBindings(
       List(
@@ -39,8 +41,8 @@ class BindingsJsonParserTest extends AnyFlatSpec with Matchers {
         )
       )
     )
-    BindingsJsonParser.writeToFile(os.Path("res/test_bindings_json_parser_write.json", os.pwd), expected)
-    val res = BindingsJsonParser.parse(os.Path("res/test_bindings_json_parser_write.json", os.pwd))
+    BindingsJsonParser.writeToFile(coreResDirPath / "test_bindings_json_parser_write.json", expected)
+    val res = BindingsJsonParser.parse(coreResDirPath / "test_bindings_json_parser_write.json")
     res shouldEqual expected
   }
 }

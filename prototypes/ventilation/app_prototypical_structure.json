@@ -1,18 +1,14 @@
 {
   "permissionLevel": "notPrivileged",
-  "timer": 10,
-  "files": [
-    "credentials.json",
-    "token.pickle"
-  ],
+  "timer": 30,
   "devices": [
     {
       "name": "presence_detector",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     },
     {
       "name": "co_two_sensor",
-      "deviceType": "co2"
+      "deviceType": "co2Sensor"
     },
     {
       "name": "ventilation",

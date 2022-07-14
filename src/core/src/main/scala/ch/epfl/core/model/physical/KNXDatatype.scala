@@ -6,6 +6,7 @@ import scala.util.matching.Regex
 
 /** The datatypes used in the KNX protocol
   *
+  *  The sub represents the 2nd part of the DPT (YYY below). It is optional, -1 is used to represent neutral DPT
   * Structure:
   *    data type: format + encoding
   *    size: value range + unit
@@ -34,34 +35,56 @@ import scala.util.matching.Regex
   *    19.yyy = time + data
   *    20.yyy = 8-bit enumeration, e.g. HVAC mode ('auto', 'comfort', 'standby', 'economy', 'protection')
   */
-sealed trait KNXDatatype {
+sealed abstract class KNXDatatype(sub: Int) {
   def toPythonType: PythonType
+  def similarTo(other: KNXDatatype): Boolean
 }
 object KNXDatatype {
-  def datatypeRegex: Regex = "(DPT-[0-9]+)|DPT-Unknown".r
-  def fromString(s: String): Option[KNXDatatype] = if (datatypeRegex.findFirstIn(s).isEmpty) None
-  else
-    s match {
-      case _ if datatypeRegex.findFirstIn(s).get == "DPT-Unknown"               => Some(DPTUnknown)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 1 => Some(DPT1)
-//      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 2  => Some(DPT2)
-//      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 3  => Some(DPT3)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 5  => Some(DPT5)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 6  => Some(DPT6)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 7  => Some(DPT7)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 9  => Some(DPT9)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 10 => Some(DPT10)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 11 => Some(DPT11)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 12 => Some(DPT12)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 13 => Some(DPT13)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 14 => Some(DPT14)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 16 => Some(DPT16)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 17 => Some(DPT17)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 18 => Some(DPT18)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 19 => Some(DPT19)
-      case _ if datatypeRegex.findFirstIn(s).get.split("-").apply(1).toInt == 20 => Some(DPT20)
-      case _                                                                     => None
+  def completeDatatypeRegexNoUnknown: Regex = "(DPT-[0-9]+-[0-9]+)|(DPST-[0-9]+-[0-9]+)".r
+  def simpleDatatypeRegex: Regex = "(DPT-[0-9]+)|(DPST-[0-9]+)|DPT-Unknown".r
+  def fromString(s: String): Option[KNXDatatype] = if (s.isEmpty) Some(DPTUnknown(-1))
+  else if (completeDatatypeRegexNoUnknown.findFirstIn(s).isDefined) {
+    val str = completeDatatypeRegexNoUnknown.findFirstIn(s).get
+    str match {
+      case _ if str.split("-").apply(1).toInt == 1  => Some(DPT1(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 5  => Some(DPT5(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 6  => Some(DPT6(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 7  => Some(DPT7(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 9  => Some(DPT9(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 10 => Some(DPT10(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 11 => Some(DPT11(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 12 => Some(DPT12(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 13 => Some(DPT13(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 14 => Some(DPT14(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 16 => Some(DPT16(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 17 => Some(DPT17(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 18 => Some(DPT18(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 19 => Some(DPT19(str.split("-").apply(2).toInt))
+      case _ if str.split("-").apply(1).toInt == 20 => Some(DPT20(str.split("-").apply(2).toInt))
+      case _                                        => Some(DPTUnknown(-1))
     }
+  } else if (simpleDatatypeRegex.findFirstIn(s).isDefined) {
+    val str = simpleDatatypeRegex.findFirstIn(s).get
+    str match {
+      case _ if str.split("-").apply(1) == "Unknown" => Some(DPTUnknown(-1))
+      case _ if str.split("-").apply(1).toInt == 1   => Some(DPT1(-1))
+      case _ if str.split("-").apply(1).toInt == 5   => Some(DPT5(-1))
+      case _ if str.split("-").apply(1).toInt == 6   => Some(DPT6(-1))
+      case _ if str.split("-").apply(1).toInt == 7   => Some(DPT7(-1))
+      case _ if str.split("-").apply(1).toInt == 9   => Some(DPT9(-1))
+      case _ if str.split("-").apply(1).toInt == 10  => Some(DPT10(-1))
+      case _ if str.split("-").apply(1).toInt == 11  => Some(DPT11(-1))
+      case _ if str.split("-").apply(1).toInt == 12  => Some(DPT12(-1))
+      case _ if str.split("-").apply(1).toInt == 13  => Some(DPT13(-1))
+      case _ if str.split("-").apply(1).toInt == 14  => Some(DPT14(-1))
+      case _ if str.split("-").apply(1).toInt == 16  => Some(DPT16(-1))
+      case _ if str.split("-").apply(1).toInt == 17  => Some(DPT17(-1))
+      case _ if str.split("-").apply(1).toInt == 18  => Some(DPT18(-1))
+      case _ if str.split("-").apply(1).toInt == 19  => Some(DPT19(-1))
+      case _ if str.split("-").apply(1).toInt == 20  => Some(DPT20(-1))
+      case _                                         => Some(DPTUnknown(-1))
+    }
+  } else None
 
   /** Returns a DPT given the object size string from the ETS project.
     * BE CAREFUL IF ADDING NEW PARSED VALUES: TYPES OTHER THAN 1 OR 2 BITS CAN CORRESPOND TO MULTIPLE
@@ -72,7 +95,7 @@ object KNXDatatype {
   def fromDPTSize(dptSize: String): Option[KNXDatatype] = {
     if (dptSize.toLowerCase.contains("bit")) {
       if (dptSize.contains("1 ") || dptSize.toLowerCase.contains("one")) {
-        Some(DPT1)
+        Some(DPT1(-1))
       } else {
         None
       }
@@ -80,10 +103,21 @@ object KNXDatatype {
       None
     }
   }
+
+  /** Returns the list of all defined KNXDatatype without DPTUnknown
+    * @return
+    */
+  def availableDpts: List[KNXDatatype] = {
+    List(DPT1(-1), DPT5(-1), DPT6(-1), DPT7(-1), DPT9(-1), DPT10(-1), DPT11(-1), DPT12(-1), DPT13(-1), DPT14(-1), DPT16(-1), DPT17(-1), DPT18(-1), DPT19(-1), DPT20(-1))
+  }
 }
-case object DPT1 extends KNXDatatype {
-  override def toString = "DPT-1"
+case class DPT1(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-1" else s"DPT-1-$sub"
   override def toPythonType: PythonType = PythonBool
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT1(_) => true
+    case _       => false
+  }
 }
 
 // These two are currently not supported by the Python runtime because they are not supported by XKNX.
@@ -98,63 +132,120 @@ case object DPT1 extends KNXDatatype {
 //  override def toPythonType: PythonType = PythonInt
 //}
 
-case object DPT5 extends KNXDatatype {
-  override def toString = "DPT-5"
+case class DPT5(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-5" else s"DPT-5-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT5(_) => true
+    case _       => false
+  }
 }
-case object DPT6 extends KNXDatatype {
-  override def toString = "DPT-6"
+case class DPT6(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-6" else s"DPT-6-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT6(_) => true
+    case _       => false
+  }
 }
-case object DPT7 extends KNXDatatype {
-  override def toString = "DPT-7"
+case class DPT7(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-7" else s"DPT-7-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT7(_) => true
+    case _       => false
+  }
 }
-case object DPT9 extends KNXDatatype {
-  override def toString = "DPT-9"
+case class DPT9(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-9" else s"DPT-9-$sub"
   override def toPythonType: PythonType = PythonFloat
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT9(_) => true
+    case _       => false
+  }
 }
-case object DPT10 extends KNXDatatype {
-  override def toString = "DPT-10"
+case class DPT10(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-10" else s"DPT-10-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT10(_) => true
+    case _        => false
+  }
 }
-case object DPT11 extends KNXDatatype {
-  override def toString = "DPT-11"
+case class DPT11(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-11" else s"DPT-11-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT11(_) => true
+    case _        => false
+  }
 }
-case object DPT12 extends KNXDatatype {
-  override def toString = "DPT-12"
+case class DPT12(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-12" else s"DPT-12-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT12(_) => true
+    case _        => false
+  }
 }
-case object DPT13 extends KNXDatatype {
-  override def toString = "DPT-13"
+case class DPT13(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-13" else s"DPT-13-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT13(_) => true
+    case _        => false
+  }
 }
-case object DPT14 extends KNXDatatype {
-  override def toString = "DPT-14"
+case class DPT14(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-14" else s"DPT-14-$sub"
   override def toPythonType: PythonType = PythonFloat
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT14(_) => true
+    case _        => false
+  }
 }
-case object DPT16 extends KNXDatatype {
-  override def toString = "DPT-16"
+case class DPT16(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-16" else s"DPT-16-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT16(_) => true
+    case _        => false
+  }
 }
-case object DPT17 extends KNXDatatype {
-  override def toString = "DPT-17"
+case class DPT17(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-17" else s"DPT-17-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT17(_) => true
+    case _        => false
+  }
 }
-case object DPT18 extends KNXDatatype {
-  override def toString = "DPT-18"
+case class DPT18(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-18" else s"DPT-18-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT18(_) => true
+    case _        => false
+  }
 }
-case object DPT19 extends KNXDatatype {
-  override def toString = "DPT-19"
+case class DPT19(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-19" else s"DPT-19-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT19(_) => true
+    case _        => false
+  }
 }
-case object DPT20 extends KNXDatatype {
-  override def toString = "DPT-20"
+case class DPT20(sub: Int) extends KNXDatatype(sub) {
+  override def toString = if (sub == -1) "DPT-20" else s"DPT-20-$sub"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = other match {
+    case DPT20(_) => true
+    case _        => false
+  }
 }
-case object DPTUnknown extends KNXDatatype {
+case class DPTUnknown(sub: Int) extends KNXDatatype(sub) {
   override def toString: String = "DPT-Unknown"
   override def toPythonType: PythonType = PythonInt
+  override def similarTo(other: KNXDatatype): Boolean = true
 }

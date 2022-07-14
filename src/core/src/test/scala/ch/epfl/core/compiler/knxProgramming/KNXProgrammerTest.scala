@@ -15,11 +15,11 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
   private val assignment = GroupAddressAssignment(
     PhysicalStructure(
       List(
-        PhysicalDevice("device1", ("1", "1", "1"), List(PhysicalDeviceNode("node1", List(PhysicalDeviceCommObject("commObject1", DPT9, In, 1))))),
+        PhysicalDevice("device1", ("1", "1", "1"), List(PhysicalDeviceNode("node1", List(PhysicalDeviceCommObject("commObject1", DPT9(-1), In, 1))))),
         PhysicalDevice(
           "device2",
           ("1", "1", "2"),
-          List(PhysicalDeviceNode("node2", List(PhysicalDeviceCommObject("commObject2", DPT1, Out, 2), PhysicalDeviceCommObject("commObject3", DPTUnknown, Out, 3))))
+          List(PhysicalDeviceNode("node2", List(PhysicalDeviceCommObject("commObject2", DPT1(-1), Out, 2), PhysicalDeviceCommObject("commObject3", DPTUnknown(-1), Out, 3))))
         )
       )
     ),
@@ -28,9 +28,9 @@ class KNXProgrammerTest extends AnyFlatSpec with Matchers {
         AppPrototypeBindings(
           "app1",
           List(
-            DeviceInstanceBinding("device1", HumiditySensorBinding("humidity", 1)),
-            DeviceInstanceBinding("device2", BinarySensorBinding("binary", 2)),
-            DeviceInstanceBinding("device2", TemperatureSensorBinding("temperature", 3))
+            DeviceInstanceBinding("device1", HumiditySensorBinding("humiditySensor", 1)),
+            DeviceInstanceBinding("device2", BinarySensorBinding("binarySensor", 2)),
+            DeviceInstanceBinding("device2", TemperatureSensorBinding("temperatureSensor", 3))
           )
         )
       )

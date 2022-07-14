@@ -57,9 +57,15 @@ case class CoreApiServer(
   private val MALFORMED_ZIP_INPUT_FILE_MESSAGE = "An error occurred when unzipping the file provided in the request. Please check the file is well formed and in zip format."
   private val BINDINGS_NOT_FOUND_MESSAGE = "The bindings are not generated yet, please generate them before trying to get!"
   private val GENERATED_FOLDER_DELETED_MESSAGE = "The generated folder was successfully emptied!"
+  private def FILE_IN_GENERATED_FOLDER_DELETED_MESSAGE(filename: String) = s"'$filename' was successfully removed!"
   private val REQUESTED_APP_NOT_INSTALLED_MESSAGE = "The requested app is not installed!"
   private val ZIPPING_ERROR_MESSAGE = "An error occurred while zipping the content!"
   private val LOCKED_ERROR_MESSAGE = "An operation is already running on SVSHI, please retry later!"
+  private val knxprojExtension = "knxproj"
+  private val jsonExtension = "json"
+  private val WRONG_EXTENSION_FILE_ERROR_MESSAGE = s"The file for the physical structure must be either a $jsonExtension or a $knxprojExtension file!"
+
+  private def CANNOT_GENERATE_DEVICE_MAPPINGS(excMsg: String) = s"Cannot generate the device mappings!\nPlease see the exception: $excMsg"
 
   private val HEADERS_AJAX = Seq("Access-Control-Allow-Origin" -> "*")
 
@@ -139,12 +145,18 @@ case class CoreApiServer(
     Response(ResponseBody(status = true, availableDevices).toString, headers = HEADERS_AJAX)
   }
 
+  @get("/availableDpts")
+  def getAvailableDpts() = {
+    val availableDpts = svshiSystem.getAvailableDpts()
+    Response(ResponseBody(status = true, availableDpts).toString, headers = HEADERS_AJAX)
+  }
+
   @post("/generateApp/:appName")
   def generateApp(appName: String, request: Request) = acquireLockAndExecute(
     () => {
       cleanTempFolders()
       val protoJsonString = request.text()
-      debug(f"Received generateNewApp for $appName with json = $protoJsonString")
+      debug(f"Received generateNewApp for $appName with " + jsonExtension + f" = $protoJsonString")
       Try(AppInputJsonParser.parseJson(protoJsonString)) match {
         case Failure(exception) => Response(exception.toString, statusCode = BAD_REQUEST_CODE)
         case Success(protoJson) => {
@@ -174,7 +186,7 @@ case class CoreApiServer(
       debug("Received a compile request")
       cleanTempFolders()
       val (existingAppsLibrary, newAppsLibrary, _) = loadCurrentSVSHIState
-      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
         def outputFunc(s: String, prefix: String): Unit = {
           debug(createStrMessagePrefix(s, prefix))
@@ -229,7 +241,7 @@ case class CoreApiServer(
     () => {
       cleanTempFolders()
       val (existingAppsLibrary, newAppsLibrary, existingPhysicalStructure) = loadCurrentSVSHIState
-      extractKnxprojFileAndExec(request)(newPhysicalStructure => {
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
         def outputFunc(s: String, prefix: String): Unit = {
           debug(createStrMessagePrefix(s, prefix))
@@ -380,6 +392,17 @@ case class CoreApiServer(
       Response(ResponseBody(status = false, Nil).toString, headers = HEADERS_AJAX)
     }
   }
+  @get("/logs/physicalState")
+  def getPhysicalStateLog() = {
+    val physicalStateLogPath = Constants.PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH
+    if (os.exists(physicalStateLogPath)) {
+      val physicalStateContent = FileUtils.readFileContentAsString(physicalStateLogPath)
+      Response(physicalStateContent, headers = HEADERS_AJAX)
+    } else {
+      Response("", statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+
+  }
 
   @post("/stopRun")
   def stopRun() = acquireLockAndExecute(
@@ -439,8 +462,20 @@ case class CoreApiServer(
     }
   }
 
-  @post("/deleteGenerated")
-  def deleteGenerated() = acquireLockAndExecute(
+  @get("/generated/:filename")
+  def getGenerated(filename: String) = {
+    val toZip = os.list(Constants.GENERATED_FOLDER_PATH).toList.filter(p => p.segments.toList.last == filename)
+    FileUtils.zip(toZip, privateTempZipFilePath) match {
+      case Some(zippedPath) => {
+        val data = os.read.bytes(zippedPath)
+        Response(data = data, headers = HEADERS_AJAX)
+      }
+      case None => Response(data = Array[Byte](), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+  }
+
+  @post("/deleteAllGenerated")
+  def deleteAllGenerated() = acquireLockAndExecute(
     () => {
       cleanTempFolders()
       Try({
@@ -452,6 +487,26 @@ case class CoreApiServer(
           Response(responseBody.toString, headers = HEADERS_AJAX)
         case Success(_) =>
           val responseBody = ResponseBody(status = true, output = List(GENERATED_FOLDER_DELETED_MESSAGE))
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+      }
+
+    },
+    defaultResponseStringIfLocked
+  )
+
+  @post("/deleteGenerated/:filename")
+  def deleteAllGenerated(filename: String) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      Try({
+        val pathToRemove = Constants.GENERATED_FOLDER_PATH / filename
+        if (os.exists(pathToRemove)) os.remove.all(pathToRemove)
+      }) match {
+        case Failure(exception) =>
+          val responseBody = ResponseBody(status = false, output = exception.getLocalizedMessage.split("\n").toList)
+          Response(responseBody.toString, headers = HEADERS_AJAX)
+        case Success(_) =>
+          val responseBody = ResponseBody(status = true, output = List(FILE_IN_GENERATED_FOLDER_DELETED_MESSAGE(filename)))
           Response(responseBody.toString, headers = HEADERS_AJAX)
       }
 
@@ -507,6 +562,33 @@ case class CoreApiServer(
     }
   }
 
+  @post("/deviceMappings")
+  def generateDeviceMappings(request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
+        var output: List[String] = List()
+        def outputFunc(s: String, prefix: String): Unit = {
+          debug(createStrMessagePrefix(s, prefix))
+          output = output ::: List(createStrMessagePrefix(s, prefix))
+        }
+        val resCode = svshiSystem.generatePrototypicalDeviceMappings(newPhysicalStructure)(
+          success = s => outputFunc(s, ""),
+          info = s => outputFunc(s, infoPrefix),
+          warning = s => outputFunc(s, warningPrefix),
+          err = s => outputFunc(s, errorPrefix)
+        )
+        if (resCode == Svshi.SUCCESS_CODE) {
+          val json = FileUtils.readFileContentAsString(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
+          Response(json, headers = HEADERS_AJAX)
+        } else {
+          Response(CANNOT_GENERATE_DEVICE_MAPPINGS(output.mkString("\n")), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
+        }
+      })
+    },
+    defaultResponseStringIfLocked
+  )
+
   private def cleanTempFolders() = {
     if (os.exists(knxprojPrivateFolderPath)) os.remove.all(knxprojPrivateFolderPath)
     if (os.exists(privateTempZipFilePath)) os.remove.all(privateTempZipFilePath)
@@ -534,16 +616,27 @@ case class CoreApiServer(
         Response(MALFORMED_ZIP_INPUT_FILE_MESSAGE, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
     }
   }
-  private def extractKnxprojFileAndExec(request: Request)(withPhysStruct: PhysicalStructure => Response[String]): Response[String] = {
+  private def extractKnxprojOrJsonFileAndExec(request: Request)(withPhysStruct: PhysicalStructure => Response[String]): Response[String] = {
     if (os.exists(knxprojPrivateFolderPath)) os.remove(knxprojPrivateFolderPath)
     unzipContentAndExec(request)(
       knxprojPrivateFolderPath,
       path => {
-        val knxprofFile = FileUtils.recursiveListFiles(path).head
-        Try(EtsParser.parseEtsProjectFile(knxprofFile)) match {
-          case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
-          case Success(newPhysicalStructure) =>
-            withPhysStruct(newPhysicalStructure)
+        val knxprojOrJsonFile = FileUtils.recursiveListFiles(path).head
+        val extension = FileUtils.getFileExtension(knxprojOrJsonFile)
+        if (extension == knxprojExtension) {
+          Try(EtsParser.parseEtsProjectFile(knxprojOrJsonFile)) match {
+            case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
+            case Success(newPhysicalStructure) =>
+              withPhysStruct(newPhysicalStructure)
+          }
+        } else if (extension == jsonExtension) {
+          Try(PhysicalStructureJsonParser.parse(knxprojOrJsonFile)) match {
+            case Failure(exception) => Response(exception.getLocalizedMessage, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
+            case Success(newPhysicalStructure) =>
+              withPhysStruct(newPhysicalStructure)
+          }
+        } else {
+          Response(WRONG_EXTENSION_FILE_ERROR_MESSAGE, statusCode = BAD_REQUEST_CODE, headers = HEADERS_AJAX)
         }
       }
     )

@@ -104,11 +104,23 @@ object FileUtils {
 
   /** Explore the given directory and output the list of folders contained in this directory
     * @param dir the path to the directory to explore
-    * @return
+    * @return the list of Paths of directories
     */
   def getListOfFolders(dir: os.Path): List[os.Path] = {
     if (os.exists(dir) && os.isDir(dir)) {
       os.list(dir).filter(a => os.isDir(a)).toList
+    } else {
+      Nil
+    }
+  }
+
+  /** Explore the given directory and output the list of files contained in this directory
+    * @param dir the path to the directory to explore
+    * @return the list of Paths of files
+    */
+  def getListOfFiles(dir: os.Path): List[os.Path] = {
+    if (os.exists(dir) && os.isDir(dir)) {
+      os.list(dir).filter(a => os.isFile(a)).toList
     } else {
       Nil
     }
@@ -217,6 +229,23 @@ object FileUtils {
       val stream = os.read.lines.stream(file)
       val reducedStream = stream.drop(LINES_TO_REMOVE_TO_GAIN_SPACE)
       os.write.over(file, reducedStream.mkString("\n"))
+    }
+  }
+
+  /** Return the extension of the given file as a String.
+    * If the given path points to a directory, it returns the empty String.
+    * If the given path does not exist, it returns the empty String.
+    * If the filename is only an extension (e.g., `.gitignore`), it returns the extension.
+    * If the file has no extension, it returns the empty string.
+    * @param file the path to the file
+    * @return the extension as a string
+    */
+  def getFileExtension(file: os.Path): String = {
+    if (os.isFile(file)) {
+      val filename = file.segments.toList.last
+      if (filename.contains(".")) filename.split('.').toList.last else ""
+    } else {
+      ""
     }
   }
 }

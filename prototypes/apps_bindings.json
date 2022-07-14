@@ -7,15 +7,15 @@
           "name": "CO_TWO",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.CO2SensorBinding",
-            "typeString": "co2",
+            "typeString": "co2Sensor",
             "physDeviceId": -2092645687
           }
         },
         {
-          "name": "temperature",
+          "name": "temperatureSensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
-            "typeString": "temperature",
+            "typeString": "temperatureSensor",
             "physDeviceId": -544932998
           }
         }
@@ -28,7 +28,7 @@
           "name": "door_lock_sensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": 1542297768
           }
         },
@@ -36,7 +36,7 @@
           "name": "presence_detector",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -562939223
           }
         }
@@ -49,7 +49,7 @@
           "name": "humidity_sensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.HumiditySensorBinding",
-            "typeString": "humidity",
+            "typeString": "humiditySensor",
             "physDeviceId": -803067485
           }
         }
@@ -62,7 +62,7 @@
           "name": "presence_detector",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -562939223
           }
         },
@@ -70,7 +70,7 @@
           "name": "co_two_sensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.CO2SensorBinding",
-            "typeString": "co2",
+            "typeString": "co2Sensor",
             "physDeviceId": -2092645687
           }
         },

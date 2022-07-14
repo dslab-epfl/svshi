@@ -4,10 +4,10 @@
   <img src="src/res/logo.png" alt="logo" width="50%"/>
 </p>
 
-![CI](https://github.com/dslab-epfl/svshi/actions/workflows/ci.yml/badge.svg)
-[![codecov](https://codecov.io/gh/dslab-epfl/svshi/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/svshi)
-![Latest Stable Version](https://img.shields.io/github/v/release/dslab-epfl/svshi?label=version)
-![License](https://img.shields.io/github/license/dslab-epfl/svshi)
+![CI](https://github.com/dslab-epfl/svshi_private/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dslab-epfl/svshi_private/branch/main/graph/badge.svg?token=NYRGL343U2)](https://codecov.io/gh/dslab-epfl/svshi)
+![Latest Stable Version](https://img.shields.io/github/v/release/dslab/svshi?label=version)
+![License](https://img.shields.io/github/license/dslab/svshi)
 
 - [SVSHI - Secure and Verified Smart Home Infrastructure](#svshi---secure-and-verified-smart-home-infrastructure)
   - [Installation](#installation)
@@ -21,8 +21,6 @@
       - [Unix (Linux / macOS)](#unix-linux--macos-2)
       - [Windows](#windows-1)
     - [Docker](#docker)
-  - [GUI](#gui-1)
-    - [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine)
     - [Unix (Linux / macOS)](#unix-linux--macos-3)
   - [Supported devices](#supported-devices)
   - [Developing an application](#developing-an-application)
@@ -35,6 +33,7 @@
     - [Prototypical structure](#prototypical-structure)
     - [Usage](#usage)
   - [CLI](#cli)
+  - [Simulator](#simulator)
   - [How SVSHI works](#how-svshi-works)
     - [Compilation](#compilation)
       - [Bindings](#bindings)
@@ -42,7 +41,8 @@
       - [Static](#static)
       - [Runtime](#runtime)
     - [Execution](#execution)
-  - [GUI](#gui-2)
+      - [State refresh](#state-refresh)
+  - [GUI](#gui-1)
     - [JSON API](#json-api)
   - [KNX Virtual](#knx-virtual)
   - [Contributing](#contributing)
@@ -74,9 +74,8 @@ Here the SVSHI system and the frontend server run in the same Docker image. To u
 - Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
 - Run `cd ./scripts && ./run_docker.sh` to run the docker container
 - Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
-- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
 
-Do not forget to use volumes (see https://docs.docker.com/storage/volumes/ )if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
+Do not forget to use volumes (see https://docs.docker.com/storage/volumes/) if you want your container files to be non-volatile. The scripts that we provide that run the container already create a volume and use it for the container. Feel free to modify those scripts if you are an advanced user of Docker.
 
 ### Unix (Linux / macOS)
 
@@ -160,19 +159,6 @@ We also provide a Docker image with all requirements and SVSHI installed. To use
 3. You can find the repo copied in `/home/maki/svshi`
 4. `svshi` command is accessible
 
-## GUI
-
-SVSHI comes with a GUI in the form of a web application. For this usage, we strongly recommend to use the provided Docker image.
-
-### Docker (can be used on Windows or Unix machine)
-
-Here the SVSHI system and the frontend server run on the same Docker image. To use it:
-
-- Run `cd ./scripts && ./build_docker.sh` (Windows: `.ps1`) to build the image
-- Run `cd ./scripts && ./run_docker.sh` to run the docker container
-- Open a browser and navigate to `http://localhost:3000` (or replace `localhost` by the IP of the machine running the Docker)
-- \[Only if you run the Docker on another machine than the one you use to access the GUI\] Enter the IP:Port combination of the machine running the Docker on the GUI front page
-
 ### Unix (Linux / macOS)
 
 You need to have `npm` installed on your system!
@@ -189,11 +175,15 @@ When you want to stop, kill both processes running in terminals.
 
 ## Supported devices
 
-- **Binary sensors** (deviceType = "binary")
-- **Temperature sensors** (deviceType = "temperature")
-- **Humidity sensors** (deviceType = "humidity")
-- **CO2 sensors** (deviceType = "co2")
+- **Binary sensors** (deviceType = "binarySensor")
+- **Temperature sensors** (deviceType = "temperatureSensor")
+- **Humidity sensors** (deviceType = "humiditySensor")
+- **CO2 sensors** (deviceType = "co2Sensor")
 - **Switches** (deviceType = "switch")
+- **Dimmer Actuator** (deviceType = "dimmerActuator")
+  - Note that this dimmer supports single-value dimming (KNX DPT-5-1)
+- **Dimmer Sensor** (deviceType = "dimmerSensor")
+  - - Note that this dimmer supports single-value dimming (KNX DPT-5-1)
 
 ## Developing an application
 
@@ -203,8 +193,10 @@ To develop an app for SVSHI:
 2. Run the app generator, as explained in the [app generator](#app-generator) section, to get the app skeleton. It will be created under the `generated/` folder.
 3. [Write your app](#writing-apps).
 4. Run `svshi` to generate the bindings with `svshi generateBindings -f ets.knxproj`, where the argument is the _absolute_ path to the ETS project file.
+    > Note that SVSHI supports a .json file as input instead of the ets.knxproj file but this should be use only when using the simulator!
 5. Map the right physical ids given in `generated/physical_structure.json` to the right device in `generated/apps_bindings.json`. This is needed to provide the devices in the Python code with the group addresses to use. The first file represents the physical structure from the ETS project file, where each communication object has an id. The second one represents the apps structure with the devices and for each of them, the links they need.
 6. Run `svshi` again to [compile](#compilation) and [verify](#verification) the app with `svshi compile -f ets.knxproj`.
+    > Note that SVSHI supports a .json file as input instead of the ets.knxproj file but this should be use only when using the simulator!
 
 ### Writing apps
 
@@ -212,44 +204,101 @@ To write an app, you mainly have to modify the `main.py` file, optionally adding
 
 All the available device instances are already imported in `main.py`. They mirror what has been defined in the device prototypical structure file.
 
-The application can use external files. They however need to have been declared in the prototypical structure `json` file and they have to be located at the root of the project, next to `main.py`.
+The application can use external files. They must live in the `files` folder at the root of the application folder. Calling `open` directly is forbidden. One must use the functions provided by `svshi_api` to access files. Files are managed by the SVSHI runtime and thus all interactions must go through `svshi_api` functions. Please refer to the [SVSHI built-in functions](#SVSHI-built-in-functions) section for details about these functions.
 
 There are two important functions in `main.py`, `invariant()` and `iteration()`. In the first one the user should define all the conditions (or _invariants_) that the entire KNX system must satisfy throughout execution of **all** applications, while in the second she should write the app code.
 
-An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _unchecked functions_, which are functions whose name starts with `unchecked` and whose return type is explicitly stated. Then, these functions can be used in `iteration()`.
+An important thing to be aware of is that `iteration()` cannot use external libraries directly. Instead, these calls have to be defined first inside _periodic_ or _on\_trigger_ functions, which are functions whose name starts with `periodic`, respectively `on_trigger` and whose return type is explicitly stated. Then, these functions can be used in `iteration()`.
 
-In addition, note that `invariant()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here operations with side effects, external libraries calls and unchecked functions calls are **not** allowed.
+In addition, note that `invariant()` must return a boolean value, so any kind of boolean expression containing the _read_ properties of the devices and constants is fine. However, here operations with side effects, external libraries calls, `periodic` and `on_trigger` functions calls are **not** allowed.
 
-**Unchecked functions** are used as a compromise between usability and formal verification, and as such must be used as little as possible: their content is not verified by SVSHI. Furthermore, they should be short and simple: we encourage developers to add one different unchecked function for each call to an external library. All logic that does not involve calls to the library should be done in `iteration()` to maximize code that is indeed formally verified.
-Nonetheless, the user can help the verification deal with their presence by annotating their docstring with _post-conditions_.
+**Periodic and on_trigger functions** are used to empower performance and formal verification, while slightly reducing utility. They are meant to encapsulate calls to external libraries, as such calls might be slow and have higher chances to crash. They are run asynchronously, so that even if they need time to execute, they will not slow down the apps. Their content is not verified by SVSHI and they are allowed to crash, which will not impact the running apps. This is why, when you retrieve the result you should treat it as unsafe input and expect **any** value of the correct type, or `None` (if the function has not been executed, yet).
 
-Functions' **post-conditions** define a set of _axioms_ on the return value of the function: these conditions are assumed to be always true by SVSHI during verification. They are defined like this: `post: __return__ > 0`. You can use `__return__` to represent the return value of the function, constants and other operations. You can add as much post-conditions as you like and need. Therefore, we encourage developers to avoid having conjunctions in post-conditions but rather to have multiple post-conditions. This does not make difference for the verification but helps the readability.  
-However, keep in mind that these conditions are **assumed to be true** during formal verification! If these do not necessarily hold with respect to the external call, bad results can occur at runtime even though the code verification was successful!
+Note that some modules are forbidden to use even in periodic and on_trigger functions. For now, the `time` module is forbidden, please use the time provided by the SVSHI_API, see [SVSHI built-in functions](#SVSHI-built-in-functions).
 
-An example with multiple post-conditions could be:
+To execute and retrieve values of such functions, use the provided api available through the `svshi_api` object: `svshi_api.trigger_if_not_running` and `svshi_api.get_latest_value` (more details below).
+
+**Periodic functions** should have a name starting with `periodic` and a period in seconds defined in the docstring like this: `period: 3` (meaning a period of 3 seconds). They are not allowed to have any argument as input. Such functions are automatically executed by svshi periodically, according to the given period. A period of X seconds means that there will be X seconds between each executions' **start**, unless the function takes more than X seconds to execute (in that case, next execution starts immediately after the function terminates). If the provided period is `0`, the function is executed as often as possible, but not more often than every 0.5 second. Here is an example:
 
 ```python
-def unchecked_function() -> int:
+def periodic_function() -> int:
   """
-  post: __return__ > 0
-  post: __return__ != 3
+  period: 10
   """
   return external_library_get_int()
 ```
 
+**On_trigger functions** have a name starting with `on_trigger`. They may take some arguments as input, but are not allowed to have default arguments, *args or **kwargs.
+
+**svshi_api.trigger_if_not_running(fn)(args)** is used to trigger the execution of an `on_trigger` function. See the example below on how it should be used.
+
+```python
+def on_trigger_function(x: int, y: bool) -> int:
+  return external_library_get_int(x, y)
+
+# Somewhere in the iteration function:
+svshi_api.trigger_if_not_running(on_trigger_function)(3, True)
+```
+
+**svshi_api.get_latest_value(fn)** is used to retrieve the latest value returned by a periodic of on_trigger function. Remember that you should assume it to be **any** value of the correct type, or `None` if the function was never executed yet. The verification will fail if any of the returned values leads to an invalid state, which is why you should sanitize the received value.
+Here is an example of retrieving a value:
+
+```python
+def on_trigger_function(x: int, y: bool) -> int:
+  return external_library_get_int(x, y)
+
+# Somewhere in the iteration function:
+x = svshi_api.get_latest_value(on_trigger_function)
+# Since on_trigger_functions returns an int, x might be any integer value, or None
+
+# Suppose you expect a value between -5 and 30.
+if x is None or x < -5 or x > 30:
+  # Some default and safe behaviour.
+else:
+  # Regular behaviour, using x.
+```
+
 Furthermore, applications have access to a set of variables (the _app state_) they can use to keep track of state between calls. Indeed, the `iteration()` function is called in an [event-based manner](#execution) (either the KNX devices' state changes or a periodic app's timer is finished). All calls to `iteration()` are independent and thus SVSHI offers a way to store some state that will live in between calls. There is a local state instance _per app_.
 
-To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a [dataclass](https://docs.python.org/3/library/dataclasses.html) and it contains 4 fields of each of the following types: `int`, `float`, `bool` and `str`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` and `STR_X` where X equals 0, 1, 2 or 3.
+To do so, in `main.py` the `app_state` instance is imported along with the devices. This is a [dataclass](https://docs.python.org/3/library/dataclasses.html) and it contains 4 fields of each of the following types: `int`, `float`, `bool`. The fields are called respectively `INT_X`, `FLOAT_X`, `BOOL_X` where X equals 0, 1, 2 or 3.
 
 These values can be used in `iteration()` and `invariant()`. One should be careful while using it in `invariant()` or in a condition that will affect the KNX installation's state (the _physical_ state): the formal verification would fail if ANY possible value of the `app_state` leads to an invalid state after running `iteration()` even if this case should not occur because of previous calls to `iteration()` that would have set the values.
 
 #### SVSHI built-in functions
 
 A `svshi_api` instance is imported in every app, like the `app_state`.
-This instance offers two functions `get_time` and `get_hour_of_the_day` used to track the system's time in applications.
-`get_time` returns the UNIX time of the system and `get_hour_of_the_day` returns an integer between 0 and 23.
-Example: `get_time` returns `1649865437` for Wed Apr 13 15:57:17 2022 UTC and `get_hour_of_the_day` `15`.
+This instance offers several functions used to track the system's time in applications:
+
+- `get_hour_of_the_day` returns an integer between 0 and 23.
+- `get_minute_in_hour` returns an integer between 0 and 59.
+- `get_day_of_week` returns an integer between 1 and 7, where 1 corresponds to Monday.
+- `get_day_of_month` returns an integer between 1 and 31, corresponding to the day of the month.
+- `get_month_in_year` returns an integer between 1 and 12, where 1 corresponds to January.
+- `get_year`return the current year.
+Example: For Wed Apr 13 15:57:17 2022 UTC `get_hour_of_the_day` returns `15`, `get_minute_in_hour` returns `57`, `get_day_of_week` returns `3`, `get_day_of_month` returns `13`, `get_month_in_year` returns `4` and `get_year` returns `2022`.
 This allows to put time constraints into the invariant and to write and verify time sensitive applications . Therefore, it can be used for the code of `iteration`, in `invariant` and in pre- and post- conditions.
+
+As seen before, the `svshi_api` instance also offers a way to trigger and retrieve values of periodic and on_trigger functions (via `trigger_if_not_running` and `get_latest_value`).
+
+The `svshi_api` instance additionally offers functions to interact with external files:
+
+- `get_file_text_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a text file and return the `IO[str]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
+- `get_file_binary_mode(file_name, mode)`: open the file with the given name in the corresponding mode as a binary file and return the `IO[bytes]` instance (same as returned by `open`) or `None` if an error occured. The mode can be `a`, `w`, `ar` or `wr`
+- `get_file_path(file_name)`: returns the path to the file with the given filename as managed by SVSHI. This can be used to pass as arguments to some libraries. However, you must use use the `get_file_...` functions to open the file directly!
+
+To ease the verification process of time sensitive functions, a `check_time_property` function is offered:
+
+`check_time_property` has three arguments : `frequency`,`duration` and finally the condition.
+- `frequency` and `duration` time are given in `svshi_api`, already imported on the `main.py`.
+- `frequency` indicates how often the property must be valid. Having `svshi_api.Day(2)` for frequency means that the property must be true every two days.
+- `duration` states for how long the property holds. For example, if `duration` is `svshi_api.Minute(10)`, the property must be always valid for 10 minutes, continuously.
+
+Classes in `svshi_api` are used to represent various time durations; Possible representations are `Year`,`Month`,`Week`,`Day`,`Hour` and `Minute`.
+Each of these instances take one value at construction, the amount of time. Example: `svshi_api.Day(5)` represent 5 days.
+- `condition` is the proposition that needs to be valid for some time at the given frequency. WARNING: Do not use any previously declared variables or the verification will fail.
+For example, if you want that the `switch_one` is on every hour for ten minutes, you can write:
+`svshi_api.check_time_property(frequency=Hour(1),duration=Minute(10),condition=switch_one.is_on()`
+NB: This function can only be used in the `invariant` and cannot be used in `iteration`.
 
 ### App example
 
@@ -306,8 +355,6 @@ Moreover, the `timer` attribute can be used to run the application even though t
 - If `timer == 0` the application runs only when the physical state of the devices it uses changes
 - If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
-The `files` attributes is used to indicate files that the app needs to work properly. These files must be at the root of the application project (next to `main.py`).
-
 Once the app is generated, it is moved in the generated apps' folder.
 
 Here is an example:
@@ -316,7 +363,6 @@ Here is an example:
 {
   "permissionLevel": "notPrivileged",
   "timer": 60,
-  "files": ["file1.txt", "file2.png"],
   "devices": [
     {
       "name": "name_of_the_instances",
@@ -341,10 +387,10 @@ To execute the generator, run `svshi generateApp -d devices.json -n app_name`, w
 
 You can run `svshi --help` to display the following:
 
-```
-svshi
+```bash
 Secure and Verified Smart Home Infrastructure
-  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps' and 'version'. This argument is not case sensitive.
+  task <command>           The task to run. Can be passed as is. Possible options are 'run', 'compile', 'generateBindings', 'generateApp', 'removeApp', 'listApps', 'version', 'gui' and
+                           'deviceMappings. This argument is not case sensitive.
   -f --ets-file <str>      The ETS project file to use for the tasks 'compile' and 'generateBindings'
   -d --devices-json <str>  The devices prototypical structure JSON file to use for the task 'generateApp'
   -n --app-name <str>      The app name to use for the tasks 'generateApp' and 'removeApp'
@@ -363,6 +409,8 @@ Available commands are:
 - `svshi updateApp -n app_name` to update the code of an app that is already installed
 - `svshi listApps` to list all the installed apps
 - `svshi version` to display the CLI version
+- `svshi gui` to start svshi as a server for the GUI
+- `svshi deviceMappings -f ets.knxproj` to generate a json file containing a list of the prototypical devices offered by your physical devices
 
 Shorter aliases are also available:
 
@@ -374,6 +422,12 @@ Shorter aliases are also available:
 - `svshi ua` for `svshi updateApp`
 - `svshi la` for `svshi listApps`
 - `svshi v` for `svshi version`
+
+## Simulator
+
+To facilitate development and demo, we developed a KNX simulator that can be used with or without SVSHI.
+
+To use it with SVSHI, to avoid having to create an ETS project, it is possible to input a `.json` file when running `compile` and `generatedBindings`. This JSON file that represents the physical system can be easily generated using our [GUI](#gui).
 
 ## How SVSHI works
 
@@ -397,21 +451,95 @@ When compiling, the apps are also verified to make sure each one of them satisfi
 
 #### Runtime
 
-Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the app is prevented from running, otherwise the updates are propagated to KNX.
+Whenever an app wants to update the KNX system, SVSHI verifies whether the update could break the apps' invariants. If it is the case, the apps are prevented from running, otherwise the updates are propagated to KNX.
 
 ### Execution
 
-SVSHI's runtime is **reactive** and **event-based**. Applications _listen_ for changes to the group addresses of the devices they use, and are run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by another app, which then proceeds to notify all the other listeners. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
+At compile time, all applications are combined to create a function representing the system's behaviour. This function combines all applications' `iteration()` functions and the order is thus set at compile time. Applications that are `privileged` overrides behaviour of `nonPrivileged` ones if they are conflicting.
 
-_Running an application_ concretely means that its `iteration()` function is executed on the current physical state of the system and on the current app state.
+SVSHI's runtime is **reactive** and **event-based**. The system _listen_ for changes to the group addresses of the devices it uses, and is run on a state change (an _event_). The state transition can be triggered externally by the KNX system or by its own behaviour, in which case the system proceeds to notify the listener again. Notable exception are apps that run every X seconds based on a timer, which not only react to state changes but are also executed periodically.
 
-Apps are always run in alphabetical order in their group (`privileged` or `notPrivileged`). The non-privileged apps run first, then the privileged ones: in such a way privileged applications can override the behavior of non-privileged ones.
+For a given set of applications, the system behaviour function is run every time the state of the devices changes and every Y seconds where Y is the **minimum of all timers of all applications which are greater than 0**.
+
+_Running applications_ concretely means that the system behaviour function is executed on the current physical state of the system and with the current app states.
 
 This execution model has been chosen for its ease of use: users do not need to write `while` loops or deal with synchronization explicitly.
 
+#### State refresh
+
+The copy of the state kept by SVSHI is updated each time a telegram is sent by a device.
+
+The SVSHI runtime also sends KNX "read" request every 60 seconds to all devices connected to SVSHI. So, for devices that support the read request, their state is updated at least every 60 seconds.
+
+This is particularly indispensable for devices that cannot send their state on their own and rely solely on read requests.
+
 ## GUI
 
-To provide a GUI in the form of a web application (coming soon), SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
+To provide a GUI in the form of a web application, SVSHI offers a JSON API through HTTP. To start the server, run `svshi gui`. It starts a server that serves requests at `http://localhost:4242`.
+
+## Device Mappings
+We provide a way to discover the functionality offered by your physical devices. Given your knxproj file (ETS project file), Svshi produces a json structure containing a list of protoypical devices supported by svshi for each of your physical devices.
+
+Example of such a file:
+
+```json
+{
+    "physicalStructureJson": {...},
+    "deviceMappings": [
+      {
+        "physicalAddress": "1.1.1",
+        "supportedDeviceMappingNodes": [
+          {
+            "name": "Channel - CH-0 - IP settings",
+            "supportedDeviceMappings": [
+              
+            ]
+          }
+        ]
+      },
+      {
+        "physicalAddress": "1.1.7",
+        "supportedDeviceMappingNodes": [
+          {
+            "name": "Default",
+            "supportedDeviceMappings": [
+              {
+                "name": "Input A - Eingang A - Disable",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 85743129
+              },
+              {
+                "name": "Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 270662119
+              },
+              {
+                "name": "Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",
+                "supportedDeviceName": "binarySensor",
+                "physicalCommObjectId": 270662119
+              },
+              {
+                "name": "Input B - Eingang B - Disable",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": -1909925948
+              },
+              {
+                "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
+                "supportedDeviceName": "switch",
+                "physicalCommObjectId": 209048516
+              },
+              {
+                "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
+                "supportedDeviceName": "binarySensor",
+                "physicalCommObjectId": 209048516
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+```
 
 ### JSON API
 
@@ -450,6 +578,12 @@ Here are the available endpoints:
 
   Replies with one device type per element in `output`. These are the [Supported devices](#supported-devices).
 
+- GET `/availableDpts`
+
+  Does not correspond to any CLI function.
+
+  Replies with one dpt per element in `output`. The format is "DPT-X" where X is the int of an available dpt.
+
 - POST `/generateApp/:appName`
 
   Corresponds to the `svshi generateApp` of the CLI.
@@ -460,7 +594,7 @@ Here are the available endpoints:
 
   Corresponds to the `svshi compile` of the CLI.
 
-  Runs the `compile` operation of `svshi`, replying with the `status` representating whether the compilation was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `compile` operation of `svshi`, replying with the `status` representing whether the compilation was successful or not and the `output` contains the messages returned by `svshi`.
 
   The body must be a `.zip` archive containing the `.knxproj` file used to compile.
 
@@ -468,29 +602,29 @@ Here are the available endpoints:
 
   Corresponds to the `svshi updateApp -n appName` of the CLI.
 
-  Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representating whether the update was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `updateApp -n appName` operation of `svshi`, replying with the `status` representing whether the update was successful or not and the `output` contains the messages returned by `svshi`.
 
-  The body must be a `.zip` archive containing the `.knxproj` file used to compile.
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to compile.
 
 - POST `/generateBindings`
 
   Corresponds to the `svshi generateBindings` of the CLI.
 
-  Runs the `generateBindings` operation of `svshi`, replying with the `status` representating whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `generateBindings` operation of `svshi`, replying with the `status` representing whether the generation was successful or not and the `output` contains the messages returned by `svshi`.
 
-  The body must be a `.zip` archive containing the `.knxproj` file used to generate the bindings.
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to generate the bindings.
 
 - POST `/removeApp/:appName`
 
   Corresponds to the `svshi removeApp -n appName` of the CLI.
 
-  Runs the `removeApp -n appName` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `removeApp -n appName` operation of `svshi`, replying with the `status` representing whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
 
 - POST `/removeAllApps`
 
   Corresponds to the `svshi removeApp --all` of the CLI.
 
-  Runs the `removeApp --all` operation of `svshi`, replying with the `status` representating whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
+  Runs the `removeApp --all` operation of `svshi`, replying with the `status` representing whether the removal was successful or not and the `output` contains the messages returned by `svshi`.
 
 - POST `/run/:ipPort`
 
@@ -515,6 +649,10 @@ Here are the available endpoints:
 - GET `/logs/execution`
 
  If the log file exists (i.e., SVSHI was run or is running), it replies with the standard body JSON with `status=true` and `output` containing the complete execution log file of the latest execution, truncated if the log file goes beyond a given size (e.g., 20MB).
+
+- GET `/logs/physicalState`
+
+ If the physical state log file exists (i.e., SVSHI runtime part wrote it), it replies with a JSON Body containing the physical state (i.e., mapping from Group Addresses to their current value in the system). Reply with a 404 if the file does not exist.
 
 - POST `/stopRun`
 
@@ -549,11 +687,25 @@ Here are the available endpoints:
 
   Replies with the `generated` folder in a `.zip` archive as body.
 
-- POST `/deleteGenerated`
+- GET `/generated/:filename`
+
+  Replies with the requested `filename` folder or file in a `.zip` archive as body.
+
+  If the file or directory does not exist, it replies with an empty `.zip`.
+
+- POST `/deleteAllGenerated`
 
   Deletes the content of the `generated` folder.
 
   Replies with the standard body JSON with `status` representing whether the removal worked and `output` containing errors or a standard message in case of success.
+
+- POST `/deleteGenerated/:filename`
+
+  Deletes the file or directory with the name `filename` in the `generated` folder.
+
+  Replies with the standard body JSON with `status` representing whether the removal worked and `output` containing errors or a standard message in case of success.
+
+  If the file or directory does not exist, it replies with a success message.
 
 - GET `/installedApp/:appName`
 
@@ -567,6 +719,14 @@ Here are the available endpoints:
 - GET `/assignments`
 
   Replies with a `.zip` archive as body containing the `assignments` folder if assignments are created, 404 error if no assignments are created.
+
+- POST `/deviceMappings`
+
+  Corresponds to the `svshi deviceMappings` of the CLI.
+
+  Runs the `deviceMappings` operation of `svshi`, replying with the json containing the mappings for the devices and the physical structure.
+
+  The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to get the mappings.
 
 The POST endpoints functions cannot be ran in parallel. These endpoints then acquire a "lock" and reply with a 423 error code if the lock is already aquired by another endpoint currently running.
 

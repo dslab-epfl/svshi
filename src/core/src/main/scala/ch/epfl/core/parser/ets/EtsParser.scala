@@ -69,7 +69,7 @@ object EtsParser {
     _ => {
       xmlFilesCache.clear()
       val deviceAddresses = explore0xmlFindListAddresses(etsProjectPath)
-      val parsedDevices = deviceAddresses.par.map(readDeviceFromEtsFile(etsProjectPath, _))
+      val parsedDevices = deviceAddresses.par.map(readParsedDevice(etsProjectPath, _))
       val res = physical.PhysicalStructure(parsedDevices.map(parsedDeviceToPhysicalDevice).toList)
       deleteUnzippedFiles(etsProjectPath)
       res
@@ -84,20 +84,20 @@ object EtsParser {
       * @return
       */
     def ioPortToPhysicalChannel(parsedioPort: CommObject, physicalAddress: (String, String, String), deviceNodeName: String): PhysicalDeviceCommObject = {
-      val dpstOpt = etsDpstRegex.findFirstIn(parsedioPort.dpt)
-      val dptOpt = etsDptRegex.findFirstIn(parsedioPort.dpt)
-      val datatype =
-        if (dpstOpt.isDefined)
-          KNXDatatype.fromString(dpstOpt.get.replace("S", ""))
-        else if (dptOpt.isDefined) KNXDatatype.fromString(dptOpt.get)
-        else if (KNXDatatype.fromDPTSize(parsedioPort.objectSizeString).isDefined) KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
-        else if (parsedioPort.dpt == "") Some(DPTUnknown)
-        else
+      val dptStr = parsedioPort.dpt
+      val dptFromStringOpt = KNXDatatype.fromString(dptStr)
+      val dptFromSizeOpt = KNXDatatype.fromDPTSize(parsedioPort.objectSizeString)
+      val datatype = (dptFromStringOpt, dptFromSizeOpt) match {
+        case (Some(dptFromString), _) if dptFromString != DPTUnknown(-1) => dptFromString
+        case (_, Some(dptFromSize))                                      => dptFromSize
+        case (Some(dptFromString), _)                                    => dptFromString
+        case (None, None) =>
           throw new MalformedXMLException(
             s"The DPT is not formatted as $etsDptRegex or $etsDpstRegex (or empty String) and the ObjectSize is not convertible to DPT (objectSize = ${parsedioPort.objectSizeString}) for the IOPort $parsedioPort for the device with address ${parsedDevice.address}"
           )
+      }
       val ioType = IOType.fromString(parsedioPort.inOutType).get
-      PhysicalDeviceCommObject.from(parsedioPort.name, datatype.getOrElse(DPTUnknown), ioType, physicalAddress, deviceNodeName)
+      PhysicalDeviceCommObject.from(parsedioPort.name, datatype, ioType, physicalAddress, deviceNodeName)
     }
     physical.PhysicalDevice(
       parsedDevice.name,
@@ -113,7 +113,7 @@ object EtsParser {
     * @param etsProjectPath the path to the etsProject file as os.Path
     * @param deviceAddress  the address of the device in topology of the project e.g., 1.1.1
     */
-  private def readDeviceFromEtsFile(etsProjectPath: os.Path, deviceAddress: (String, String, String)): ParsedDevice = extractIfNotExist(
+  private def readParsedDevice(etsProjectPath: os.Path, deviceAddress: (String, String, String)): ParsedDevice = extractIfNotExist(
     etsProjectPath,
     projectRootPath => {
       val deviceInstanceXMLOpt: Option[Node] = getDeviceInstanceIn0Xml(deviceAddress, projectRootPath)
@@ -130,7 +130,7 @@ object EtsParser {
     }
   )
 
-  private def takeFromCacheOrComputeAndUpdate(file: File): Elem = {
+  private def readFromCacheOrFromFile(file: File): Elem = {
     if (xmlFilesCache.contains(file)) xmlFilesCache(file)
     else {
       val xml = XML.loadFile(file)
@@ -143,7 +143,7 @@ object EtsParser {
     val file0XmlPath = recursiveListFiles(projectRootPath).find(file => file.toIO.getName == FILE_0_XML_NAME)
     if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
     val (areaN, lineN, deviceN) = deviceAddress
-    val doc0xml = takeFromCacheOrComputeAndUpdate(file0XmlPath.get.toIO)
+    val doc0xml = readFromCacheOrFromFile(file0XmlPath.get.toIO)
     val deviceInstanceXMLOpt =
       (((doc0xml \\ AREA_TAG).par.find(a => a \@ ADDRESS_PARAM == areaN).get \\ LINE_TAG).par.find(l => l \@ ADDRESS_PARAM == lineN).get \\ DEVICE_TAG).par.find(d =>
         d \@ ADDRESS_PARAM == deviceN
@@ -161,7 +161,7 @@ object EtsParser {
     etsProjectPath,
     projectRootPath => {
       val hardwareXmlPath = hardwareXmlFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-      val hardwareEntry = takeFromCacheOrComputeAndUpdate(hardwareXmlPath.toIO)
+      val hardwareEntry = readFromCacheOrFromFile(hardwareXmlPath.toIO)
       val productEntryOpt = (hardwareEntry \\ PRODUCT_TAG).find(n => (n \@ ID_PARAM) == productRefId)
       val name = productEntryOpt match {
         case Some(value) => getTranslation(hardwareEntry, enUsLanguageCode, productRefId, TEXT_PARAM).getOrElse(value \@ TEXT_PARAM)
@@ -192,7 +192,7 @@ object EtsParser {
     projectRootPath => {
       def constructChannelNodeName(n: Node, productRefId: String, hardware2ProgramRefId: String) = {
         val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-        val catalogEntry = takeFromCacheOrComputeAndUpdate(xmlPath.toIO)
+        val catalogEntry = readFromCacheOrFromFile(xmlPath.toIO)
         val applicationProgram: Node = getApplicationProgramNode(productRefId, xmlPath, catalogEntry)
         val appProgramId = applicationProgram \@ ID_PARAM
         val refId = n \@ REFID_PARAM
@@ -270,7 +270,7 @@ object EtsParser {
         if (groupObjectInstanceId.nonEmpty) {
           // Get IOPort info in xmls
           val xmlPath = productCatalogXMLFile(etsProjectPath, productRefId, hardware2ProgramRefId)
-          val catalogEntry = takeFromCacheOrComputeAndUpdate(xmlPath.toIO)
+          val catalogEntry = readFromCacheOrFromFile(xmlPath.toIO)
           val refIdRegEx = "O-[0-9A-Za-z-_]+_R-[0-9A-Za-z-_]+".r
           val refId = refIdRegEx.findAllIn(groupObjectInstanceId).toList.last
           val comObjectRef = (catalogEntry \\ COMOBJECTREF_TAG).par.find(n => (n \@ ID_PARAM).contains(refId))
@@ -279,11 +279,14 @@ object EtsParser {
               val comObjectRefDPTString = comObjectRef \@ DATAPOINTTYPE_PARAM
               val refId = comObjectRef \@ REFID_PARAM
               val comObject = (catalogEntry \\ COMOBJECT_TAG).par.find(n => (n \@ ID_PARAM) == refId)
+              val comObjectRefObjectSize = comObjectRef \@ OBJECTSIZE_PARAM
               comObject match {
                 case Some(value) => {
                   val comObjectDPTString = value \@ DATAPOINTTYPE_PARAM
-                  val dptStr = if (comObjectDPTString.nonEmpty) comObjectDPTString else comObjectRefDPTString
-                  CommObject(constructCommObjectName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), value \@ OBJECTSIZE_PARAM) :: Nil
+                  val dptStr = if (comObjectRefDPTString.nonEmpty) comObjectRefDPTString else comObjectDPTString // The comObjectRef dpt is the right one if it exists
+                  val objectSizeStr =
+                    if (comObjectRefObjectSize.nonEmpty) comObjectRefObjectSize else value \@ OBJECTSIZE_PARAM // The comObjectRef objectSize is the right one if it exists
+                  CommObject(constructCommObjectName(value, comObjectRef, catalogEntry), dptStr, getIOPortTypeFromFlags(value), objectSizeStr) :: Nil
                 }
                 case None => throw new MalformedXMLException(s"Cannot find the ComObject for the id: $refId for the productRefId: $productRefId")
               }
@@ -297,35 +300,35 @@ object EtsParser {
       }
     )
 
-  private def constructCommObjectName(ioPortNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
+  private def constructCommObjectName(comObjectNode: Node, comObjectRef: Node, catalogEntry: Elem): String = {
     def validContent(tr: String): Boolean = tr != "" && tr != "-" && !tr.contains("GO_")
-    val funTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
-      case Some(value) => if (validContent(value)) value else ioPortNode \@ FUNCTIONTEXT_PARAM
-      case None        => ioPortNode \@ FUNCTIONTEXT_PARAM
+    val funTextCommObjectNode = getTranslation(catalogEntry, enUsLanguageCode, comObjectNode \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectNode \@ FUNCTIONTEXT_PARAM
+      case None        => comObjectNode \@ FUNCTIONTEXT_PARAM
     }
     val funTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, FUNCTIONTEXT_PARAM) match {
       case Some(value) => if (validContent(value)) value else comObjectRef \@ FUNCTIONTEXT_PARAM
       case None        => comObjectRef \@ FUNCTIONTEXT_PARAM
     }
-    val nameTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, NAME_PARAM) match {
-      case Some(value) => if (validContent(value)) value else ioPortNode \@ NAME_PARAM
-      case None        => ioPortNode \@ NAME_PARAM
+    val nameTextCommObjectNode = getTranslation(catalogEntry, enUsLanguageCode, comObjectNode \@ ID_PARAM, NAME_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectNode \@ NAME_PARAM
+      case None        => comObjectNode \@ NAME_PARAM
     }
     val nameTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, NAME_PARAM) match {
       case Some(value) => if (validContent(value)) value else comObjectRef \@ NAME_PARAM
       case None        => comObjectRef \@ NAME_PARAM
     }
 
-    val textTextIoNode = getTranslation(catalogEntry, enUsLanguageCode, ioPortNode \@ ID_PARAM, TEXT_PARAM) match {
-      case Some(value) => if (validContent(value)) value else ioPortNode \@ TEXT_PARAM
-      case None        => ioPortNode \@ TEXT_PARAM
+    val textTextCommObjectNode = getTranslation(catalogEntry, enUsLanguageCode, comObjectNode \@ ID_PARAM, TEXT_PARAM) match {
+      case Some(value) => if (validContent(value)) value else comObjectNode \@ TEXT_PARAM
+      case None        => comObjectNode \@ TEXT_PARAM
     }
     val textTextRef = getTranslation(catalogEntry, enUsLanguageCode, comObjectRef \@ ID_PARAM, TEXT_PARAM) match {
       case Some(value) => if (validContent(value)) value else comObjectRef \@ TEXT_PARAM
       case None        => comObjectRef \@ TEXT_PARAM
     }
 
-    List(funTextIoNode, funTextRef, nameTextIoNode, nameTextRef, textTextIoNode, textTextRef).filter(validContent).mkString(" - ")
+    List(textTextCommObjectNode, nameTextCommObjectNode, textTextRef, nameTextRef, funTextRef, funTextCommObjectNode).filter(validContent).mkString(" - ")
   }
 
   /** Search for a translation for the given id and given attribute name, for the given language, if not found, return None
@@ -397,7 +400,7 @@ object EtsParser {
     projectRootPath => {
       val file0XmlPath = recursiveListFiles(projectRootPath).find(file => file.toIO.getName == FILE_0_XML_NAME)
       if (file0XmlPath.isEmpty) throw new MalformedXMLException("Missing 0.xml")
-      val doc0xml = takeFromCacheOrComputeAndUpdate(file0XmlPath.get.toIO)
+      val doc0xml = readFromCacheOrFromFile(file0XmlPath.get.toIO)
       val areasXml = (doc0xml \\ AREA_TAG)
       areasXml.par
         .flatMap(area =>

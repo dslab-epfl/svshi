@@ -47,5 +47,10 @@ trait SvshiTr {
       existingAppsLibrary: ApplicationLibrary
   ): List[String]
 
+  def generatePrototypicalDeviceMappings(
+      physicalStructure: PhysicalStructure
+  )(success: String => Unit = _ => (), info: String => Unit = _ => (), warning: String => Unit = _ => (), err: String => Unit = _ => ()): Int
+
   def getAvailableProtoDevices(): List[String]
+  def getAvailableDpts(): List[String]
 }

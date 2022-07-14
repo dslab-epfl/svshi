@@ -1,10 +1,10 @@
-from instances import app_state, TEMPERATURE_SENSOR
+from instances import app_state, svshi_api, TEMPERATURE_SENSOR
 
 def invariant() -> bool:
     return True
 
 def iteration():
    if TEMPERATURE_SENSOR.read() != None and TEMPERATURE_SENSOR.read() > 22:
-       unchecked_send_notif()
-def unchecked_send_notif() -> None:
+       svshi_api.trigger_if_not_running(on_trigger_send_notif)
+def on_trigger_send_notif() -> None:
     a = 1 + 1

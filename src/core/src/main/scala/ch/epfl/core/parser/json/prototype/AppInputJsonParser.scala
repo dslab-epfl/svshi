@@ -41,7 +41,6 @@ object AppInputJsonParser {
     AppPrototypicalStructure(
       permissionLevel = permissionLevel.get,
       timer = parsedStructure.timer,
-      files = parsedStructure.files,
       deviceInstances = parsedStructure.devices.map(convertDeviceInstance)
     )
   }

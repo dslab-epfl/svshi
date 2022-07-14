@@ -100,7 +100,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -111,8 +111,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -124,15 +124,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -204,7 +204,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -215,8 +215,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -228,15 +228,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -308,7 +308,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -319,8 +319,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPT5(-1), In, 212)
           )
         )
       )
@@ -332,15 +332,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(-1), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(-1), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(-1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(-1), InOut, 322)
           )
         )
       )
@@ -384,17 +384,17 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNodeJson(
           "device3Node1",
           List(
-            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-1", "out", 311),
-            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5", "in", 312)
+            PhysicalDeviceCommObjectJson("device3Node1ComObj1", "DPT-1-5", "out", 311),
+            PhysicalDeviceCommObjectJson("device3Node1ComObj2", "DPT-5-3", "in", 312)
           )
         ),
         PhysicalDeviceNodeJson(
           "device3Node2",
           List(
-            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5", "in", 321),
+            PhysicalDeviceCommObjectJson("device3Node2ComObj1", "DPT-5-1", "in", 321),
             PhysicalDeviceCommObjectJson(
               "device3Node2ComObj2",
-              "DPT-12",
+              "DPT-12-3",
               "in/out",
               322
             )
@@ -410,7 +410,7 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
       List(
         PhysicalDeviceNode(
           "device1Node1",
-          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1, In, 111))
+          List(PhysicalDeviceCommObject("device1Node1ComObj1", DPT1(-1), In, 111))
         )
       )
     )
@@ -421,8 +421,8 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device2Node1",
           List(
-            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1, Out, 211),
-            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown, In, 212)
+            PhysicalDeviceCommObject("device2Node1ComObj1", DPT1(-1), Out, 211),
+            PhysicalDeviceCommObject("device2Node1ComObj2", DPTUnknown(-1), In, 212)
           )
         )
       )
@@ -434,15 +434,15 @@ class PhysicalStructureJsonParserTest extends AnyFlatSpec with Matchers {
         PhysicalDeviceNode(
           "device3Node1",
           List(
-            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1, Out, 311),
-            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5, In, 312)
+            PhysicalDeviceCommObject("device3Node1ComObj1", DPT1(5), Out, 311),
+            PhysicalDeviceCommObject("device3Node1ComObj2", DPT5(3), In, 312)
           )
         ),
         PhysicalDeviceNode(
           "device3Node2",
           List(
-            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5, In, 321),
-            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12, InOut, 322)
+            PhysicalDeviceCommObject("device3Node2ComObj1", DPT5(1), In, 321),
+            PhysicalDeviceCommObject("device3Node2ComObj2", DPT12(3), InOut, 322)
           )
         )
       )

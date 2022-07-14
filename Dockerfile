@@ -6,7 +6,7 @@
 ## docker build -t svshi:ubuntu22.04 .
 
 # START AND RUN (execute from `svshi` folder):
-## 'docker run --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -d --name svshi -i svshi:ubuntu22.04 && docker exec -it svshi /bin/bash'
+## 'docker run --rm -v $PWD:/pwd -d --name svshi -i svshi:ubuntu22.04 && docker exec -it svshi /bin/bash'
 
 FROM ubuntu:22.04
 

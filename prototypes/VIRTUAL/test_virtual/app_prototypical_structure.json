@@ -1,11 +1,10 @@
 {
   "permissionLevel": "notPrivileged",
   "timer": 0,
-  "files": [],
   "devices": [
     {
-      "name": "binary",
-      "deviceType": "binary"
+      "name": "binarySensor",
+      "deviceType": "binarySensor"
     },
     {
       "name": "switch",

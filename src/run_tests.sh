@@ -17,6 +17,12 @@ cd ..
 cd verification
 python3 -m pytest
 
+echo "\nRunning Python tests in 'extended_verification'... \n"
+cd ..
+cd extended_verification
+python3 -m pytest
+
+
 sleep 1
 
 echo "\nRunning Scala tests in 'core'... \n"

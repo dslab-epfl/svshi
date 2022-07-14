@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   "binarySensorString" should "be 'binary'" in {
-    SupportedDevice.binarySensorString shouldEqual "binary"
+    SupportedDevice.binarySensorString shouldEqual "binarySensor"
   }
 
   "switchString" should "be 'switch'" in {
@@ -13,25 +13,25 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
 
   "temperatureSensor" should "be 'temperature'" in {
-    SupportedDevice.temperatureSensorString shouldEqual "temperature"
+    SupportedDevice.temperatureSensorString shouldEqual "temperatureSensor"
   }
 
   "humiditySensor" should "be 'humidity'" in {
-    SupportedDevice.humiditySensorString shouldEqual "humidity"
+    SupportedDevice.humiditySensorString shouldEqual "humiditySensor"
   }
 
   "co2Sensor" should "be 'co2'" in {
-    SupportedDevice.co2SensorString shouldEqual "co2"
+    SupportedDevice.co2SensorString shouldEqual "co2Sensor"
   }
 
-  "fromString" should "return BinarySensor on String binary" in {
-    SupportedDevice.fromString("binary") shouldEqual BinarySensor
+  "fromString" should "return BinarySensor on String binarySensor" in {
+    SupportedDevice.fromString("binarySensor") shouldEqual BinarySensor
   }
-  "fromString" should "return BinarySensor on String Binary" in {
-    SupportedDevice.fromString("Binary") shouldEqual BinarySensor
+  "fromString" should "return BinarySensor on String Binarysensor" in {
+    SupportedDevice.fromString("Binarysensor") shouldEqual BinarySensor
   }
-  "fromString" should "return BinarySensor on String BINARY" in {
-    SupportedDevice.fromString("BINARY") shouldEqual BinarySensor
+  "fromString" should "return BinarySensor on String BINARYSENSOR" in {
+    SupportedDevice.fromString("BINARYSENSOR") shouldEqual BinarySensor
   }
   "fromString" should "return BinarySensor on String val in SupportedDevice" in {
     SupportedDevice.fromString(SupportedDevice.binarySensorString) shouldEqual BinarySensor
@@ -50,47 +50,79 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
     SupportedDevice.fromString(SupportedDevice.switchString) shouldEqual Switch
   }
 
-  "fromString" should "return TemperatureSensor on String temperature" in {
-    SupportedDevice.fromString("temperature") shouldEqual TemperatureSensor
+  "fromString" should "return TemperatureSensor on String temperatureSensor" in {
+    SupportedDevice.fromString("temperatureSensor") shouldEqual TemperatureSensor
   }
-  "fromString" should "return TemperatureSensor on String Temperature" in {
-    SupportedDevice.fromString("Temperature") shouldEqual TemperatureSensor
+  "fromString" should "return TemperatureSensor on String TemperatureSensor" in {
+    SupportedDevice.fromString("TemperatureSensor") shouldEqual TemperatureSensor
   }
-  "fromString" should "return TemperatureSensor on String TEMPERATURE" in {
-    SupportedDevice.fromString("TEMPERATURE") shouldEqual TemperatureSensor
+  "fromString" should "return TemperatureSensor on String TEMPERATURESENSOR" in {
+    SupportedDevice.fromString("TEMPERATURESENSOR") shouldEqual TemperatureSensor
   }
   "fromString" should "return TemperatureSensor on String val in SupportedDevice" in {
     SupportedDevice.fromString(SupportedDevice.temperatureSensorString) shouldEqual TemperatureSensor
   }
 
-  "fromString" should "return HumiditySensor on String humidity" in {
-    SupportedDevice.fromString("humidity") shouldEqual HumiditySensor
+  "fromString" should "return HumiditySensor on String humiditySensor" in {
+    SupportedDevice.fromString("humiditySensor") shouldEqual HumiditySensor
   }
-  "fromString" should "return HumiditySensor on String Humidity" in {
-    SupportedDevice.fromString("Humidity") shouldEqual HumiditySensor
+  "fromString" should "return HumiditySensor on String HumiditySensor" in {
+    SupportedDevice.fromString("HumiditySensor") shouldEqual HumiditySensor
   }
-  "fromString" should "return HumiditySensor on String HUMIDITY" in {
-    SupportedDevice.fromString("HUMIDITY") shouldEqual HumiditySensor
+  "fromString" should "return HumiditySensor on String HUMIDITYSENSOR" in {
+    SupportedDevice.fromString("HUMIDITYSENSOR") shouldEqual HumiditySensor
   }
   "fromString" should "return HumiditySensor on String val in SupportedDevice" in {
     SupportedDevice.fromString(SupportedDevice.humiditySensorString) shouldEqual HumiditySensor
   }
 
-  "fromString" should "return CO2Sensor on String co2" in {
-    SupportedDevice.fromString("co2") shouldEqual CO2Sensor
+  "fromString" should "return CO2Sensor on String co2Sensor" in {
+    SupportedDevice.fromString("co2Sensor") shouldEqual CO2Sensor
   }
-  "fromString" should "return CO2Sensor on String Co2" in {
-    SupportedDevice.fromString("Co2") shouldEqual CO2Sensor
+  "fromString" should "return CO2Sensor on String Co2Sensor" in {
+    SupportedDevice.fromString("Co2Sensor") shouldEqual CO2Sensor
   }
-  "fromString" should "return CO2Sensor on String CO2" in {
-    SupportedDevice.fromString("CO2") shouldEqual CO2Sensor
+  "fromString" should "return CO2Sensor on String CO2SENSOR" in {
+    SupportedDevice.fromString("CO2SENSOR") shouldEqual CO2Sensor
   }
   "fromString" should "return CO2Sensor on String val in SupportedDevice" in {
     SupportedDevice.fromString(SupportedDevice.co2SensorString) shouldEqual CO2Sensor
   }
 
+  "fromString" should "return DimmerSensor on String dimmerSensor" in {
+    SupportedDevice.fromString("dimmerSensor") shouldEqual DimmerSensor
+  }
+  "fromString" should "return DimmerSensor on String DimmerSensor" in {
+    SupportedDevice.fromString("DimmerSensor") shouldEqual DimmerSensor
+  }
+  "fromString" should "return DimmerSensor on String DIMMERSENSOR" in {
+    SupportedDevice.fromString("DIMMERSENSOR") shouldEqual DimmerSensor
+  }
+  "fromString" should "return DimmerSensor on String dimmersensor" in {
+    SupportedDevice.fromString("dimmersensor") shouldEqual DimmerSensor
+  }
+  "fromString" should "return DimmerSensor on String val in SupportedDevice" in {
+    SupportedDevice.fromString(SupportedDevice.dimmerSensorString) shouldEqual DimmerSensor
+  }
+
+  "fromString" should "return DimmerActuator on String dimmerActuator" in {
+    SupportedDevice.fromString("dimmerActuator") shouldEqual DimmerActuator
+  }
+  "fromString" should "return DimmerActuator on String DimmerActuator" in {
+    SupportedDevice.fromString("DimmerActuator") shouldEqual DimmerActuator
+  }
+  "fromString" should "return DimmerActuator on String DIMMERACTUATOR" in {
+    SupportedDevice.fromString("DIMMERACTUATOR") shouldEqual DimmerActuator
+  }
+  "fromString" should "return DimmerActuator on String dimmeractuator" in {
+    SupportedDevice.fromString("dimmeractuator") shouldEqual DimmerActuator
+  }
+  "fromString" should "return DimmerActuator on String val in SupportedDevice" in {
+    SupportedDevice.fromString(SupportedDevice.dimmerActuatorString) shouldEqual DimmerActuator
+  }
+
   "fromString" should "throw an UnsupportedDevice for switchhhh" in {
-    an[MatchError] should be thrownBy SupportedDevice.fromString("switchhhh")
+    an[UnsupportedDeviceException] should be thrownBy SupportedDevice.fromString("switchhhh")
   }
 
   "getDeviceBinding" should "return the correct binding for BinarySensor" in {

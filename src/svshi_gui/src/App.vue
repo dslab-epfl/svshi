@@ -1,14 +1,15 @@
-<script lang="js">
-import * as http from "http";
+<script lang="jsx" >
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
-import FileManagement from './components/FileManagement.vue'
 import Run from './components/Run.vue'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+import GeneratePhysicalSystem from './components/GeneratePhysicalSystem.vue';
 import { Tabs, Tab } from 'vue3-tabs-component';
+import InstalledAppList from './components/InstalledAppList.vue';
 
 let defaultBackendServerAddress = "http://localhost:4242"
 let defaultBackendServerPort = "4242"
+
 
 export default {
   components: {
@@ -16,9 +17,10 @@ export default {
     "tab": Tab,
     GenerateApp,
     GenerationAndCompilation,
-    FileManagement,
     PulseLoader,
-    Run
+    Run,
+    GeneratePhysicalSystem,
+    InstalledAppList
   },
   data() {
     return {
@@ -28,9 +30,11 @@ export default {
       ],
       isRunning: false,
       uninstallInProgress: false,
+      allAppsUninstalling: false,
       backendServerAddress: defaultBackendServerAddress,
       polling: "",
-      colourOrangeSvshi: '#e05a06'
+      colourOrangeSvshi: '#e87000',
+      allAppsName: "42All"
     }
   },
   methods: {
@@ -58,7 +62,33 @@ export default {
         alert("You cannot remove apps while SVSHI is running!")
         return
       }
-      if (this.installedApps.some(a => a.name === appName)) {
+      console.log(appName)
+      if (appName === "42All") {
+        if (confirm("Are you sure you want to uninstall ALL applications?")) {
+          try {
+            this.allAppsUninstalling = true
+            const requestOptions = {
+              method: "POST"
+            };
+            this.uninstallInProgress = true
+            let res = await fetch(this.backendServerAddress + "/removeAllApps", requestOptions);
+            let responseBody = await res.json();
+            if (responseBody.status) {
+              console.log("Removing all the apps was successful!")
+            } else {
+              console.log("An error occurred while removing all the apps! Please see the following logs: ")
+              let array = responseBody.output
+              array.forEach(element => {
+                console.log(element)
+              });
+            }
+            this.allAppsUninstalling = false
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }
+      else if (this.installedApps.some(a => a.name === appName)) {
         if (confirm("Are you sure you want to uninstall '" + appName + "'?")) {
           try {
             this.installedApps = this.installedApps.map(a =>
@@ -99,27 +129,22 @@ export default {
       }
     },
     async refresh() {
-      if (!this.uninstallInProgress) {
+      await this.checkApiLiveness()
+      if (this.apiReachable) {
+        this.loadAppsList()
+        this.isSvshiRunning()
+        if (this.$refs.generateAppComp !== null) {
+          this.$refs.generateAppComp.refresh()
+        }
+        if (this.$refs.generationAndCompilationComp !== null) {
+          this.$refs.generationAndCompilationComp.refresh()
+        }
+        this.goToRunIfRunning()
+      } else {
+        this.setCurrentBackendAddressFromBar()
         await this.checkApiLiveness()
-        if (this.apiReachable) {
-          this.loadAppsList()
-          this.isSvshiRunning()
-          if (this.$refs.fileManagementComp !== null) {
-            this.$refs.fileManagementComp.refresh()
-          }
-          if (this.$refs.generateAppComp !== null) {
-            this.$refs.generateAppComp.refresh()
-          }
-          if (this.$refs.generationAndCompilationComp !== null) {
-            this.$refs.generationAndCompilationComp.refresh()
-          }
-          this.goToRunIfRunning()
-        } else {
-          this.setCurrentBackendAddressFromBar()
-          await this.checkApiLiveness()
-          if (!this.apiReachable) {
-            clearInterval(this.polling)
-          }
+        if (!this.apiReachable) {
+          clearInterval(this.polling)
         }
       }
     },
@@ -168,6 +193,15 @@ export default {
       } else {
         alert("Cannot connect to the given address!")
       }
+    },
+    scrollToTop() {
+      window.scrollTo(0, 0);
+    },
+    tabChanged(selectedTab) {
+      if (this.$refs.generationAndCompilationComp !== null) {
+        this.$refs.generationAndCompilationComp.installationStep = this.$refs.generationAndCompilationComp.stepWelcome
+      }
+      this.scrollToTop()
     }
   },
   mounted() {
@@ -185,41 +219,21 @@ export default {
     </div>
     <p>Please enter the address and port of the machine running SVSHI: </p>
     <input v-model="this.backendServerAddress" placeholder="http://127.0.0.1:4242" />
-    <button @Click="this.checkNewAddress">Connect</button>
+    <button class="classicButton" @Click="this.checkNewAddress">Connect</button>
   </div>
   <div v-else>
-    <tabs>
-      <tab name="Installed Apps">
-        <h2>Installed apps</h2>
-        <ul style="list-style-type:none;">
-          <li v-for='app in installedApps' :key="app.id">
-            <table>
-              <tr>
-                <td>
-                  {{ app.name }}
-                </td>
-                <td>
-                  <button v-if="!app.deleting && !this.isRunning" @Click="deleteApp(app.name)">Uninstall</button>
-                  <div v-if="app.deleting">
-                    <PulseLoader :color="this.colourOrangeSvshi" v-if="app.deleting" />
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </li>
-        </ul>
-      </tab>
-      <tab name="Generate" :is-disabled="this.isRunning">
-        <GenerateApp ref="generateAppComp" />
-      </tab>
-      <tab name="File management" :is-disabled="this.isRunning">
-        <FileManagement ref="fileManagementComp" />
-      </tab>
-      <tab name="Bindings and compilation" :is-disabled="this.isRunning">
+    <tabs @changed="tabChanged">
+      <tab name="Apps">
         <GenerationAndCompilation ref="generationAndCompilationComp" />
+      </tab>
+      <tab name="Generate app" :is-disabled="this.isRunning">
+        <GenerateApp ref="generateAppComp" />
       </tab>
       <tab name="Run">
         <Run ref="runComp" />
+      </tab>
+      <tab name="Physical System simulator">
+        <GeneratePhysicalSystem ref="generatePhysicalSystemComp" />
       </tab>
     </tabs>
   </div>
@@ -228,6 +242,32 @@ export default {
 
 <style>
 @import './assets/base.css';
+
+ul.appsList {
+  padding-top: 16px;
+  padding-bottom: 36px;
+  padding-left: 32px;
+  list-style-type: none;
+}
+
+.uninstallAll {
+  margin-left: 52px;
+}
+
+h2.installedAppTitle {
+  margin-left: 4;
+}
+
+p.appName {
+  font-size: large;
+  background-color: #ffffff;
+  padding-left: 48px;
+  padding-right: 48px;
+  border-radius: 28px;
+  border-color: #000;
+  border-style: solid;
+  border-width: 1px;
+}
 
 .logo_img {
   display: block;
@@ -245,6 +285,7 @@ export default {
   position: relative;
   width: 580px;
   font-size: 30px;
+  border-radius: 28px;
 }
 
 #app {
@@ -303,7 +344,7 @@ a,
 
 .tabs-component {
   margin: auto auto;
-  width: 1600;
+  width: 90vw;
 }
 
 .tabs-component-tabs {
@@ -312,14 +353,12 @@ a,
   margin-bottom: 5px;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-tabs {
-    border: 0;
-    align-items: stretch;
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: -1px;
-  }
+.tabs-component-tabs {
+  border: 0;
+  align-items: stretch;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: -1px;
 }
 
 .tabs-component-tab {
@@ -347,22 +386,21 @@ a,
   cursor: not-allowed !important;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-tab {
-    background-color: #fff;
-    border: solid 1px #ddd;
-    border-radius: 3px 3px 0 0;
-    margin-right: .5em;
-    transform: translateY(2px);
-    transition: transform .3s ease;
-  }
-
-  .tabs-component-tab.is-active {
-    border-bottom: solid 1px #fff;
-    z-index: 2;
-    transform: translateY(0);
-  }
+.tabs-component-tab {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  border-radius: 3px 3px 0 0;
+  margin-right: .5em;
+  transform: translateY(2px);
+  transition: transform .3s ease;
 }
+
+.tabs-component-tab.is-active {
+  border-bottom: solid 1px #fff;
+  z-index: 2;
+  transform: translateY(0);
+}
+
 
 .tabs-component-tab-a {
   align-items: center;
@@ -376,13 +414,11 @@ a,
   padding: 4em 0;
 }
 
-@media (min-width: 700px) {
-  .tabs-component-panels {
-    background-color: #fff;
-    border: solid 1px #ddd;
-    border-radius: 0 6px 6px 6px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .05);
-    padding: 4em 2em;
-  }
+.tabs-component-panels {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  border-radius: 0 6px 6px 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .05);
+  padding: 4em 2em;
 }
 </style>

@@ -4,7 +4,7 @@ import os.Path
 
 object Constants {
   lazy private val DEFAULT_SVSHI_HOME =
-    if (sys.env.contains("HOME")) s"${sys.env("HOME")}/svshi" else if (sys.env.contains("HOMEPATH")) s"${sys.env("HOME")}/svshi" else ""
+    if (sys.env.contains("HOME")) s"${sys.env("HOME")}/svshi" else if (sys.env.contains("HOMEPATH")) s"${sys.env("HOMEPATH")}/svshi" else ""
   val SVSHI_HOME: String = if (sys.env.contains("SVSHI_HOME")) sys.env("SVSHI_HOME") else DEFAULT_SVSHI_HOME
 
   lazy val SVSHI_HOME_PATH = os.Path(SVSHI_HOME)
@@ -21,6 +21,8 @@ object Constants {
   val APP_PYTHON_ADDR_BINDINGS_FILE_NAME = "addresses.json"
   val GROUP_ADDRESSES_LIST_FILE_NAME = "group_addresses.json"
   val APP_PROTO_STRUCT_FILE_NAME = "app_prototypical_structure.json"
+  val MAIN_PY_APP_FILE_NAME = "main.py"
+  val FILES_FOLDER_EACH_APPLICATION_NAME = "files"
   val GENERATED_FOLDER_PATH_STRING = s"$SVSHI_HOME/generated"
   val GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH_STRING = s"$SVSHI_LOCAL_INTERNAL_FOLDER/temp_generated"
   lazy val GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH = os.Path(GENERATED_TEMP_FOLDER_DURING_REMOVING_PATH_STRING)
@@ -37,7 +39,13 @@ object Constants {
   lazy val GENERATED_RUNTIME_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_RUNTIME_FILE_NAME")
   val GENERATED_CONDITIONS_FILE_NAME = "conditions.py"
   lazy val GENERATED_CONDITIONS_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_CONDITIONS_FILE_NAME")
+  val GENERATED_ISOLATED_FNS_FILE_NAME = "isolated_fns.json"
+  lazy val GENERATED_ISOLATED_FNS_FILE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/verification/$GENERATED_ISOLATED_FNS_FILE_NAME")
   val VERIFICATION_PYTHON_MODULE = "verification.main"
+  val EXTENDED_VERIFICATION_PYTHON_MODULE = "extended_verification.main"
+  val PER_PATH_TIMEOUT = 25.0
+  val PER_CONDITION_TIMEOUT = 30.0
+  val VERIFICATION_FILE_MODULE_NAME = "verification.verification_file"
   val APP_GENERATOR_PYTHON_MODULE = "generator.main"
   val RUNTIME_PYTHON_MODULE = "runtime.main"
   lazy val RUNTIME_PYTHON_MODULE_PATH: Path = os.Path(s"$SVSHI_SRC_FOLDER/runtime")
@@ -56,5 +64,7 @@ object Constants {
   val PYTHON_RUNTIME_LOGS_EXECUTION_LOG_FILE_NAME = "execution.log"
   val SVSHI_GUI_SERVER_DEFAULT_PORT = 4242
   val SVSHI_GUI_SERVER_DEFAULT_HOST = "localhost"
+  val PYTHON_RUNTIME_LOGS_PHYSICAL_STATE_LOG_FILE_PATH = RUNTIME_PYTHON_MODULE_PATH / "physical_state.json"
+  val GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH = GENERATED_FOLDER_PATH / "available_proto_devices.json"
 
 }

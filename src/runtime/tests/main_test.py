@@ -1,9 +1,12 @@
+import asyncio
 import os
 import sys
 import pytest
 from contextlib import contextmanager
 from io import StringIO
 from pytest_mock import MockerFixture
+from xknx.core.value_reader import ValueReader
+from xknx import XKNX
 
 from ..resetter import FileResetter
 from ..main import cleanup, main, parse_args
@@ -14,9 +17,11 @@ GROUP_ADDRESSES_PATH = "tests/fake_app_library/group_addresses.json"
 CONDITIONS_FILE_PATH = "cond"
 VERIFICATION_FILE_PATH = "ver"
 RUNTIME_FILE_PATH = "run"
+ISOLATED_FNS_FILE_PATH = "isol.json"
+REAL_ISOLATED_FNS_FILE_PATH = "tests/expected/expected_isolated_fns.json"
 SVSHI_HOME = os.environ["SVSHI_HOME"].replace("\\", "/")
 RUNTIME_FILE_MODULE = (
-    f"{SVSHI_HOME.split('/')[-1]}.src.runtime.tests.expected.expected_runtime_file"
+    f"runtime.tests.expected.expected_runtime_file"
 )
 
 
@@ -58,22 +63,28 @@ def test_parse_args_raises_exception_on_port_zero():
 @pytest.mark.asyncio
 async def test_cleanup_uses_file_resetter(mocker: MockerFixture):
     file_resetter = FileResetter(
-        CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
+        CONDITIONS_FILE_PATH,
+        VERIFICATION_FILE_PATH,
+        RUNTIME_FILE_PATH,
+        ISOLATED_FNS_FILE_PATH,
     )
     reset_verification_file_spy = mocker.spy(file_resetter, "reset_verification_file")
     reset_runtime_file_spy = mocker.spy(file_resetter, "reset_runtime_file")
     reset_conditions_file_spy = mocker.spy(file_resetter, "reset_conditions_file")
+    reset_isolated_fns_file_spy = mocker.spy(file_resetter, "reset_isolated_fns_file")
 
     await cleanup(file_resetter)
 
     reset_verification_file_spy.assert_called_once()
     reset_runtime_file_spy.assert_called_once()
     reset_conditions_file_spy.assert_called_once()
+    reset_isolated_fns_file_spy.assert_called_once()
 
     # Cleanup
     os.remove(CONDITIONS_FILE_PATH)
     os.remove(VERIFICATION_FILE_PATH)
     os.remove(RUNTIME_FILE_PATH)
+    os.remove(ISOLATED_FNS_FILE_PATH)
 
 
 @pytest.mark.asyncio
@@ -81,11 +92,15 @@ async def test_cleanup_uses_file_resetter_and_prints_error_message(
     mocker: MockerFixture,
 ):
     file_resetter = FileResetter(
-        CONDITIONS_FILE_PATH, VERIFICATION_FILE_PATH, RUNTIME_FILE_PATH
+        CONDITIONS_FILE_PATH,
+        VERIFICATION_FILE_PATH,
+        RUNTIME_FILE_PATH,
+        ISOLATED_FNS_FILE_PATH,
     )
     reset_verification_file_spy = mocker.spy(file_resetter, "reset_verification_file")
     reset_runtime_file_spy = mocker.spy(file_resetter, "reset_runtime_file")
     reset_conditions_file_spy = mocker.spy(file_resetter, "reset_conditions_file")
+    reset_isolated_fns_file_spy = mocker.spy(file_resetter, "reset_isolated_fns_file")
 
     with captured_output() as (out, _):
         await cleanup(file_resetter, error=True)
@@ -93,12 +108,14 @@ async def test_cleanup_uses_file_resetter_and_prints_error_message(
     reset_verification_file_spy.assert_called_once()
     reset_runtime_file_spy.assert_called_once()
     reset_conditions_file_spy.assert_called_once()
+    reset_isolated_fns_file_spy.assert_called_once()
     assert out.getvalue().strip() == "An error occurred!\nExiting... bye!"
 
     # Cleanup
     os.remove(CONDITIONS_FILE_PATH)
     os.remove(VERIFICATION_FILE_PATH)
     os.remove(RUNTIME_FILE_PATH)
+    os.remove(ISOLATED_FNS_FILE_PATH)
 
 
 @pytest.mark.asyncio
@@ -123,6 +140,9 @@ async def test_main_listens_to_KNX_then_stops_and_resets_files(
     reset_conditions_file_spy = mocker.patch.object(
         FileResetter, "reset_conditions_file"
     )
+    reset_isolated_fns_file_spy = mocker.patch.object(
+        FileResetter, "reset_isolated_fns_file"
+    )
 
     await main(
         "192.0.0.1",
@@ -130,6 +150,7 @@ async def test_main_listens_to_KNX_then_stops_and_resets_files(
         CONDITIONS_FILE_PATH,
         VERIFICATION_FILE_PATH,
         RUNTIME_FILE_PATH,
+        REAL_ISOLATED_FNS_FILE_PATH,
         APP_LIBRARY_DIR,
         GROUP_ADDRESSES_PATH,
         RUNTIME_FILE_MODULE,
@@ -145,3 +166,79 @@ async def test_main_listens_to_KNX_then_stops_and_resets_files(
     reset_verification_file_spy.assert_called_once()
     reset_runtime_file_spy.assert_called_once()
     reset_conditions_file_spy.assert_called_once()
+    reset_isolated_fns_file_spy.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_isolated_functions_are_triggered(
+    mocker: MockerFixture,
+):
+    """Test that the periodic and on_trigger functions are correctly executed."""
+    from ..state import State
+
+    TARGET_TXT_FILE_1 = "app_tmp.txt"
+    TARGET_TXT_FILE_2 = "another_app_tmp.txt"
+    TARGET_TEXT_1 = "123\n"
+    TARGET_VAL_1 = 123
+    TARGET_TEXT_2 = "Hello, world!\n"
+    TARGET_VAL_2 = 3.2
+
+    if os.path.exists(TARGET_TXT_FILE_1):
+        os.remove(TARGET_TXT_FILE_1)
+    if os.path.exists(TARGET_TXT_FILE_2):
+        os.remove(TARGET_TXT_FILE_2)
+
+    # Patch some methods to allow executing state.initialize
+    mocker.patch.object(XKNX, "start")
+    mocker.patch.object(ValueReader, "read", return_value=None)
+
+    # Make the listen function last for 0.6 second to allow the periodic
+    # function to run twice.
+    async def patched_listen(self: State):
+        await asyncio.sleep(0.6)
+
+    mocker.patch.object(State, "listen", new=patched_listen)
+
+    # At the end, ensure that the returned values of both functions are stored in the
+    # IsolatedFunctionsValues object.
+    async def patched_stop(self: State):
+        assert TARGET_VAL_1 == getattr(self._isolated_fn_values, "app_on_trigger_write")
+        assert TARGET_VAL_2 == getattr(
+            self._isolated_fn_values, "another_app_periodic_write"
+        )
+
+    mocker.patch.object(State, "stop", new=patched_stop)
+
+    mocker.patch.object(FileResetter, "reset_verification_file")
+    mocker.patch.object(FileResetter, "reset_runtime_file")
+    mocker.patch.object(FileResetter, "reset_conditions_file")
+    mocker.patch.object(FileResetter, "reset_isolated_fns_file")
+
+    await main(
+        "192.0.0.1",
+        8236,
+        CONDITIONS_FILE_PATH,
+        VERIFICATION_FILE_PATH,
+        RUNTIME_FILE_PATH,
+        REAL_ISOLATED_FNS_FILE_PATH,
+        APP_LIBRARY_DIR,
+        GROUP_ADDRESSES_PATH,
+        RUNTIME_FILE_MODULE,
+        LOGS_DIR,
+    )
+
+    # The on_trigger function should have written 1 line to this file.
+    with open(TARGET_TXT_FILE_1, "r") as f:
+        lines = f.readlines()
+    assert len(lines) == 1
+    assert TARGET_TEXT_1 in lines
+
+    # The periodic function should have written 2 lines to this file.
+    with open(TARGET_TXT_FILE_2, "r") as f:
+        lines = f.readlines()
+    assert len(lines) == 2
+    assert TARGET_TEXT_2 in lines
+
+    # Cleanup
+    os.remove(TARGET_TXT_FILE_1)
+    os.remove(TARGET_TXT_FILE_2)

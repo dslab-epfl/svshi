@@ -1,2 +1,2 @@
 -r requirements_without_crosshair.txt
-crosshair-tool==0.0.20
+git+https://github.com/dslab-epfl/CrossHair@path_cover_extension

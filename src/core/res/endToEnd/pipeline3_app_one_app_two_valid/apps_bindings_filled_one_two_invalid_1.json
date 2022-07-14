@@ -7,8 +7,8 @@
           "name": "binary_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
-            "typeString": "binary",
-            "physDeviceId": 1542297768
+            "typeString": "binarySensor",
+            "physDeviceId": 270662119
           }
         },
         {
@@ -16,7 +16,7 @@
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
             "typeString": "switch",
-            "physDeviceId": 2136915678
+            "physDeviceId": -1473244268
           }
         }
       ]
@@ -28,8 +28,8 @@
           "name": "temperature_sensor",
           "binding": {
             "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
-            "typeString": "temperature",
-            "physDeviceId": -544932998
+            "typeString": "temperatureSensor",
+            "physDeviceId": -88280997
           }
         },
         {

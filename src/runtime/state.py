@@ -1,12 +1,22 @@
+from asyncio.log import logger
 import dataclasses
+from dataclasses import dataclass, fields
 import asyncio
-import datetime
 import time
 from asyncio.tasks import Task
-from io import TextIOWrapper
-import os
-from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
-from itertools import groupby
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Final,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 from collections import defaultdict
 from enum import Enum
 from xknx.core.value_reader import ValueReader
@@ -16,9 +26,21 @@ from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress
 from xknx.xknx import XKNX
 
+import json
+
+import sys
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
+
 from .logger import Logger
-from .verification_file import AppState, PhysicalState, InternalState
+from .verification_file import AppState, PhysicalState, IsolatedFunctionsValues
+from .runtime_file import InternalState, CheckState
 from .app import App
+from .isolated_functions import RuntimeIsolatedFunction
+from .joint_apps import JointApps
 
 
 class _LOG_TYPE(Enum):
@@ -35,34 +57,57 @@ class State:
     __UNDERSCORE: Final = "_"
     __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
     __LOGGER_BUFFER_SIZE = 32
+    __APP_STATE_ARGUMENT_SUFFIX = "_app_state"
+    __MIN_FN_PERIOD = 0.5  # minimal period in seconds for executing periodic functions
+    __PERIODIC_READ_TIMEOUT: Final = 1.0
 
     def __init__(
         self,
         addresses_listeners: Dict[str, List[App]],
+        joint_apps: List[JointApps],
         xknx_for_initialization: XKNX,
         xknx_for_listening: XKNX,
+        xknx_for_periodic_reads: XKNX,
         check_conditions_function: Callable,
         group_address_to_dpt: Dict[str, Union[DPTBase, DPTBinary]],
         logs_dir: str,
+        runtime_app_files_folder_path: str,
+        physical_state_log_file_path: str,
+        isolated_fns: List[RuntimeIsolatedFunction],
+        periodic_read_frequency_second = 60.0,
     ):
+        self.__PERIODIC_READ_FREQUENCY_SEC = periodic_read_frequency_second
         self.__addresses_listeners = addresses_listeners
         self.__addresses = list(addresses_listeners.keys())
 
         self.__apps = set(
             app for apps in self.__addresses_listeners.values() for app in apps
         )
+        self.joint_apps = joint_apps
 
         self._physical_state: PhysicalState
         self._last_valid_physical_state: PhysicalState
-        self._app_states = {app.name: AppState() for app in self.__apps}
+        self._app_states = {
+            f"{app.name}{self.__APP_STATE_ARGUMENT_SUFFIX}": AppState()
+            for app in self.__apps
+        }
 
-        self._internal_state: InternalState = InternalState(0)
+        self._internal_state: InternalState = InternalState(
+            date_time=time.localtime(), app_files_runtime_folder_path=runtime_app_files_folder_path
+        )
+        #leave the check_conditions as default to initialize them now:
+        check_condition_dict = self._internal_state.check_condition
+        time_int = int(time.mktime(self._internal_state.date_time))
+        for k in check_condition_dict.keys():
+            check_condition_dict[k] = CheckState(start_frequency=time_int, start_condition_true=time_int)
 
-        # Used to access and modify the states
+        self._isolated_fn_values = IsolatedFunctionsValues()
+
         self.__execution_lock = asyncio.Lock()
 
         self.__xknx_for_initialization = xknx_for_initialization
         self.__xknx_for_listening = xknx_for_listening
+        self.__xknx_for_period_reads = xknx_for_periodic_reads
         self.__xknx_for_listening.telegram_queue.register_telegram_received_cb(
             self.__telegram_received_cb
         )
@@ -77,16 +122,33 @@ class State:
 
         # Group the apps by timer
         self.__periodic_apps: Dict[int, List[App]] = {}
-        for timer, group in groupby(
-            sorted(periodic_apps, key=lambda app: app.timer),
-            lambda app: app.timer,
-        ):
-            self.__periodic_apps[timer] = sorted(
-                group, key=lambda a: (a.is_privileged, a.name)
-            )
+        # for timer, group in groupby(
+        #     sorted(periodic_apps, key=lambda app: app.timer),
+        #     lambda app: app.timer,
+        # ):
+        #     self.__periodic_apps[timer] = sorted(
+        #         group, key=lambda a: (a.is_privileged, a.name)
+        #     )
+        timers = []
+        for timed_app in periodic_apps:
+            timers.append(timed_app.timer)
+        if len(timers) > 0:
+            self.__periodic_apps[min(timers)] = self.joint_apps
+
         self.__periodic_apps_task: Optional[Task] = None
 
+        self.__periodic_fns = {fn for fn in isolated_fns if fn.period is not None}
+        self.__on_trigger_fns = {
+            fn.code: fn for fn in isolated_fns if fn.period is None
+        }
+        self.__on_trigger_currently_running: Set[RuntimeIsolatedFunction] = set()
+        self.__periodic_fns_task: Optional[Task] = None
+
+        self.__periodic_device_reads_task: Optional[Task] = None
+
         self.__logger = Logger(logs_dir, self.__LOGGER_BUFFER_SIZE)
+
+        self.physical_state_log_file_path = physical_state_log_file_path
 
     async def __telegram_received_cb(self, telegram: Telegram):
         """
@@ -125,7 +187,16 @@ class State:
         if self.__periodic_apps_task:
             self.__periodic_apps_task.cancel()
 
+        if self.__periodic_fns_task:
+            self.__periodic_fns_task.cancel()
+        
+        if self.__periodic_device_reads_task:
+            self.__periodic_device_reads_task.cancel()
+
         await self.__xknx_for_listening.stop()
+
+        # Ensure tasks have time to cancel.
+        await asyncio.sleep(0.1)
 
         # Dump all logs
         self.__logger.flush()
@@ -170,7 +241,9 @@ class State:
 
         return converted_value
 
-    async def initialize(self):
+    async def initialize(
+        self, register_on_trigger_consumer: Callable[[Callable], None]
+    ):
         """
         Initializes the system state by reading it from the KNX bus through an ephemeral connection.
         """
@@ -194,11 +267,41 @@ class State:
                     fields[field_address_name] = None
 
         self._physical_state = PhysicalState(**fields)
+        self._last_valid_physical_state = PhysicalState(**fields)
         self._update_internal_state()
 
-        # Start executing the periodic apps in a background task
+        register_on_trigger_consumer(self.__on_trigger_consumer)
+
+        # Start executing the periodic apps and functions in a background task
         if self.__periodic_apps:
             self.__periodic_apps_task = asyncio.create_task(self.__run_periodic_apps())
+
+        if self.__periodic_fns:
+            self.__periodic_fns_task = asyncio.create_task(
+                self.__run_all_periodic_fns()
+            )
+
+        # Start the periodic reading of devices
+        self.__periodic_device_reads_task = asyncio.create_task(self.__periodically_read_devices())
+
+    async def __periodically_read_devices(self):
+        while True:
+            async with self.__xknx_for_period_reads as xknx:
+                for address in self.__addresses:
+                    # Read from KNX the current value
+                    value_reader = ValueReader(
+                        xknx,
+                        GroupAddress(address),
+                        timeout_in_seconds=self.__PERIODIC_READ_TIMEOUT,
+                    )
+                    self.__logger.log_execution(f"Send periodic read request to '{address}'")
+                    telegram = await value_reader.read()
+                    if telegram:
+                        self.__logger.log_execution(f"Periodic read request to '{address}' answered with '{telegram}'")
+                        await self.__telegram_received_cb(telegram)
+                    else:
+                        self.__logger.log_execution(f"'{address}' did not answered to the periodic read request")
+            await asyncio.sleep(self.__PERIODIC_READ_FREQUENCY_SEC)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:
         """
@@ -285,12 +388,85 @@ class State:
                     run_apps_with_lock(),
                 )
 
+    async def __run_all_periodic_fns(self):
+        """Execute all periodic functions periodically, according to their period."""
+        tasks = [
+            asyncio.create_task(self.__run_periodic_fn(fn))
+            for fn in self.__periodic_fns
+        ]
+        await asyncio.wait(tasks)
+
+    async def __run_periodic_fn(self, fn: RuntimeIsolatedFunction):
+        """Execute the periodic function periodically, according to its period."""
+        # We use gather + sleep to run the fns every `period` seconds without drift
+        while True:
+            await asyncio.gather(
+                self.__run_isolated_fn(fn),
+                asyncio.sleep(max(float(fn.period), self.__MIN_FN_PERIOD)),
+            )
+
+    def __run_on_trigger_fn(self, on_trigger_fn: Callable, *args, **kwargs):
+        """
+        Run the given on_trigger function (asynchronously) on the given args if not
+        already running.
+        """
+        fn = self.__on_trigger_fns[on_trigger_fn]
+        if not fn in self.__on_trigger_currently_running:
+            self.__on_trigger_currently_running.add(fn)
+            asyncio.create_task(self.__run_isolated_fn(fn, *args, **kwargs))
+
+    async def __run_isolated_fn(self, fn: RuntimeIsolatedFunction, *args, **kwargs):
+        """Execute the isolated function and update IsolatedFunctionsValues."""
+        # Copy internal_state to ensure it does not change during the execution.
+        # Then add it to the arguments of the function.
+        async with self.__execution_lock:
+            kwargs["internal_state"] = dataclasses.replace(self._internal_state)
+
+        self.__logger.log_execution(
+            f"Run isolated function '{fn.name}' with args = '{str(args)}, {str(kwargs)}'"
+        )
+        try:
+            res = fn.code(*args, **kwargs)
+            if isinstance(res, fn.return_type):
+                self.__logger.log_execution(
+                    f"Isolated function '{fn.name}' returned '{res}'"
+                )
+                setattr(self._isolated_fn_values, fn.name, res)
+            else:
+                self.__logger.log_execution(
+                    f"ERROR: the returned value of `{fn.name}` was of type "
+                    f"{type(res)}. Expected: {fn.return_type}. "
+                    "Omitting the returned value."
+                )
+        except BaseException as e:
+            self.__logger.log_execution(
+                f"ERROR: the function `{fn.name}` raised the following exception: "
+                f"{repr(e)}. Omitting this execution."
+            )
+        finally:
+            # If this is an on_trigger function, mark its execution as terminated.
+            if fn.period is None:
+                self.__on_trigger_currently_running.remove(fn)
+
+    _T = TypeVar("_T")
+    _P = ParamSpec("_P")
+
+    def __on_trigger_consumer(
+        self, on_trigger_fn: Callable[_P, _T]
+    ) -> Callable[_P, None]:
+        """The consumer for on_trigger functions, wich calls __run_on_trigger_fn"""
+
+        def inner_consumer(*args: self._P.args, **kwargs: self._P.kwargs) -> None:
+            self.__run_on_trigger_fn(on_trigger_fn, *args, **kwargs)
+
+        return inner_consumer
+
     def __get_check_conditions_args(
         self, physical_state: PhysicalState, internal_state: InternalState
     ) -> Dict[str, Any]:
         check_conditions_args: Dict[str, Any] = {
-            f"{app_name}_app_state": state
-            for app_name, state in self._app_states.items()
+            app_state_arg_name: state
+            for app_state_arg_name, state in self._app_states.items()
         }
         check_conditions_args["physical_state"] = physical_state
         check_conditions_args["internal_state"] = internal_state
@@ -304,12 +480,9 @@ class State:
                 self.__field_name_to_group_addr(field), value
             )
 
-    def _update_internal_state(self,simulated_time=False):
+    def _update_internal_state(self, simulated_time=False):
         if not simulated_time:
-            self._set_internal_time(int(time.time())-time.altzone)
-
-    def _set_internal_time(self, time:int):
-        self._internal_state.time = time
+            self._internal_state.date_time = time.localtime()
 
     async def __run_apps(self, apps: List[App]):
         """
@@ -318,62 +491,81 @@ class State:
         """
         old_state = dataclasses.replace(self._physical_state)
         self._update_internal_state()
+        isolated_fn_values_copy = dataclasses.replace(self._isolated_fn_values)
 
         # Check if the last state was valid
-        check_conditions_args = self.__get_check_conditions_args(old_state, self._internal_state)
+        check_conditions_args = self.__get_check_conditions_args(
+            old_state, self._internal_state
+        )
         is_last_state_valid = self.__check_conditions_function(**check_conditions_args)
 
         # We first execute all the apps
         new_states = {}
-        for app in apps:
-            self.__logger.log_execution(f"App to execute: {app}")
-            if app.should_run:
+        for joint_app in self.joint_apps:
+            self.__logger.log_execution(f"App to execute: {joint_app}")
+            if joint_app.should_run:
                 # Copy the states before executing the app
-                app_local_state_copy = dataclasses.replace(self._app_states[app.name])
+                # app_local_state_copy = dataclasses.replace(self._app_states[app.name])
                 per_app_physical_state_copy = dataclasses.replace(old_state)
                 internal_state_copy = dataclasses.replace(self._internal_state)
 
                 self.__logger.log_execution(
-                    f"With physical state (app: '{app.name}'): {per_app_physical_state_copy}"
+                    f"With physical state (app: '{joint_app.name}'): {per_app_physical_state_copy}"
                 )
                 self.__logger.log_execution(
-                    f"With app state (app: '{app.name}'): {app_local_state_copy}"
+                    f"With app state (app: '{joint_app.name}'): {dict(sorted(self._app_states.items()))}"
                 )
                 self.__logger.log_execution(
-                    f"With internal state (app: '{app.name}: {internal_state_copy}"
+                    f"With internal state (app: '{joint_app.name}: {internal_state_copy}"
                 )
-
                 # Notify the app to trigger execution
-                app.notify(app_local_state_copy, per_app_physical_state_copy, internal_state_copy)
+                joint_app.notify(
+                    self._app_states,
+                    physical_state=per_app_physical_state_copy,
+                    internal_state=internal_state_copy,
+                    isolated_fn_values=isolated_fn_values_copy,
+                )
 
                 # Build the check conditions args with all app states and the physical state
                 check_conditions_args = self.__get_check_conditions_args(
-                    per_app_physical_state_copy,
-                    internal_state_copy
+                    per_app_physical_state_copy, internal_state_copy
                 )
 
                 # Update the conditions with the new app state
-                check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
+                # check_conditions_args[f"{app.name}_app_state"] = app_local_state_copy
                 if is_last_state_valid and not self.__check_conditions_function(
                     **check_conditions_args
                 ):
-                    # If the last state was valid and conditions are not preserved after the app execution, we prevent the app from running again
-                    app.stop()
+                    # If the last state was valid and conditions are not preserved after the app execution, we propagate
+                    # the last valid state and stop svshi
+                    joint_app.stop()
+
+                    print(
+                        "ERROR: the physical state is no longer valid! Propagating the last valid state to KNX... ",
+                        end="",
+                    )
+                    await self.__propagate_last_valid_state()
+                    print("done!")
+
+                    await self.stop()
+                    raise KeyboardInterrupt()
                 else:
                     # If conditions are preserved, we keep the physical state to later propagate
-                    new_states[app] = per_app_physical_state_copy
+                    new_states[joint_app] = per_app_physical_state_copy
 
                     # We update the app local state
-                    self._app_states[app.name] = app_local_state_copy
+                    # self._app_states[app.name] = app_local_state_copy
 
         merged_state = self.__merge_states(old_state, new_states)
 
         # Check if the merged state is valid
-        check_conditions_args = self.__get_check_conditions_args(merged_state, self._internal_state)
+        check_conditions_args = self.__get_check_conditions_args(
+            merged_state, self._internal_state
+        )
         if not self.__check_conditions_function(**check_conditions_args):
             # Stop all apps
-            for app in self.__apps:
-                app.should_run = False
+            for joint_app in self.joint_apps:
+                joint_app.should_run = False
 
             print(
                 "ERROR: the physical state is no longer valid! Propagating the last valid state to KNX... ",
@@ -399,6 +591,8 @@ class State:
                     # Notify the listeners of the change
                     await self.__notify_listeners(address)
 
+            self.log_current_physical_state()
+
     async def __notify_listeners(self, address: str):
         """
         Notifies all the listeners (i.e. apps) of the given address, triggering their execution.
@@ -406,3 +600,22 @@ class State:
         """
         if address in self.__addresses_listeners:
             await self.__run_apps(self.__addresses_listeners[address])
+
+    def log_current_physical_state(self) -> None:
+        """
+        Stores the current physical state in a file named __PHYSICAL_STATE_LOG_FILE_NAME in the current folder
+        """
+        self._physical_state
+        dct = {}
+
+        for ga in self._physical_state.__dataclass_fields__:
+            value = getattr(self._physical_state, ga)
+            dpt = self.__group_address_to_dpt[self.__field_name_to_group_addr(ga)]
+            this_ga = {}
+            this_ga["value"] = value
+            this_ga["dpt"] = (
+                f"DPT{dpt.dpt_main_number}" if isinstance(dpt, DPTBase) else "DPT1"
+            )
+            dct[ga] = this_ga
+        with open(self.physical_state_log_file_path, "w") as f:
+            json.dump(dct, f, indent=4)

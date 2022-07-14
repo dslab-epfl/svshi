@@ -8,10 +8,17 @@ src/app_library/**
 src/verification/conditions.py
 src/verification/runtime_file.py
 src/verification/verification_file.py
+src/verification/isolated_fns.json
+src/local
 **/.coverage
 **/coverage.xml
 
 **/svshi_private_input
+
+src/runtime/physical_state.json
+src/runtime/conditions.py
+src/runtime/runtime_file.py
+src/runtime/verification_file.py
 
 #IntelliJ
 .idea
@@ -58,3 +65,12 @@ project/**/metals.sbt
 
 # pycache
 **/__pycache__
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

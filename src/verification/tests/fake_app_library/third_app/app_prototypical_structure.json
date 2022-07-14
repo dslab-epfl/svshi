@@ -5,7 +5,7 @@
   "devices": [
     {
       "name": "binary_sensor_instance_name",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     },
     {
       "name": "switch_instance_name",
@@ -13,15 +13,23 @@
     },
     {
       "name": "temperature_sensor_instance_name",
-      "deviceType": "temperature"
+      "deviceType": "temperatureSensor"
     },
     {
       "name": "humidity_sensor_instance_name",
-      "deviceType": "humidity"
+      "deviceType": "humiditySensor"
     },
     {
       "name": "co_two_sensor_instance_name",
-      "deviceType": "co2"
+      "deviceType": "co2Sensor"
+    },
+    {
+      "name": "dimmer_sensor_instance_name",
+      "deviceType": "dimmerSensor"
+    },
+    {
+      "name": "dimmer_actuator_instance_name",
+      "deviceType": "dimmerActuator"
     }
   ]
 }

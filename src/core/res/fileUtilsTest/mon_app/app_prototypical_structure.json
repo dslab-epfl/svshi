@@ -7,7 +7,7 @@
   "devices": [
     {
       "name": "device_one",
-      "deviceType": "binary"
+      "deviceType": "binarySensor"
     },
     {
       "name": "device_two",

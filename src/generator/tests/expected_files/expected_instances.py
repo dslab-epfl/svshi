@@ -2,11 +2,11 @@
 ### DO NOT TOUCH THIS FILE!!!
 ###
 
-from models.binary import BinarySensor
+from models.binarySensor import BinarySensor
 from models.switch import Switch
-from models.temperature import TemperatureSensor
-from models.humidity import HumiditySensor
-from models.co2 import CO2Sensor
+from models.temperatureSensor import TemperatureSensor
+from models.humiditySensor import HumiditySensor
+from models.co2Sensor import CO2Sensor
 
 from models.state import AppState
 from models.SvshiApi import SvshiApi

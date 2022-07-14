@@ -7,7 +7,8 @@ from typing import Callable, Dict, Iterator, List, Tuple
 from itertools import groupby
 from importlib import import_module
 
-from .verification_file import AppState, PhysicalState, InternalState
+from .verification_file import AppState, PhysicalState
+from .runtime_file import InternalState
 
 
 @dataclasses.dataclass
@@ -36,7 +37,12 @@ class App:
     def __str__(self) -> str:
         return f'App(name="{self.name}", directory="{self.directory}", is_privileged={self.is_privileged}, should_run={self.should_run}, timer={self.timer})'
 
-    def notify(self, app_state: AppState, physical_state: PhysicalState, internal_state: InternalState):
+    def notify(
+        self,
+        app_state: AppState,
+        physical_state: PhysicalState,
+        internal_state: InternalState,
+    ):
         """
         Notifies the app, triggering an iteration.
         """
@@ -66,7 +72,7 @@ def get_apps(app_library_dir: str, runtime_file_module: str) -> List[App]:
 
     apps = []
     for app_name in apps_names:
-        app_code = getattr(import_module(runtime_file_module), f"{app_name}_iteration")
+        app_code = getattr(import_module(runtime_file_module), f"system_behaviour")
         with open(f"{app_library_dir}/{app_name}/addresses.json", "r") as file:
             file_dict = json.load(file)
             is_privileged = file_dict["permissionLevel"] == "privileged"

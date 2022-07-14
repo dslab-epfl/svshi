@@ -150,4 +150,34 @@ class FileUtilsTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
 
     compareFolders(unzipped, expectedUnzipped, ignoredFileAndDirNames = defaultIgnoredFilesAndDir)
   }
+
+  "getFileExtension" should "return the correct extension for some valid inputs" in {
+    os.makeDir.all(outputPath)
+    val f1 = outputPath / "file1.png"
+    val f2 = outputPath / "file2.jpg"
+    val f3 = outputPath / "file3.knxproj"
+    val f4 = outputPath / "file4.json"
+    val f5 = outputPath / ".gitignore"
+    val f6 = outputPath / "f6"
+
+    os.write(f1, "test".getBytes())
+    os.write(f2, "test".getBytes())
+    os.write(f3, "test".getBytes())
+    os.write(f4, "test".getBytes())
+    os.write(f5, "test".getBytes())
+    os.write(f6, "test".getBytes())
+
+    FileUtils.getFileExtension(f1) shouldEqual "png"
+    FileUtils.getFileExtension(f2) shouldEqual "jpg"
+    FileUtils.getFileExtension(f3) shouldEqual "knxproj"
+    FileUtils.getFileExtension(f4) shouldEqual "json"
+    FileUtils.getFileExtension(f5) shouldEqual "gitignore"
+    FileUtils.getFileExtension(f6) shouldEqual ""
+  }
+  "getFileExtension" should "return the empty string when the input path is a directory" in {
+    FileUtils.getFileExtension(wd) shouldEqual ""
+  }
+  "getFileExtension" should "return the empty string when the input file does not exist" in {
+    FileUtils.getFileExtension(wd / "does_not_exist") shouldEqual ""
+  }
 }

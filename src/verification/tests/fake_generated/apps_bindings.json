@@ -7,7 +7,7 @@
           "name": "binary_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -1
           }
         },
@@ -23,7 +23,7 @@
           "name": "temperature_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.TemperatureSensorBinding",
-            "typeString": "temperature",
+            "typeString": "temperatureSensor",
             "physDeviceId": -1
           }
         },
@@ -31,7 +31,7 @@
           "name": "humidity_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.HumiditySensorBinding",
-            "typeString": "humidity",
+            "typeString": "humiditySensor",
             "physDeviceId": -1
           }
         }
@@ -44,7 +44,7 @@
           "name": "binary_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -1
           }
         },
@@ -60,7 +60,7 @@
           "name": "temperature_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.TemperatureSensorBinding",
-            "typeString": "temperature",
+            "typeString": "temperatureSensor",
             "physDeviceId": -1
           }
         },
@@ -68,7 +68,7 @@
           "name": "humidity_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.HumiditySensorBinding",
-            "typeString": "humidity",
+            "typeString": "humiditySensor",
             "physDeviceId": -1
           }
         }
@@ -81,7 +81,7 @@
           "name": "binary_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.BinarySensorBinding",
-            "typeString": "binary",
+            "typeString": "binarySensor",
             "physDeviceId": -1
           }
         },
@@ -97,7 +97,7 @@
           "name": "temperature_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.TemperatureSensorBinding",
-            "typeString": "temperature",
+            "typeString": "temperatureSensor",
             "physDeviceId": -1
           }
         },
@@ -105,7 +105,7 @@
           "name": "humidity_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.HumiditySensorBinding",
-            "typeString": "humidity",
+            "typeString": "humiditySensor",
             "physDeviceId": -1
           }
         },
@@ -113,7 +113,23 @@
           "name": "co_two_sensor_instance_name",
           "binding": {
             "$type": "ch.epfl.core.models.prototypical.CO2SensorBinding",
-            "typeString": "co2",
+            "typeString": "co2Sensor",
+            "physDeviceId": -1
+          }
+        },
+        {
+          "name": "dimmer_sensor_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.DimmerSensorBinding",
+            "typeString": "dimmerSensor",
+            "physDeviceId": -1
+          }
+        },
+        {
+          "name": "dimmer_actuator_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.models.prototypical.DimmerActuatorBinding",
+            "typeString": "dimmerActuator",
             "physDeviceId": -1
           }
         }

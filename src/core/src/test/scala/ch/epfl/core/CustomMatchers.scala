@@ -1,5 +1,6 @@
 package ch.epfl.core
 import ch.epfl.core.model.application.{Application, ApplicationLibrary}
+import ch.epfl.core.utils.Constants
 import org.scalatest.matchers._
 import os.Path
 
@@ -56,9 +57,20 @@ trait CustomMatchers {
   class ApplicationLibraryAreSimilarMatcher(other: ApplicationLibrary) extends Matcher[ApplicationLibrary] {
 
     def apply(left: ApplicationLibrary) = {
+      def simplifyFilePath(fP: os.Path, ref: os.Path): os.Path = {
+        val fName = fP.segments.toList.last
+        ref / Constants.FILES_FOLDER_EACH_APPLICATION_NAME / fName
+      }
       // Compared path from root
-      val leftWithSimplifiedPath = ApplicationLibrary(left.apps.map(a => Application(a.name, os.root / a.appFolderPath.segments.toList.last, a.appProtoStructure)), os.root)
-      val otherWithSimplifiedPath = ApplicationLibrary(other.apps.map(a => Application(a.name, os.root / a.appFolderPath.segments.toList.last, a.appProtoStructure)), os.root)
+      val leftWithSimplifiedPath =
+        ApplicationLibrary(
+          left.apps.map(a => Application(a.name, os.root / a.appFolderPath.segments.toList.last, a.appProtoStructure, a.files.map(p => simplifyFilePath(p, os.root)))),
+          os.root
+        )
+      val otherWithSimplifiedPath = ApplicationLibrary(
+        other.apps.map(a => Application(a.name, os.root / a.appFolderPath.segments.toList.last, a.appProtoStructure, a.files.map(p => simplifyFilePath(p, os.root)))),
+        os.root
+      )
       MatchResult(
         leftWithSimplifiedPath == otherWithSimplifiedPath,
         s"""ApplicationLibrary $left is not similar to $other when simplifying Paths as follows:\n$leftWithSimplifiedPath\n$otherWithSimplifiedPath""",

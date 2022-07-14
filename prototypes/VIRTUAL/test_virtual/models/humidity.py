@@ -14,7 +14,7 @@ class HumiditySensor(Device):
     """
 
     def __init__(self, name: str):
-        super().__init__(name, "humidity")
+        super().__init__(name, "humiditySensor")
 
     def read(self) -> Optional[float]:
         """

@@ -1,5 +1,8 @@
 # Default file, will be overwritten while running
+from typing import Callable, IO, Optional, TypeVar
+from typing import Optional
 import dataclasses
+import time
 
 
 @dataclasses.dataclass
@@ -16,22 +19,37 @@ class AppState:
     BOOL_1: bool = False
     BOOL_2: bool = False
     BOOL_3: bool = False
-    STR_0: str = ""
-    STR_1: str = ""
-    STR_2: str = ""
-    STR_3: str = ""
 
 
 @dataclasses.dataclass
 class PhysicalState:
-    GA_1_1_1: float
-    GA_1_1_2: float
-    GA_1_1_3: bool
-    GA_1_1_4: bool
+    GA_0_0_1: bool
+    GA_0_0_2: bool
+    GA_0_0_3: float
+    GA_0_0_4: float
+    GA_0_0_5: int
+
+
+
+@dataclasses.dataclass
+class IsolatedFunctionsValues:
+    pass
+
+
 
 @dataclasses.dataclass
 class InternalState:
     """
-    inv: self.time>=0
+    inv: 0 <= self.time_hour <= 23
+    inv: 0 <= self.time_min <= 59
+    inv: 1 <= self.time_day <= 31
+    inv: 1 <= self.time_weekday <= 7
+    inv: 1 <= self.time_month <= 12
+    inv: 0 <= self.time_year
     """
-    time: int #time in seconds
+    time_hour: int
+    time_min: int
+    time_day: int
+    time_weekday: int
+    time_month: int
+    time_year: int

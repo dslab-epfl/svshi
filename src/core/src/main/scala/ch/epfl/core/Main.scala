@@ -10,14 +10,14 @@ import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
-import ch.epfl.core.utils.{Constants, Style, Utils}
+import ch.epfl.core.utils.{Constants, FileUtils, Style, Utils}
 import mainargs.ParserForClass
 
 import java.io.File
 import scala.util.{Failure, Success, Try}
 
 object Main {
-
+  val VALID_INPUT_PHYSICAL_STRUCTURE_FILE_EXTENSION = List("knxproj", "json")
   private val CLI_TOTAL_WIDTH = 200
 
   private var systemExit: SystemExit = DefaultSystemExit
@@ -54,12 +54,41 @@ object Main {
       if (!os.exists(etsProjPath)) {
         printErrorAndExit("The ETS Project file does not exist!")
       }
-      val newPhysicalStructure = EtsParser.parseEtsProjectFile(etsProjPath)
-      newPhysicalStructure
+      if (!os.isFile(etsProjPath)) {
+        printErrorAndExit("The ETS project file path has to be a path to a file. It points to a directory.")
+      }
+      val fileExtension = FileUtils.getFileExtension(etsProjPath)
+      if (!VALID_INPUT_PHYSICAL_STRUCTURE_FILE_EXTENSION.contains(fileExtension)) {
+        printErrorAndExit(f"The ETS project file must be either a .knxproj file or a .json file. Received a file with extension '$fileExtension'")
+      }
+      if (fileExtension == "knxproj") {
+        EtsParser.parseEtsProjectFile(etsProjPath)
+      } else {
+        // Json
+        PhysicalStructureJsonParser.parse(etsProjPath)
+      }
     }
 
     val appNameOpt = config.appName
     config.task match {
+      case Compile | GenerateBindings | DeviceMappings if config.etsProjectFile.isEmpty =>
+        printErrorAndExit("The ETS project file needs to be specified to compile, to generate the bindings or get device mappings")
+      case DeviceMappings =>
+        val etsProjectFile = config.etsProjectFile.get
+        if (!new File(etsProjectFile).isAbsolute) printErrorAndExit("The ETS project file name has to be absolute")
+        else {
+          if (
+            Svshi.generatePrototypicalDeviceMappings(extractPhysicalStructure(etsProjectFile))(
+              success = success,
+              info = info,
+              warning = warning,
+              err = error
+            ) != SUCCESS_CODE
+          ) {
+            printErrorAndExit("Exiting...")
+          }
+        }
+
       case Gui =>
         val addrPort = config.knxAddress
         val (address, port) =
@@ -92,8 +121,6 @@ object Main {
         ) {
           printErrorAndExit("Exiting...")
         }
-      case Compile | GenerateBindings if config.etsProjectFile.isEmpty =>
-        printErrorAndExit("The ETS project file needs to be specified to compile or to generate the bindings")
       case Compile =>
         val etsProjectFile = config.etsProjectFile.get
         if (!new File(etsProjectFile).isAbsolute) printErrorAndExit("The ETS project file name has to be absolute")
