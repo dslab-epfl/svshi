@@ -78,7 +78,7 @@ object Compiler {
     val dptMap = groupAddressAssignment.getDPTsMap
     val pythonList = pythonTypesMap.toList.map { case (groupAddr, pythonTypesList) => (groupAddr, pythonTypesList.map(_.toString).min) }
 
-    val list = pythonList.map { case (ga, pythonType) => (ga.toString, pythonType, dptMap(ga).map(_.toString).min) }
+    val list = (pythonList.map { case (ga, pythonType) => (ga.toString, pythonType, dptMap(ga).map(_.toString).min) }).sortBy(_._1)
     val groupAddresses = GroupAddressesList(list)
     val json = upickle.default.write(groupAddresses)
     val filePathNio = filePath.toNIO
