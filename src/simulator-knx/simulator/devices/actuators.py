@@ -43,6 +43,20 @@ class LED(LightActuator):
         """Initialization of a LED device object"""
         super().__init__(name, individual_addr, state, lumen=800, beam_angle=180)
         self.state_ratio = 100  # in %
+        self.max = 800.0  # for manual setting of actuator in gui
+        self.min = 0.0
+        self.state_value = (self.max - self.min) * self.state_ratio / 100 + self.min
+
+    def send_state_in_telegram(self) -> None:
+        dimmer_payload = DimmerPayload(
+            binary_state=self.state, state_ratio=self.state_ratio
+        )
+        if hasattr(dimmer_payload, "content"):
+            self.send_telegram(dimmer_payload)
+        else:
+            logging.error(
+                f"The Dimmer payload was not correctly created, the telegram cannot be sent."
+            )
 
     def update_state(self, telegram: Telegram) -> None:
         """
@@ -50,18 +64,70 @@ class LED(LightActuator):
 
         telegram : packet with new devices states
         """
+
+        old_state = self.state
+        old_state_value = self.state_value
+
+        if isinstance(telegram.payload, BinaryPayload):
+            self.state = telegram.payload.content
+            if self.state:
+                self.state_value = self.max
+            else:
+                self.state_value = self.min
         if isinstance(telegram.payload, DimmerPayload):
             self.state = telegram.payload.content
             if self.state:
                 self.state_ratio = telegram.payload.state_ratio
-
-        elif isinstance(telegram.payload, BinaryPayload):
-            self.state = telegram.payload.content
+                self.state_value = (
+                    self.max - self.min
+                ) * self.state_ratio / 100 + self.min
+            else:
+                self.state_ratio = 0.0
+                self.state_value = self.min
 
         self.__str_state = "ON" if self.state else "OFF"
         logging.info(
             f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'."
         )
+        state_changed = old_state != self.state or old_state_value != self.state_value
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute svshi_mode set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
+
+    def user_input(self, state: bool = None, state_ratio: float = 100):
+        """
+        Update its state and send a telegram with FloatPayload on the bus.
+
+        state_ratio : fraction of the dimmer state, percentage in (0-100)
+        state_value : actual value of the actuator, in its units
+        """
+        old_state = self.state
+        old_state_value = self.state_value
+
+        self.state = not self.state
+        if state is not None:
+            self.state = state
+        self.__str_state = "ON" if self.state else "OFF"
+
+        if self.state:
+            self.state_ratio = state_ratio
+            self.state_value = (self.max - self.min) * self.state_ratio / 100 + self.min
+            logging.info(
+                f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}% corresponding to {self.state_value} lumens for this LED."
+            )
+        else:
+            self.state_ratio = 0.0
+            self.state_value = self.min
+            logging.info(f"The {self.name} has been turned {self.__str_state}.")
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
 
     def effective_lumen(self) -> float:
         """Lumen quantity adjusted with the state ratio (% of source's max lumens)"""
@@ -146,6 +212,20 @@ class Heater(TemperatureActuator):
             )
             sys.exit()
         super().__init__(name, individual_addr, state, update_rule, max_power)
+        self.max = 400.0  # for manual setting of actuator in gui
+        self.min = 0.0
+        self.state_value = self.min
+
+    def send_state_in_telegram(self):
+        dimmer_payload = DimmerPayload(
+            binary_state=self.state, state_ratio=self.state_ratio
+        )
+        if hasattr(dimmer_payload, "content"):
+            self.send_telegram(dimmer_payload)
+        else:
+            logging.error(
+                f"The Dimmer payload was not correctly created, the telegram cannot be sent."
+            )
 
     def update_state(self, telegram: Telegram) -> None:
         """
@@ -153,12 +233,67 @@ class Heater(TemperatureActuator):
 
         telegram : packet with new devices states
         """
+        old_state = self.state
+        old_state_value = self.state_value
         if isinstance(telegram.payload, BinaryPayload):
             self.state = telegram.payload.content
+            if self.state:
+                self.state_value = self.max
+            else:
+                self.state_value = self.min
         if isinstance(telegram.payload, DimmerPayload):
             self.state = telegram.payload.content
             if self.state:
                 self.state_ratio = telegram.payload.state_ratio
+                self.state_value = (
+                    self.max - self.min
+                ) * self.state_ratio / 100 + self.min
+            else:
+                self.state_ratio = 0.0
+                self.state_value = self.min
+
+        self.__str_state = "ON" if self.state else "OFF"
+        logging.info(
+            f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'."
+        )
+        state_changed = old_state != self.state or old_state_value != self.state_value
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
+
+    def user_input(self, state: bool = None, state_ratio: float = 100):
+        """
+        Update its state and send a telegram with FloatPayload on the bus.
+
+        state_ratio : fraction of the dimmer state, percentage in (0-100)
+        state_value : actual value of the actuator, in its units
+        """
+        old_state = self.state
+        old_state_value = self.state_value
+        self.state = not self.state
+        if state is not None:
+            self.state = state
+        self.__str_state = "ON" if self.state else "OFF"
+
+        if self.state:
+            self.state_ratio = state_ratio
+            self.state_value = (self.max - self.min) * self.state_ratio / 100 + self.min
+            logging.info(
+                f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}% corresponding to {self.state_value} Watts for this Heater."
+            )
+        else:
+            self.state_ratio = 0.0
+            self.state_value = self.min
+            logging.info(f"The {self.name} has been turned {self.__str_state}.")
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
 
 
 class AC(TemperatureActuator):
@@ -185,6 +320,20 @@ class AC(TemperatureActuator):
             )
             sys.exit()
         super().__init__(name, individual_addr, state, update_rule, max_power)
+        self.max = 400.0  # for manual setting of actuator in gui
+        self.min = 0.0
+        self.state_value = self.min
+
+    def send_state_in_telegram(self):
+        dimmer_payload = DimmerPayload(
+            binary_state=self.state, state_ratio=self.state_ratio
+        )
+        if hasattr(dimmer_payload, "content"):
+            self.send_telegram(dimmer_payload)
+        else:
+            logging.error(
+                f"The Dimmer payload was not correctly created, the telegram cannot be sent."
+            )
 
     def update_state(self, telegram: Telegram) -> None:
         """
@@ -192,12 +341,65 @@ class AC(TemperatureActuator):
 
         telegram : packet with new devices states
         """
+        old_state = self.state
+        old_state_value = self.state_value
+
         if isinstance(telegram.payload, BinaryPayload):
             self.state = telegram.payload.content
+            if self.state:
+                self.state_value = self.max
+            else:
+                self.state_value = self.min
         if isinstance(telegram.payload, DimmerPayload):
             self.state = telegram.payload.content
             if self.state:
                 self.state_ratio = telegram.payload.state_ratio
+                self.state_value = (
+                    self.max - self.min
+                ) * self.state_ratio / 100 + self.min
+            else:
+                self.state_ratio = 0.0
+                self.state_value = self.min
+
+        self.__str_state = "ON" if self.state else "OFF"
+        logging.info(
+            f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'."
+        )
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
+
+    def user_input(self, state: bool = None, state_ratio: float = 100):
+        old_state = self.state
+        old_state_value = self.state_value
+
+        self.state = not self.state
+        if state is not None:
+            self.state = state
+        self.__str_state = "ON" if self.state else "OFF"
+
+        if self.state:
+            self.state_ratio = state_ratio
+            self.state_value = (self.max - self.min) * self.state_ratio / 100 + self.min
+            logging.info(
+                f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}% corresponding to {self.state_value} Watts for this AC."
+            )
+        else:
+            self.state_ratio = 0.0
+            self.state_value = self.min
+            logging.info(f"The {self.name} has been turned {self.__str_state}.")
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
 
 
 class Switch(Actuator):
@@ -209,6 +411,18 @@ class Switch(Actuator):
         """Initialization of an Switch device object"""
         super().__init__(name, individual_addr, state)
         self.state_ratio = 100  # in %
+        self.max = 100.0  # for manual setting of actuator in gui
+        self.min = 0.0
+        self.state_value = (self.max - self.min) * self.state_ratio / 100 + self.min
+
+    def send_state_in_telegram(self):
+        binary_payload = BinaryPayload(binary_state=self.state)
+        if hasattr(binary_payload, "content"):
+            self.send_telegram(binary_payload)
+        else:
+            logging.error(
+                f"The Binary payload was not correctly created, the telegram cannot be sent."
+            )
 
     def update_state(self, telegram: Telegram) -> None:
         """
@@ -216,12 +430,76 @@ class Switch(Actuator):
 
         telegram : packet with new devices states
         """
+        old_state = self.state
+        old_state_value = self.state_value
+
         if isinstance(telegram.payload, BinaryPayload):
             self.state = telegram.payload.content
+            if self.state:
+                self.state_value = self.max
+            else:
+                self.state_value = self.min
         if isinstance(telegram.payload, DimmerPayload):
             self.state = telegram.payload.content
             if self.state:
                 self.state_ratio = telegram.payload.state_ratio
+                self.state_value = (
+                    self.max - self.min
+                ) * self.state_ratio / 100 + self.min
+            else:
+                self.state_ratio = 0.0
+                self.state_value = self.min
+
+        self.__str_state = "ON" if self.state else "OFF"
+        logging.info(
+            f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'."
+        )
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
+
+    # def user_input(self):
+    #     print(f"actuator {self.name} pressed")
+    #     self.state = not self.state
+
+    def user_input(self, state: bool = None, state_ratio: float = 100):
+        """
+        Update its state and send a telegram with FloatPayload on the bus.
+
+        state_ratio : fraction of the dimmer state, percentage in (0-100)
+        state_value : actual value of the actuator, in its units
+        """
+        old_state = self.state
+        old_state_value = self.state_value
+
+        self.state = not self.state
+        if state is not None:
+            self.state = state
+        self.__str_state = "ON" if self.state else "OFF"
+
+        if self.state:
+            self.state_ratio = state_ratio
+            self.state_value = (self.max - self.min) * self.state_ratio + self.min
+            logging.info(
+                f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}% corresponding to {self.state_value} % for this Switch."
+            )
+        else:
+            self.state_ratio = 0.0
+            self.state_value = self.min
+            logging.info(f"The {self.name} has been turned {self.__str_state}.")
+
+        state_changed = old_state != self.state or old_state_value != self.state_value
+
+        if hasattr(self, "svshi_mode"):
+            if (
+                self.svshi_mode and state_changed
+            ):  # attribute set when actuator connected to the bus in room.add_device() method
+                self.send_state_in_telegram()
 
     def get_dev_info(
         self,
@@ -257,16 +535,21 @@ class IPInterface(Actuator):
 
         telegram : packet with new devices states
         """
-        if isinstance(telegram.payload, BinaryPayload):
+
+        if isinstance(telegram.payload, BinaryPayload) and not isinstance(
+            telegram.payload, DimmerPayload
+        ):
             self.interface.add_to_sending_queue([telegram])
         elif isinstance(telegram.payload, DimmerPayload):
-            # SVSHI does not support Dimmer payload for actuators, only binary (corresponds to svshi 'switch' type)
-            telegram.payload = BinaryPayload(telegram.payload.content)
+            print("sending dimmer payload telegram")
             self.interface.add_to_sending_queue([telegram])
         elif isinstance(
             telegram.payload, FloatPayload
         ):  # Sensors values sent regularly on bus
             self.interface.add_to_sending_queue([telegram])
+
+    def user_input(self):
+        print(f"actuator {self.name} pressed")
 
     def get_dev_info(self) -> None:
         """IP Interface is not considered as a real device and has no specific attributes/characteristics, method implemented to respect the definition of abstract class Actuators"""

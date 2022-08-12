@@ -3,7 +3,6 @@ package ch.epfl.core.parser.json.physical
 import ch.epfl.core.model.physical._
 import ch.epfl.core.parser.json.{JsonParsingException, SystemStructureException}
 import ch.epfl.core.utils.FileUtils
-import upickle.default.write
 
 import java.nio.charset.StandardCharsets
 
@@ -46,7 +45,7 @@ object PhysicalStructureJsonParser {
 
   def writeToFile(filePath: os.Path, physicalStructure: PhysicalStructure): Unit = {
     FileUtils.deleteIfExists(filePath)
-    FileUtils.writeToFileOverwrite(filePath, write(physicalStructureToJson(physicalStructure), indent = 2) getBytes StandardCharsets.UTF_8)
+    FileUtils.writeToFileOverwrite(filePath, physicalStructureToJson(physicalStructure).toString getBytes StandardCharsets.UTF_8)
   }
 
   def physicalStructureToJson(struct: PhysicalStructure): PhysicalStructureJson = {

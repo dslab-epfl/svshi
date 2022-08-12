@@ -7,8 +7,9 @@ import sys
 import socket
 import select
 import threading
+import time
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from _thread import *
 
 import xknx.telegram.telegram as real_t
@@ -23,6 +24,12 @@ from xknx.knxip import TunnellingRequest
 
 sys.path.append(".")
 sys.path.append("..")
+sys.path.append("../..")
+
+
+# This property is set in launch_simulation function
+class InterfaceProp:
+    HOST: str = "127.0.0.1"
 
 
 class Interface:
@@ -30,6 +37,8 @@ class Interface:
         """Initalizes the interface used for communication with SVSHI"""
         from svshi_interface.telegram_parser import TelegramParser
         import system.telegrams as sim_t
+
+        self.__stop_flag = False
 
         self.__telegram_logging = telegram_logging
         self.__last_tel_logged = None
@@ -39,24 +48,29 @@ class Interface:
         self.__rsock, self.__ssock = socket.socketpair()
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        # TODO : TelegramParser constructor => pass the dictionary as argument (I suggest taking it as argument of the __init__ here)
         self.__telegram_parser = TelegramParser()
 
-        hostname = socket.gethostname()
-        self.__IPAddr = socket.gethostbyname(hostname)
-
+        # hostname = socket.gethostname()
+        # self.__IPAddr = socket.gethostbyname(hostname)
+        self.__IPAddr = InterfaceProp.HOST
         server_address = (self.__IPAddr, 3671)
         self.__sock.bind(server_address)
         self.room = room  # to get telegram file path because fails when reloading (cannot stop thread)
+        self.testing_mode = testing
+        if not self.testing_mode:
+            self.start()
 
-        if not testing:
-            self.main()
+    def set_ga_to_payload_dict(self, group_address_to_payload):  #group_address_to_payload: Dict[str, sim_t.Payload]
+        self.__telegram_parser.group_address_to_payload = group_address_to_payload
 
     # INITIALIZATION OF THE CONNECTION #
     def __create_connection(self, xknx: XKNX) -> Tuple[KNXIPFrame, Any]:
         """Creates a connection between a client and ourselves, with sequence number 0 and individual address 0.0.0"""
-
+        if not self.testing_mode:
+            from web_api import sim_waiting_for_svshi
+            sim_waiting_for_svshi.set()
         data, addr = self.__sock.recvfrom(1024)
-
         print("Address of SVSHI:", addr)
 
         # Initializing the KNX/IP Frame to be sent
@@ -166,6 +180,8 @@ class Interface:
             cemif = CEMIFrame(self.__xknx).init_from_telegram(self.__xknx, teleg)
             req = TunnellingRequest(self.__xknx, cemi=cemif)
 
+            print("Sending telegram:\n", teleg)
+
             # Wait to receive the ACK
             sender = sender.init_from_body(req)
             self.__sock.sendto(bytes(sender.to_knx()), addr)
@@ -179,8 +195,15 @@ class Interface:
                         self.__last_tel_logged = "sent"
                     log_file.write(f"\nSimulator -> SVSHI: {teleg}")
 
+    def stop(self) -> None:
+        """Set a flag to stop the treaded KNX interface. The time to complete stop is not guaranteed but it should be closed when this function returns"""
+        print("Stopping the KNX interface")
+        self.__stop_flag = True
+        self.__ssock.send(b"\x00")  # trigger
+        time.sleep(1)
+
     # MAIN
-    def main(self) -> None:
+    def start(self) -> None:
         """Initializes the communication between any external KNX interface and us"""
 
         print("Waiting on port:", 3671, "at address", self.__IPAddr)
@@ -196,6 +219,9 @@ class Interface:
 
         def threaded():
             while True:
+                if self.__stop_flag:
+                    print("Receiving the stop flag, breaking the loop")
+                    break
                 data = None
                 # When either main_socket has data or rsock has data, select.select will return
                 rlist, _, _ = select.select([self.__sock, self.__rsock], [], [])
@@ -209,12 +235,19 @@ class Interface:
                     else:
                         # Ready_socket is rsock, we need to send to SVSHI
                         signal = self.__rsock.recv(1)  # Dump the ready mark
-
+                        if self.__stop_flag:
+                            print("Receiving the stop flag, breaking the loop")
+                            break
                         # Send the data.
                         self.__process_telegram_queue(addr)
 
                 if data == b"\x11":
                     break
 
-        main_functions = threading.Thread(target=threaded, args=())
-        main_functions.start()
+            print("Threaded loop ended.")
+            print("Closing the socket.")
+            self.__sock.close()
+            print("Socket closed. Bye!")
+
+        self.main_functions = threading.Thread(target=threaded, args=())
+        self.main_functions.start()

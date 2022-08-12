@@ -26,7 +26,7 @@ object Bindings {
       existingPhysStruct: PhysicalStructure
   ): AppLibraryBindings = {
     def appToAppBinding(app: Application): AppPrototypeBindings = {
-      AppPrototypeBindings(app.name, app.appProtoStructure.deviceInstances.map(inst => DeviceInstanceBinding(inst.name, SupportedDevice.getDeviceBinding(inst.deviceType))))
+      AppPrototypeBindings(app.name, app.appProtoStructure.deviceInstances.map(inst => DeviceInstanceBinding(inst.name, SupportedDevice.getDeviceBinding(inst))))
     }
     val existingBindingsList = if (existingPhysStruct == newAppPhysStruct) {
       // We want to keep the old bindings so we append the new app's to the existing file

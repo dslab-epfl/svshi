@@ -938,7 +938,7 @@ async def test_state_update_app_state():
 
 
 @pytest.mark.asyncio
-async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_telegrams():
+async def test_state_on_telegram_append_to_logs_received_telegrams_after_36_telegrams():
 
     test_state_holder.set_app_two_code("test_two_code")
 
@@ -965,11 +965,11 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
         GroupAddress(SECOND_GROUP_ADDRESS),
         payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
     )
-    for _ in range(12):
+    for _ in range(13):
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             telegram1
         )
-    for _ in range(21):
+    for _ in range(23):
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             telegram2
         )
@@ -978,10 +978,10 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
 
     with open(log_file_path, "r") as log_file:
         lines = log_file.readlines()
-        assert len(lines) == 33
-        for i in range(12):
+        assert len(lines) == 36
+        for i in range(13):
             assert str(telegram1) in lines[i]
-        for i in range(12, 21):
+        for i in range(13, 23):
             assert str(telegram2) in lines[i]
 
     # Cleanup
@@ -989,7 +989,7 @@ async def test_state_on_telegram_append_to_logs_received_telegrams_after_33_tele
 
 
 @pytest.mark.asyncio
-async def test_state_correct_execution_log_after_33_telegrams():
+async def test_state_correct_execution_log_after_36_telegrams():
 
     test_state_holder.set_app_two_code("test_two_code")
 
@@ -1016,11 +1016,11 @@ async def test_state_correct_execution_log_after_33_telegrams():
         GroupAddress(SECOND_GROUP_ADDRESS),
         payload=MockGroupValueWrite(MockAPCIValue(RECEIVED_RAW_VALUE)),
     )
-    for _ in range(12):
+    for _ in range(13):
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             telegram1
         )
-    for _ in range(21):
+    for _ in range(23):
         await test_state_holder.xknx_for_listening.telegram_queue.receive_telegram(
             telegram2
         )

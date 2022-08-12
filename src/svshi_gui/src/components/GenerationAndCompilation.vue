@@ -155,9 +155,6 @@ export default {
                         body: formData
                     })
 
-                    this.$refs.jsonPhysFile.value = null
-                    this.$refs.knxProjFile.value = null
-
                     let responseBody = await response.json();
                     var message = ""
                     if (responseBody.status) {
@@ -466,7 +463,7 @@ export default {
             }
             return -1
         },
-        cancelInstallation(){
+        cancelInstallation() {
             this.installationStep = this.stepWelcome
         },
         async refresh() {
@@ -549,7 +546,8 @@ export default {
 
             </div>
         </div>
-        <button class="redButton" @Click="this.cancelInstallation" v-if="!compileGenerateBindingsLoading">Cancel</button>
+        <button class="redButton" @Click="this.cancelInstallation"
+            v-if="!compileGenerateBindingsLoading">Cancel</button>
         <button class="classicButton" @Click="generateBindings" v-if="!compileGenerateBindingsLoading">Next</button>
         <div>
             <PulseLoader :color="this.$root.colourOrangeSvshi" v-if="compileGenerateBindingsLoading" />
@@ -614,7 +612,8 @@ export default {
                 </td>
             </tr>
         </table>
-            <button class="redButton" @Click="this.cancelInstallation" v-if="!compileGenerateBindingsLoading">Cancel</button>
+        <button class="redButton" @Click="this.cancelInstallation"
+            v-if="!compileGenerateBindingsLoading">Cancel</button>
         <button class="classicButton" @Click="this.goToExistingAppsBindingsOrCompile()"
             v-if="!compileGenerateBindingsLoading">Next</button>
     </div>
@@ -676,7 +675,8 @@ export default {
                 </td>
             </tr>
         </table>
-        <button class="redButton" @Click="this.cancelInstallation" v-if="!compileGenerateBindingsLoading">Cancel</button>
+        <button class="redButton" @Click="this.cancelInstallation"
+            v-if="!compileGenerateBindingsLoading">Cancel</button>
         <button class="classicButton" @Click="this.goToNewAppsBindings()"
             v-if="!compileGenerateBindingsLoading">Back</button>
 

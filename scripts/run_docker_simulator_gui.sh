@@ -1,0 +1,1 @@
+docker run -d --name simu_opengl -p 3001:6080 -p 3671:3671 -p 4646:4646 simulator_knx:ubuntu22.04

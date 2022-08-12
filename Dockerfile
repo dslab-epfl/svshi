@@ -12,11 +12,14 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+RUN apt-get update --fix-missing
+
 # Install npm
+RUN apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get update --fix-missing
 RUN apt-get install -y nodejs
 RUN apt-get update --fix-missing
-RUN apt-get install -y --fix-missing npm
 RUN npm install -g serve 
 
 # Installing basic packages 
@@ -65,9 +68,8 @@ RUN echo 'root:nigiri' | chpasswd
 RUN useradd -rm -d /home/maki -s /bin/bash -g root -G sudo -u 1001 maki
 RUN echo 'maki:maki' | chpasswd
 
-RUN chown -R maki /usr/local/lib/node_modules/
-
-RUN chmod -R 775 /usr/local/lib/node_modules/
+RUN chown -R maki /usr/lib/node_modules
+RUN chmod -R 775 /usr/lib/node_modules
 
 USER maki
 WORKDIR /home/maki
@@ -130,6 +132,9 @@ RUN rm -rf ${SVSHI_HOME}/src/svshi_gui/.metals
 RUN rm -rf ${SVSHI_HOME}/src/svshi_gui/.vscode
 RUN rm -rf ${SVSHI_HOME}/src/svshi_gui/dist
 RUN rm -rf ${SVSHI_HOME}/src/svshi_gui/node_modules
+
+RUN rm -rf ${SVSHI_HOME}/src/web_service
+RUN rm -rf ${SVSHI_HOME}/src/simulator-knx
 
 
 # Files back to UNIX when building from Windows:

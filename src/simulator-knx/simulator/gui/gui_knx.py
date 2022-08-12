@@ -18,6 +18,7 @@ import gui.gui_tools as gt
 import gui.gui_config as gc
 
 
+
 class GUIWindow(pyglet.window.Window):
     """
     Class to define the GUI window, the widgets and text displayed in it
@@ -113,7 +114,7 @@ class GUIWindow(pyglet.window.Window):
         self.__command_label = pyglet.text.Label(
             "Enter your command",
             font_name=gc.FONT_SYSTEM_TITLE,
-            font_size=20,
+            font_size=gc.FONT_SIZE_COMMAND,
             bold=True,
             x=gc.COMMANDLABEL_POS[0],
             y=gc.COMMANDLABEL_POS[1],
@@ -126,7 +127,7 @@ class GUIWindow(pyglet.window.Window):
             gc.TEXTBOX_POS[0],
             gc.TEXTBOX_POS[1],
             gc.WIN_WIDTH - gc.TEXTBOX_POS[0] - gc.WIN_BORDER,
-            40,
+            gc.TEXT_BOX_WIDTH,
             color=(255, 255, 255),
             batch=self.__batch,
             group=self.__background,
@@ -135,7 +136,7 @@ class GUIWindow(pyglet.window.Window):
         self.__input_label = pyglet.text.Label(
             "",
             font_name=gc.FONT_USER_INPUT,
-            font_size=15,
+            font_size=gc.FONT_SIZE_USER_INPUT,
             color=(10, 10, 10, 255),
             x=(self.__text_box.x + 10),
             y=(self.__text_box.y + 20),
@@ -171,7 +172,7 @@ class GUIWindow(pyglet.window.Window):
             group_box=self.__background,
         )
         self.__sensors_box_shape = pyglet.shapes.BorderedRectangle(
-            gc.WIN_BORDER / 2,
+            gc.SIDE_BOX_X_ORIGIN,
             gc.OFFSET_SENSOR_LEVELS_BOX_Y_BOTTOM,
             gc.SENSOR_LEVELS_BOX_WIDTH,
             gc.SENSOR_LEVELS_BOX_LENGTH,
@@ -184,7 +185,7 @@ class GUIWindow(pyglet.window.Window):
         self.__brightness_label = pyglet.text.Label(
             "Brightness (lux):",
             font_name=gc.FONT_SYSTEM_TITLE,
-            font_size=15,
+            font_size=gc.FONT_SIZE_AMBIENT_TITLE,
             bold=True,
             color=gc.COLOR_FONT_SENSORS_TITLE,
             x=gc.BRIGHTNESS_LABEL_POS[0],
@@ -197,7 +198,7 @@ class GUIWindow(pyglet.window.Window):
         self.__temperature_label = pyglet.text.Label(
             "Temperature (°C):",
             font_name=gc.FONT_SYSTEM_TITLE,
-            font_size=15,
+            font_size=gc.FONT_SIZE_AMBIENT_TITLE,
             bold=True,
             color=gc.COLOR_FONT_SENSORS_TITLE,
             x=gc.TEMPERATURE_LABEL_POS[0],
@@ -210,7 +211,7 @@ class GUIWindow(pyglet.window.Window):
         self.__airquality_label = pyglet.text.Label(
             "Air quality - T(°C) / CO2(ppm) / RH(%):",  # 350-1,000 ppm,
             font_name=gc.FONT_SYSTEM_TITLE,
-            font_size=15,
+            font_size=gc.FONT_SIZE_AMBIENT_TITLE,
             bold=True,
             color=gc.COLOR_FONT_SENSORS_TITLE,
             x=gc.AIRSENSOR_LABEL_POS[0],
@@ -657,6 +658,7 @@ class GUIWindow(pyglet.window.Window):
                             batch=self.__batch,
                             group=self.__foreground,
                         )
+                    room_device.sprite.scale = gc.DOCKER_GUI_RATIO
                 if (
                     room_device.sprite_state
                     and room_device.sprite_state_ratio
@@ -1069,6 +1071,21 @@ class GUIWindow(pyglet.window.Window):
         self.__switch_sprite()
         self.clear()
         self.__batch.draw()
+    
+    # def close(self) -> None: ## NOTE only for when usign flask in local
+    #     print("window to close")
+    #     # self.close()
+    #     # print("window is closed")
+    #     pyglet.app.exit()
+    #     print("app exited")
+
+    # def on_close(self) -> None:
+    #     print("onclose")        
+    #     pyglet.app.exit()
+    #     print("onclose app exit")
+    #     self.close()
+    #     print("onclose window closed")
+        
 
     ## Pyglet 'on-event' methods ##
     def on_draw(self) -> None:
@@ -1135,6 +1152,9 @@ class GUIWindow(pyglet.window.Window):
             if hasattr(self, "_dimmer_being_set"):
                 self._dimmer_being_set.delete()
                 delattr(self, "_dimmer_being_set")
+            # if hasattr(self, "_actuator_being_set"): # when user manually sets an actuator (e.g. LED) in gui
+            #     self._actuator_being_set.delete()
+            #     delattr(self, "_actuator_being_set")
 
     ### Mouse events ###
     def on_mouse_press(self, x, y, button, modifiers) -> None:
@@ -1143,11 +1163,19 @@ class GUIWindow(pyglet.window.Window):
         if button == pyglet.window.mouse.LEFT:
             # LEFT click + SHIFT : activate functional module (e.g. turn button ON/OFF)
             if modifiers & pyglet.window.key.MOD_SHIFT:
-                from devices import HumiditySoil, FunctionalModule, Button, Dimmer
+                from devices import HumiditySoil, FunctionalModule, Button, Dimmer, Actuator
 
                 for room_device in self.__room_devices:
                     # Test if the user clicked on a room device instanciated
                     if room_device.hit_test(x, y):
+                        if isinstance(room_device.in_room_device.device, Actuator):
+                            min_val, max_val = room_device.in_room_device.device.min, room_device.in_room_device.device.max # min & max value that the actuator can take
+                            self._actuator_being_set = gt.DimmerSetterWidget(
+                                room_device, min_val, max_val
+                            )
+                            return
+                            # room_device.in_room_device.device.user_input()
+                            # self.__switch_sprite()
                         if isinstance(
                             room_device.in_room_device.device, FunctionalModule
                         ):
@@ -1312,6 +1340,25 @@ class GUIWindow(pyglet.window.Window):
                     self.__switch_sprite()
                     self._dimmer_being_set.delete()
                     delattr(self, "_dimmer_being_set")
+                if hasattr(self, "_actuator_being_set"):
+                    # If mouse was not dragged but only pressed (to turn ON/OFF dimmer)
+                    if not self._actuator_being_set.being_set:
+                        self._actuator_being_set.room_dimmer_widget.in_room_device.device.user_input()
+                    else:  # If mouse was dragged while pressing left button to set dimmer ratio
+                        new_ratio = gt.dimmer_ratio_from_mouse_pos(
+                            y, self._actuator_being_set.center_y
+                        )
+                        print(f"new_ratio:{new_ratio}")
+                        if new_ratio == 0:
+                            new_state = False
+                        else:
+                            new_state = True
+                        self._actuator_being_set.room_dimmer_widget.in_room_device.device.user_input(
+                            state=new_state, state_ratio=new_ratio
+                        )
+                    self.__switch_sprite()
+                    self._actuator_being_set.delete()
+                    delattr(self, "_actuator_being_set")
             # LEFT + OPTION : stop moving person_child
             if modifiers & pyglet.window.key.MOD_OPTION:
                 if hasattr(self, "person_moving"):
@@ -1358,6 +1405,15 @@ class GUIWindow(pyglet.window.Window):
                     y, self._dimmer_being_set.center_y
                 )
                 self._dimmer_being_set.update_ratio(new_ratio)
+            if hasattr(self, "_actuator_being_set"):
+                if not self._actuator_being_set.being_set:
+                    self._actuator_being_set.start_setting_dimmer(
+                        self.__batch, self.__foreground
+                    )
+                new_ratio = gt.dimmer_ratio_from_mouse_pos(
+                    y, self._actuator_being_set.center_y
+                )
+                self._actuator_being_set.update_ratio(new_ratio)
         # Mouse drag + OPTION : move person img
         if modifiers & pyglet.window.key.MOD_OPTION:
             if hasattr(self, "person_moving"):

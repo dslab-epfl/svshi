@@ -1,0 +1,6 @@
+Main,Middle,Sub,Address,Central,Unfiltered,Description,DatapointType,Security
+New main group,,,0/-/-,,,,,Auto
+,New middle group,,0/0/-,,,,,Auto
+,,"1.1.7 - US/U2.2 Universal Interface,2-fold,FM - Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",0/0/1,,,,DPT-1,Auto
+,,1.1.8 - LUXORliving S1 - Channel C1 - Switch object - Threshold as a percentage,0/0/2,,,,DPT-1,Auto
+,,1.1.10 - Set basic KNX Multi - Temperature value - Send,0/0/3,,,,DPT-9,Auto

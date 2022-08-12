@@ -19,7 +19,8 @@ object PythonAddressJsonParser {
     */
   def writeToFile(filePath: os.Path, pythonAddress: AppPythonAddressesJson): Unit = {
     FileUtils.deleteIfExists(filePath)
-    FileUtils.writeToFileOverwrite(filePath, write(pythonAddress, indent = 2) getBytes StandardCharsets.UTF_8)
+    val jsonString = write(pythonAddress, indent = 2)
+    FileUtils.writeToFileOverwrite(filePath, jsonString getBytes StandardCharsets.UTF_8)
   }
 
   /** Produce the group addresses for the python runtime

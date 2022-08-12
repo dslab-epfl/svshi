@@ -11,12 +11,13 @@ from typing import List, Dict, Tuple, Union
 from datetime import datetime
 
 import world
-from devices import Device
+#from devices import Device
 from system.system_tools import Location, Window
 from tools.check_tools import check_group_address, check_room_config
 from .knxbus import KNXBus
 
 from svshi_interface.main import Interface
+import system.telegrams as sim_t
 
 
 class InRoomDevice:
@@ -199,9 +200,12 @@ class Room:
 
     def __repr__(self):
         return f"Room {self.name}"
+    
+    def set_ga_to_payload_dict(self, group_address_to_payload: Dict[str, sim_t.Payload]):
+        self.__interface.set_ga_to_payload_dict(group_address_to_payload)
 
     def add_device(
-        self, device: Device, x: float, y: float, z: float = 1
+        self, device, x: float, y: float, z: float = 1  #device:  Device
     ) -> InRoomDevice:
         """
         Add a device in the Room at a certain location by creating an InRoomDevice object.
@@ -229,6 +233,8 @@ class Room:
         in_room_device = InRoomDevice(device, self, x, y, z)
         self.devices.append(in_room_device)
         if isinstance(device, Actuator):
+            device.connect_to(self.knxbus) # to allow actuators to send their state on the bus, but only in SVSHI_MODE
+            device.svshi_mode = self.svshi_mode # actuators send their state only in svshi mode
             if isinstance(device, LightActuator):
                 self.world.ambient_light.add_source(in_room_device)
             elif isinstance(device, TemperatureActuator):
@@ -263,7 +269,7 @@ class Room:
         self.windows.append(in_room_device)
         self.world.ambient_light.add_source(in_room_device)
 
-    def attach(self, device: Device, group_address: str) -> bool:
+    def attach(self, device, group_address: str) -> bool: #device: Device
         """
         Assign a device to a group address.
 

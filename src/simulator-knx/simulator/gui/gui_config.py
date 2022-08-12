@@ -2,85 +2,92 @@
 Module defining constant variables for the GUI Window and widgets
 """
 
+DOCKER_GUI_RATIO = 0.85
+
 ## GUI dimensions definitions
-WIN_WIDTH = 1500  # [x axis]
-WIN_LENGTH = 1000  # [y axis]
-ROOM_WIDTH = 1000  # [x axis] ## NOTE, ROOM_WIDTH and ROOM_LENGTH used to define size ratio for windows, if value changed here, it needs to be changed in system.system_tools also
-ROOM_LENGTH = 800  # [y axis] ## NOTE (problem of circular import and problems with pytest and github CI if import in system_tools
-WIN_BORDER = (
-    20  # [x & y axis] Window border reference, sometimes only half or third is used
-)
-ROOM_BORDER = 40  # [x & y axis] Room walls
+WIN_WIDTH = int(DOCKER_GUI_RATIO * 1500)  # [x axis]
+WIN_LENGTH = int(DOCKER_GUI_RATIO * 1000)  # [y axis]
+ROOM_WIDTH = int(DOCKER_GUI_RATIO * 1000)  # [x axis] ## NOTE, ROOM_WIDTH and ROOM_LENGTH used to define size ratio for windows, if value changed here, it needs to be changed in system.system_tools also
+ROOM_LENGTH = int(DOCKER_GUI_RATIO * 800)  # [y axis] ## NOTE (problem of circular import and problems with pytest and github CI if import in system_tools
+WIN_BORDER = 10 # for docker gui
+    #int(DOCKER_GUI_RATIO * 20)  # [x & y axis] Window border reference, sometimes only half or third is used
+#)
+ROOM_BORDER = int(DOCKER_GUI_RATIO * 40)  # [x & y axis] Room walls
 BOX_BORDER = WIN_BORDER / 3  # [x & y axis] Border width of GUI boxes
 
 ## Positions definitions
 # Main boxes/labels positions
-TIMEWEATHER_POS = (WIN_BORDER / 2, WIN_BORDER / 2 + ROOM_LENGTH + 2 * ROOM_BORDER)
+TIMEWEATHER_POS = (WIN_BORDER, WIN_BORDER / 2 + ROOM_LENGTH + 2 * ROOM_BORDER)
 SIMTIME_POS = (
-    WIN_WIDTH - ROOM_WIDTH - WIN_BORDER - 2 * ROOM_BORDER,
-    95 * (WIN_LENGTH // 100),
+    WIN_WIDTH - ROOM_WIDTH - WIN_BORDER / 2 - 2 * ROOM_BORDER,
+    2 * WIN_BORDER + ROOM_LENGTH + 2 * ROOM_BORDER,
 )
-COMMANDLABEL_POS = (WIN_WIDTH - WIN_BORDER, 96 * (WIN_LENGTH // 100))
-TEXTBOX_POS = (80 * (WIN_WIDTH // 100), 91 * (WIN_LENGTH // 100))
-SENSOR_LABELS_INIT = 85  # Initial ratio for sensors labels positions
-BRIGHTNESS_LABEL_POS = (WIN_BORDER, SENSOR_LABELS_INIT * (WIN_LENGTH // 100))
-TEMPERATURE_LABEL_POS = (WIN_BORDER, (SENSOR_LABELS_INIT - 6) * (WIN_LENGTH // 100))
-AIRSENSOR_LABEL_POS = (WIN_BORDER, (SENSOR_LABELS_INIT - 12) * (WIN_LENGTH // 100))
-DEVICELIST_POS = (WIN_BORDER, 35 * (WIN_LENGTH // 100))
+SIDE_BOX_X_ORIGIN = WIN_BORDER
+
+COMMANDLABEL_POS = (WIN_WIDTH - WIN_BORDER, 99 * (WIN_LENGTH // 100))
+TEXTBOX_POS = (80 * (WIN_WIDTH // 100), 95 * (WIN_LENGTH // 100))
+TEXT_BOX_WIDTH = int(DOCKER_GUI_RATIO * 40)
+SENSOR_LABELS_INIT = 90 # 85  # Initial ratio for sensors labels positions
+BRIGHTNESS_LABEL_POS = (SIDE_BOX_X_ORIGIN + WIN_BORDER / 2, SENSOR_LABELS_INIT * (WIN_LENGTH // 100))
+TEMPERATURE_LABEL_POS = (SIDE_BOX_X_ORIGIN + WIN_BORDER / 2, (SENSOR_LABELS_INIT - 6) * (WIN_LENGTH // 100))
+AIRSENSOR_LABEL_POS = (SIDE_BOX_X_ORIGIN + WIN_BORDER / 2, (SENSOR_LABELS_INIT - 12) * (WIN_LENGTH // 100))
+DEVICELIST_POS = (SIDE_BOX_X_ORIGIN + WIN_BORDER / 2, 305)
 # GUI Buttons positions
 INITIAL_POSITION_BUTTON = 51  # Initial ratio for buttons img positions
 RATIO_OFFSET_BUTTONS = 6  # "ratio" offsets for buttons img positions
 BUTTON_PAUSE_POS = (
     INITIAL_POSITION_BUTTON * (WIN_WIDTH // 100),
-    93 * (WIN_LENGTH // 100),
+    98 * (WIN_LENGTH // 100),
 )
 BUTTON_STOP_POS = (
     (RATIO_OFFSET_BUTTONS + INITIAL_POSITION_BUTTON) * (WIN_WIDTH // 100),
-    93 * (WIN_LENGTH // 100),
+    98 * (WIN_LENGTH // 100),
 )
 BUTTON_RELOAD_POS = (
     (2 * RATIO_OFFSET_BUTTONS + INITIAL_POSITION_BUTTON) * (WIN_WIDTH // 100),
-    93 * (WIN_LENGTH // 100),
+    98 * (WIN_LENGTH // 100),
 )
 BUTTON_SAVE_POS = (
     (3 * RATIO_OFFSET_BUTTONS + INITIAL_POSITION_BUTTON) * (WIN_WIDTH // 100),
-    93 * (WIN_LENGTH // 100),
+    98 * (WIN_LENGTH // 100),
 )
 BUTTON_DEFAULT_POS = (
     (4 * RATIO_OFFSET_BUTTONS + INITIAL_POSITION_BUTTON) * (WIN_WIDTH // 100),
-    93 * (WIN_LENGTH // 100),
+    98 * (WIN_LENGTH // 100),
 )
 
 
 ## Offset definitions and Box dimensions
 # Global offsets
-OFFSET_TITLE = 20  # [y axis] between Sensor Titles (Brightness, Temperature,...) and Sensors Labels(bright1, thermo1,...)
-OFFSET_LABEL_DEVICE = 10  # [y axis] between Device PNG and label
-OFFSET_LABEL_BUTTON = 15  # [y axis] between Button PNG and label
+OFFSET_TITLE = int(DOCKER_GUI_RATIO * 20)  # [y axis] between Sensor Titles (Brightness, Temperature,...) and Sensors Labels(bright1, thermo1,...)
+OFFSET_LABEL_DEVICE = int(DOCKER_GUI_RATIO * 10)  # [y axis] between Device PNG and label
+OFFSET_LABEL_BUTTON = int(DOCKER_GUI_RATIO * 15)  # [y axis] between Button PNG and label
 BOX_WIDTH = (
     WIN_WIDTH - 2 * WIN_BORDER - 2 * ROOM_BORDER - ROOM_WIDTH
 )  # [x axis] width of information gui boxes
 # SimTime / DateTime offsets
-OFFSET_SIMTIME_BOX = 20  # [x axis] between simtime box position and "SimTime:" label
-OFFSET_SIMTIME_DATE = 30  # [y axis] between simtime and datetime labels
-OFFSET_SIMTIME_VALUE = 90  # [x axis] between "SimTime:" label and its value "00:00:00"
-OFFSET_DATETIME_VALUE = 55  # [x axis] between "Date:" label and its value
-SIMTIME_BOX_WIDTH = 320  # [x axis]
-SIMTIME_BOX_LENGTH = 75  # [y axis]
+SIMTIME_BOX_WIDTH = 230 #int(DOCKER_GUI_RATIO * 320)  # [x axis]
+SIMTIME_BOX_LENGTH = 82 #int(DOCKER_GUI_RATIO * 75)  # [y axis]
+OFFSET_SIMTIME_BOX = WIN_BORDER  #int(DOCKER_GUI_RATIO * 20)  # [x axis] between simtime box position and "SimTime:" label
+OFFSET_SIMTIME_TIME = int(2*SIMTIME_BOX_LENGTH / 3)
+OFFSET_SIMTIME_TIMEVALUE = 19
+OFFSET_SIMTIME_DATE = int(SIMTIME_BOX_LENGTH / 5)  # [y axis] between simtime and datetime labels
+OFFSET_SIMTIME_VALUE = int(DOCKER_GUI_RATIO * 30)  # [x axis] between "SimTime:" label and its value "00:00:00"
+OFFSET_DATETIME_VALUE = int(DOCKER_GUI_RATIO * 55) # [x axis] between "Date:" label and its value
 # Out State offsets
-OFFSET_OUTSTATE_LABEL = 6  # [x & y axis] between box border and out_state label
-OFFSET_OUTSTATE_VALUE = 85  # [x axis] between "Out state:" and its values
+OFFSET_OUTSTATE_LABEL = int(DOCKER_GUI_RATIO * 6 ) # [x & y axis] between box border and out_state label
+OFFSET_OUTSTATE_VALUE = int(DOCKER_GUI_RATIO * 85)  # [x axis] between "Out state:" and its values
 OFFSET_SUN_MOON_Y = (
-    35  # [y axis] between weather box position and moon/sun img position
+    int(DOCKER_GUI_RATIO * 35) # [y axis] between weather box position and moon/sun img position
 )
 OFFSET_SUN_MOON_X = (
-    150  # [x axis] between weather box position and moon/sun img position
+    int(DOCKER_GUI_RATIO * 150)  # [x axis] between weather box position and moon/sun img position
 )
 OFFSET_SUNRISE_SUNSET_Y = (
-    25  # [y axis] between weather box position and sunrise/sunset img position
+    int(DOCKER_GUI_RATIO * 25)  # [y axis] between weather box position and sunrise/sunset img position
 )
-OFFSET_SUNRISE_X = 50  # [x axis] between weather box position and sunrise img position
-OFFSET_SUNSET_X = 250  # [x axis] between weather box position and sunset img position
+OFFSET_SUNRISE_X = int(DOCKER_GUI_RATIO * 50)  # [x axis] between weather box position and sunrise img position
+OFFSET_SUNSET_X = int(DOCKER_GUI_RATIO * 250)  # [x axis] between weather box position and sunset img position
 OFFSET_CLOUD_WIDTH_RATIO = 0.5  # [x axis] ratio to compute offset of overcast cloud img with width of sun/sunset/sunrise/moon sprite
 OFFSET_CLOUD_DARK_WIDTH_RATIO = 0  # [x axis] ratio to compute offset of dark cloud img with width of sun/sunset/sunrise/moon sprite
 OFFSET_CLOUD_LENGTH_RATIO = 0.5  # [y axis] ratio to compute offset of overcast cloud img with length of sun/sunset/sunrise/moon sprite
@@ -88,28 +95,28 @@ OFFSET_CLOUD_DARK_LENGTH_RATIO = 0.3  # [y axis] ratio to compute offset of dark
 TIMEWEATHER_BOX_WIDTH = BOX_WIDTH  # [x axis]
 TIMEWEATHER_BOX_LENGTH = WIN_LENGTH - WIN_BORDER / 2 - TIMEWEATHER_POS[1]  # [y axis]
 # Sensors offsets
-OFFSET_SENSOR_TITLE = 15  # [y axis] between sensor label and value
-OFFSET_SENSOR_LEVELS = 100  # [x axis] between sensor elements
+OFFSET_SENSOR_TITLE = int(DOCKER_GUI_RATIO * 15)  # [y axis] between sensor label and value
+OFFSET_SENSOR_LEVELS = int(DOCKER_GUI_RATIO * 100)  # [x axis] between sensor elements
 OFFSET_AIRQUALITY_LEVELS = (
-    15  # [y axis] Vertical space between sensor values of the same air quality sensor
+    int(DOCKER_GUI_RATIO * 15)  # [y axis] Vertical space between sensor values of the same air quality sensor
 )
 OFFSET_SENSOR_LEVELS_BOX_Y_BOTTOM = (
-    WIN_LENGTH - 345
+    WIN_LENGTH - int(DOCKER_GUI_RATIO * 345)
 )  # [y axis] between top GUI window and position of sesnors box (origin is box bottom)
-SENSOR_LEVELS_BOX_LENGTH = 230  # [y axis]
+SENSOR_LEVELS_BOX_LENGTH = int(DOCKER_GUI_RATIO * 230)  # [y axis]
 SENSOR_LEVELS_BOX_WIDTH = BOX_WIDTH  # [x axis]
 # Availables devices offsets
 OFFSET_AVAILABLE_DEVICES = (
-    20  # [x axis] base offset between two consecutive available devices img
+    int(DOCKER_GUI_RATIO * 20)  # [x axis] base offset between two consecutive available devices img
 )
 OFFSET_AVAILABLEDEVICES_LINE1 = (
-    WIN_LENGTH - 420
+    WIN_LENGTH - int(DOCKER_GUI_RATIO * 420)
 )  # [y axis] between top GUI window and position of first line of available devices
 OFFSET_AVAILABLEDEVICES_LINE2 = (
-    OFFSET_AVAILABLEDEVICES_LINE1 - 80
+    OFFSET_AVAILABLEDEVICES_LINE1 - int(DOCKER_GUI_RATIO * 80)
 )  # [y axis] between top GUI window and position of second line of available devices
 OFFSET_AVAILABLEDEVICES_LINE3 = (
-    OFFSET_AVAILABLEDEVICES_LINE2 - 80
+    OFFSET_AVAILABLEDEVICES_LINE2 - int(DOCKER_GUI_RATIO * 80)
 )  # [y axis] between top GUI window and position of third line of available devices
 AVAILABLE_DEVICES_BOX_WIDTH = BOX_WIDTH  # [x axis]
 AVAILABLE_DEVICES_BOX_LENGTH = (
@@ -118,22 +125,22 @@ AVAILABLE_DEVICES_BOX_LENGTH = (
 )  # [y axis]
 # Devices List offsets
 OFFSET_DEVICESLIST_TITLE = (
-    30  # [y axis] between "Devices in the Room:" title and the first device label
+    int(DOCKER_GUI_RATIO * 30)  # [y axis] between "Devices in the Room:" title and the first device label
 )
-OFFSET_LIST_DEVICE = 33  # [y axis] between elements in room devices list
+OFFSET_LIST_DEVICE = int(DOCKER_GUI_RATIO * 33)  # [y axis] between elements in room devices list
 OFFSET_INDIVIDUAL_ADDR_LABEL = (
-    12  # [x axis] between device label and its individual address label
+    int(DOCKER_GUI_RATIO * 12)  # [x axis] between device label and its individual address label
 )
 DEVICE_LIST_BOX_WIDTH = BOX_WIDTH  # [x axis]
 OFFSET_DEVICELIST_BOX_TOP = (
-    35  # [y axis] between box top and "Devices in the Room:" title
+    int(DOCKER_GUI_RATIO * 35)  # [y axis] between box top and "Devices in the Room:" title
 )
-OFFSET_DEVICELIST_BOX_BOTTOM = 30  # [y axis] between box bottom and last displayed list element when scroll is at the end of the list
+OFFSET_DEVICELIST_BOX_BOTTOM = int(DOCKER_GUI_RATIO * 30)  # [y axis] between box bottom and last displayed list element when scroll is at the end of the list
 # Special offsets
 OFFSET_DIMMER_RATIO = (
-    5  # [x axis] between end of dimer img and position of dimmer state (%)
+    int(DOCKER_GUI_RATIO * 5 ) # [x axis] between end of dimer img and position of dimmer state (%)
 )
-OFFSET_MAX_DIMMER_RATIO = 150  # [y axis] max distance between dimmer img center and mouse when setting dimmer ratio
+OFFSET_MAX_DIMMER_RATIO = int(DOCKER_GUI_RATIO * 150)  # [y axis] max distance between dimmer img center and mouse when setting dimmer ratio
 
 
 ## Color definitions
@@ -205,16 +212,19 @@ FONT_DIMMER_RATIO = "Roc"
 FONT_HUMIDITYSOIL_DROP = "Roc"
 FONT_INTERACTIVE = "Roc"
 # Font size definitions
-FONT_SIZE_DATETIME_TITLE = 15
-FONT_SIZE_SIMTIME = 17
-FONT_SIZE_DATE = 15
-FONT_SIZE_INTERACTIVE = 30  # dimmer and humidity soil drop
-FONT_SIZE_DEVICESLIST = 14
-FONT_SIZE_SENSOR_LABEL = 13
-FONT_SIZE_SENSOR_LEVEL = 11
-FONT_SIZE_INDIVIDUAL_ADDR = 10
-FONT_SIZE_OUT_STATE = 14
-FONT_SIZE_SOILMOISTURE = 10
+FONT_SIZE_COMMAND = int(DOCKER_GUI_RATIO * 20)
+FONT_SIZE_DATETIME_TITLE = 9 #int(DOCKER_GUI_RATIO * 15)
+FONT_SIZE_USER_INPUT = FONT_SIZE_DATETIME_TITLE
+FONT_SIZE_AMBIENT_TITLE = FONT_SIZE_DATETIME_TITLE
+FONT_SIZE_SIMTIME = 11  #int(DOCKER_GUI_RATIO * 17)
+FONT_SIZE_DATE = 10  #int(DOCKER_GUI_RATIO * 15)
+FONT_SIZE_INTERACTIVE = int(DOCKER_GUI_RATIO * 30)  # dimmer and humidity soil drop
+FONT_SIZE_DEVICESLIST = int(DOCKER_GUI_RATIO * 14)
+FONT_SIZE_SENSOR_LABEL = int(DOCKER_GUI_RATIO * 13)
+FONT_SIZE_SENSOR_LEVEL = int(DOCKER_GUI_RATIO * 11)
+FONT_SIZE_INDIVIDUAL_ADDR = int(DOCKER_GUI_RATIO * 10)
+FONT_SIZE_OUT_STATE = 9  #int(DOCKER_GUI_RATIO * 14)
+FONT_SIZE_SOILMOISTURE = int(DOCKER_GUI_RATIO * 10)
 
 ## Opacity definitions
 OPACITY_DEFAULT = 255

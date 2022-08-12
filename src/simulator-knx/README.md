@@ -20,7 +20,7 @@ This simulator software represents a [KNX system](https://www.knx.org/knx-en/for
 
 It provides a [CLI](#cli), a [GUI](#gui) to easily interact  with the platform and a script [Script API](#script-api) to run automated tests.
 
-&nbsp;
+
 ## Installation
 
 In order to work, the simulator needs Python 3.9 or newer ([download here](https://www.python.org/downloads/)). 
@@ -31,7 +31,7 @@ Being at the root of the simulator (**simulator-knx/**), you can install all the
 ```
 pip3 install -r requirements/requirements.txt
 ```
-&nbsp;
+
 ## Configuration
 The system configuration can be done either by:
 - Parsing a JSON file provided by the user **<-- RECOMMENDED**:\
@@ -48,7 +48,7 @@ You can configure the configuration file by copying the template from *simulator
   `-c=cli` : indicates that CLI commands can be used, opposed to script mode 
 - Combining these approaches
 
-&nbsp;
+
 ## Running
 
 You can start the simulator by being at the root of the simulator (**simulator-knx/**) and running `python3 run.py` with the options according to your needs.
@@ -94,8 +94,8 @@ optional arguments:
 
 ```
 
-&nbsp;
 ### With SVSHI
+
 If you want to run the simulator with SVSHI, here are the steps:
 
 1. Run the command `python3 run.py -s` (you can add other options if you want to couple SVSHI mode with the GUI, CLI, script API...)
@@ -107,14 +107,18 @@ The simulator will start waiting for a connection with SVSHI at the address that
 
 An example app can be found in foler simulator-knx/svshi_apps. It has a basic functioning: the button turn on the heater, and the light is turned on when the temperature reach 21°C. The prototypical file and main app are in the folder. The assignements can be downloaded from [**SVSHI**](https://github.com/dslab-epfl/svshi) directly.
 
-&nbsp;
+### Web GUI
+
+To run the Simulator with the web gui, please run the `run_web.sh` with the ip and the port of the server as arguments e.g., `./run_web.sh 127.0.0.1 4646`.
+To use it, you need to have the `SVSHI_HOME` environment variable defined on your system and not have moved the `simulator_knx` folder.
+
 ## CLI
+
 The CLI command are usable during simulation, through shell if interface_mode=CLI, or through the GUI command box if interface_mode=GUI. \
 They are not callable in script_mode.\
 To make use of CLI commands, the following options can be set in argument:\
 -i=cli or gui : in both interface_mode, CLI commands are usable\
 -c=cli : CLI commands are not usable in script mode\
-
 
 ### `set [device] <['ON'/'OFF'][value]>`
 
@@ -193,7 +197,7 @@ Prints a dict representation of the physical state measured by the sensor (e.g. 
             - Soil Moisture for HumiditySoil sensor
             - Brightness for Brightness sensors
 
-&nbsp;
+
 ## GUI
 To launch the simulation in GUI mode, the following options must be set in argument:\
 -i=gui : choose the interface_mode GUI to visualize the system\
@@ -253,7 +257,7 @@ Scroll up/down with the mouse above the devices' list on bottom left of the wind
 - Vacuum cleaner :
   - [ALT/OPTION] + [SPACE] to toggle vacuum cleaner presence
 
-&nbsp;
+
 ## Script API
 The API commands should be written in a script .txt file, that should be located in the scripts/ folder. The script terminates when the script is finished, an 'end' command is met or an 'assert' is False, and the program terminates also.\
 To launch the simulation in script_mode, the following options must be set in argument:\
@@ -339,7 +343,7 @@ pytest -q --log-cli-level error simulator/tests/
 
 Code conventions: black formatting (for alignement mainly), PEP8(spaces and names conventions) and PEP257 (docstring), PEP526 (variable typing)
 
-&nbsp;
+
 ## Details for developers
 
 This section is destined to future developers willing to improve or modify the code. It aim is to demystify som subtilities in teh code, the configuration and the global functioning.

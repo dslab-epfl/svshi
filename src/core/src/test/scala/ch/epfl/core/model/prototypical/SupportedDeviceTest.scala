@@ -126,19 +126,65 @@ class SupportedDeviceTest extends AnyFlatSpec with Matchers {
   }
 
   "getDeviceBinding" should "return the correct binding for BinarySensor" in {
-    SupportedDevice.getDeviceBinding(BinarySensor) shouldEqual BinarySensorBinding(BinarySensor.toString, SupportedDevice.defaultPhysicalId)
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", BinarySensor)) shouldEqual BinarySensorBinding(BinarySensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for BinarySensor with prebinding" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", BinarySensor, 42)) shouldEqual BinarySensorBinding(BinarySensor.toString, 42)
   }
   "getDeviceBinding" should "return the correct binding for HumiditySensor" in {
-    SupportedDevice.getDeviceBinding(HumiditySensor) shouldEqual HumiditySensorBinding(HumiditySensor.toString, SupportedDevice.defaultPhysicalId)
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", HumiditySensor)) shouldEqual HumiditySensorBinding(
+      HumiditySensor.toString,
+      SupportedDevice.defaultPhysicalId
+    )
+  }
+  "getDeviceBinding" should "return the correct binding for HumiditySensor with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", HumiditySensor, 1234)) shouldEqual HumiditySensorBinding(
+      HumiditySensor.toString,
+      1234
+    )
   }
   "getDeviceBinding" should "return the correct binding for TemperatureSensor" in {
-    SupportedDevice.getDeviceBinding(TemperatureSensor) shouldEqual TemperatureSensorBinding(TemperatureSensor.toString, SupportedDevice.defaultPhysicalId)
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", TemperatureSensor)) shouldEqual TemperatureSensorBinding(
+      TemperatureSensor.toString,
+      SupportedDevice.defaultPhysicalId
+    )
+  }
+  "getDeviceBinding" should "return the correct binding for TemperatureSensor with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", TemperatureSensor, 456)) shouldEqual TemperatureSensorBinding(
+      TemperatureSensor.toString,
+      456
+    )
   }
   "getDeviceBinding" should "return the correct binding for Switch" in {
-    SupportedDevice.getDeviceBinding(Switch) shouldEqual SwitchBinding(Switch.toString, SupportedDevice.defaultPhysicalId)
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", Switch)) shouldEqual SwitchBinding(Switch.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for Switch with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", Switch, 123)) shouldEqual SwitchBinding(Switch.toString, 123)
   }
   "getDeviceBinding" should "return the correct binding for CO2Sensor" in {
-    SupportedDevice.getDeviceBinding(CO2Sensor) shouldEqual CO2SensorBinding(CO2Sensor.toString, SupportedDevice.defaultPhysicalId)
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", CO2Sensor)) shouldEqual CO2SensorBinding(CO2Sensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for CO2Sensor with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", CO2Sensor, -1234)) shouldEqual CO2SensorBinding(CO2Sensor.toString, -1234)
+  }
+  "getDeviceBinding" should "return the correct binding for DimmerSensor" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", DimmerSensor)) shouldEqual DimmerSensorBinding(DimmerSensor.toString, SupportedDevice.defaultPhysicalId)
+  }
+  "getDeviceBinding" should "return the correct binding for DimmerSensor with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", DimmerSensor, -789)) shouldEqual DimmerSensorBinding(DimmerSensor.toString, -789)
+  }
+
+  "getDeviceBinding" should "return the correct binding for DimmerActuator" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", DimmerActuator)) shouldEqual DimmerActuatorBinding(
+      DimmerActuator.toString,
+      SupportedDevice.defaultPhysicalId
+    )
+  }
+  "getDeviceBinding" should "return the correct binding for DimmerActuator with prebindings" in {
+    SupportedDevice.getDeviceBinding(AppPrototypicalDeviceInstance("name", DimmerActuator, -456)) shouldEqual DimmerActuatorBinding(
+      DimmerActuator.toString,
+      -456
+    )
   }
 
 }

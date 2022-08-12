@@ -562,9 +562,22 @@ case class CoreApiServer(
     }
   }
 
+  @get("/assignments/gaToPhysId")
+  def getAssignmentsGaToPhysId() = {
+    val assignmentsPath = ASSIGNMENTS_DIRECTORY_PATH
+    val gaToPhysIdFilePath = ASSIGNMENTS_DIRECTORY_PATH / "gaToPhysId.json"
+    if (os.exists(assignmentsPath) && os.exists(gaToPhysIdFilePath)) {
+      val data = FileUtils.readFileContentAsString(gaToPhysIdFilePath)
+      Response(data = data, headers = HEADERS_AJAX)
+    } else {
+      Response(data = "", statusCode = NOT_FOUND_ERROR_CODE, headers = HEADERS_AJAX)
+    }
+  }
+
   @post("/deviceMappings")
   def generateDeviceMappings(request: Request) = acquireLockAndExecute(
     () => {
+      debug("Log aquired for deviceMappings")
       cleanTempFolders()
       extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
         var output: List[String] = List()
@@ -582,6 +595,7 @@ case class CoreApiServer(
           val json = FileUtils.readFileContentAsString(GENERATED_AVAILABLE_PROTODEVICES_FOR_ETS_STRUCT_FILEPATH)
           Response(json, headers = HEADERS_AJAX)
         } else {
+          debug("Cannot generate devices Mappings!")
           Response(CANNOT_GENERATE_DEVICE_MAPPINGS(output.mkString("\n")), statusCode = INTERNAL_ERROR_CODE, headers = HEADERS_AJAX)
         }
       })
@@ -589,6 +603,29 @@ case class CoreApiServer(
     defaultResponseStringIfLocked
   )
 
+  @post("/physicalStructure/parsed")
+  def parsePhysicalStructure(request: Request) = acquireLockAndExecute(
+    () => {
+      cleanTempFolders()
+      extractKnxprojOrJsonFileAndExec(request)(newPhysicalStructure => {
+        val physicalStructureJson = PhysicalStructureJsonParser.physicalStructureToJson(newPhysicalStructure)
+        Response(physicalStructureJson.toString, statusCode = SUCCESS_REQUEST_CODE, headers = HEADERS_AJAX)
+      })
+    },
+    defaultResponseStringIfLocked
+  )
+
+  @get("/appLibrary/bindings")
+  def getAppLibraryBindings(request: Request) = {
+    val bindingsFilePath = Constants.APP_LIBRARY_FOLDER_PATH / Constants.APP_PROTO_BINDINGS_JSON_FILE_NAME
+    if (os.exists(bindingsFilePath)) {
+      val content = FileUtils.readFileContentAsString(bindingsFilePath)
+      Response(content, statusCode = 200, headers = HEADERS_AJAX)
+    } else {
+      Response("No bindings", statusCode = 404, headers = HEADERS_AJAX)
+
+    }
+  }
   private def cleanTempFolders() = {
     if (os.exists(knxprojPrivateFolderPath)) os.remove.all(knxprojPrivateFolderPath)
     if (os.exists(privateTempZipFilePath)) os.remove.all(privateTempZipFilePath)

@@ -1,0 +1,37 @@
+version: "1.0"
+services:
+  web_service_container:
+    build:
+      context: .
+      dockerfile: src/web_service/Dockerfile
+    image: svshi_webservice:ubuntu22.04
+    ports:
+      - 3000:3000
+      - 4545:4545
+    volumes:
+      - webserviceVolume:/home/maki/ 
+
+  svshi_container:
+    image: svshi_for_webservice:ubuntu22.04
+    build:
+      context: .
+      dockerfile: ./Dockerfile.forWebservice
+    ports:
+      - 4242:4242
+    volumes:
+      - svshiForWebserviceVolume:/home/maki/
+  
+  simulator_container:
+    image: simulator_knx:ubuntu22.04
+    build:
+      context: .
+      dockerfile: src/simulator-knx/Dockerfile
+    ports:
+      - 3001:6080
+      - 3671:3671
+      - 4646:4646
+
+
+volumes:
+  webserviceVolume: {}
+  svshiForWebserviceVolume: {}

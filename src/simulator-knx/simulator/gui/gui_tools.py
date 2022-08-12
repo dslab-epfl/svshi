@@ -4,15 +4,18 @@ Module defining the GUI object classes to implement devices, room and other syst
 
 import logging
 import json
+import sys
 from abc import abstractmethod
 from datetime import datetime
 
+import requests
 import pyglet
 from pyglet.graphics import Batch, OrderedGroup
 from typing import List, Tuple
 
 import gui.gui_config as gc
 
+sys.path.append("..")
 
 class DeviceListWidget(object):
     """Class to represent room devices list and its GUI Box"""
@@ -38,7 +41,7 @@ class DeviceListWidget(object):
             y - gc.OFFSET_LIST_DEVICE
         ) // gc.OFFSET_LIST_DEVICE
         self.__box_shape = pyglet.shapes.BorderedRectangle(
-            gc.WIN_BORDER / 2,
+            gc.SIDE_BOX_X_ORIGIN,
             self.__topleft_y - self.__length,
             gc.DEVICE_LIST_BOX_WIDTH,
             self.__length,
@@ -73,7 +76,7 @@ class DeviceListWidget(object):
         )
         self.__box_shape.delete()
         self.__box_shape = pyglet.shapes.BorderedRectangle(
-            gc.WIN_BORDER / 2,
+            gc.SIDE_BOX_X_ORIGIN,
             self.__topleft_y - self.__length,
             gc.DEVICE_LIST_BOX_WIDTH,
             height=self.__length,
@@ -108,7 +111,7 @@ class SimTimeWidget(object):
         """
         self.__box_shape = pyglet.shapes.BorderedRectangle(
             x,
-            y - gc.SIMTIME_BOX_LENGTH / 2,
+            y - gc.WIN_BORDER / 2,
             gc.SIMTIME_BOX_WIDTH,
             gc.SIMTIME_BOX_LENGTH,
             border=gc.BOX_BORDER,
@@ -124,7 +127,7 @@ class SimTimeWidget(object):
             bold=True,
             color=gc.COLOR_FONT_SIMTIME_LABEL,
             x=x + gc.OFFSET_SIMTIME_BOX,
-            y=y,
+            y=y + gc.OFFSET_SIMTIME_TIME,
             anchor_x="left",
             anchor_y="bottom",
             batch=batch,
@@ -137,7 +140,7 @@ class SimTimeWidget(object):
             bold=True,
             color=gc.COLOR_FONT_SIMTIME_VALUE,
             x=x + gc.OFFSET_SIMTIME_BOX + gc.OFFSET_SIMTIME_VALUE,
-            y=y,
+            y=y + gc.OFFSET_SIMTIME_TIME - gc.OFFSET_SIMTIME_TIMEVALUE,
             anchor_x="left",
             anchor_y="bottom",
             batch=batch,
@@ -150,7 +153,7 @@ class SimTimeWidget(object):
             bold=True,
             color=gc.COLOR_FONT_SIMTIME_LABEL,
             x=x + gc.OFFSET_SIMTIME_BOX,
-            y=y - gc.OFFSET_SIMTIME_DATE,
+            y=y + gc.OFFSET_SIMTIME_DATE,
             anchor_x="left",
             anchor_y="bottom",
             batch=batch,
@@ -163,7 +166,7 @@ class SimTimeWidget(object):
             bold=True,
             color=gc.COLOR_FONT_SIMTIME_VALUE,
             x=x + gc.OFFSET_SIMTIME_BOX + gc.OFFSET_DATETIME_VALUE,
-            y=y - gc.OFFSET_SIMTIME_DATE,
+            y=y + gc.OFFSET_SIMTIME_DATE,
             anchor_x="left",
             anchor_y="bottom",
             batch=batch,
@@ -298,6 +301,7 @@ class DayTimeWeatherWidget(object):
                 batch=self.__batch,
                 group=self.__group_daytime,
             )
+            self._tod_sprite.scale = gc.DOCKER_GUI_RATIO
         if weather in self.__weather_dict:
             self._weather_sprite = pyglet.sprite.Sprite(
                 self.__weather_dict[weather]["img"],
@@ -310,6 +314,7 @@ class DayTimeWeatherWidget(object):
                 batch=self.__batch,
                 group=self.__group_weather,
             )
+            self._weather_sprite.scale = gc.DOCKER_GUI_RATIO
 
     def delete(self):
         """Delete all components of the DayTimeWeather widget."""
@@ -384,6 +389,7 @@ class WindowWidget(object):
                 group=self.__group,
             )
             self.sprite.scale_y = window_object.scale_y
+        self.sprite.scale = gc.DOCKER_GUI_RATIO # scale for docker gui
         if (
             window_object.wall == "south" or window_object.wall == "west"
         ):  # problem of perspective in GUI
@@ -410,6 +416,7 @@ class ButtonWidget(object):
     ) -> None:
         """Initialization of pyglet Button widget object."""
         self.__img = pyglet.image.load(button_file)
+
         self.__width, self.__length = self.__img.width, self.__img.height
         self.__pos_x, self.__pos_y = x, y
         self.__batch, self.__group = batch, group
@@ -420,6 +427,7 @@ class ButtonWidget(object):
             batch=self.__batch,
             group=self.__group,
         )
+        self.sprite.scale = gc.DOCKER_GUI_RATIO
         self.label = pyglet.text.Label(
             label_text,
             font_name=gc.FONT_BUTTON,
@@ -497,7 +505,10 @@ class ButtonStop(object):
     def activate(
         self, gui_window
     ) -> None:  # gui_window: gui.GUIWindow, gui_window to be compliant with the call from gui_knx.py module
-        pyglet.app.exit()
+        from simulator.simulator import stop_simulation
+        # requests.post("http://127.0.0.1:5050/simulator/stop")
+        stop_simulation()
+        # pyglet.app.exit()
 
 
 class ButtonReload(object):
@@ -618,6 +629,7 @@ class DeviceWidget(object):
                     batch=self.__batch,
                     group=self.__group,
                 )
+                self.__drop_sprite.scale = gc.DOCKER_GUI_RATIO
                 self.__drop_label = pyglet.text.Label(
                     "10%",
                     font_name=gc.FONT_INTERACTIVE,
@@ -648,6 +660,7 @@ class DeviceWidget(object):
                 batch=self.__batch,
                 group=self.__group,
             )
+        self.sprite.scale = gc.DOCKER_GUI_RATIO
         self.label = pyglet.text.Label(
             self.label_name,
             font_name=gc.FONT_DEVICE,
@@ -749,6 +762,7 @@ class DeviceWidget(object):
                 batch=self.__batch,
                 group=self.__group,
             )
+            self.__drop_sprite.scale = gc.DOCKER_GUI_RATIO
             self.__drop_label = pyglet.text.Label(
                 str(self.humiditysoil) + "%",
                 font_name=gc.FONT_INTERACTIVE,
@@ -792,6 +806,7 @@ class DeviceWidget(object):
                     batch=self.__batch,
                     group=self.__group,
                 )
+            self.sprite.scale = gc.DOCKER_GUI_RATIO
 
 
 class AvailableDevices(object):
@@ -807,7 +822,7 @@ class AvailableDevices(object):
         self.devices: List[DeviceWidget] = []
 
         self.__box_shape = pyglet.shapes.BorderedRectangle(
-            gc.WIN_BORDER / 2,
+            gc.SIDE_BOX_X_ORIGIN,
             gc.OFFSET_AVAILABLEDEVICES_LINE3
             - gc.OFFSET_AVAILABLE_DEVICES
             - gc.WIN_BORDER / 2,
@@ -822,7 +837,7 @@ class AvailableDevices(object):
 
         # Line 1
         self.led = DeviceWidget(
-            gc.WIN_BORDER,
+            gc.SIDE_BOX_X_ORIGIN + gc.WIN_BORDER / 2,
             gc.OFFSET_AVAILABLEDEVICES_LINE1,
             batch,
             gc.DEVICE_LED_ON_PATH,
@@ -882,7 +897,7 @@ class AvailableDevices(object):
 
         # Line 2
         self.button = DeviceWidget(
-            gc.WIN_BORDER,
+            gc.SIDE_BOX_X_ORIGIN + gc.WIN_BORDER / 2,
             gc.OFFSET_AVAILABLEDEVICES_LINE2,
             batch,
             gc.DEVICE_BUTTON_ON_PATH,
@@ -945,7 +960,7 @@ class AvailableDevices(object):
 
         # Line 3
         self.brightness = DeviceWidget(
-            gc.WIN_BORDER,
+            gc.SIDE_BOX_X_ORIGIN, # + gc.WIN_BORDER / 2,
             gc.OFFSET_AVAILABLEDEVICES_LINE3,
             batch,
             gc.DEVICE_BRIGHT_SENSOR_PATH,
@@ -976,7 +991,7 @@ class AvailableDevices(object):
         next_image_offset_x = (
             self.airsensor.pos_x
             + self.airsensor.width
-            + 0.4 * gc.OFFSET_AVAILABLE_DEVICES
+            + 0.30 * gc.OFFSET_AVAILABLE_DEVICES
         )
         self.co2sensor = DeviceWidget(
             next_image_offset_x,
@@ -991,7 +1006,7 @@ class AvailableDevices(object):
         )
         self.devices.append(self.co2sensor)
         next_image_offset_x = (
-            self.co2sensor.pos_x + self.co2sensor.width + gc.OFFSET_AVAILABLE_DEVICES
+            self.co2sensor.pos_x + self.co2sensor.width + 0.8 * gc.OFFSET_AVAILABLE_DEVICES
         )
         self.humidityair = DeviceWidget(
             next_image_offset_x,
@@ -1008,7 +1023,7 @@ class AvailableDevices(object):
         next_image_offset_x = (
             self.humidityair.pos_x
             + self.humidityair.width
-            + 1.85 * gc.OFFSET_AVAILABLE_DEVICES
+            + 1.65 * gc.OFFSET_AVAILABLE_DEVICES
         )
         self.humiditysoil = DeviceWidget(
             next_image_offset_x,
@@ -1028,9 +1043,9 @@ class AvailableDevices(object):
 class DimmerSetterWidget(object):
     """Class to represent the state_ratio in an animation when setting the dimmer value."""
 
-    def __init__(self, room_dimmer_widget: DeviceWidget) -> None:
+    def __init__(self, room_dimmer_widget: DeviceWidget, min_val: float=0.0, max_val: float=100.0) -> None:
         """Initialization of the state_ratio label next to the dimmer device room_dimmer_widget."""
-        self.room_dimmer_widget = room_dimmer_widget
+        self.room_dimmer_widget = room_dimmer_widget # can also be an actuator
         self.room_dimmer_widget.sprite.opacity = gc.OPACITY_CLICKED
         self.init_state_ratio = room_dimmer_widget.in_room_device.device.state_ratio
         self.center_x, self.center_y = (
@@ -1042,12 +1057,19 @@ class DimmerSetterWidget(object):
         )
         self.state_label_y = self.center_y - room_dimmer_widget.length // 2
         self.being_set = False
+        self.min = min_val # for actuators being manually set
+        self.max = max_val
+        if self.min != 0.0 or self.max != 100.0: # init value for actuator being manually set
+            self.init_value = (self.max - self.min) * self.init_state_ratio/100 + self.min
+        else:
+            self.init_value = self.init_state_ratio #  init value for dimmer
+
 
     def start_setting_dimmer(self, batch: Batch, group: OrderedGroup) -> None:
         """Start the animation of setting the dimmer ratio."""
         self.being_set = True
         self.state_ratio_label = pyglet.text.Label(
-            str(self.init_state_ratio),
+            str(self.init_value),
             font_name=gc.FONT_INTERACTIVE,
             font_size=gc.FONT_SIZE_INTERACTIVE,
             x=(self.state_label_x),
@@ -1062,12 +1084,12 @@ class DimmerSetterWidget(object):
     def update_ratio(self, new_ratio: float) -> None:
         """Update the state_ratio label of the animation next to the dimmer."""
         self.state_ratio = new_ratio
-        self.state_ratio_label.text = str(self.state_ratio)
+        self.room_dimmer_widget.in_room_device.device.state_ratio = new_ratio
+        self.state_ratio_label.text = str((self.max - self.min) * self.state_ratio/100 + self.min) # in case actuators being manually set have different min, max value than dimmer
         self.state_ratio_label.color = color_from_state_ratio(self.state_ratio)
 
     def delete(self) -> None:
         """Delete the state_ratio animation."""
-        self.room_dimmer_widget.sprite.opacity = gc.OPACITY_DEFAULT
         if hasattr(self, "state_ratio_label"):
             self.state_ratio_label.delete()
 
@@ -1119,6 +1141,7 @@ class RoomWidget(object):
         self.__sprite = pyglet.sprite.Sprite(
             self.__img, self.origin_x, self.origin_y, batch=self.__batch, group=group_mg
         )
+        self.__sprite.scale = gc.DOCKER_GUI_RATIO
         self.__label = pyglet.text.Label(
             self.name,
             font_name=gc.FONT_SYSTEM_INFO,
@@ -1162,6 +1185,8 @@ class PersonWidget(object):
             batch=self.__batch,
             group=self.__group,
         )
+        self.__sprite.scale = gc.DOCKER_GUI_RATIO
+        
 
     def hit_test(self, x: float, y: float) -> bool:
         """Test if Person widget was hit by the mouse."""
@@ -1207,6 +1232,7 @@ class VacuumWidget(object):
             batch=self.__batch,
             group=self.__group,
         )
+        self.__sprite.scale = gc.DOCKER_GUI_RATIO
         self.__orientation = 0
         self.__step = 0
 
@@ -1371,18 +1397,19 @@ def color_from_humiditysoil(humiditysoil: float) -> Tuple[int, int, int, int]:
             return gc.COLOR_BLUE
 
 
-def dimmer_ratio_from_mouse_pos(mouse_y: float, dimmer_center_y: float) -> float:
-    """Retunr the state_ratio value depending on vertical distance of mouse from dimmer widget when settin the dimmer value>"""
+def dimmer_ratio_from_mouse_pos(mouse_y: float, dimmer_center_y: float, min: float=0.0, max: float=100.0) -> float:
+    """Return the state_ratio value depending on vertical distance of mouse from dimmer widget when settin the dimmer value>"""
     relative_distance = mouse_y - dimmer_center_y
     if relative_distance >= gc.OFFSET_MAX_DIMMER_RATIO:
-        return 100.0
+        return max
     elif relative_distance <= -gc.OFFSET_MAX_DIMMER_RATIO:
-        return 0.0
+        return min
     else:
         ratio = round(
-            100
+            (max - min)
             * (relative_distance + gc.OFFSET_MAX_DIMMER_RATIO)
-            / (2 * gc.OFFSET_MAX_DIMMER_RATIO),
+            / (2 * gc.OFFSET_MAX_DIMMER_RATIO)
+            - min, # offset if min < 0
             2,
         )
         return ratio

@@ -1,4 +1,3 @@
-from asyncio.log import logger
 import dataclasses
 from dataclasses import dataclass, fields
 import asyncio
@@ -55,8 +54,8 @@ class State:
     __GROUP_ADDRESS_PREFIX: Final = "GA_"
     __SLASH: Final = "/"
     __UNDERSCORE: Final = "_"
-    __ADDRESS_INITIALIZATION_TIMEOUT: Final = 10
-    __LOGGER_BUFFER_SIZE = 32
+    __ADDRESS_INITIALIZATION_TIMEOUT: Final = 3
+    __LOGGER_BUFFER_SIZE = 8
     __APP_STATE_ARGUMENT_SUFFIX = "_app_state"
     __MIN_FN_PERIOD = 0.5  # minimal period in seconds for executing periodic functions
     __PERIODIC_READ_TIMEOUT: Final = 1.0
@@ -74,7 +73,7 @@ class State:
         runtime_app_files_folder_path: str,
         physical_state_log_file_path: str,
         isolated_fns: List[RuntimeIsolatedFunction],
-        periodic_read_frequency_second = 60.0,
+        periodic_read_frequency_second=60.0,
     ):
         self.__PERIODIC_READ_FREQUENCY_SEC = periodic_read_frequency_second
         self.__addresses_listeners = addresses_listeners
@@ -93,13 +92,16 @@ class State:
         }
 
         self._internal_state: InternalState = InternalState(
-            date_time=time.localtime(), app_files_runtime_folder_path=runtime_app_files_folder_path
+            date_time=time.localtime(),
+            app_files_runtime_folder_path=runtime_app_files_folder_path,
         )
-        #leave the check_conditions as default to initialize them now:
+        # leave the check_conditions as default to initialize them now:
         check_condition_dict = self._internal_state.check_condition
         time_int = int(time.mktime(self._internal_state.date_time))
         for k in check_condition_dict.keys():
-            check_condition_dict[k] = CheckState(start_frequency=time_int, start_condition_true=time_int)
+            check_condition_dict[k] = CheckState(
+                start_frequency=time_int, start_condition_true=time_int
+            )
 
         self._isolated_fn_values = IsolatedFunctionsValues()
 
@@ -189,7 +191,7 @@ class State:
 
         if self.__periodic_fns_task:
             self.__periodic_fns_task.cancel()
-        
+
         if self.__periodic_device_reads_task:
             self.__periodic_device_reads_task.cancel()
 
@@ -282,7 +284,9 @@ class State:
             )
 
         # Start the periodic reading of devices
-        self.__periodic_device_reads_task = asyncio.create_task(self.__periodically_read_devices())
+        self.__periodic_device_reads_task = asyncio.create_task(
+            self.__periodically_read_devices()
+        )
 
     async def __periodically_read_devices(self):
         while True:
@@ -294,13 +298,19 @@ class State:
                         GroupAddress(address),
                         timeout_in_seconds=self.__PERIODIC_READ_TIMEOUT,
                     )
-                    self.__logger.log_execution(f"Send periodic read request to '{address}'")
+                    self.__logger.log_execution(
+                        f"Send periodic read request to '{address}'"
+                    )
                     telegram = await value_reader.read()
                     if telegram:
-                        self.__logger.log_execution(f"Periodic read request to '{address}' answered with '{telegram}'")
+                        self.__logger.log_execution(
+                            f"Periodic read request to '{address}' answered with '{telegram}'"
+                        )
                         await self.__telegram_received_cb(telegram)
                     else:
-                        self.__logger.log_execution(f"'{address}' did not answered to the periodic read request")
+                        self.__logger.log_execution(
+                            f"'{address}' did not answered to the periodic read request"
+                        )
             await asyncio.sleep(self.__PERIODIC_READ_FREQUENCY_SEC)
 
     def __group_addr_to_field_name(self, group_addr: str) -> str:

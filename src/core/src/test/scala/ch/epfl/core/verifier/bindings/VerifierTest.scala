@@ -1527,7 +1527,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       (311, GroupAddress(3, 1, 1)),
       (212, GroupAddress(2, 1, 2)),
       (322, GroupAddress(3, 2, 2)),
-      (313, GroupAddress(3, 1, 1)),
+      (313, GroupAddress(3, 1, 6)),
       (314, GroupAddress(3, 1, 4))
     ).toMap
     val groupAddressAssignment = GroupAddressAssignment(physicalStructure, appLibraryBindings, mapPhysIdToGa)
@@ -1553,7 +1553,7 @@ class VerifierTest extends AnyFlatSpec with Matchers {
       (311, GroupAddress(3, 1, 1)),
       (212, GroupAddress(2, 1, 2)),
       (322, GroupAddress(3, 2, 2)),
-      (313, GroupAddress(3, 1, 1))
+      (313, GroupAddress(3, 1, 3))
     ).toMap
     val groupAddressAssignment = GroupAddressAssignment(physicalStructure, appLibraryBindings, mapPhysIdToGa)
     val res = verifyBindingsPythonType(groupAddressAssignment)

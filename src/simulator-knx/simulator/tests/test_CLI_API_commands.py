@@ -1,5 +1,8 @@
 """ Test CLI and API commands"""
 
+import sys, os
+sys.path.append("..")
+
 import pytest
 
 import system
@@ -21,7 +24,8 @@ presencesensor1 = dev.PresenceSensor(
     "presencesensor1", system.IndividualAddress(0, 0, 66)
 )
 
-config_path = "config/config_test_config.json"
+SVSHI_HOME = os.environ["SVSHI_HOME"]
+config_path = f"{SVSHI_HOME}/src/simulator-knx/config/config_test_config.json"
 room_conf, system_dt = tools.configure_system_from_file(
     config_path, system_dt=1, test_mode=True
 )

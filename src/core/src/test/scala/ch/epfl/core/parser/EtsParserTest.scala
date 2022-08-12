@@ -198,7 +198,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               "Status indication - Indication d'état - Valve position %",
               DPTUnknown(-1),
-              InOut,
+              Out,
               ("1", "2", "1"),
               "Default"
             ),
@@ -212,7 +212,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               "Status indication - Indication d'état - Presence / Absence command",
               DPT1(-1),
-              InOut,
+              Out,
               ("1", "2", "1"),
               "Default"
             )

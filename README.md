@@ -55,6 +55,26 @@ It provides a [CLI](#cli), `svshi`, to interact easily with the platform.
 
 With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
 
+## Discover SVSHI
+
+To help you familiarize with SVSHI concepts and write your first apps, we provide a "discover service". This service lets you upload your `.knxproj` file. It then extracts devices and detects all the communication objects (can be seen as "sub devices" or "abtract devices") that your physical devices offer and that are compatible with SVSHI. 
+
+You can generate new apps for SVSHI that use these devices, write the code locally and update them again on the service.
+
+Finally, you can install these apps on SVSHI, see the result of the compilation and verification processes and, if they succeeded, you can start a simulation on our KNX simulator and see the behaviour of your app(s) live.
+
+Once you're ready for the complete SVSHI experience, you can download the app(s) you developed and run them on your own physical installation.
+
+To run the discover service, please run these 2 scripts in that order:
+
+- `./scripts/build_discover_service.sh`
+- `./scripts/run_discover_service.sh`
+
+> Please note that the build process can take 10-15min, even more depending on your machine.
+
+
+Once you executed the 2nd script, open your favorite web browser and go to `http://localhost:3000`.
+
 ## Installation
 
 We strongly recommend to use SVSHI on Docker with the GUI, see [Docker (can be used on Windows or Unix machine)](#docker-can-be-used-on-windows-or-unix-machine).
@@ -355,6 +375,8 @@ Moreover, the `timer` attribute can be used to run the application even though t
 - If `timer == 0` the application runs only when the physical state of the devices it uses changes
 - If `timer > 0` the application runs when the physical state changes AND every `timer` seconds.
 
+Optionally, devices can have a `"preBindingPhysId"` that represents the physicalId to which it is bound (see [Bindings](#bindings)) if it is already known. This id is then transfered in the bindings file automatically by the compiler. This is mainly used by the SVSHI Web-service.
+
 Once the app is generated, it is moved in the generated apps' folder.
 
 Here is an example:
@@ -367,6 +389,11 @@ Here is an example:
     {
       "name": "name_of_the_instances",
       "deviceType": "type_of_the_devices"
+    },
+    {
+      "name": "name_of_the_instance_2",
+      "deviceType": "type_of_the_device",
+      "preBindingPhysId": 42
     }
   ]
 }
@@ -720,6 +747,10 @@ Here are the available endpoints:
 
   Replies with a `.zip` archive as body containing the `assignments` folder if assignments are created, 404 error if no assignments are created.
 
+- GET `/assignments/gaToPhysId`
+
+  Replies with a json body `assignments/gaToPhysId.json` file if assignments are created, 404 error if no assignments are created.
+
 - POST `/deviceMappings`
 
   Corresponds to the `svshi deviceMappings` of the CLI.
@@ -727,6 +758,14 @@ Here are the available endpoints:
   Runs the `deviceMappings` operation of `svshi`, replying with the json containing the mappings for the devices and the physical structure.
 
   The body must be a `.zip` archive containing the `.knxproj` file or the `.json` file used to get the mappings.
+
+- POST `/physicalStructure/parse`
+
+  Parse the file passed as an archive `zip`, either a `.json` or a `.knxproj` file. Replies with the physical structure json in the body.
+
+- GET `/appLibrary/bindings`
+  
+  Replies with a json containing the bindings for the currently installed apps. Replies with a 404 if no bindings in the appLibrary (i.e., no apps are installed).
 
 The POST endpoints functions cannot be ran in parallel. These endpoints then acquire a "lock" and reply with a 423 error code if the lock is already aquired by another endpoint currently running.
 

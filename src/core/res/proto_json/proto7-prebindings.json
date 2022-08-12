@@ -1,0 +1,26 @@
+{
+    "permissionLevel": "notPrivileged",
+    "timer": 60,
+    "files":
+    [
+       "file1.txt",
+       "file2.png"
+    ],
+    "devices":
+    [
+       {
+         "name": "device1",
+         "deviceType": "binarySensor",
+         "preBindingPhysId": 42
+       },
+       {
+         "name": "device2",
+         "deviceType": "binarySensor",
+         "preBindingPhysId": 46
+       },
+       {
+         "name": "device3",
+         "deviceType": "switch"
+       }
+    ]
+}

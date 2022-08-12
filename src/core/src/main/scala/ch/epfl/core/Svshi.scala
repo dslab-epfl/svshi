@@ -103,7 +103,7 @@ object Svshi extends SvshiTr {
             ).get
           }
         } else {
-          err("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port")
+          err("The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address or a container name and port a valid port")
           new SvshiRunResult(None, ERROR_CODE)
         }
       case None => {
@@ -277,7 +277,12 @@ object Svshi extends SvshiTr {
           if (!new File(devicesJson).isAbsolute) {
             err("The devices prototypical structure JSON file name has to be absolute")
             return ERROR_CODE
-          } else
+          } else {
+            var outputErrorText: List[String] = List()
+            def customErrMonitor(s: String): Unit = {
+              outputErrorText = outputErrorText ::: List(s)
+              err(s)
+            }
             runPythonModule(
               module = APP_GENERATOR_PYTHON_MODULE,
               args = Seq(name, devicesJson),
@@ -285,8 +290,12 @@ object Svshi extends SvshiTr {
               errorMessageBuilderOpt = Some(exitCode => s"The app generator failed with exit code $exitCode and above stdout"),
               success = success,
               info = info,
-              err = err
+              err = customErrMonitor
             )
+            if (outputErrorText.exists(s => s.contains("failed with exit code"))) {
+              return ERROR_CODE
+            }
+          }
         } else {
           err("The app name has to contain only lowercase letters and underscores")
           return ERROR_CODE
@@ -499,7 +508,8 @@ object Svshi extends SvshiTr {
             throw CompileErrorException(
               "The bindings are not compatible with the apps you want to install! Please run generateBindings again and fill them before compiling again."
             )
-          case _ => throw CompileErrorException(s"The compiler produces an exception: $exception")
+          case _ =>
+            throw CompileErrorException(s"The compiler produces an exception: ${exception.getLocalizedMessage} \n ${exception.getStackTrace.map(e => e.toString).mkString("\n")}")
         }
         (false, Nil)
       }
@@ -525,6 +535,7 @@ object Svshi extends SvshiTr {
           val programmer = Programmer(gaAssignment)
           programmer.outputProgrammingFile()
           programmer.outputGroupAddressesCsv()
+          programmer.outputGroupAddressToPhysIdJson()
 
           (true, verifierMessages)
         } else {

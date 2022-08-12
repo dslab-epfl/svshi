@@ -7,6 +7,27 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class GroupAddressAssignmentTest extends AnyFlatSpec with Matchers {
+
+  "constructor" should "throw an illegalArgumentException if the map contains 2 times the same group address" in {
+    val physStruct = PhysicalStructure(Nil)
+    val appLibraryBindings = AppLibraryBindings(
+      List(
+        AppPrototypeBindings(
+          "app1",
+          List(
+            DeviceInstanceBinding("device1", BinarySensorBinding(BinarySensor.toString, 311)),
+            DeviceInstanceBinding("device2", SwitchBinding(Switch.toString, 212)),
+            DeviceInstanceBinding("device3", TemperatureSensorBinding(TemperatureSensor.toString, 322)),
+            DeviceInstanceBinding("device4", HumiditySensorBinding(HumiditySensor.toString, 321)),
+            DeviceInstanceBinding("device5", BinarySensorBinding(BinarySensor.toString, 321))
+          )
+        )
+      )
+    )
+    val physIdToGA = List((311, GroupAddress(3, 1, 1)), (212, GroupAddress(2, 1, 2)), (322, GroupAddress(3, 2, 2)), (321, GroupAddress(3, 2, 2))).toMap
+
+    an[IllegalArgumentException] should be thrownBy GroupAddressAssignment(physStruct, appLibraryBindings, physIdToGA)
+  }
   "getPythonTypes" should "return the correct list for correct input" in {
     val physStruct = PhysicalStructure(Nil)
     val appLibraryBindings = AppLibraryBindings(

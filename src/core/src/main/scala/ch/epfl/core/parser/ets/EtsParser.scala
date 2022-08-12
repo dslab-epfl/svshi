@@ -271,7 +271,7 @@ object EtsParser {
     val uFlag = uFlagText == enabledText
     val iFlag = iFlagText == enabledText
 
-    val in = wFlag || uFlag
+    val in = wFlag
     val out = rFlag || tFlag
 
 //    if(!cFlag) throw new CommunicationFlagDisabledOnCommObject(s"Communication flag disabled for the communication object ${comObjectNode \@ ID_PARAM}")
