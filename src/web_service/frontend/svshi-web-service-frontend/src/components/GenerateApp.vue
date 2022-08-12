@@ -83,7 +83,7 @@ Now, modify the code locally and then go to 'Install and simulate' to try it.",
                 return true;
             }
         },
-        isValidDeviceNameOrAppNameCharEvt(evt) {
+        isValidDeviceNameCharEvt(evt) {
             evt = (evt) ? evt : window.event;
             var charCode = (evt.which) ? evt.which : evt.keyCode;
             let valid = charCode == 95 || (charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)
@@ -93,16 +93,31 @@ Now, modify the code locally and then go to 'Install and simulate' to try it.",
                 return true;
             }
         },
-        isValidDeviceNameOrAppNameChar(c) {
+        isValidDeviceNameChar(c) {
             var charCode = c.charCodeAt()
             return charCode == 95 || (charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)
+
+        },
+        isValidAppNameCharEvt(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            let valid = charCode == 95 || (charCode >= 97 && charCode <= 122)
+            if (!valid) {
+                evt.preventDefault();;
+            } else {
+                return true;
+            }
+        },
+        isValidAppNameChar(c) {
+            var charCode = c.charCodeAt()
+            return charCode == 95 || (charCode >= 97 && charCode <= 122)
 
         },
         replaceInvalidCharsByUnderscore(name) {
             let res = ""
             for (let i = 0; i < name.length; i++) {
                 const c = name[i];
-                if (this.isValidDeviceNameOrAppNameChar(c)) {
+                if (this.isValidDeviceNameChar(c)) {
                     res += c
                 } else {
                     res += "_"
@@ -206,7 +221,7 @@ Now, modify the code locally and then go to 'Install and simulate' to try it.",
                 <div id="appGrid">
                     <div class="appGridItem">App name:</div>
                     <div class="appGridItem"><input id="appGenAppNameTextField" type="text"
-                            v-model="appGenProto.appName" @keypress="this.isValidDeviceNameOrAppNameCharEvt($event)">
+                            v-model="appGenProto.appName" @keypress="this.isValidAppNameCharEvt($event)">
                     </div>
                     <div class="appGridItem">Permission Level:</div>
                     <div class="appGridItem">
@@ -230,7 +245,7 @@ Now, modify the code locally and then go to 'Install and simulate' to try it.",
                                 </div>
                                 <div class="appGridDeviceGridItemName">
                                     <input id="appDeviceNameInput" v-model="dev.name" placeholder="device name"
-                                        @keypress="this.isValidDeviceNameOrAppNameCharEvt($event)" />
+                                        @keypress="this.isValidDeviceNameCharEvt($event)" />
                                 </div>
                                 <div class="appGridDeviceGridItemType">Type: {{ dev.deviceType }}</div>
                             </div>

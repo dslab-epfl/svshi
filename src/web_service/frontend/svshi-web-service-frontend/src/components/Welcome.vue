@@ -264,7 +264,7 @@ export default defineComponent({
             </button>
         </div> -->
 
-        <p class="titlePage">To start, please upload one ETS Project file (.ets) to import your devices:</p>
+        <p class="titlePage">To start, please upload one ETS Project file (.knxproj) to import your devices:</p>
         <div class="etsFileInputDiv">
             <input type="file" id="etsFileInput" class="etsFileInput" @change="this.updateEtsFile($event)">
         </div>
