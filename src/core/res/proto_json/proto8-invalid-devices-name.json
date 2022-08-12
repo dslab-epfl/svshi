@@ -1,0 +1,20 @@
+{
+    "permissionLevel": "notPrivileged",
+    "timer": 60,
+    "files":
+    [
+       "file1.txt",
+       "file2.png"
+    ],
+    "devices":
+    [
+       {
+         "name": "device1 - invalid",
+         "deviceType": "binarySensor"
+       },
+       {
+         "name": "device2 !",
+         "deviceType": "binarySensor"
+       }
+    ]
+}

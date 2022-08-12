@@ -47,11 +47,11 @@ def parse_args(args) -> Tuple[str, int]:
     parser.add_argument("port", type=int, help="the KNX port to use", default=3671)
     args = parser.parse_args(args)
 
-    address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
+    address_regex = re.compile(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})+$")
     address = args.ip_address
     if not address_regex.match(address):
         raise ValueError(
-            f"Wrong IP address '{address}': it has to be a valid IPv4 address"
+            f"Wrong IP address '{address}': it has to be a valid IPv4 address or a docker container name"
         )
 
     port = int(args.port)
@@ -115,18 +115,18 @@ async def main(
         )
 
         state = State(
-            addresses_listeners = addresses_listeners,
-            joint_apps = joint_apps,
+            addresses_listeners=addresses_listeners,
+            joint_apps=joint_apps,
             xknx_for_initialization=xknx_for_initialization,
             xknx_for_listening=xknx_for_listening,
             xknx_for_periodic_reads=xknx_for_periodic_reads,
             check_conditions_function=check_conditions,
-            group_address_to_dpt = group_addresses_dpt,
-            logs_dir= logs_dir,
-            runtime_app_files_folder_path= RUNTIME_APP_FILES_FOLDER_PATH,
-            physical_state_log_file_path= PHYSICAL_STATE_LOG_FILE_PATH,
-            isolated_fns= isolated_fns,
-            periodic_read_frequency_second= 60.0
+            group_address_to_dpt=group_addresses_dpt,
+            logs_dir=logs_dir,
+            runtime_app_files_folder_path=RUNTIME_APP_FILES_FOLDER_PATH,
+            physical_state_log_file_path=PHYSICAL_STATE_LOG_FILE_PATH,
+            isolated_fns=isolated_fns,
+            periodic_read_frequency_second=60.0,
         )
 
         register_on_trigger_consumer = get_svshi_api_register_on_trigger_consumer(

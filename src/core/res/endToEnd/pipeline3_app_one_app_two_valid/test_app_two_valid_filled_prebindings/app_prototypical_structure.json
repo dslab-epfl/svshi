@@ -1,0 +1,11 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "devices": [
+    {
+      "name": "temperature_sensor",
+      "deviceType": "temperatureSensor",
+      "preBindingPhysId": -48198848
+    }
+  ]
+}

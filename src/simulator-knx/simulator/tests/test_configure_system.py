@@ -1,5 +1,8 @@
 """ Test of system configuration, using functions or JSON config file"""
 
+import sys, os
+sys.path.append("..")
+
 import pytest
 
 import system
@@ -372,7 +375,8 @@ world_states = {
 
 
 def test_configure_system_from_file():
-    config_path = "config/config_test_config.json"
+    SVSHI_HOME = os.environ["SVSHI_HOME"]
+    config_path = f"{SVSHI_HOME}/src/simulator-knx/config/config_test_config.json"
     # devices: brightness1, airsensor1, button1, heater1, dimmer1, led1
     room_conf, system_dt_conf = configure_system_from_file(
         config_path, system_dt, test_mode=True

@@ -7,4 +7,4 @@ import ch.epfl.core.model.application.PermissionLevel
   * @param deviceInstances
   */
 case class AppPrototypicalStructure(permissionLevel: PermissionLevel, timer: Int, deviceInstances: List[AppPrototypicalDeviceInstance])
-case class AppPrototypicalDeviceInstance(name: String, deviceType: SupportedDevice)
+case class AppPrototypicalDeviceInstance(name: String, deviceType: SupportedDevice, preBindingPhysId: Int = SupportedDevice.defaultPhysicalId)

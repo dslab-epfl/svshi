@@ -232,12 +232,16 @@ class Generator:
             
             def dummy_check(self,i: InternalState,v:int) -> bool:
                 return i.c0 == v
-    ''')
+    '''
+    )
+
     def __SVSHI_API_IMPL_RUN(self, files_folder_path: str) -> str:
         check_time_property_code_str = inspect.getsource(check_time_property)
-        check_time_property_str = textwrap.indent(check_time_property_code_str,"            ",lambda x: "def" not in x)
+        check_time_property_str = textwrap.indent(
+            check_time_property_code_str, "            ", lambda x: "def" not in x
+        )
         return textwrap.dedent(
-        f'''
+            f'''
         class SvshiApi():
             def __init__(self):
                 pass
@@ -337,17 +341,17 @@ class Generator:
         )
 
     def __init__(
-            self,
-            verification_filename: str,
-            runtime_filename: str,
-            conditions_filename: str,
-            files_folder_path: str,
-            group_addresses: List[GroupAddress],
-            devices_instances: List[DeviceInstance],
-            devices_classes: List[DeviceClass],
-            app_names: List[str],
-            filenames_per_app: Dict[str, Set[str]],
-            isolated_fn_filename: str,
+        self,
+        verification_filename: str,
+        runtime_filename: str,
+        conditions_filename: str,
+        files_folder_path: str,
+        group_addresses: List[GroupAddress],
+        devices_instances: List[DeviceInstance],
+        devices_classes: List[DeviceClass],
+        app_names: List[str],
+        filenames_per_app: Dict[str, Set[str]],
+        isolated_fn_filename: str,
     ):
         self.__verification_filename: str = verification_filename
         self.__runtime_filename: str = runtime_filename
@@ -382,10 +386,13 @@ class Generator:
 
     def __generate_physical_state_class(self):
         fields = ""
-        for group_address in self.__group_addresses:
-            new_field = f"    {self.__group_addr_to_field_name(group_address.address)}: {group_address.type}\n"
-            if new_field not in fields:
-                fields += new_field
+        if len(self.__group_addresses) == 0:
+            fields += f"    pass\n"
+        else:
+            for group_address in self.__group_addresses:
+                new_field = f"    {self.__group_addr_to_field_name(group_address.address)}: {group_address.type}\n"
+                if new_field not in fields:
+                    fields += new_field
 
         code = textwrap.dedent(
             f"""
@@ -393,13 +400,14 @@ class Generator:
             class PhysicalState:
             """
         )
+
         code += f"{fields}\n"
         self.__code.append(code)
         self.__imports.append("import dataclasses")
         self.__imports.append("import time")
 
     def __generate_isolated_functions_values_class(
-            self, isolated_functions: List[IsolatedFunction]
+        self, isolated_functions: List[IsolatedFunction]
     ):
         lines = [
             fn.name_with_app_name + f": Optional[{fn.return_type}] = None\n"
@@ -575,7 +583,7 @@ class Generator:
         self.__code.extend(devices_code)
 
     def __generate_invariant_and_iteration_functions(
-            self, imports: List[str], functions: List[str]
+        self, imports: List[str], functions: List[str]
     ):
         self.__code.append("\n")
         self.__imports.extend(imports)
@@ -595,7 +603,7 @@ class Generator:
 
     def __add_time_check_conditions_to_internal_state(self, filename):
         conds_dict = "{"
-        for i in range(0,self.__manipulator.check_counter):
+        for i in range(0, self.__manipulator.check_counter):
             conds_dict += str(i) + ": CheckState()"
             if i + 1 != self.__manipulator.check_counter:
                 conds_dict += ", "
@@ -607,7 +615,7 @@ class Generator:
             file.write(file_content)
 
     def __generate_file(
-            self, filename: str, verification: bool, app_priorities: Dict[str, int]
+        self, filename: str, verification: bool, app_priorities: Dict[str, int]
     ):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         imports, functions, isolated_functions = self.__manipulator.manipulate_mains(

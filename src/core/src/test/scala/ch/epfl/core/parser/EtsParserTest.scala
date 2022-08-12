@@ -198,7 +198,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               "Status indication - Indication d'état - Valve position %",
               DPTUnknown(-1),
-              InOut,
+              Out,
               ("1", "2", "1"),
               "Default"
             ),
@@ -212,7 +212,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               "Status indication - Indication d'état - Presence / Absence command",
               DPT1(-1),
-              InOut,
+              Out,
               ("1", "2", "1"),
               "Default"
             )
@@ -264,7 +264,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               name = "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
               datatype = DPT1(-1),
-              ioType = In,
+              ioType = InOut,
               physicalAddress = ("1", "1", "7"),
               deviceNodeName = "Default"
             )
@@ -295,14 +295,14 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
           name = "Channel - CH-2 - Input I1",
           comObjects = List(
             PhysicalDeviceCommObject
-              .from(name = "Channel I1 - Switching", datatype = DPT1(1), ioType = Out, physicalAddress = ("1", "1", "8"), deviceNodeName = "Channel - CH-2 - Input I1")
+              .from(name = "Channel I1 - Switching", datatype = DPT1(1), ioType = InOut, physicalAddress = ("1", "1", "8"), deviceNodeName = "Channel - CH-2 - Input I1")
           )
         ),
         PhysicalDeviceNode(
           name = "Channel - CH-3 - Input I2",
           comObjects = List(
             PhysicalDeviceCommObject
-              .from(name = "Channel I2 - Switching", datatype = DPT1(1), ioType = Out, physicalAddress = ("1", "1", "8"), deviceNodeName = "Channel - CH-3 - Input I2")
+              .from(name = "Channel I2 - Switching", datatype = DPT1(1), ioType = InOut, physicalAddress = ("1", "1", "8"), deviceNodeName = "Channel - CH-3 - Input I2")
           )
         ),
         PhysicalDeviceNode(
@@ -324,17 +324,17 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
           name = "Channel - CH-0 - General",
           comObjects = List(
             PhysicalDeviceCommObject
-              .from(name = "Firmware - Version", datatype = DPTUnknown(-1), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "Firmware - Version", datatype = DPTUnknown(-1), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject
-              .from(name = "CO2 value - Send", datatype = DPT9(8), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "CO2 value - Send", datatype = DPT9(8), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject
-              .from(name = "Relative humidity - Send", datatype = DPT9(7), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "Relative humidity - Send", datatype = DPT9(7), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject
-              .from(name = "Air pressure - Send", datatype = DPT14(58), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "Air pressure - Send", datatype = DPT14(58), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject
-              .from(name = "Degree of comfort - Send", datatype = DPT5(1), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "Degree of comfort - Send", datatype = DPT5(1), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject
-              .from(name = "Temperature value - Send", datatype = DPT9(1), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
+              .from(name = "Temperature value - Send", datatype = DPT9(1), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-0 - General"),
             PhysicalDeviceCommObject.from(
               name = "CO2 Offset - Measurement value offset",
               datatype = DPT9(-1),
@@ -358,7 +358,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               .from(
                 name = "CO2 threshold 1 - Switching",
                 datatype = DPT1(1),
-                ioType = Unknown,
+                ioType = Out,
                 physicalAddress = ("1", "1", "10"),
                 deviceNodeName = "Channel - CH-2 - CO2 sensor"
               ),
@@ -366,7 +366,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               .from(
                 name = "CO2 threshold 2 - Switching",
                 datatype = DPT1(1),
-                ioType = Unknown,
+                ioType = Out,
                 physicalAddress = ("1", "1", "10"),
                 deviceNodeName = "Channel - CH-2 - CO2 sensor"
               ),
@@ -374,19 +374,19 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               .from(
                 name = "CO2 threshold 3 - Switching",
                 datatype = DPT1(1),
-                ioType = Unknown,
+                ioType = Out,
                 physicalAddress = ("1", "1", "10"),
                 deviceNodeName = "Channel - CH-2 - CO2 sensor"
               ),
             PhysicalDeviceCommObject.from(
               name = "Ventilation of CO2 - Actuating value 0-100%",
               datatype = DPT5(1),
-              ioType = Unknown,
+              ioType = Out,
               physicalAddress = ("1", "1", "10"),
               deviceNodeName = "Channel - CH-2 - CO2 sensor"
             ),
             PhysicalDeviceCommObject
-              .from(name = "CO2 scenes - Send", datatype = DPT17(1), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-2 - CO2 sensor")
+              .from(name = "CO2 scenes - Send", datatype = DPT17(1), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Channel - CH-2 - CO2 sensor")
           )
         ),
         PhysicalDeviceNode(
@@ -395,28 +395,28 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
             PhysicalDeviceCommObject.from(
               name = "Humidity threshold 1 - Switching",
               datatype = DPT1(1),
-              ioType = Unknown,
+              ioType = Out,
               physicalAddress = ("1", "1", "10"),
               deviceNodeName = "Channel - CH-3 - Humidity sensor"
             ),
             PhysicalDeviceCommObject.from(
               name = "Humidity threshold 2 - Switching",
               datatype = DPT1(1),
-              ioType = Unknown,
+              ioType = Out,
               physicalAddress = ("1", "1", "10"),
               deviceNodeName = "Channel - CH-3 - Humidity sensor"
             ),
             PhysicalDeviceCommObject.from(
               name = "Humidity threshold 3 - Switching",
               datatype = DPT1(1),
-              ioType = Unknown,
+              ioType = Out,
               physicalAddress = ("1", "1", "10"),
               deviceNodeName = "Channel - CH-3 - Humidity sensor"
             ),
             PhysicalDeviceCommObject.from(
               name = "Ventilating humidity - Actuating value 0-100%",
               datatype = DPT5(1),
-              ioType = Unknown,
+              ioType = Out,
               physicalAddress = ("1", "1", "10"),
               deviceNodeName = "Channel - CH-3 - Humidity sensor"
             ),
@@ -424,7 +424,7 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
               .from(
                 name = "Humidity scenes - Send",
                 datatype = DPT17(1),
-                ioType = Unknown,
+                ioType = Out,
                 physicalAddress = ("1", "1", "10"),
                 deviceNodeName = "Channel - CH-3 - Humidity sensor"
               )
@@ -483,8 +483,8 @@ class EtsParserTest extends AnyFlatSpec with BeforeAndAfterEach with Matchers {
         PhysicalDeviceNode(
           name = "Default",
           comObjects = List(
-            PhysicalDeviceCommObject.from(name = "Alarm - Info", datatype = DPTUnknown(-1), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Default"),
-            PhysicalDeviceCommObject.from(name = "Alarm - Error text", datatype = DPT16(0), ioType = Unknown, physicalAddress = ("1", "1", "10"), deviceNodeName = "Default")
+            PhysicalDeviceCommObject.from(name = "Alarm - Info", datatype = DPTUnknown(-1), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Default"),
+            PhysicalDeviceCommObject.from(name = "Alarm - Error text", datatype = DPT16(0), ioType = Out, physicalAddress = ("1", "1", "10"), deviceNodeName = "Default")
           )
         )
       )

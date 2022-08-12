@@ -95,7 +95,7 @@ class KNXBus:
         """
         for ga_bus in self.__ga_buses:
             if telegram.destination == ga_bus.group_address:
-                # Only actuators for now, but sensors and functional module could also receive telegrams to read state fro instance.
+                # Only actuators for now, but sensors and functional module could also receive telegrams to read state for instance.
                 for actuator in ga_bus.actuators:
                     try:
                         actuator.update_state(telegram)

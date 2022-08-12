@@ -21,24 +21,26 @@ object DeviceMapper {
     val dpt = commObject.datatype
     val ioType = commObject.ioType
     val supportedDevicesList = dptIoTypeToSupportedDevice(dpt, ioType)
-    supportedDevicesList.map(supportedDevice => SupportedDeviceMapping(commObject.name, supportedDevice.toString, commObject.id))
+    supportedDevicesList.map { case (supportedDevice, humanReadableMsg) =>
+      SupportedDeviceMapping(name = commObject.name, supportedDeviceName = supportedDevice.toString, humanReadableInfo = humanReadableMsg, physicalCommObjectId = commObject.id)
+    }
   }
-  def dptIoTypeToSupportedDevice(dpt: KNXDatatype, ioType: IOType): List[SupportedDevice] = {
+  def dptIoTypeToSupportedDevice(dpt: KNXDatatype, ioType: IOType): List[(SupportedDevice, String)] = {
     dpt match {
-      case DPT1(_) if ioType == InOut                   => List(Switch, BinarySensor)
-      case DPT1(_) if ioType == In                      => List(Switch)
-      case DPT1(_) if ioType == Out                     => List(BinarySensor)
+      case DPT1(_) if ioType == InOut                   => List((Switch, "with sensor"))
+      case DPT1(_) if ioType == In                      => List((Switch, ""))
+      case DPT1(_) if ioType == Out                     => List((BinarySensor, ""))
       case DPT1(_)                                      => Nil
-      case DPT5(1) if ioType == InOut                   => List(DimmerSensor, DimmerActuator)
-      case DPT5(1) if ioType == Out                     => List(DimmerSensor)
-      case DPT5(1) if ioType == In                      => List(DimmerActuator)
+      case DPT5(1) if ioType == InOut                   => List((DimmerActuator, "with sensor"))
+      case DPT5(1) if ioType == Out                     => List((DimmerSensor, ""))
+      case DPT5(1) if ioType == In                      => List((DimmerActuator, ""))
       case DPT5(_)                                      => Nil
       case DPT6(_)                                      => Nil
       case DPT7(_)                                      => Nil
-      case DPT9(1) if ioType == Out || ioType == InOut  => List(TemperatureSensor) // C°
-      case DPT9(27) if ioType == Out || ioType == InOut => List(TemperatureSensor) // F°
-      case DPT9(8) if ioType == Out || ioType == InOut  => List(CO2Sensor) // ppm
-      case DPT9(7) if ioType == Out || ioType == InOut  => List(HumiditySensor) // % humidity
+      case DPT9(1) if ioType == Out || ioType == InOut  => List((TemperatureSensor, "")) // C°
+      case DPT9(27) if ioType == Out || ioType == InOut => List((TemperatureSensor, "")) // F°
+      case DPT9(8) if ioType == Out || ioType == InOut  => List((CO2Sensor, "")) // ppm
+      case DPT9(7) if ioType == Out || ioType == InOut  => List((HumiditySensor, "")) // % humidity
       case DPT9(_)                                      => Nil
       case DPT10(_)                                     => Nil
       case DPT11(_)                                     => Nil

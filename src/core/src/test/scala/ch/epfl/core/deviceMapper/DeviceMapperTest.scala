@@ -69,16 +69,35 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
       SupportedDeviceMappingNode(
         "Channel - CH-0 - General",
         List(
-          SupportedDeviceMapping(commObjectCo21.name, CO2Sensor.toString, commObjectCo21.id),
-          SupportedDeviceMapping(commObjectHumidity1.name, HumiditySensor.toString, commObjectHumidity1.id),
-          SupportedDeviceMapping(commObjectDegreComfort1.name, DimmerSensor.toString, commObjectDegreComfort1.id),
-          SupportedDeviceMapping(commObjectTemperature1.name, TemperatureSensor.toString, commObjectTemperature1.id),
-          SupportedDeviceMapping(commObjectCo22.name, CO2Sensor.toString, commObjectCo22.id)
+          SupportedDeviceMapping(name = commObjectCo21.name, supportedDeviceName = CO2Sensor.toString, physicalCommObjectId = commObjectCo21.id),
+          SupportedDeviceMapping(
+            name = commObjectHumidity1.name,
+            supportedDeviceName = HumiditySensor.toString,
+            physicalCommObjectId = commObjectHumidity1.id
+          ),
+          SupportedDeviceMapping(
+            name = commObjectDegreComfort1.name,
+            supportedDeviceName = DimmerSensor.toString,
+            physicalCommObjectId = commObjectDegreComfort1.id
+          ),
+          SupportedDeviceMapping(
+            name = commObjectTemperature1.name,
+            supportedDeviceName = TemperatureSensor.toString,
+            physicalCommObjectId = commObjectTemperature1.id
+          ),
+          SupportedDeviceMapping(name = commObjectCo22.name, supportedDeviceName = CO2Sensor.toString, physicalCommObjectId = commObjectCo22.id)
         )
       ),
       SupportedDeviceMappingNode(
         "Channel - CH-2 - CO2 sensor",
-        List(SupportedDeviceMapping(commObjectVentilation1.name, DimmerSensor.toString, commObjectVentilation1.id))
+        List(
+          SupportedDeviceMapping(
+            name = commObjectVentilation1.name,
+            supportedDeviceName = DimmerSensor.toString,
+            humanReadableInfo = "",
+            physicalCommObjectId = commObjectVentilation1.id
+          )
+        )
       )
     )
   )
@@ -235,46 +254,45 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
       SupportedDeviceMappingNode(
         name = channelNameKlix8,
         List(
-          SupportedDeviceMapping(name = commObjectKlix8.name, supportedDeviceName = Switch.toString, physicalCommObjectId = commObjectKlix8.id),
-          SupportedDeviceMapping(name = commObjectKlix8.name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = commObjectKlix8.id)
+          SupportedDeviceMapping(name = commObjectKlix8.name, supportedDeviceName = Switch.toString, humanReadableInfo = "with sensor", physicalCommObjectId = commObjectKlix8.id)
         )
       )
     )
   )
 
   "dptIoTypeToSupportedDevice" should "return switch for any dpt-1 and in" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), In) should contain theSameElementsAs List(Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), In) should contain theSameElementsAs List(Switch)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), In) should contain theSameElementsAs List((Switch, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), In) should contain theSameElementsAs List((Switch, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return binarySensor for any dpt-1 and out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), Out) should contain theSameElementsAs List(BinarySensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), Out) should contain theSameElementsAs List(BinarySensor)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), Out) should contain theSameElementsAs List((BinarySensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), Out) should contain theSameElementsAs List((BinarySensor, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return binarySensor and switch for any dpt-1 and in/out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), InOut) should contain theSameElementsAs List(BinarySensor, Switch)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(-1), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(12), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(32), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(42), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(2), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(3), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT1(4), InOut) should contain theSameElementsAs List((Switch, "with sensor"))
   }
 
   "dptIoTypeToSupportedDevice" should "return temperatureSensor for dpt-9-1 and dpt-9-27 and out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(1), Out) should contain theSameElementsAs List(TemperatureSensor)
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(27), Out) should contain theSameElementsAs List(TemperatureSensor)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(1), Out) should contain theSameElementsAs List((TemperatureSensor, ""))
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(27), Out) should contain theSameElementsAs List((TemperatureSensor, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return Nil for dpt-9-42 and any type" in {
@@ -284,23 +302,23 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
   }
 
   "dptIoTypeToSupportedDevice" should "return co2Sensor for dpt-9-8 and out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(8), Out) should contain theSameElementsAs List(CO2Sensor)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(8), Out) should contain theSameElementsAs List((CO2Sensor, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return humiditySensor for dpt-9-7 and out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(7), Out) should contain theSameElementsAs List(HumiditySensor)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT9(7), Out) should contain theSameElementsAs List((HumiditySensor, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return dimmerSensor for dpt-5-1 and out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), Out) should contain theSameElementsAs List(DimmerSensor)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), Out) should contain theSameElementsAs List((DimmerSensor, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return dimmerActuator for dpt-5-1 and in type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), In) should contain theSameElementsAs List(DimmerActuator)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), In) should contain theSameElementsAs List((DimmerActuator, ""))
   }
 
   "dptIoTypeToSupportedDevice" should "return dimmerActuator and dimmerSensor for dpt-5-1 and in/out type" in {
-    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), InOut) should contain theSameElementsAs List(DimmerSensor, DimmerActuator)
+    DeviceMapper.dptIoTypeToSupportedDevice(DPT5(1), InOut) should contain theSameElementsAs List((DimmerActuator, "with sensor"))
   }
   "dptIoTypeToSupportedDevice" should "return Nil for dpt-5-42 and any type" in {
     DeviceMapper.dptIoTypeToSupportedDevice(DPT5(42), Out) shouldEqual Nil
@@ -329,7 +347,9 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
     val id = 1234
     val commObject = PhysicalDeviceCommObject(name = name, datatype = dpt, ioType = ioType, id = id)
 
-    DeviceMapper.mapCommObject(commObject) should contain theSameElementsAs List(SupportedDeviceMapping(name, DimmerSensor.toString, id))
+    DeviceMapper.mapCommObject(commObject) should contain theSameElementsAs List(
+      SupportedDeviceMapping(name = name, supportedDeviceName = DimmerSensor.toString, physicalCommObjectId = id)
+    )
   }
   "mapCommObject" should "return the Nil for a commObject of a non supported type" in {
     val name = "this is a comm object name of non supported type"
@@ -347,7 +367,9 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
     val id = 424242
     val commObject = PhysicalDeviceCommObject(name = name, datatype = dpt, ioType = ioType, id = id)
 
-    DeviceMapper.mapCommObject(commObject) shouldEqual List(SupportedDeviceMapping(name, Switch.toString, id), SupportedDeviceMapping(name, BinarySensor.toString, id))
+    DeviceMapper.mapCommObject(commObject) shouldEqual List(
+      SupportedDeviceMapping(name = name, supportedDeviceName = Switch.toString, humanReadableInfo = "with sensor", physicalCommObjectId = id)
+    )
   }
   "mapCommObject" should "return a List with binarySensor for a commObject of type DPT1 and out" in {
     val name = "commObject dpt1"
@@ -356,7 +378,9 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
     val id = 424242
     val commObject = PhysicalDeviceCommObject(name = name, datatype = dpt, ioType = ioType, id = id)
 
-    DeviceMapper.mapCommObject(commObject) shouldEqual List(SupportedDeviceMapping(name, BinarySensor.toString, id))
+    DeviceMapper.mapCommObject(commObject) shouldEqual List(
+      SupportedDeviceMapping(name = name, supportedDeviceName = BinarySensor.toString, physicalCommObjectId = id)
+    )
   }
   "mapCommObject" should "return a List with binarySensor for a commObject of type DPT1 and in" in {
     val name = "commObject dpt1"
@@ -365,7 +389,9 @@ class DeviceMapperTest extends AnyFlatSpec with Matchers {
     val id = 424242
     val commObject = PhysicalDeviceCommObject(name = name, datatype = dpt, ioType = ioType, id = id)
 
-    DeviceMapper.mapCommObject(commObject) shouldEqual List(SupportedDeviceMapping(name, Switch.toString, id))
+    DeviceMapper.mapCommObject(commObject) shouldEqual List(
+      SupportedDeviceMapping(name = name, supportedDeviceName = Switch.toString, physicalCommObjectId = id)
+    )
   }
 
   "mapDevice" should "return the correct mapping for a device 1" in {

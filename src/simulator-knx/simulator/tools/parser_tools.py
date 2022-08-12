@@ -3,6 +3,8 @@ Module that define functions for parsing user commands, CLI arguments or API scr
 """
 
 import logging
+import sys
+import json
 import numbers
 import pprint
 from typing import Tuple, Union, Dict
@@ -121,6 +123,25 @@ def arguments_parser(argv) -> Tuple[str, str, str, str, str, bool, bool]:
             "Specifies that the telegrams sent and received should be logged in a file located in logs/ folder"
         ),
     )
+    # Web App mode
+    parser.add_argument(
+        "-w",
+        "--web-app",
+        action="store_true",  # web_app=True if option, False if no -w option
+        help=(
+            "Specifies that the simulation is launched using a Flask server in local"
+        ),
+    )
+    # Address and port for Web app server
+    parser.add_argument(
+        "-a",
+        "--address-port",
+        action="store",  # web_app=True if option, False if no -w option
+        default="127.0.0.1:4646",
+        help=(
+            "Specifies the host address and port for the Flask server when started with -w option. Example of string '127.0.0.1:4646'. The address can be a container name when running in docker compose."
+        ),
+    )
 
     # Get the arguments from command line
     options = parser.parse_args()
@@ -148,8 +169,12 @@ def arguments_parser(argv) -> Tuple[str, str, str, str, str, bool, bool]:
     SVSHI_MODE = options.svshi_mode
     # TELEGRAM_LOGGING mode argument parser
     TELEGRAM_LOGGING = options.telegram_logging
+    # WEB_APP mode argument parser
+    WEB_APP = options.web_app
+    # WEB_APP_ADDRESS
+    HOST_ADDRESS_PORT = options.address_port
 
-    return (
+    return [
         INTERFACE_MODE,
         COMMAND_MODE,
         SCRIPT_PATH,
@@ -157,7 +182,9 @@ def arguments_parser(argv) -> Tuple[str, str, str, str, str, bool, bool]:
         CONFIG_PATH,
         SVSHI_MODE,
         TELEGRAM_LOGGING,
-    )
+        WEB_APP,
+        HOST_ADDRESS_PORT,
+    ]
 
 
 def user_command_parser(command: str, room) -> Union[int, None]:  # room : Room
@@ -702,3 +729,82 @@ class ScriptParser:
         elif command.startswith("end"):
             print("End of script")
             return 0, self.assertions
+
+
+def config_from_request(
+    empty_config_path: str, config_body_dict: dict
+) -> str:  # physical_structure_path: str, app_bindings_path: str, group_address_mapping_path: str
+    # sys.path.append("../..") # to get app files
+    svshi_type_to_sim_device = {
+        "binarySensor": "Button",
+        "switch": "Switch",
+        "temperatureSensor": "Thermometer",
+        "humiditySensor": "HumiditySoil",
+        "co2Sensor": "CO2Sensor",
+        "dimmerActuator": "LED",
+        "dimmerSensor": "Dimmer",
+    }
+    ###NOTE: Dimmer sensors??
+
+    with open(empty_config_path, "r") as file:
+        empty_config = json.load(file)
+    # with open(physical_structure_path, "r") as file:
+    physical_structure = config_body_dict["physicalStructure"]
+    # with open(app_bindings_path, "r") as file:
+    app_bindings = config_body_dict["appBindings"]
+    # with open(group_address_mapping_path, "r") as file:
+    group_address_mapping = config_body_dict["gaToPhysId"]
+
+    devices = {}
+    for app in app_bindings["appBindings"]:
+        for com_obj in app["bindings"]:
+            sim_dev = svshi_type_to_sim_device[com_obj["binding"]["typeString"]]
+            devices[str(com_obj["binding"]["physDeviceId"])] = {
+                "class": sim_dev
+            }  # create empty dict for the com object (device) ID
+
+    d, e = 0, 0  # different pos init of devices
+    for dev in physical_structure["deviceInstances"]:
+        indiv_addr = dev["address"]
+        for node in dev["nodes"]:
+            for com_obj in node["comObjects"]:
+                if str(com_obj["id"]) in devices.keys():
+                    dev_dict = {"name": com_obj["name"], "knx_location": indiv_addr}
+                    devices[str(com_obj["id"])].update(dev_dict)
+                    config_dev_dict = {
+                        "class": devices[str(com_obj["id"])]["class"],
+                        "knx_location": dev_dict["knx_location"],
+                    }
+                    empty_config["knx"]["area1"]["line1"]["devices"][
+                        dev_dict["name"]
+                    ] = config_dev_dict
+                    for ga in group_address_mapping:
+                        ga_dict = {"address": ga, "group_devices": []}
+                        phys_id = str(group_address_mapping[ga])  # only one device per ga
+                        # for phys_id in group_address_mapping[ga]:
+                        #     print(f"physid: {phys_id}, str id:{str(com_obj['id'])}")
+                        if phys_id == str(com_obj["id"]):
+                            ga_dict["group_devices"].append(dev_dict["name"])
+                        if len(
+                            ga_dict["group_devices"]
+                        ):  # if a device is associated to this ga
+                            empty_config["knx"]["group_addresses"].append(ga_dict)
+                    empty_config["world"]["rooms"]["room1"]["room_devices"][
+                        dev_dict["name"]
+                    ] = [
+                        1 + d % 4,
+                        1 + e % 4,
+                        1,
+                    ]  # arbitrary init of position in room
+                    d = d + 1
+                    if d == 4:  # max 4 devices per axis (x, y), total of 16 devices
+                        d = 0
+                        e = e + 1
+                        if e == 4:
+                            e = 0
+
+    webapp_config_path = empty_config_path.split(".", 1)[0] + "_new_app.json"
+    with open(webapp_config_path, "w") as fp:
+        json.dump(empty_config, fp, indent=4)
+    webapp_config_name = "webapp_base_config_new_app"
+    return webapp_config_name

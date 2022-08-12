@@ -15,7 +15,8 @@ object Utils {
     * @return
     */
   def validAddressPortString(s: String): Boolean = {
-    val addressRegex = """(^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$)|(localhost:(\d)+$)""".r
+//    val addressRegex = """(^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}):(\d)+$)|(localhost:(\d)+$)""".r
+    val addressRegex = """(^([A-Za-z0-9\.\-\_])+:\d+$)""".r // Relaxed because of docker usage and container name as IP
     addressRegex.matches(s)
   }
   def loadApplicationsLibrary(path: os.Path): ApplicationLibrary = {

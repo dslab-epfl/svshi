@@ -2,7 +2,6 @@
 import GenerateApp from './components/GenerateApp.vue'
 import GenerationAndCompilation from './components/GenerationAndCompilation.vue'
 import Run from './components/Run.vue'
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import GeneratePhysicalSystem from './components/GeneratePhysicalSystem.vue';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import InstalledAppList from './components/InstalledAppList.vue';
@@ -17,7 +16,6 @@ export default {
     "tab": Tab,
     GenerateApp,
     GenerationAndCompilation,
-    PulseLoader,
     Run,
     GeneratePhysicalSystem,
     InstalledAppList

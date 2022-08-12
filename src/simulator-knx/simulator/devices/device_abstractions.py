@@ -64,6 +64,7 @@ class Device(ABC):
                 logging.warning(
                     f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams."
                 )
+                return
             try:
                 self.knxbus.transmit_telegram(telegram)
             except:
@@ -156,3 +157,13 @@ class Actuator(Device, ABC):
         Specific implementation for each actuator.
         Method called by the KNXBus object when receiving a telegram for one of actuators' group addresses.
         """
+    
+    @abstractmethod
+    def user_input(self):
+        """
+        Interpret the user input/action and send telegram on the bus
+        Specific implementation for each actuator.
+        Method called when user activated the device in the GUI.
+        TODO call also when a user uses set command, NOTE or not?
+        """
+    

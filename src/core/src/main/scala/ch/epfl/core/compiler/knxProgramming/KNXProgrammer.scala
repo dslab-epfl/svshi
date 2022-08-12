@@ -2,9 +2,10 @@ package ch.epfl.core.compiler.knxProgramming
 
 import ch.epfl.core.model.bindings.GroupAddressAssignment
 import ch.epfl.core.model.physical._
-import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_PATH_STRING
+import ch.epfl.core.utils.Constants.ASSIGNMENTS_DIRECTORY_PATH
 import ch.epfl.core.utils.FileUtils
 import com.github.tototoshi.csv.CSVWriter
+import upickle.default.write
 
 /** KNX programmer
   *
@@ -47,7 +48,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
         .mkString("\n")
     }
     val text = tree.mkString("\n")
-    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
+    val directoryPath = ASSIGNMENTS_DIRECTORY_PATH
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
@@ -73,7 +74,7 @@ case class Programmer(assignment: GroupAddressAssignment) {
         "Auto"
       )
 
-    val directoryPath = os.Path(ASSIGNMENTS_DIRECTORY_PATH_STRING)
+    val directoryPath = ASSIGNMENTS_DIRECTORY_PATH
     if (!os.exists(directoryPath)) os.makeDir.all(directoryPath)
     val filePath = directoryPath / filename
 
@@ -83,5 +84,18 @@ case class Programmer(assignment: GroupAddressAssignment) {
     writer.writeRow(CSV_MIDDLE_GROUP)
     writer.writeAll(assignments.map(generateLine))
     writer.close()
+  }
+
+  /** Outputs a .json file containing a mapping from group addresses to their physical ID
+    * @param filename
+    */
+  def outputGroupAddressToPhysIdJson(filename: String = "gaToPhysId.json"): Unit = {
+    val gaToPhysId: Map[String, Int] =
+      assignment.physIdToGA.toList.map { case (i, address) =>
+        (address.toString, i)
+      }.toMap // We know this is valid because the GroupAddressAssignment class ensures that the map is reversible
+    val pathToFile = ASSIGNMENTS_DIRECTORY_PATH / filename
+    val toWrite = write(gaToPhysId)
+    FileUtils.writeToFileOverwrite(pathToFile, toWrite.getBytes)
   }
 }

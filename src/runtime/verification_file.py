@@ -29,11 +29,9 @@ class PhysicalState:
     GA_1_1_4: bool
 
 
-
 @dataclasses.dataclass
 class IsolatedFunctionsValues:
     pass
-
 
 
 @dataclasses.dataclass
@@ -46,6 +44,7 @@ class InternalState:
     inv: 1 <= self.time_month <= 12
     inv: 0 <= self.time_year
     """
+
     time_hour: int
     time_min: int
     time_day: int

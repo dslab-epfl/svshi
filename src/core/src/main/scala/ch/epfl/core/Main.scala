@@ -2,6 +2,7 @@ package ch.epfl.core
 
 import ch.epfl.core.Svshi.{ERROR_CODE, SUCCESS_CODE}
 import ch.epfl.core.api.server.CoreApiServer
+import ch.epfl.core.model.application.ApplicationLibrary
 import ch.epfl.core.model.physical.PhysicalStructure
 import ch.epfl.core.parser.ets.EtsParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
@@ -10,7 +11,7 @@ import ch.epfl.core.utils.Constants._
 import ch.epfl.core.utils.Printer._
 import ch.epfl.core.utils.Utils.loadApplicationsLibrary
 import ch.epfl.core.utils.style.{ColorsStyle, NoColorsStyle}
-import ch.epfl.core.utils.{Constants, FileUtils, Style, Utils}
+import ch.epfl.core.utils._
 import mainargs.ParserForClass
 
 import java.io.File
@@ -37,8 +38,18 @@ object Main {
     // Check if local folder exists and if not, create it
     if (!os.exists(SVSHI_LOCAL_INTERNAL_FOLDER_PATH)) os.makeDir.all(SVSHI_LOCAL_INTERNAL_FOLDER_PATH)
 
-    val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
-    val newAppsLibrary = loadApplicationsLibrary(GENERATED_FOLDER_PATH)
+    val (existingAppsLibrary, newAppsLibrary) = config.task match {
+      case Cli.Gui => (ApplicationLibrary(Nil, Constants.SVSHI_HOME_PATH), ApplicationLibrary(Nil, Constants.SVSHI_HOME_PATH)) // They're not used!
+      case _ => {
+        val existingAppsLibrary = loadApplicationsLibrary(APP_LIBRARY_FOLDER_PATH)
+        val tryNewAppsLibrary = Try(loadApplicationsLibrary(GENERATED_FOLDER_PATH))
+        if (tryNewAppsLibrary.isFailure) {
+          printErrorAndExit(tryNewAppsLibrary.failed.get.getLocalizedMessage)
+        }
+        val newAppsLibrary = tryNewAppsLibrary.get
+        (existingAppsLibrary, newAppsLibrary)
+      }
+    }
 
     val existingPhysStructPath = existingAppsLibrary.path / PHYSICAL_STRUCTURE_JSON_FILE_NAME
     val existingPhysicalStructure = if (os.exists(existingPhysStructPath)) PhysicalStructureJsonParser.parse(existingPhysStructPath) else PhysicalStructure(Nil)

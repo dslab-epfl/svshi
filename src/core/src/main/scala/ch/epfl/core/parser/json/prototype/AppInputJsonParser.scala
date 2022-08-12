@@ -31,7 +31,7 @@ object AppInputJsonParser {
   def constructPrototypicalStructure(parsedStructure: PrototypicalStructureJson): AppPrototypicalStructure = {
     def convertDeviceInstance(deviceInstanceJson: DeviceInstanceJson): AppPrototypicalDeviceInstance = {
       val deviceType = SupportedDevice.fromString(deviceInstanceJson.deviceType)
-      AppPrototypicalDeviceInstance(deviceInstanceJson.name, deviceType)
+      AppPrototypicalDeviceInstance(deviceInstanceJson.name, deviceType, deviceInstanceJson.preBindingPhysId)
     }
     val permissionLevel = PermissionLevel.fromString(parsedStructure.permissionLevel)
     if (permissionLevel.isEmpty)

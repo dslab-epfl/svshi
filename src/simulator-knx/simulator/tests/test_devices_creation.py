@@ -1,5 +1,8 @@
 """Test creation of devices"""
 
+import sys
+sys.path.append("..")
+
 import pytest
 
 import system
@@ -235,19 +238,20 @@ wrong_device_names = {
 }
 
 # Test Sys Exit if incorrect device name
-def test_incorrect_device_name():
-    for dev_name in false_device_names:
-        for dev_class in devices_classes:
-            with pytest.raises(SystemExit) as pytest_wrapped_error:
-                devices_classes[dev_class](dev_name, system.IndividualAddress(1, 1, 1))
-            assert pytest_wrapped_error.type == SystemExit
-    for dev_class in wrong_device_names:
-        for wrong_name in wrong_device_names[dev_class]:
-            with pytest.raises(SystemExit) as pytest_wrapped_error:
-                devices_classes[dev_class](
-                    wrong_name, system.IndividualAddress(1, 1, 1)
-                )
-            assert pytest_wrapped_error.type == SystemExit
+## NOTE, des not have any sense now...
+# def test_incorrect_device_name():
+#     for dev_name in false_device_names:
+#         for dev_class in devices_classes:
+#             with pytest.raises(SystemExit) as pytest_wrapped_error:
+#                 devices_classes[dev_class](dev_name, system.IndividualAddress(1, 1, 1))
+#             assert pytest_wrapped_error.type == SystemExit
+#     for dev_class in wrong_device_names:
+#         for wrong_name in wrong_device_names[dev_class]:
+#             with pytest.raises(SystemExit) as pytest_wrapped_error:
+#                 devices_classes[dev_class](
+#                     wrong_name, system.IndividualAddress(1, 1, 1)
+#                 )
+#             assert pytest_wrapped_error.type == SystemExit
 
 
 # Test Sys Exit if incorrect Individual Address

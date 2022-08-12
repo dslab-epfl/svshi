@@ -1,5 +1,8 @@
 """ Test World creation, updates and state changes"""
 
+import sys, os
+sys.path.append("..")
+
 import pytest
 from datetime import timedelta, datetime
 
@@ -123,7 +126,8 @@ def test_correct_world_creation():
 
 
 def test_world_configfile_creation_and_update():
-    config_path = "config/config_test_config.json"
+    SVSHI_HOME = os.environ["SVSHI_HOME"]
+    config_path = f"{SVSHI_HOME}/src/simulator-knx/config/config_test_config.json"
     speed_factor = 180
     system_dt = 1
     update_rule_ratio = system_dt * speed_factor / 3600

@@ -5,6 +5,7 @@ import ch.epfl.core.TestUtils.{compareFolders, defaultIgnoredFilesAndDir}
 import ch.epfl.core.deviceMapper.DeviceMapper
 import ch.epfl.core.deviceMapper.model.StructureMapping
 import ch.epfl.core.parser.ets.EtsParser
+import ch.epfl.core.parser.json.bindings.BindingsJsonParser
 import ch.epfl.core.parser.json.physical.PhysicalStructureJsonParser
 import ch.epfl.core.utils.Constants
 import ch.epfl.core.utils.Constants._
@@ -26,6 +27,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   override val defaultTestSignaler: Signaler = (testThread: Thread) => testThread.stop()
 
   private val endToEndResPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res" / "endToEnd"
+  private val resPath = Constants.SVSHI_SRC_FOLDER_PATH / "core" / "res"
   private val pipeline1Path = endToEndResPath / "pipeline1_app_one_valid"
   private val pipeline2Path = endToEndResPath / "pipeline2_app_one_invalid_bindings"
   private val pipeline3Path = endToEndResPath / "pipeline3_app_one_app_two_valid"
@@ -212,6 +214,39 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           out.toString should include("svshi v")
       }
     }
+  }
+
+  "generateApp" should "fail for invalid devices names in proto structure" in {
+    // Prepare everything for the test
+    val protoFileName = "proto8-invalid-devices-name.json"
+    val pathToProto = inputPath / protoFileName
+    os.copy(resPath / "proto_json" / protoFileName, pathToProto)
+
+    val appName = "test_app_one"
+
+    // Test
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+
+      Try(Main.main(Array("generateApp", "-n", appName, "-d", pathToProto.toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                """Wrong device name 'device1 - invalid': it has to contain only letters and underscores"""
+              )
+              val newAppPath = GENERATED_FOLDER_PATH / appName
+              os.exists(newAppPath) shouldBe false
+              errorCode shouldEqual Svshi.ERROR_CODE
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The generation should have failed!")
+      }
+    }
+
+    val newAppPath = GENERATED_FOLDER_PATH / appName
+    newAppPath shouldNot existInFilesystem
   }
 
   // Pipeline 1 - valid app with no other installed apps
@@ -730,7 +765,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString.trim should (include(
-                "ERROR: Proto device name = binary_sensor_instance_name, type = binarySensor; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1184303279: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
+                "ERROR: Proto device name = binary_sensor_instance_name, type = binarySensor; physical device address = (1,1,10), commObject = CO2 value - Send, physicalId = -1602086147: KNXDatatype 'DPT-1' is incompatible with KNXDatatype 'DPT-9-8'!"
               ) and
                 include("ERROR: Compilation/verification failed, see messages above"))
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appName
@@ -750,6 +785,30 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
   // Pipeline 3 - 2 valid apps: app one and then app two
   private val pipeline3ExpectedLibraryAppOneTwoPath: Path = pipeline3Path / "expected_app_library_one_two"
   private val pipeline3ExpectedLibraryAppOnePath: Path = pipeline3Path / "expected_app_library_one"
+
+  "assignments" should "have been written when apps are installed" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Prepare for app two
+    os.copy.into(pipeline3Path / "physical_structure.json", GENERATED_FOLDER_PATH)
+    os.copy(pipeline3Path / "apps_bindings_filled_one_two.json", GENERATED_FOLDER_PATH / "apps_bindings.json")
+    os.copy(pipeline3Path / "test_app_two_valid_filled", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Compile app two
+    Main.main(Array("compile", "-f", (inputPath / etsProjectFileName).toString))
+
+    // Check
+    compareFolders(ASSIGNMENTS_DIRECTORY_PATH, pipeline3Path / "expected_assignments", defaultIgnoredFilesAndDir)
+  }
 
   "run" should "execute the runtime module" in {
     // Install app one
@@ -825,15 +884,15 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     }
   }
 
-  "run" should "fail if the KNX address has the wrong format" in {
+  "run" should "fail if the KNX address has the wrong format: no address" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
-      Try(Main.main(Array("run", "-a", "1234.2.3:10"))) match {
+      Try(Main.main(Array("run", "-a", ":10"))) match {
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
+                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address or a container name and port a valid port"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -843,7 +902,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     }
   }
 
-  "run" should "fail if the KNX port has the wrong format" in {
+  "run" should "fail if the KNX port has the wrong format: port with letters" in {
     val out = new ByteArrayOutputStream()
     Console.withOut(out) {
       Try(Main.main(Array("run", "-a", "192.2.3.1:abc"))) match {
@@ -851,7 +910,25 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
           exception match {
             case MockSystemExitException(errorCode) => {
               out.toString should include(
-                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address and port a valid port"
+                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address or a container name and port a valid port"
+              )
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail("The execution should have failed!")
+      }
+    }
+  }
+
+  "run" should "fail if the KNX port has the wrong format: no port" in {
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("run", "-a", "helloThere"))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(
+                "ERROR: The KNX address and port need to have the format 'address:port' where address is a valid IPv4 address or a container name and port a valid port"
               )
             }
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
@@ -886,6 +963,36 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
     out.toString.trim should include("The bindings have been successfully created!")
     val expectedGenerated = pipeline3Path / "expected_generated_app_two"
     compareFolders(GENERATED_FOLDER_PATH, expectedGenerated, defaultIgnoredFilesAndDir)
+  }
+
+  "generateBindings" should "generate the bindings by putting prebindings if they exist in the app_proto_structure" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+    val appTwoName = "test_app_two"
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Install app one
+    os.remove.all(APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", APP_LIBRARY_FOLDER_PATH)
+    os.copy(pipeline3Path / "expected_app_library_one", INSTALLED_APPS_FOLDER_PATH, replaceExisting = true)
+    expectedIgnoredFiles.foreach(f => os.remove(INSTALLED_APPS_FOLDER_PATH / f))
+
+    // Copy files for app two
+    os.copy(pipeline3Path / "test_app_two_valid_filled_prebindings", GENERATED_FOLDER_PATH / appTwoName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))
+    }
+
+    // Check
+    out.toString.trim should include("The bindings have been successfully created!")
+    val expectedGeneratedBindingsPath = pipeline3Path / "apps_bindings_filled_one_two.json"
+
+    val currentBindings = BindingsJsonParser.parse(GENERATED_FOLDER_PATH / APP_PROTO_BINDINGS_JSON_FILE_NAME)
+    val expectedBindings = BindingsJsonParser.parse(expectedGeneratedBindingsPath)
+    currentBindings shouldEqual expectedBindings
   }
 
   "generateBindings" should "generate the bindings with -1 everywhere if physical structure changed" in {
@@ -1782,7 +1889,7 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
         case Failure(exception) =>
           exception match {
             case MockSystemExitException(errorCode) => {
-              out.toString.trim should (include(s"""ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_3_1d = 23, GA_0_0_1_1e = False]"""))
+              out.toString.trim should (include(s"""ERROR: unsat for invariant test_app_one_invariant counterexample [INT_0_3 = 43, GA_0_0_3_1f = 23, GA_0_0_1_1d = False]"""))
 
               val newAppPath = APP_LIBRARY_FOLDER_PATH / appTwoName
               os.exists(newAppPath) shouldBe false
@@ -2338,6 +2445,50 @@ class E2eTestCLI extends AnyFlatSpec with Matchers with BeforeAndAfterEach with 
             case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
           }
         case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+
+  "generateBindings" should "fail gracefully when a new app has invalid proto device types" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+
+    // Put app one in generated
+    os.copy(pipelinesRegressionPath / "invalid_proto_device_type" / appOneName, GENERATED_FOLDER_PATH / appOneName)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("generateBindings", "-f", (inputPath / etsProjectFileName).toString))) match {
+        case Failure(exception) =>
+          exception match {
+            case MockSystemExitException(errorCode) => {
+              out.toString should include(s"""ERROR: The device 'invalidType' is not supported by SVSHI""")
+            }
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => fail(s"The generation should have failed!\nout=\n${out.toString.trim}")
+      }
+    }
+  }
+  "gui" should "not fail when a new app in generated has invalid proto device types at start-up" in {
+    // Prepare everything for the test
+    val appOneName = "test_app_one"
+
+    // Put app one in generated
+    os.copy(pipelinesRegressionPath / "invalid_proto_device_type" / appOneName, GENERATED_FOLDER_PATH / appOneName)
+    os.copy(pipeline3Path / etsProjectFileName, inputPath / etsProjectFileName)
+
+    // Generate the bindings
+    val out = new ByteArrayOutputStream()
+    Console.withOut(out) {
+      Try(Main.main(Array("gui"))) match {
+        case Failure(exception) =>
+          exception match {
+            case e: Exception => fail(s"Unwanted exception occurred! exception = ${e.getLocalizedMessage}")
+          }
+        case Success(_) => ()
       }
     }
   }

@@ -191,9 +191,6 @@ class AmbientLight:
             if source.device.state:
                 # Compute distance between sensor and source
                 distance = compute_distance(source, brightness_sensor)
-                print(
-                    f"distance {distance} between source {source.name} and sensor {brightness_sensor.name} "
-                )
                 # Compute the partial brightness (illuminance in lux=[lm/m^2])
                 partial_illuminance = self.__lux_from_lightsource(source, distance)
                 # We can linearly add lux values

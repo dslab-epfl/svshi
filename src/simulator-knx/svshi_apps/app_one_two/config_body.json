@@ -1,0 +1,453 @@
+{
+    "physicalStructure":
+        {
+            "deviceInstances": [
+                {
+                  "name": "IPS/S3.1.1 IP Interface,MDRC",
+                  "address": "1.1.1",
+                  "nodes": [
+                    {
+                      "name": "Channel - CH-0 - IP settings",
+                      "comObjects": [
+                        
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "US/U2.2 Universal Interface,2-fold,FM",
+                  "address": "1.1.7",
+                  "nodes": [
+                    {
+                      "name": "Default",
+                      "comObjects": [
+                        {
+                          "name": "Input A - Eingang A - Disable",
+                          "datatype": "DPT-1",
+                          "ioType": "in",
+                          "id": 85743129
+                        },
+                        {
+                          "name": "Input A - Eingang A - Telegr. switch - Telegr. counter value 2 bytes",
+                          "datatype": "DPT-1",
+                          "ioType": "in/out",
+                          "id": 270662119
+                        },
+                        {
+                          "name": "Input B - Eingang B - Disable",
+                          "datatype": "DPT-1",
+                          "ioType": "in",
+                          "id": -1909925948
+                        },
+                        {
+                          "name": "Output B - Ausgang B - Input B - Telegr. switch - Control value (PWM)",
+                          "datatype": "DPT-1",
+                          "ioType": "in/out",
+                          "id": 209048516
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "LUXORliving S1",
+                  "address": "1.1.8",
+                  "nodes": [
+                    {
+                      "name": "Channel - CH-1 - Channel C1",
+                      "comObjects": [
+                        {
+                          "name": "Channel C1 - Switch object - Threshold as a percentage",
+                          "datatype": "DPT-1-1",
+                          "ioType": "in",
+                          "id": -1473244268
+                        },
+                        {
+                          "name": "Channel C1 - Feedback On/Off",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": -332327798
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-2 - Input I1",
+                      "comObjects": [
+                        {
+                          "name": "Channel I1 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "in/out",
+                          "id": 1375494812
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-3 - Input I2",
+                      "comObjects": [
+                        {
+                          "name": "Channel I2 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "in/out",
+                          "id": 450822335
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Default",
+                      "comObjects": [
+                        {
+                          "name": "Alarm - Excess temperature",
+                          "datatype": "DPT-1-5",
+                          "ioType": "out",
+                          "id": -1073319958
+                        },
+                        {
+                          "name": "Central permanent - ON",
+                          "datatype": "DPT-1-1",
+                          "ioType": "in",
+                          "id": 336294480
+                        },
+                        {
+                          "name": "Central switching - OFF",
+                          "datatype": "DPT-1-1",
+                          "ioType": "in",
+                          "id": 1491574865
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Set basic KNX Multi",
+                  "address": "1.1.10",
+                  "nodes": [
+                    {
+                      "name": "Channel - CH-0 - General",
+                      "comObjects": [
+                        {
+                          "name": "Firmware - Version",
+                          "datatype": "DPT-Unknown",
+                          "ioType": "out",
+                          "id": -1725825766
+                        },
+                        {
+                          "name": "CO2 value - Send",
+                          "datatype": "DPT-9-8",
+                          "ioType": "out",
+                          "id": -1602086147
+                        },
+                        {
+                          "name": "Relative humidity - Send",
+                          "datatype": "DPT-9-7",
+                          "ioType": "out",
+                          "id": 60610091
+                        },
+                        {
+                          "name": "Air pressure - Send",
+                          "datatype": "DPT-14-58",
+                          "ioType": "out",
+                          "id": 171552419
+                        },
+                        {
+                          "name": "Degree of comfort - Send",
+                          "datatype": "DPT-5-1",
+                          "ioType": "out",
+                          "id": 1738919070
+                        },
+                        {
+                          "name": "Temperature value - Send",
+                          "datatype": "DPT-9-1",
+                          "ioType": "out",
+                          "id": -48198848
+                        },
+                        {
+                          "name": "CO2 Offset - Measurement value offset",
+                          "datatype": "DPT-9",
+                          "ioType": "in/out",
+                          "id": 1134619486
+                        },
+                        {
+                          "name": "CO2 reference - Receive measurement value",
+                          "datatype": "DPT-9-8",
+                          "ioType": "in/out",
+                          "id": 579737276
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-2 - CO2 sensor",
+                      "comObjects": [
+                        {
+                          "name": "CO2 threshold 1 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": 842685262
+                        },
+                        {
+                          "name": "CO2 threshold 2 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": 101433736
+                        },
+                        {
+                          "name": "CO2 threshold 3 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": -1656388986
+                        },
+                        {
+                          "name": "Ventilation of CO2 - Actuating value 0-100%",
+                          "datatype": "DPT-5-1",
+                          "ioType": "out",
+                          "id": 102571518
+                        },
+                        {
+                          "name": "CO2 scenes - Send",
+                          "datatype": "DPT-17-1",
+                          "ioType": "out",
+                          "id": -891283031
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-3 - Humidity sensor",
+                      "comObjects": [
+                        {
+                          "name": "Humidity threshold 1 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": 260635346
+                        },
+                        {
+                          "name": "Humidity threshold 2 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": 899634006
+                        },
+                        {
+                          "name": "Humidity threshold 3 - Switching",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": -1803164184
+                        },
+                        {
+                          "name": "Ventilating humidity - Actuating value 0-100%",
+                          "datatype": "DPT-5-1",
+                          "ioType": "out",
+                          "id": 169607414
+                        },
+                        {
+                          "name": "Humidity scenes - Send",
+                          "datatype": "DPT-17-1",
+                          "ioType": "out",
+                          "id": 1098224059
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-4 - RTR",
+                      "comObjects": [
+                        {
+                          "name": "Control actual value - Send",
+                          "datatype": "DPT-9-1",
+                          "ioType": "out",
+                          "id": 2137688082
+                        },
+                        {
+                          "name": "Operating mode preset - Receive",
+                          "datatype": "DPT-20-102",
+                          "ioType": "in",
+                          "id": -1533250797
+                        },
+                        {
+                          "name": "Presence - Receive",
+                          "datatype": "DPT-1-18",
+                          "ioType": "in",
+                          "id": -1807055591
+                        },
+                        {
+                          "name": "Window status - Closed=0, open=1",
+                          "datatype": "DPT-1-19",
+                          "ioType": "in",
+                          "id": -226534607
+                        },
+                        {
+                          "name": "Operating mode as scene - Save/call up",
+                          "datatype": "DPT-18-1",
+                          "ioType": "in/out",
+                          "id": 1121403300
+                        },
+                        {
+                          "name": "Current operating mode - Send",
+                          "datatype": "DPT-20-102",
+                          "ioType": "out",
+                          "id": -736121376
+                        },
+                        {
+                          "name": "Heating actuating value - Send",
+                          "datatype": "DPT-5-1",
+                          "ioType": "out",
+                          "id": -332965869
+                        },
+                        {
+                          "name": "Base setpoint - Defining the set temperature",
+                          "datatype": "DPT-9-1",
+                          "ioType": "in",
+                          "id": -343491868
+                        },
+                        {
+                          "name": "Setpoint offset at rotary control - Send",
+                          "datatype": "DPT-9-2",
+                          "ioType": "out",
+                          "id": 350975025
+                        },
+                        {
+                          "name": "Current setpoint - Setting/sending",
+                          "datatype": "DPT-9-1",
+                          "ioType": "in/out",
+                          "id": 207554292
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-6 - External inputs",
+                      "comObjects": [
+                        
+                      ]
+                    },
+                    {
+                      "name": "Channel - CH-7 - Comparator",
+                      "comObjects": [
+                        {
+                          "name": "Comparator - Output",
+                          "datatype": "DPT-5-1",
+                          "ioType": "out",
+                          "id": 2140933970
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Default",
+                      "comObjects": [
+                        {
+                          "name": "Alarm - Info",
+                          "datatype": "DPT-Unknown",
+                          "ioType": "out",
+                          "id": -284347676
+                        },
+                        {
+                          "name": "Alarm - Error text",
+                          "datatype": "DPT-16-0",
+                          "ioType": "out",
+                          "id": 800418858
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "thePrema P360 KNX",
+                  "address": "1.1.9",
+                  "nodes": [
+                    {
+                      "name": "Default",
+                      "comObjects": [
+                        {
+                          "name": "Test mode presence - Test-Mode Präsenz - On/Off",
+                          "datatype": "DPT-1",
+                          "ioType": "in",
+                          "id": 1377481716
+                        },
+                        {
+                          "name": "Software Version - Software Version - Send",
+                          "datatype": "DPT-Unknown",
+                          "ioType": "out",
+                          "id": 1041531076
+                        },
+                        {
+                          "name": "Channel C5.1 Presence - Kanal C5.1 Präsenz - Switch",
+                          "datatype": "DPT-1",
+                          "ioType": "out",
+                          "id": 585844677
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "KNX I4-ERD",
+                  "address": "1.1.11",
+                  "nodes": [
+                    {
+                      "name": "Default",
+                      "comObjects": [
+                        {
+                          "name": "Software version - Softwareversion - Output",
+                          "datatype": "DPT-Unknown",
+                          "ioType": "out",
+                          "id": 975304713
+                        },
+                        {
+                          "name": "Channel 1 fault - Kanal 1 Störung - Output",
+                          "datatype": "DPT-1-1",
+                          "ioType": "out",
+                          "id": 2036427174
+                        },
+                        {
+                          "name": "Channel 1 Humidity internal measured value - Kanal 1 Feuchte Messwert Intern - Output",
+                          "datatype": "DPT-Unknown",
+                          "ioType": "out",
+                          "id": -1276738945
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+        },
+    "appBindings":
+        {
+            "appBindings": [
+                {
+                "name": "test_app_one",
+                "bindings": [
+                    {
+                    "name": "binary_sensor_instance_name",
+                    "binding": {
+                        "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+                        "typeString": "binarySensor",
+                        "physDeviceId": 270662119
+                    }
+                    },
+                    {
+                    "name": "switch_instance_name",
+                    "binding": {
+                        "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
+                        "typeString": "switch",
+                        "physDeviceId": -1473244268
+                    }
+                    }
+                ]
+                },
+                {
+                "name": "test_app_two",
+                "bindings": [
+                    {
+                    "name": "temperature_sensor",
+                    "binding": {
+                        "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
+                        "typeString": "temperatureSensor",
+                        "physDeviceId": -48198848
+                    }
+                    }
+                ]
+                }
+            ]
+        },
+    "gaToPhysId":
+        {
+            "0/0/1": "270662119",
+            "0/0/2": "-1473244268",
+            "0/0/3": "-48198848"
+        }
+}

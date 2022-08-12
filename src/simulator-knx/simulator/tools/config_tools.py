@@ -11,7 +11,7 @@ from typing import Tuple
 import devices as dev
 from system.system_tools import IndividualAddress, Window
 from .check_tools import check_group_address, check_simulation_speed_factor
-
+import system.telegrams as sim_t
 
 DEV_CLASSES = {
     "LED": dev.LED,
@@ -27,6 +27,21 @@ DEV_CLASSES = {
     "CO2Sensor": dev.CO2Sensor,
     "PresenceSensor": dev.PresenceSensor,
     "AirSensor": dev.AirSensor,
+}
+DEV_PAYLOAD = {
+    "LED": sim_t.DimmerPayload,
+    "Heater": sim_t.DimmerPayload,
+    "AC": sim_t.DimmerPayload,
+    "Switch": sim_t.BinaryPayload,
+    "Button": sim_t.BinaryPayload,
+    "Dimmer": sim_t.DimmerPayload,  # "TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
+    "Brightness": sim_t.FloatPayload,
+    "Thermometer": sim_t.FloatPayload,
+    "HumiditySoil": sim_t.FloatPayload,
+    "HumidityAir": sim_t.FloatPayload,
+    "CO2Sensor": sim_t.FloatPayload,
+    "PresenceSensor": sim_t.FloatPayload,
+    "AirSensor": sim_t.FloatPayload,
 }
 
 ## User command mode (script or CLI)
@@ -57,6 +72,7 @@ def configure_system(
     test_mode: bool = False,
     svshi_mode: bool = False,
     telegram_logging: bool = False,
+    fresh_knx_interface: bool = False,
 ):
     """
     System configuration "manually" with python functions and classes.
@@ -75,6 +91,12 @@ def configure_system(
     button1 = dev.Button("button1", IndividualAddress(0, 0, 20))
     button2 = dev.Button("button2", IndividualAddress(0, 0, 21))
     bright1 = dev.Brightness("brightness1", IndividualAddress(0, 0, 5))
+
+    interface_to_pass = interface
+    if fresh_knx_interface and interface is not None:
+        print("Killing current interface to start rooms with a fresh one.")
+        interface.stop()
+        interface_to_pass = None
 
     outside_temperature = 20.0
     humidity_out = 50.0
@@ -96,7 +118,7 @@ def configure_system(
         test_mode=test_mode,
         svshi_mode=svshi_mode,
         telegram_logging=telegram_logging,
-        interface=interface,
+        interface=interface_to_pass,
     )
     interface = room1.get_interface()
     room1.add_device(led1, 5, 5, 1)
@@ -122,6 +144,7 @@ def configure_system_from_file(
     test_mode: bool = False,
     svshi_mode: bool = False,
     telegram_logging: bool = False,
+    fresh_knx_interface: bool = False,
 ):
     """System configuration from JSON configuration file parsing."""
     from system import Room
@@ -167,6 +190,13 @@ def configure_system_from_file(
 
     # rooms_builders will contain list of list of room obj and device dict in the shape:
     # [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
+
+    interface_to_pass = interface
+    if fresh_knx_interface and interface is not None:
+        print("Killing current interface to start rooms with a fresh one.")
+        interface.stop()
+        interface_to_pass = None
+
     rooms_builders = []
     rooms = []
     ga_builders = []
@@ -203,7 +233,7 @@ def configure_system_from_file(
             test_mode=test_mode,
             svshi_mode=svshi_mode,
             telegram_logging=telegram_logging,
-            interface=interface,
+            interface=interface_to_pass,
         )
         interface = room.get_interface()
         windows = []
@@ -227,6 +257,7 @@ def configure_system_from_file(
     # Parsing of devices to add in the room
     print(" ------- Room devices from configuration file -------")
     logging.info(" ------- Room devices from configuration file -------")
+    devices_payload = {}  # dict with dev names as keys and payload as values
     for a in range(number_of_areas):
         area_key = "area" + str(a)  # area0, area1,...
         number_of_lines = knx_config[area_key]["number_of_lines"]
@@ -245,6 +276,9 @@ def configure_system_from_file(
                 try:
                     device_config = line_devices_config[dev_key]
                     dev_class = device_config["class"]
+                    devices_payload[dev_key] = DEV_PAYLOAD[
+                        dev_class
+                    ]  # link dev name to its payload (for svshi)
                 except (KeyError):
                     logging.warning(
                         f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}."
@@ -284,18 +318,36 @@ def configure_system_from_file(
     logging.info(" ------- KNX System Configuration -------")
     ga_style = knx_config["group_address_style"]
     ga_builders = knx_config["group_addresses"]
+    group_address_to_payload = {}  # dict with ga as keys and payloads as values
     if len(ga_builders):
         for ga_builder in ga_builders:
             group_address = ga_builder["address"]
             group_devices = ga_builder["group_devices"]
+            print(f"group_address:{group_address},  group_devices:{group_devices}")
             # Loop on devices connected to this ga
             for dev_name in group_devices:
+                print(f"dev_name:{group_devices}")
                 for room in rooms:
                     for in_room_device in room.devices:
                         if in_room_device.name == dev_name:
                             dev_object = in_room_device.device
                             # Link the device to the ga (internal test to check Group Address format)
                             room.attach(dev_object, group_address)
+                            if (
+                                svshi_mode
+                            ):  # in svshi mode, only one ga per device, so we assign a dpt to this ga for svshi interface attr group_address_to_payload
+                                group_address_to_payload[
+                                    group_address
+                                ] = devices_payload[
+                                    dev_name
+                                ]  # link ga to payload
     else:
         logging.info("No group address is defined in config file.")
+
+    if svshi_mode:
+        for room in rooms:
+            room.set_ga_to_payload_dict(
+                group_address_to_payload
+            )  # dict is same for all rooms, for simplicity for now because only one room
+
     return rooms[0], system_dt_config  # only one room for now

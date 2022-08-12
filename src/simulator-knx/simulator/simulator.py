@@ -19,11 +19,35 @@ import gui
 import tools
 import tools.config_tools as ct
 from system.room import Room
+from svshi_interface import InterfaceProp
+import os
 
 pp = pprint.PrettyPrinter(compact=True)
 
+pyglet_running = False
 
-def launch_simulation(argv) -> None:
+global window
+
+
+def stop_simulation():
+    """Stop simulation and close graphical window"""
+    global pyglet_running
+    global window
+    if pyglet_running:  # try to close window only if pyglet is running
+        try:
+            window.close()  # force window close, if not there, window remains open when using flask
+        except NameError:
+            return None
+        pyglet.app.exit()
+        pyglet_running = False
+        print("simulation stopped and pyglet not running\n")
+        return 1
+    else:
+        pyglet_running = True
+        return 0
+
+
+def launch_simulation(options, fresh_knx_interface: bool = False) -> None:
     """Launch simulation with the correct modes of configuration, command and interface."""
     # Parsed CLI arguments given by the user when launching the program
     (
@@ -34,8 +58,16 @@ def launch_simulation(argv) -> None:
         CONFIG_PATH,
         SVSHI_MODE,
         TELEGRAM_LOGGING,
-    ) = tools.arguments_parser(argv)
+        _,
+        HOST_ADDR_PORT,
+    ) = options
 
+    if TELEGRAM_LOGGING:
+        if not os.path.exists("logs"):
+            os.mkdir("logs")
+    HOST_ADDR = HOST_ADDR_PORT.split(":")[0]
+
+    InterfaceProp.HOST = HOST_ADDR
     # System configuration from function configure_system()
     if CONFIG_MODE == ct.DEV_CONFIG:
         while True:
@@ -48,6 +80,7 @@ def launch_simulation(argv) -> None:
             simulation_speed_factor,
             svshi_mode=SVSHI_MODE,
             telegram_logging=TELEGRAM_LOGGING,
+            fresh_knx_interface=fresh_knx_interface,
         )
     # Default, empty or file config from function congirue_system_from_file()
     else:
@@ -58,9 +91,13 @@ def launch_simulation(argv) -> None:
             ct.EMPTY_CONFIG_PATH if CONFIG_MODE == ct.EMPTY_CONFIG else CONFIG_PATH
         )
         room1, system_dt = tools.configure_system_from_file(
-            CONFIG_PATH, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING
+            CONFIG_PATH,
+            svshi_mode=SVSHI_MODE,
+            telegram_logging=TELEGRAM_LOGGING,
+            fresh_knx_interface=fresh_knx_interface,
         )
 
+    global window
     # GUI interface with the user
     if INTERFACE_MODE == ct.GUI_MODE:
         window = gui.GUIWindow(
@@ -78,11 +115,16 @@ def launch_simulation(argv) -> None:
         print("\n>>> The simulation is started in Graphical User Interface Mode <<<\n")
         start_time = time.time()
         room1.world.time.start_time = start_time
+        global pyglet_running
         try:
+            pyglet_running = True
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
+            pyglet_running = False
             sys.exit()
+        # window.close() # force window close, if not there, window remains open when using flask
+        pyglet_running = False
         print("The GUI window has been closed and the simulation terminated.")
 
     # Terminal interface with the user (no visual feedback)

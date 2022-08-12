@@ -40,14 +40,17 @@ object SupportedDevice {
     case SupportedDevice.dimmerActuatorStringLower    => DimmerActuator
     case _                                            => throw new UnsupportedDeviceException(s"The device '$s' is not supported by SVSHI")
   }
-  def getDeviceBinding(deviceType: SupportedDevice): SupportedDeviceBinding = deviceType match {
-    case BinarySensor      => BinarySensorBinding(deviceType.toString, defaultPhysicalId)
-    case Switch            => SwitchBinding(deviceType.toString, defaultPhysicalId)
-    case TemperatureSensor => TemperatureSensorBinding(deviceType.toString, defaultPhysicalId)
-    case HumiditySensor    => HumiditySensorBinding(deviceType.toString, defaultPhysicalId)
-    case CO2Sensor         => CO2SensorBinding(deviceType.toString, defaultPhysicalId)
-    case DimmerSensor      => DimmerSensorBinding(deviceType.toString, defaultPhysicalId)
-    case DimmerActuator    => DimmerActuatorBinding(deviceType.toString, defaultPhysicalId)
+  def getDeviceBinding(device: AppPrototypicalDeviceInstance): SupportedDeviceBinding = {
+    val deviceType = device.deviceType
+    deviceType match {
+      case BinarySensor      => BinarySensorBinding(deviceType.toString, device.preBindingPhysId)
+      case Switch            => SwitchBinding(deviceType.toString, device.preBindingPhysId)
+      case TemperatureSensor => TemperatureSensorBinding(deviceType.toString, device.preBindingPhysId)
+      case HumiditySensor    => HumiditySensorBinding(deviceType.toString, device.preBindingPhysId)
+      case CO2Sensor         => CO2SensorBinding(deviceType.toString, device.preBindingPhysId)
+      case DimmerSensor      => DimmerSensorBinding(deviceType.toString, device.preBindingPhysId)
+      case DimmerActuator    => DimmerActuatorBinding(deviceType.toString, device.preBindingPhysId)
+    }
   }
   def getAvailableDevices: List[String] =
     List(binarySensorString, switchString, temperatureSensorString, humiditySensorString, co2SensorString, dimmerSensorString, dimmerActuatorString)

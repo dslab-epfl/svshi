@@ -1,0 +1,14 @@
+{
+  "permissionLevel": "notPrivileged",
+  "timer": 0,
+  "devices": [
+    {
+      "name": "binary_sensor_instance_name",
+      "deviceType": "invalidType"
+    },
+    {
+      "name": "switch_instance_name",
+      "deviceType": "switch"
+    }
+  ]
+}

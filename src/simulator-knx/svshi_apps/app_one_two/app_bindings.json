@@ -1,0 +1,38 @@
+{
+  "appBindings": [
+    {
+      "name": "test_app_one",
+      "bindings": [
+        {
+          "name": "binary_sensor_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.BinarySensorBinding",
+            "typeString": "binarySensor",
+            "physDeviceId": 270662119
+          }
+        },
+        {
+          "name": "switch_instance_name",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.SwitchBinding",
+            "typeString": "switch",
+            "physDeviceId": -1473244268
+          }
+        }
+      ]
+    },
+    {
+      "name": "test_app_two",
+      "bindings": [
+        {
+          "name": "temperature_sensor",
+          "binding": {
+            "$type": "ch.epfl.core.model.prototypical.TemperatureSensorBinding",
+            "typeString": "temperatureSensor",
+            "physDeviceId": -48198848
+          }
+        }
+      ]
+    }
+  ]
+}

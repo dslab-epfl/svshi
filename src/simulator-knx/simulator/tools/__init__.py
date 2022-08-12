@@ -9,6 +9,7 @@ from .parser_tools import (
     user_command_parser,
     ScriptParser,
     arguments_parser,
+    config_from_request,
     COMMAND_HELP,
 )
 from .check_tools import (

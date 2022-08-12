@@ -35,13 +35,13 @@ object Verifier extends VerifierTr {
     * @return
     */
   override def verify(newAppLibrary: ApplicationLibrary, existingAppsLibrary: ApplicationLibrary, groupAddressAssignment: GroupAddressAssignment): List[PythonVerifierMessage] = {
-    val (errorCode, stdOutLines) = ProcRunner.callPythonBlocking(None, None, VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_SRC_FOLDER))
+    val (errorCode, stdOutErrLines) = ProcRunner.callPythonBlocking(None, None, VERIFICATION_PYTHON_MODULE, os.Path(SVSHI_SRC_FOLDER))
     if (errorCode != SUCCESS_CODE_VERIFICATION_MODULE_PYTHON) {
       // Error while creating the verification file, output
-      if (stdOutLines.nonEmpty) stdOutLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))
+      if (stdOutErrLines.nonEmpty) stdOutErrLines.map(l => PythonVerifierError(s"Verification_file creation ERRORS: $l"))
       else List(PythonVerifierError("Verification_file creation ERRORS: The verification module returned nothing!"))
     } else {
-      val strings = stdOutLines.head.split('/')
+      val strings = stdOutErrLines.head.split('/')
       val verificationFileName = strings.last
       val verificationWdStr = strings.toList.reverse.tail.reverse.mkString("/")
       val verificationWd = os.Path(verificationWdStr, base = os.pwd / os.up)

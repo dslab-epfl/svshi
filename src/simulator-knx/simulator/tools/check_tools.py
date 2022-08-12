@@ -356,22 +356,22 @@ def check_device_config(
             f"A non-empty alphanumeric string name is required to create the device, but '{name}' was given -> program terminated."
         )
         sys.exit(1)
-    try:
-        assert len(name) > 0
-        assert name.isalnum()  # alphanumeric
-        assert name.islower()
-    except AssertionError:
-        logging.error(
-            f"A non-empty alphanumeric string name is required to create the device, but '{name}' was given -> program terminated."
-        )
-        sys.exit(1)
-    try:
-        assert class_name.lower() in name
-    except AssertionError:
-        logging.error(
-            f"The lower-case class name '{class_name.lower()}' should be in name, but '{name}' was given -> program terminated."
-        )
-        sys.exit(1)
+    # try: ## NOTE only for web app
+    #     assert len(name) > 0
+    #     assert name.isalnum()  # alphanumeric
+    #     assert name.islower()
+    # except AssertionError:
+    #     logging.error(
+    #         f"A non-empty alphanumeric string name is required to create the device, but '{name}' was given -> program terminated."
+    #     )
+    #     sys.exit(1)
+    # try:
+    #     assert class_name.lower() in name
+    # except AssertionError:
+    #     logging.error(
+    #         f"The lower-case class name '{class_name.lower()}' should be in name, but '{name}' was given -> program terminated."
+    #     )
+    #     sys.exit(1)
     # Device Individual address check
     try:
         assert (

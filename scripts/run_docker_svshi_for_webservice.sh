@@ -1,0 +1,1 @@
+docker run --rm -d -p 4242:4242 -v svshiForWebserviceVolume:/home/maki/ --name svshi_for_webservice -i svshi_for_webservice:ubuntu22.04
