@@ -785,7 +785,7 @@ See [the contributing guide](/CONTRIBUTING.md) for detailed instructions on how 
 
 ## White paper
 
-See [the white paper](/src/documentation/documentation.md) for an in-depth understanding about why SVSHI exists, what it does and how it does it.
+See [the white paper](/src/documentation/documentation.md) and [the reports](/src/documentation/reports) for an in-depth understanding about why SVSHI exists, what it does and how it does it.
 
 ## License
 
