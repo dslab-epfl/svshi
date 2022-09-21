@@ -56,7 +56,7 @@ It also provides a [CLI](#cli), `svshi`, for shell interaction.
 
 With SVSHI, a user can develop and run Python applications interacting with [KNX](https://www.knx.org/knx-en/for-professionals/index.php) systems that are [formally verified](#verification) at both compile and run-time against a set of provided invariants.
 
-## Discover SVSHI
+## Discover SVSHI
 
 To help you familiarize with SVSHI concepts and write your first apps, we provide a "discover service". Your start using the service by uploading your `.knxproj` file. It then extracts devices and detects all the communication objects (can be seen as "sub devices" or "abtract devices") that your physical devices offer and that are compatible with SVSHI. 
 
